@@ -110,8 +110,8 @@ final class MenuOrganizer {
 			$title,
 			'read',
 			$slug,
-			'',
-			'wp-menu-separator kpf-menu-section-label',
+			$title,
+			'menu-top kpf-menu-section-label',
 			'kpf-menu-section-' . $slug,
 			'none',
 		);

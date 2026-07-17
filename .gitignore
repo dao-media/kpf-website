@@ -1,0 +1,14 @@
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/possibleTypes.json
+wordpress/plugins/kpf-core/node_modules/
+
+.DS_Store
+*.log
+
+.wp-env.override.json
+
+# Local/source media (too large for git)
+Photos/

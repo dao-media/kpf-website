@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "kpf/notice",
+  "version": "0.1.0",
+  "title": "Foundation Notice",
+  "category": "kpf-components",
+  "icon": "info-outline",
+  "description": "A clearly labeled informational, success, or warning message.",
+  "keywords": ["notice", "alert", "message", "information"],
+  "textdomain": "kpf-core",
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-notice__heading",
+      "default": "Important information"
+    },
+    "body": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-notice__body",
+      "default": "Use this space for information visitors should not miss."
+    },
+    "tone": {
+      "type": "string",
+      "default": "information"
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": true,
+    "anchor": true,
+    "className": false
+  }
+}

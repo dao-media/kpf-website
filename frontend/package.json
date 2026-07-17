@@ -1,0 +1,39 @@
+{
+	"name": "kevin-popke-foundation-frontend",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "faust dev",
+		"build": "faust build",
+		"generate": "faust generatePossibleTypes",
+		"start": "faust start",
+		"lint": "eslint .",
+		"test": "node --test src/components/SeoHead.test.js"
+	},
+	"dependencies": {
+		"@apollo/client": "^3.14.0",
+		"@faustwp/cli": "^3.4.1",
+		"@faustwp/core": "^3.4.1",
+		"graphql": "^16.12.0",
+		"lucide-react": "^1.25.0",
+		"next": "^16.2.10",
+		"next-secure-headers": "^2.2.0",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1"
+	},
+	"devDependencies": {
+		"@eslint/eslintrc": "^3.3.1",
+		"eslint": "^9.32.0",
+		"eslint-config-next": "^16"
+	},
+	"overrides": {
+		"@babel/runtime": "^7.26.10",
+		"fast-xml-parser": "^5.3.4",
+		"js-yaml": "^4.1.1",
+		"ajv": ">=8.17.2"
+	},
+	"engines": {
+		"node": ">=20.9",
+		"npm": ">=8"
+	}
+}

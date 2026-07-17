@@ -1,0 +1,28 @@
+{
+  "name": "kevin-popke-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run wp:start && npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "generate": "npm --prefix frontend run generate",
+    "build:seo": "npm --prefix wordpress/plugins/kpf-core run build",
+    "test:seo": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/seo-smoke.php",
+    "test:scrapbook": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/scrapbook-smoke.php",
+    "test:components": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/components-smoke.php",
+    "test:inbox": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/inbox-smoke.php",
+    "wp:start": "wp-env start",
+    "wp:stop": "wp-env stop",
+    "wp:destroy": "wp-env destroy",
+    "wp:cli": "wp-env run cli wp",
+    "wp:logs": "wp-env logs"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^11.11.0"
+  },
+  "engines": {
+    "node": ">=20.9",
+    "npm": ">=8"
+  }
+}

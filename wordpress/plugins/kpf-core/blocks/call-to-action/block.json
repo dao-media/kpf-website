@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "kpf/call-to-action",
+  "version": "0.1.0",
+  "title": "Call to Action",
+  "category": "kpf-components",
+  "icon": "megaphone",
+  "description": "A prominent message with one or more action buttons.",
+  "keywords": ["cta", "donate", "action", "banner"],
+  "textdomain": "kpf-core",
+  "attributes": {
+    "eyebrow": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-cta__eyebrow",
+      "default": "Make a difference"
+    },
+    "heading": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-cta__heading",
+      "default": "Help carry Kevin’s legacy forward"
+    },
+    "body": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-cta__body",
+      "default": "Invite visitors to take one clear, meaningful next step."
+    },
+    "theme": {
+      "type": "string",
+      "default": "ink"
+    },
+    "layout": {
+      "type": "string",
+      "default": "stacked"
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": true,
+    "anchor": true,
+    "align": ["wide", "full"],
+    "className": false
+  }
+}

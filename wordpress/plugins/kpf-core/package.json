@@ -1,0 +1,13 @@
+{
+  "name": "kpf-core",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
+    "packages-update": "wp-scripts packages-update"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.21.0"
+  }
+}

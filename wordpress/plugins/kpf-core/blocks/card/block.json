@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "kpf/card",
+  "version": "0.1.0",
+  "title": "Story Card",
+  "category": "kpf-components",
+  "icon": "index-card",
+  "description": "An image, heading, summary, and optional destination grouped as a card.",
+  "keywords": ["card", "story", "feature", "image"],
+  "textdomain": "kpf-core",
+  "attributes": {
+    "imageId": {
+      "type": "number",
+      "default": 0
+    },
+    "imageUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "imageAlt": {
+      "type": "string",
+      "default": ""
+    },
+    "heading": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-card__heading",
+      "default": "A story worth sharing"
+    },
+    "body": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-card__body",
+      "default": "Add a short summary that helps visitors understand why this matters."
+    },
+    "linkText": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-card__link-label",
+      "default": "Read the story"
+    },
+    "url": {
+      "type": "string",
+      "default": ""
+    },
+    "variant": {
+      "type": "string",
+      "default": "paper"
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": true,
+    "anchor": true,
+    "align": ["wide"],
+    "className": false
+  }
+}

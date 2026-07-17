@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "kpf/disclosure",
+  "version": "0.1.0",
+  "title": "Show/Hide Disclosure",
+  "category": "kpf-components",
+  "icon": "arrow-down-alt2",
+  "description": "An accessible section visitors can open and close.",
+  "keywords": ["toggle", "accordion", "faq", "details"],
+  "textdomain": "kpf-core",
+  "attributes": {
+    "summary": {
+      "type": "string",
+      "source": "html",
+      "selector": ".kpf-disclosure__summary",
+      "default": "What would you like visitors to know?"
+    },
+    "openInitially": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": true,
+    "anchor": true,
+    "className": false
+  }
+}

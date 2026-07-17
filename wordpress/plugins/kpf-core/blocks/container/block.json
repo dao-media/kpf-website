@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "kpf/container",
+  "version": "0.1.0",
+  "title": "Container",
+  "category": "kpf-components",
+  "icon": "layout",
+  "description": "A flexible layout wrapper (div, section, or aside) for grouping any blocks and components.",
+  "keywords": ["div", "section", "wrapper", "layout", "group"],
+  "textdomain": "kpf-core",
+  "attributes": {
+    "tagName": {
+      "type": "string",
+      "default": "div"
+    },
+    "theme": {
+      "type": "string",
+      "default": "none"
+    },
+    "padding": {
+      "type": "string",
+      "default": "medium"
+    },
+    "contentWidth": {
+      "type": "string",
+      "default": "default"
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": true,
+    "anchor": true,
+    "align": ["wide", "full"],
+    "className": false
+  }
+}

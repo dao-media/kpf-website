@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client";
+import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import GlobalStylesheet, {
   KPF_STYLESHEET_QUERY,
 } from "@/components/GlobalStylesheet";
@@ -15,7 +16,11 @@ export default function FrontPageTemplate(props) {
       <GlobalStylesheet css={props?.data?.kpfStylesheet} />
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={seo} />
-      <WordPressContent title={page?.title} content={page?.content} />
+      <WordPressContent
+        title={page?.title}
+        content={page?.content}
+        blocks={page?.editorBlocks}
+      />
     </>
   );
 }
@@ -27,6 +32,7 @@ FrontPageTemplate.query = gql`
     home: kpfFrontPage {
       title
       content
+      ${KPF_EDITOR_BLOCKS_QUERY}
     }
     kpfSeoHome {
       title

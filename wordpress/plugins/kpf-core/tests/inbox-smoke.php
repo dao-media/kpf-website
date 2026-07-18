@@ -110,6 +110,23 @@ kpf_inbox_assert(
 	'Duplicate Inbox parent submenu is removed'
 );
 
+$expected_order = array(
+	'edit-comments.php',
+	'edit.php?post_type=' . Forms::POST_TYPE,
+	'kpf-inbox-divider',
+	Admin::SETTINGS_SLUG,
+);
+$actual_order = array_values(
+	array_filter(
+		$slugs,
+		static fn (string $slug): bool => in_array($slug, $expected_order, true)
+	)
+);
+kpf_inbox_assert(
+	$expected_order === $actual_order,
+	'Inbox submenu order is Comments, Forms, divider, Settings'
+);
+
 $pending_before = Unread::comments();
 $post_id        = wp_insert_post(
 	array(

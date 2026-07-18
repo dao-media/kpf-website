@@ -13,6 +13,7 @@ final class Admin {
 		add_action('admin_menu', array( self::class, 'finalize_menu' ), 999);
 		add_filter('parent_file', array( self::class, 'parent_file' ));
 		add_filter('submenu_file', array( self::class, 'submenu_file' ));
+		add_action('admin_head', array( self::class, 'menu_styles' ));
 		add_action('admin_head', array( self::class, 'admin_styles' ));
 	}
 
@@ -51,8 +52,8 @@ final class Admin {
 	}
 
 	/**
-	 * Remove the auto-added duplicate parent submenu and refresh badges
-	 * after CPT submenu items (Forms) have been registered.
+	 * Remove the auto-added duplicate parent submenu, refresh badges,
+	 * and enforce Comments → Forms → divider → Settings order.
 	 */
 	public static function finalize_menu(): void {
 		remove_submenu_page(self::MENU_SLUG, self::MENU_SLUG);
@@ -74,22 +75,60 @@ final class Admin {
 			return;
 		}
 
-		$forms_slug = 'edit.php?post_type=' . Forms::POST_TYPE;
-		$form_badge = current_user_can('edit_posts')
+		$forms_slug     = 'edit.php?post_type=' . Forms::POST_TYPE;
+		$forms_new_slug = 'post-new.php?post_type=' . Forms::POST_TYPE;
+		$form_badge     = current_user_can('edit_posts')
 			? Unread::badge_html(Unread::forms())
 			: '';
 		$comments_badge = Unread::badge_html(Unread::comments());
+		$divider_slug   = 'kpf-inbox-divider';
 
-		foreach ($submenu[ self::MENU_SLUG ] as $index => $item) {
-			$slug = $item[2] ?? '';
-			if ('edit-comments.php' === $slug) {
-				$submenu[ self::MENU_SLUG ][ $index ][0] = __('Comments', 'kpf-core') .
-					( current_user_can('moderate_comments') ? $comments_badge : '' );
+		remove_submenu_page(self::MENU_SLUG, $forms_new_slug);
+
+		$by_slug = array();
+		foreach ($submenu[ self::MENU_SLUG ] as $item) {
+			$slug = (string) ( $item[2] ?? '' );
+			if ('' === $slug || $slug === $divider_slug || $slug === $forms_new_slug) {
+				continue;
 			}
-			if ($slug === $forms_slug) {
-				$submenu[ self::MENU_SLUG ][ $index ][0] = __('Forms', 'kpf-core') . $form_badge;
+			$by_slug[ $slug ] = $item;
+		}
+
+		if (isset($by_slug['edit-comments.php'])) {
+			$by_slug['edit-comments.php'][0] = __('Comments', 'kpf-core') .
+				( current_user_can('moderate_comments') ? $comments_badge : '' );
+		}
+		if (isset($by_slug[ $forms_slug ])) {
+			$by_slug[ $forms_slug ][0] = __('Forms', 'kpf-core') . $form_badge;
+		}
+		if (isset($by_slug[ self::SETTINGS_SLUG ])) {
+			$by_slug[ self::SETTINGS_SLUG ][0] = __('Settings', 'kpf-core');
+		}
+
+		$ordered = array();
+		foreach (array( 'edit-comments.php', $forms_slug ) as $slug) {
+			if (isset($by_slug[ $slug ])) {
+				$ordered[] = $by_slug[ $slug ];
+				unset($by_slug[ $slug ]);
 			}
 		}
+
+		$ordered[] = array(
+			'<span class="kpf-inbox-menu-divider" aria-hidden="true"></span>',
+			'read',
+			$divider_slug,
+		);
+
+		if (isset($by_slug[ self::SETTINGS_SLUG ])) {
+			$ordered[] = $by_slug[ self::SETTINGS_SLUG ];
+			unset($by_slug[ self::SETTINGS_SLUG ]);
+		}
+
+		foreach ($by_slug as $item) {
+			$ordered[] = $item;
+		}
+
+		$submenu[ self::MENU_SLUG ] = $ordered;
 	}
 
 	public static function redirect_home(): void {
@@ -150,6 +189,36 @@ final class Admin {
 		}
 
 		return $submenu_file;
+	}
+
+	public static function menu_styles(): void {
+		echo '<style id="kpf-inbox-menu-styles">
+			#adminmenu #toplevel_page_kpf-inbox .wp-submenu li a[href*="kpf-inbox-divider"] {
+				cursor: default;
+				height: 1px;
+				margin: 8px 10px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+			}
+			#adminmenu #toplevel_page_kpf-inbox .wp-submenu li a[href*="kpf-inbox-divider"] .kpf-inbox-menu-divider,
+			#adminmenu #toplevel_page_kpf-inbox .wp-submenu .kpf-inbox-menu-divider {
+				background: #d8dee8;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			body.kpf-admin-theme #adminmenu #toplevel_page_kpf-inbox .wp-submenu li a[href*="kpf-inbox-divider"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				margin: 8px 12px 7px;
+				transform: none !important;
+			}
+			body.kpf-admin-theme #adminmenu #toplevel_page_kpf-inbox .wp-submenu .kpf-inbox-menu-divider {
+				background: #d7dde7;
+			}
+		</style>';
 	}
 
 	public static function admin_styles(): void {

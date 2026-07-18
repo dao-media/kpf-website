@@ -125,11 +125,13 @@ editorial structure. Filtering a parent group includes its descendants.
 
 ### Frontend delivery
 
-Page, post, and assigned-front-page queries request rendered WordPress content.
-Faust renders the static block markup through `WordPressContent`, while
-`frontend/src/styles/components.css` mirrors the editor presentation.
-Disclosures use native `<details>` and `<summary>` elements and do not require a
-separate JavaScript runtime.
+Page, post, and assigned-front-page queries request structured Gutenberg data
+through WPGraphQL Content Blocks. Faust rebuilds nested block relationships and
+maps Foundation components plus common core blocks to React components. Unknown
+blocks use their WordPress-rendered HTML, and the original content field remains
+the fallback when structured data is unavailable. `frontend/src/styles/components.css`
+mirrors the editor presentation. Disclosures use native `<details>` and
+`<summary>` elements and do not require a separate JavaScript runtime.
 
 ## Scrapbook
 

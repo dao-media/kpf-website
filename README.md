@@ -95,7 +95,9 @@ show/hide disclosures, cards, notices, and call-to-action sections.
 - Save it as **Not synced** to give each inserted copy independent text and settings.
 - Organize saved components with nested **Component Groups**.
 - Insert saved items from the **Component Library** toolbar button in page and post editors.
-- Rendered WordPress content and matching component styles are delivered through Faust.
+- WPGraphQL Content Blocks exposes Gutenberg content as structured block data.
+- Faust maps Foundation blocks, paragraphs, headings, quotes, galleries, and images
+  to React components; unsupported blocks retain WordPress-rendered HTML as a fallback.
 
 Starter groups and components are created automatically. Full editor instructions
 and the developer contract are in
@@ -128,6 +130,7 @@ Run SEO smoke tests:
 npm run test:seo
 npm run test:scrapbook
 npm run test:components
+npm run test:blocks-graphql
 npm run test:inbox
 ```
 
@@ -144,6 +147,7 @@ npm run test:inbox
 | `npm run test:seo` | Run SEO smoke tests in wp-env |
 | `npm run test:scrapbook` | Run Scrapbook model, REST, GraphQL, and SEO integration checks |
 | `npm run test:components` | Run reusable block, hierarchy, pattern, and accessibility checks |
+| `npm run test:blocks-graphql` | Verify Gutenberg blocks and nested relationships over WPGraphQL |
 | `npm run test:inbox` | Run Inbox menu, forms, and unread badge checks |
 
 ## Notes

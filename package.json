@@ -11,6 +11,7 @@
     "test:seo": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/seo-smoke.php",
     "test:scrapbook": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/scrapbook-smoke.php",
     "test:components": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/components-smoke.php",
+    "test:blocks-graphql": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/blocks-graphql-smoke.php",
     "test:inbox": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/inbox-smoke.php",
     "wp:start": "wp-env start",
     "wp:stop": "wp-env stop",

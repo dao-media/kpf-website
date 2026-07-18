@@ -8,4 +8,5 @@ import { setConfig } from "@faustwp/core";
 export default setConfig({
   templates,
   possibleTypes,
+  useGETForQueries: false,
 });

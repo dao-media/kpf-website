@@ -1,10 +1,14 @@
+import BlockRenderer from "@/components/BlockRenderer";
+
 export default function WordPressContent({
 	title,
 	content,
+	blocks,
 	as = "main",
 	showTitle = true,
 }) {
 	const Element = as;
+	const hasBlocks = Array.isArray(blocks) && blocks.length > 0;
 
 	return (
 		<Element className="kpf-page">
@@ -14,7 +18,11 @@ export default function WordPressContent({
 						<h1>{title}</h1>
 					</header>
 				) : null}
-				{content ? (
+				{hasBlocks ? (
+					<div className="kpf-content" data-kpf-block-renderer>
+						<BlockRenderer blocks={blocks} />
+					</div>
+				) : content ? (
 					<div
 						className="kpf-content"
 						// WordPress applies KSES when editor content is saved. Only

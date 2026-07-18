@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client";
+import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import GlobalStylesheet, {
   KPF_STYLESHEET_QUERY,
 } from "@/components/GlobalStylesheet";
@@ -28,6 +29,7 @@ PageTemplate.query = gql`
       databaseId
       title
       content
+      ${KPF_EDITOR_BLOCKS_QUERY}
       excerpt
       slug
       uri

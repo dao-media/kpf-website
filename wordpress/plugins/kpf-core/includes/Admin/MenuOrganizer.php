@@ -11,10 +11,13 @@ final class MenuOrganizer {
 	public const CONTENT_LABEL_SLUG        = 'kpf-section-content';
 	public const COMMUNICATIONS_LABEL_SLUG = 'kpf-section-communications';
 	public const UTILITIES_LABEL_SLUG      = 'kpf-section-utilities';
+	private const PLUGINS_DIVIDER_SLUG     = 'kpf-plugins-divider';
 
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'reorganize' ), 9999 );
 		add_action( 'init', array( self::class, 'rename_posts_to_blogs' ), 20 );
+		add_action( 'init', array( self::class, 'rename_post_tags_to_topics' ), 20 );
+		add_action( 'init', array( self::class, 'rename_pages_menu' ), 20 );
 		add_filter( 'parent_file', array( self::class, 'parent_file' ), 30 );
 		add_filter( 'submenu_file', array( self::class, 'submenu_file' ), 30 );
 		add_action( 'admin_head', array( self::class, 'styles' ) );
@@ -45,6 +48,63 @@ final class MenuOrganizer {
 		$labels->archives             = __( 'Blog Archives', 'kpf-core' );
 	}
 
+	public static function rename_post_tags_to_topics(): void {
+		$taxonomy = get_taxonomy( 'post_tag' );
+		if ( ! $taxonomy || ! isset( $taxonomy->labels ) ) {
+			return;
+		}
+
+		$labels                              = $taxonomy->labels;
+		$labels->name                       = __( 'Topics', 'kpf-core' );
+		$labels->singular_name              = __( 'Topic', 'kpf-core' );
+		$labels->search_items               = __( 'Search Topics', 'kpf-core' );
+		$labels->popular_items              = __( 'Popular Topics', 'kpf-core' );
+		$labels->all_items                  = __( 'All Topics', 'kpf-core' );
+		$labels->edit_item                  = __( 'Edit Topic', 'kpf-core' );
+		$labels->view_item                  = __( 'View Topic', 'kpf-core' );
+		$labels->update_item                = __( 'Update Topic', 'kpf-core' );
+		$labels->add_new_item               = __( 'Add New Topic', 'kpf-core' );
+		$labels->new_item_name              = __( 'New Topic Name', 'kpf-core' );
+		$labels->separate_items_with_commas = __( 'Separate topics with commas', 'kpf-core' );
+		$labels->add_or_remove_items         = __( 'Add or remove topics', 'kpf-core' );
+		$labels->choose_from_most_used       = __( 'Choose from the most used topics', 'kpf-core' );
+		$labels->not_found                   = __( 'No topics found.', 'kpf-core' );
+		$labels->no_terms                    = __( 'No topics', 'kpf-core' );
+		$labels->items_list_navigation       = __( 'Topics list navigation', 'kpf-core' );
+		$labels->items_list                  = __( 'Topics list', 'kpf-core' );
+		$labels->most_used                   = __( 'Most Used', 'kpf-core' );
+		$labels->back_to_items               = __( 'Back to Topics', 'kpf-core' );
+		$labels->menu_name                   = __( 'Topics', 'kpf-core' );
+
+		$taxonomy->label = __( 'Topics', 'kpf-core' );
+		if ( ! is_array( $taxonomy->rewrite ) ) {
+			$taxonomy->rewrite = array();
+		}
+		$taxonomy->rewrite['slug'] = 'topics';
+
+		global $wp_rewrite;
+		if ( $wp_rewrite instanceof \WP_Rewrite ) {
+			$wp_rewrite->set_tag_base( 'topics' );
+			if ( isset( $wp_rewrite->extra_permastructs['post_tag'] ) ) {
+				$wp_rewrite->extra_permastructs['post_tag']['struct'] = 'topics/%post_tag%';
+			}
+		}
+
+		if ( 'topics' !== get_option( 'tag_base' ) ) {
+			update_option( 'tag_base', 'topics' );
+			flush_rewrite_rules( false );
+		}
+	}
+
+	public static function rename_pages_menu(): void {
+		$post_type = get_post_type_object( 'page' );
+		if ( ! $post_type || ! isset( $post_type->labels ) ) {
+			return;
+		}
+
+		$post_type->labels->all_items = __( 'Manage', 'kpf-core' );
+	}
+
 	public static function reorganize(): void {
 		global $menu;
 
@@ -53,8 +113,78 @@ final class MenuOrganizer {
 		}
 
 		self::split_media_menu();
+		self::customize_pages_submenu();
+		self::customize_plugins_submenu();
 		self::insert_section_labels();
 		self::reorder_menu();
+	}
+
+	private static function customize_pages_submenu(): void {
+		remove_submenu_page( 'edit.php?post_type=page', 'post-new.php?post_type=page' );
+
+		global $submenu;
+		$parent = 'edit.php?post_type=page';
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		foreach ( $submenu[ $parent ] as $index => $item ) {
+			if ( ( $item[2] ?? '' ) === $parent ) {
+				$submenu[ $parent ][ $index ][0] = __( 'Manage', 'kpf-core' );
+			}
+		}
+	}
+
+	private static function customize_plugins_submenu(): void {
+		global $submenu;
+
+		$parent = 'plugins.php';
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		$by_slug = array();
+		foreach ( $submenu[ $parent ] as $item ) {
+			$slug = (string) ( $item[2] ?? '' );
+			if ( '' !== $slug ) {
+				$by_slug[ $slug ] = $item;
+			}
+		}
+
+		if ( ! isset( $by_slug[ $parent ] ) ) {
+			return;
+		}
+
+		$installed    = $by_slug[ $parent ];
+		$capability   = (string) ( $installed[1] ?? 'activate_plugins' );
+		$installed[0] = __( 'Installed', 'kpf-core' );
+
+		$active    = $installed;
+		$active[0] = __( 'Active', 'kpf-core' );
+		$active[2] = 'plugins.php?plugin_status=active';
+
+		$inactive    = $installed;
+		$inactive[0] = __( 'Inactive', 'kpf-core' );
+		$inactive[2] = 'plugins.php?plugin_status=inactive';
+
+		$ordered = array(
+			$installed,
+			$active,
+			$inactive,
+			array(
+				'<span class="kpf-plugins-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::PLUGINS_DIVIDER_SLUG,
+			),
+		);
+
+		if ( isset( $by_slug['plugin-install.php'] ) ) {
+			$add_new    = $by_slug['plugin-install.php'];
+			$add_new[0] = __( 'Add New', 'kpf-core' );
+			$ordered[]  = $add_new;
+		}
+
+		$submenu[ $parent ] = $ordered;
 	}
 
 	private static function split_media_menu(): void {
@@ -218,6 +348,18 @@ final class MenuOrganizer {
 	public static function submenu_file( ?string $submenu_file ): ?string {
 		global $pagenow;
 
+		if ( 'plugins.php' === $pagenow ) {
+			$status = isset( $_GET['plugin_status'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				? sanitize_key( wp_unslash( (string) $_GET['plugin_status'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				: '';
+
+			if ( in_array( $status, array( 'active', 'inactive' ), true ) ) {
+				return 'plugins.php?plugin_status=' . $status;
+			}
+
+			return 'plugins.php';
+		}
+
 		if ( 'upload.php' !== $pagenow && 'media-new.php' !== $pagenow ) {
 			return $submenu_file;
 		}
@@ -283,6 +425,24 @@ final class MenuOrganizer {
 			}
 			.folded #adminmenu li.kpf-menu-section-label {
 				display: none;
+			}
+			#adminmenu #menu-plugins .wp-submenu li a[href*="' . self::PLUGINS_DIVIDER_SLUG . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu #menu-plugins .wp-submenu .kpf-plugins-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
 			}
 		</style>';
 	}

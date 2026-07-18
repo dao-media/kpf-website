@@ -51,7 +51,13 @@ export default function PageDesignRenderer({ page }) {
   const design = page?.kpfPageDesign;
 
   if (!design || !design.html) {
-    return <WordPressContent title={page?.title} content={page?.content} />;
+    return (
+      <WordPressContent
+        title={page?.title}
+        content={page?.content}
+        blocks={page?.editorBlocks}
+      />
+    );
   }
 
   const html = renderDesignTemplate(design.html, buildDesignModel(page));

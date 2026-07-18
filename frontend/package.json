@@ -8,13 +8,14 @@
 		"generate": "faust generatePossibleTypes",
 		"start": "faust start",
 		"lint": "eslint .",
-		"test": "node --test src/components/SeoHead.test.js"
+		"test": "node --test src/components/*.test.js"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.14.0",
 		"@faustwp/cli": "^3.4.1",
 		"@faustwp/core": "^3.4.1",
 		"graphql": "^16.12.0",
+		"gsap": "^3.15.0",
 		"lucide-react": "^1.25.0",
 		"next": "^16.2.10",
 		"next-secure-headers": "^2.2.0",

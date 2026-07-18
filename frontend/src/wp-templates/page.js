@@ -1,24 +1,62 @@
 import { gql } from "@apollo/client";
+import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
+import PageDesignRenderer from "@/components/PageDesignRenderer";
 import SeoHead, { KPF_SEO_FRAGMENT } from "@/components/SeoHead";
-import WordPressContent from "@/components/WordPressContent";
 
 export default function PageTemplate(props) {
   const page = props?.data?.page;
 
   return (
     <>
+      <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={page?.kpfSeo} />
-      <WordPressContent title={page?.title} content={page?.content} />
+      <PageDesignRenderer page={page} />
     </>
   );
 }
 
 PageTemplate.query = gql`
   query GetPage($uri: ID!) {
+    ${KPF_GSAP_QUERY}
     page(id: $uri, idType: URI) {
       id
+      databaseId
       title
       content
+      excerpt
+      slug
+      uri
+      link
+      date
+      modified
+      author {
+        node {
+          name
+          uri
+        }
+      }
+      featuredImage {
+        node {
+          sourceUrl
+          srcSet
+          altText
+          caption
+          mediaDetails {
+            width
+            height
+          }
+        }
+      }
+      kpfPageDesign {
+        databaseId
+        title
+        html
+        css
+      }
+      kpfDesignFields {
+        key
+        value
+      }
       ${KPF_SEO_FRAGMENT}
     }
   }

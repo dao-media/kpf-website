@@ -6,6 +6,8 @@ Site-specific WordPress tools for the Kevin Popke Foundation headless stack.
 
 - Unified **Inbox** admin menu for Comments, Form submissions, and related settings
 - WYSIWYG reusable component library with synced and independent patterns
+- Assignable page-design library with HTML/SVG markup and CSS
+- GSAP interaction builder with keyframes, custom easing, and SVG effects
 - Scrapbook collection for single photos and multi-photo stories
 - Global, per-post-type, and per-entity metadata inheritance
 - Yoast-style dynamic tags (`%%title%%`, `%%sitename%%`, …) with click-to-copy library
@@ -24,9 +26,37 @@ WordPress admin → **Components** for the reusable component library
 
 WordPress admin → **Scrapbook** for photos and photo stories
 
+WordPress admin → **Pages → Designs** for HTML/SVG/CSS page designs
+
+WordPress admin → **Interactions → GSAP** for frontend motion and SVG animation
+
 WordPress admin → **SEO**
 
 Editor sidebar → **Scrapbook details** or **Search & sharing**, depending on the content type
+
+## Page designs
+
+**Pages → Designs** lists every page URL on the site. Rows without a design file
+are marked red; rows with uploaded markup show green **Ready**. Upload an `.html`
+or `.svg` file (and optional `.css`) per URL from that screen. SVG is sanitized
+and kept inline so its paths and groups can be targeted by GSAP selectors.
+
+Ready designs include an **Edit code & copy** workspace. Its left sidebar
+extracts visible text, image alt text, labels, and form copy into editor-friendly
+fields; changing a field updates the matching markup without reformatting the
+rest of the source. The main pane provides syntax-highlighted HTML, SVG, and CSS editing.
+Saves are sanitized and use revision tokens to prevent overwriting a newer edit.
+Each save is added to **Version history**, where an earlier HTML/CSS pair can be
+restored without losing the current version. Administrators can choose how many
+versions to retain (2–100) from the Designs list.
+
+Each page can have one active design. Optional page-specific placeholder values
+can be managed in the Page editor under **Page design**.
+
+HTML templates use escaped placeholders such as `{{page.title}}`,
+`{{page.featuredImage.url}}`, and `{{fields.hero_heading}}`. Rendered WordPress
+block content is the one intentionally raw value and uses
+`{{{page.content}}}`.
 
 ## Inbox
 

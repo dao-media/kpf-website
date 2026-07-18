@@ -9,5 +9,8 @@
   },
   "devDependencies": {
     "@wordpress/scripts": "^30.21.0"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0"
   }
 }

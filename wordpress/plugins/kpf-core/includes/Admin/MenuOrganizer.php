@@ -18,7 +18,7 @@ final class MenuOrganizer {
 		add_filter( 'parent_file', array( self::class, 'parent_file' ), 30 );
 		add_filter( 'submenu_file', array( self::class, 'submenu_file' ), 30 );
 		add_action( 'admin_head', array( self::class, 'styles' ) );
-		add_action( 'admin_footer', array( self::class, 'scripts' ) );
+		add_action( 'admin_footer', array( self::class, 'label_accessibility' ) );
 	}
 
 	public static function rename_posts_to_blogs(): void {
@@ -110,8 +110,8 @@ final class MenuOrganizer {
 			$title,
 			'read',
 			$slug,
-			$title,
-			'menu-top kpf-menu-section-label',
+			'',
+			'wp-menu-separator kpf-menu-section-label',
 			'kpf-menu-section-' . $slug,
 			'none',
 		);
@@ -135,6 +135,7 @@ final class MenuOrganizer {
 			'kpf-seo',
 			'kpf-performance',
 			'themes.php',
+			'kpf-interactions',
 			'plugins.php',
 			'users.php',
 			'tools.php',
@@ -233,35 +234,42 @@ final class MenuOrganizer {
 	}
 
 	public static function styles(): void {
+		$content        = wp_json_encode( __( 'Content', 'kpf-core' ) );
+		$communications = wp_json_encode( __( 'Communications', 'kpf-core' ) );
+		$utilities      = wp_json_encode( __( 'Utilities', 'kpf-core' ) );
+
 		echo '<style id="kpf-admin-menu-organizer">
 			#adminmenu li.kpf-menu-section-label {
-				margin: 8px 0 2px;
+				box-sizing: border-box;
+				display: block;
+				height: auto;
+				margin: 10px 0 3px;
+				padding: 0;
 				pointer-events: none;
+				width: 100%;
 			}
-			#adminmenu li.kpf-menu-section-label > a {
-				pointer-events: none;
-				cursor: default;
-				background: transparent !important;
+			#adminmenu li.kpf-menu-section-label .separator {
+				box-sizing: border-box;
 				color: #99a1a7 !important;
+				display: block;
 				font-size: 11px;
-				font-weight: 600;
-				letter-spacing: 0.04em;
+				font-weight: 700;
+				height: auto;
+				letter-spacing: 0.055em;
+				line-height: 1.2;
+				margin: 0;
+				padding: 7px 12px 5px;
 				text-transform: uppercase;
-				padding: 6px 12px !important;
-				height: auto !important;
-				line-height: 1.2 !important;
+				width: 100%;
 			}
-			#adminmenu li.kpf-menu-section-label .wp-menu-image,
-			#adminmenu li.kpf-menu-section-label .wp-menu-arrow,
-			#adminmenu li.kpf-menu-section-label .wp-menu-name::after,
-			#adminmenu li.kpf-menu-section-label .update-plugins {
-				display: none !important;
+			#kpf-menu-section-kpf-section-content .separator::after {
+				content: ' . $content . ';
 			}
-			#adminmenu li.kpf-menu-section-label.wp-has-current-submenu > a,
-			#adminmenu li.kpf-menu-section-label.current > a {
-				background: transparent !important;
-				color: #99a1a7 !important;
-				box-shadow: none !important;
+			#kpf-menu-section-kpf-section-communications .separator::after {
+				content: ' . $communications . ';
+			}
+			#kpf-menu-section-kpf-section-utilities .separator::after {
+				content: ' . $utilities . ';
 			}
 			#adminmenu li.wp-menu-separator {
 				margin: 0;
@@ -269,18 +277,36 @@ final class MenuOrganizer {
 				padding: 0;
 				border: 0;
 			}
+			#adminmenu li.wp-menu-separator.kpf-menu-section-label {
+				height: auto;
+				margin: 10px 0 3px;
+			}
+			.folded #adminmenu li.kpf-menu-section-label {
+				display: none;
+			}
 		</style>';
 	}
 
-	public static function scripts(): void {
-		echo '<script id="kpf-admin-menu-organizer-js">
+	public static function label_accessibility(): void {
+		$labels = array(
+			'kpf-menu-section-kpf-section-content'        => __( 'Content section', 'kpf-core' ),
+			'kpf-menu-section-kpf-section-communications' => __( 'Communications section', 'kpf-core' ),
+			'kpf-menu-section-kpf-section-utilities'      => __( 'Utilities section', 'kpf-core' ),
+		);
+
+		echo '<script id="kpf-admin-menu-label-accessibility">
 			(function () {
-				document.querySelectorAll("#adminmenu li.kpf-menu-section-label > a").forEach(function (link) {
-					link.setAttribute("href", "#");
-					link.addEventListener("click", function (event) {
-						event.preventDefault();
-						event.stopPropagation();
-					});
+				var labels = ' . wp_json_encode( $labels ) . ';
+				Object.keys(labels).forEach(function (id) {
+					var item = document.getElementById(id);
+					if (!item || item.querySelector(".screen-reader-text")) {
+						return;
+					}
+					item.removeAttribute("aria-hidden");
+					var text = document.createElement("span");
+					text.className = "screen-reader-text";
+					text.textContent = labels[id];
+					item.appendChild(text);
 				});
 			})();
 		</script>';

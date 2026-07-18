@@ -1,4 +1,5 @@
 import { gql } from "@apollo/client";
+import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
 import SeoHead from "@/components/SeoHead";
 import WordPressContent from "@/components/WordPressContent";
 
@@ -8,6 +9,7 @@ export default function FrontPageTemplate(props) {
 
   return (
     <>
+      <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={seo} />
       <WordPressContent title={page?.title} content={page?.content} />
     </>
@@ -16,6 +18,7 @@ export default function FrontPageTemplate(props) {
 
 FrontPageTemplate.query = gql`
   query GetHomeSeo {
+    ${KPF_GSAP_QUERY}
     home: kpfFrontPage {
       title
       content

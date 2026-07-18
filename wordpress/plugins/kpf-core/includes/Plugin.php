@@ -11,12 +11,23 @@ use KPF\Core\Blocks\Groups as BlockGroups;
 use KPF\Core\Blocks\Patterns as BlockPatterns;
 use KPF\Core\Blocks\Registry as BlockRegistry;
 use KPF\Core\Compat\WpGraphqlTelemetry;
+use KPF\Core\Designs\Admin as DesignsAdmin;
+use KPF\Core\Designs\ContentType as DesignsContentType;
+use KPF\Core\Designs\Editor as DesignsEditor;
+use KPF\Core\Designs\GraphQL as DesignsGraphQL;
+use KPF\Core\Designs\Meta as DesignsMeta;
+use KPF\Core\Designs\Rest as DesignsRest;
 use KPF\Core\Inbox\Admin as InboxAdmin;
 use KPF\Core\Inbox\Comments as InboxComments;
 use KPF\Core\Inbox\Forms as InboxForms;
 use KPF\Core\Inbox\FormsAdmin as InboxFormsAdmin;
 use KPF\Core\Inbox\Notifications as InboxNotifications;
 use KPF\Core\Inbox\Settings as InboxSettings;
+use KPF\Core\Interactions\Admin as InteractionsAdmin;
+use KPF\Core\Interactions\ContentType as InteractionsContentType;
+use KPF\Core\Interactions\GraphQL as InteractionsGraphQL;
+use KPF\Core\Interactions\Meta as InteractionsMeta;
+use KPF\Core\Interactions\Rest as InteractionsRest;
 use KPF\Core\Performance\Admin as PerformanceAdmin;
 use KPF\Core\Performance\AdminBar as PerformanceAdminBar;
 use KPF\Core\Performance\Headers as PerformanceHeaders;
@@ -55,6 +66,8 @@ final class Plugin {
 
 	public function activate(): void {
 		ScrapbookContentType::register_content();
+		DesignsContentType::register_content();
+		InteractionsContentType::register_content();
 		InboxForms::register_content();
 		RedirectsTable::install();
 		Settings::ensure_defaults();
@@ -75,6 +88,19 @@ final class Plugin {
 		BlockPatterns::register();
 		BlocksGraphQL::register();
 		BlocksAdmin::register();
+
+		DesignsContentType::register();
+		DesignsMeta::register();
+		DesignsAdmin::register();
+		DesignsEditor::register();
+		DesignsRest::register();
+		DesignsGraphQL::register();
+
+		InteractionsContentType::register();
+		InteractionsMeta::register();
+		InteractionsAdmin::register();
+		InteractionsRest::register();
+		InteractionsGraphQL::register();
 
 		ScrapbookContentType::register();
 		ScrapbookMeta::register();

@@ -1,4 +1,4 @@
-import { createBlock, parse, registerBlockType } from '@wordpress/blocks';
+import { createBlock, parse, rawHandler, registerBlockType } from '@wordpress/blocks';
 import {
 	AlignmentToolbar,
 	BlockControls,
@@ -11,6 +11,7 @@ import {
 } from '@wordpress/block-editor';
 import {
 	Button,
+	Modal,
 	Notice,
 	PanelBody,
 	SearchControl,
@@ -20,9 +21,13 @@ import {
 	ToggleControl,
 } from '@wordpress/components';
 import { useEntityRecords } from '@wordpress/core-data';
-import { useDispatch } from '@wordpress/data';
-import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
-import { useMemo, useState } from '@wordpress/element';
+import { useDispatch, useSelect } from '@wordpress/data';
+import {
+	PluginDocumentSettingPanel,
+	PluginSidebar,
+	PluginSidebarMoreMenuItem,
+} from '@wordpress/editor';
+import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { registerPlugin } from '@wordpress/plugins';
 
@@ -692,6 +697,353 @@ registerBlockType(containerMetadata, {
 	save: ContainerSave,
 });
 
+const COMPONENT_IMPORT_MAX_BYTES = 1024 * 1024;
+const COMPONENT_IMPORT_EXTENSIONS = ['html', 'htm', 'txt', 'json'];
+
+function importedFileTitle(filename) {
+	return filename
+		.replace(/\.[^.]+$/, '')
+		.replace(/[-_]+/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function createImportedBlock(definition) {
+	const name = definition?.name || definition?.blockName;
+	if (!name) return null;
+
+	const innerBlocks = (definition.innerBlocks || [])
+		.map(createImportedBlock)
+		.filter(Boolean);
+
+	return createBlock(
+		name,
+		definition.attributes || definition.attrs || {},
+		innerBlocks
+	);
+}
+
+function blocksFromDomNode(node) {
+	if (node.nodeType === window.Node.TEXT_NODE) {
+		const text = node.textContent?.trim();
+		return text ? rawHandler({ HTML: text }) : [];
+	}
+
+	if (node.nodeType !== window.Node.ELEMENT_NODE) {
+		return [];
+	}
+
+	const tagName = node.tagName.toLowerCase();
+	const containerTags = [
+		'article',
+		'aside',
+		'div',
+		'footer',
+		'header',
+		'main',
+		'nav',
+		'section',
+	];
+
+	if (containerTags.includes(tagName)) {
+		const innerBlocks = Array.from(node.childNodes).flatMap(blocksFromDomNode);
+		if (innerBlocks.length === 0) {
+			return rawHandler({ HTML: node.outerHTML });
+		}
+
+		const attributes = {
+			tagName,
+			className: node.getAttribute('class') || undefined,
+			anchor: node.getAttribute('id') || undefined,
+		};
+
+		return [createBlock('core/group', attributes, innerBlocks)];
+	}
+
+	return rawHandler({ HTML: node.outerHTML });
+}
+
+function blocksFromHtml(source) {
+	const document = new window.DOMParser().parseFromString(source, 'text/html');
+	const scripts = Array.from(document.querySelectorAll('script'));
+	scripts.forEach((script) => script.remove());
+
+	const styleBlocks = Array.from(document.head.querySelectorAll('style')).map(
+		(style) => createBlock('core/html', { content: style.outerHTML })
+	);
+	const visualBlocks = Array.from(document.body.childNodes).flatMap(blocksFromDomNode);
+
+	return {
+		blocks: [...styleBlocks, ...visualBlocks],
+		removedScripts: scripts.length,
+	};
+}
+
+function parseComponentImport(filename, source) {
+	let title = importedFileTitle(filename);
+	let content = source;
+	let blocks = null;
+
+	if (filename.toLowerCase().endsWith('.json')) {
+		let payload;
+		try {
+			payload = JSON.parse(source);
+		} catch {
+			throw new Error(__('This JSON file is not valid.', 'kpf-core'));
+		}
+
+		const payloadTitle = payload?.title?.raw || payload?.title;
+		if (typeof payloadTitle === 'string' && payloadTitle.trim()) {
+			title = payloadTitle.trim();
+		}
+
+		if (Array.isArray(payload)) {
+			blocks = payload.map(createImportedBlock).filter(Boolean);
+		} else if (Array.isArray(payload?.blocks)) {
+			blocks = payload.blocks.map(createImportedBlock).filter(Boolean);
+		} else {
+			content =
+				payload?.content?.raw ||
+				payload?.content ||
+				payload?.post_content ||
+				payload?.markup ||
+				'';
+		}
+
+		if (!blocks && typeof content !== 'string') {
+			throw new Error(
+				__(
+					'This JSON file does not contain Gutenberg blocks or component markup.',
+					'kpf-core'
+				)
+			);
+		}
+	}
+
+	let removedScripts = 0;
+	if (!blocks) {
+		if (/<!--\s+wp:[\w/-]+/.test(content)) {
+			blocks = parse(content);
+		} else {
+			const parsed = blocksFromHtml(content);
+			blocks = parsed.blocks;
+			removedScripts = parsed.removedScripts;
+		}
+	}
+
+	if (!Array.isArray(blocks) || blocks.length === 0) {
+		throw new Error(
+			__(
+				'No visual content could be found in this file. Check that it contains HTML or Gutenberg blocks.',
+				'kpf-core'
+			)
+		);
+	}
+
+	return { blocks, removedScripts, title };
+}
+
+function ComponentImportPanel() {
+	const [isOpen, setIsOpen] = useState(false);
+	const [isReading, setIsReading] = useState(false);
+	const [notice, setNotice] = useState(null);
+	const [selectedFilename, setSelectedFilename] = useState('');
+	const fileInput = useRef(null);
+	const postType = useSelect(
+		(select) => select('core/editor')?.getCurrentPostType(),
+		[]
+	);
+	const currentTitle = useSelect(
+		(select) => select('core/editor')?.getEditedPostAttribute('title'),
+		[]
+	);
+	const blockCount = useSelect(
+		(select) => select('core/block-editor')?.getBlockCount() || 0,
+		[]
+	);
+	const { resetBlocks } = useDispatch('core/block-editor');
+	const { editPost } = useDispatch('core/editor');
+
+	useEffect(() => {
+		if (postType !== 'wp_block') return;
+
+		const url = new URL(window.location.href);
+		if (url.searchParams.get('kpf_import') !== '1') return;
+
+		setIsOpen(true);
+		url.searchParams.delete('kpf_import');
+		window.history.replaceState({}, '', url.toString());
+	}, [postType]);
+
+	if (postType !== 'wp_block') return null;
+
+	async function importFile(file) {
+		if (!file) return;
+
+		const extension = file.name.split('.').pop()?.toLowerCase() || '';
+		setSelectedFilename(file.name);
+		setNotice(null);
+
+		if (!COMPONENT_IMPORT_EXTENSIONS.includes(extension)) {
+			setNotice({
+				status: 'error',
+				message: __(
+					'Choose an HTML, HTM, TXT, or WordPress pattern JSON file.',
+					'kpf-core'
+				),
+			});
+			return;
+		}
+
+		if (file.size > COMPONENT_IMPORT_MAX_BYTES) {
+			setNotice({
+				status: 'error',
+				message: __('The component file must be 1 MB or smaller.', 'kpf-core'),
+			});
+			return;
+		}
+
+		if (
+			blockCount > 0 &&
+			!window.confirm(
+				__(
+					'Importing this file will replace every block currently in the component editor. Continue?',
+					'kpf-core'
+				)
+			)
+		) {
+			return;
+		}
+
+		setIsReading(true);
+		try {
+			const imported = parseComponentImport(file.name, await file.text());
+			resetBlocks(imported.blocks);
+			if (!String(currentTitle || '').trim() && imported.title) {
+				editPost({ title: imported.title });
+			}
+
+			setIsOpen(false);
+			setNotice({
+				status: imported.removedScripts ? 'warning' : 'success',
+				message: imported.removedScripts
+					? __(
+							'The visual content was imported. Executable scripts were omitted for security; add behavior with the Interactions builder.',
+							'kpf-core'
+						)
+					: __(
+							'The file has been built in the canvas. Review the visual result, then save the component.',
+							'kpf-core'
+						),
+			});
+		} catch (error) {
+			setNotice({
+				status: 'error',
+				message:
+					error?.message ||
+					__('The component file could not be imported.', 'kpf-core'),
+			});
+		} finally {
+			setIsReading(false);
+		}
+	}
+
+	function openImporter() {
+		setSelectedFilename('');
+		setNotice(null);
+		setIsOpen(true);
+	}
+
+	return (
+		<>
+			<PluginDocumentSettingPanel
+				name="kpf-component-import"
+				title={__('Create from upload', 'kpf-core')}
+				className="kpf-component-import-panel"
+			>
+				<p>
+					{__(
+						'Import a file and turn its contents into editable blocks in the visual canvas.',
+						'kpf-core'
+					)}
+				</p>
+				<Button variant="secondary" onClick={openImporter}>
+					{__('Choose component file', 'kpf-core')}
+				</Button>
+				{notice ? (
+					<Notice status={notice.status} isDismissible onRemove={() => setNotice(null)}>
+						{notice.message}
+					</Notice>
+				) : null}
+			</PluginDocumentSettingPanel>
+
+			{isOpen ? (
+				<Modal
+					title={__('Create component from upload', 'kpf-core')}
+					onRequestClose={() => setIsOpen(false)}
+					className="kpf-component-import-modal"
+				>
+					<p>
+						{__(
+							'Upload HTML, serialized Gutenberg markup, or a WordPress pattern JSON file. Recognized content is converted into blocks and loaded directly into the visual editor.',
+							'kpf-core'
+						)}
+					</p>
+					<div
+						className="kpf-component-import-dropzone"
+						onDragOver={(event) => event.preventDefault()}
+						onDrop={(event) => {
+							event.preventDefault();
+							importFile(event.dataTransfer.files?.[0]);
+						}}
+					>
+						<input
+							ref={fileInput}
+							type="file"
+							accept=".html,.htm,.txt,.json,text/html,text/plain,application/json"
+							onChange={(event) => importFile(event.target.files?.[0])}
+							hidden
+						/>
+						<strong>
+							{selectedFilename ||
+								__('Drop a component file here', 'kpf-core')}
+						</strong>
+						<span>{__('or', 'kpf-core')}</span>
+						<Button
+							variant="primary"
+							onClick={() => fileInput.current?.click()}
+							isBusy={isReading}
+							disabled={isReading}
+						>
+							{isReading
+								? __('Reading file…', 'kpf-core')
+								: __('Select file', 'kpf-core')}
+						</Button>
+						<small>
+							{__('HTML, HTM, TXT, or JSON · maximum 1 MB', 'kpf-core')}
+						</small>
+					</div>
+					{notice ? (
+						<Notice
+							status={notice.status}
+							isDismissible
+							onRemove={() => setNotice(null)}
+						>
+							{notice.message}
+						</Notice>
+					) : null}
+					<p className="kpf-component-import-note">
+						{__(
+							'For security, executable scripts are not imported. Use Interactions → GSAP to add component behavior after saving.',
+							'kpf-core'
+						)}
+					</p>
+				</Modal>
+			) : null}
+		</>
+	);
+}
+
 function ComponentLibrarySidebar() {
 	const [search, setSearch] = useState('');
 	const [openGroups, setOpenGroups] = useState({});
@@ -881,6 +1233,11 @@ function PatternButton({ pattern, onInsert }) {
 }
 
 registerPlugin('kpf-component-library', {
-	render: ComponentLibrarySidebar,
+	render: () => (
+		<>
+			<ComponentLibrarySidebar />
+			<ComponentImportPanel />
+		</>
+	),
 	icon: 'layout',
 });

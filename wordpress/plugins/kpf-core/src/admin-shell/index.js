@@ -2,7 +2,6 @@ import { createRoot } from '@wordpress/element';
 import {
 	Blocks,
 	Braces,
-	Database,
 	FileText,
 	Gauge,
 	Image,
@@ -39,7 +38,6 @@ const menuIcons = {
 	'#menu-tools': Wrench,
 	'#menu-settings': Settings,
 	'#toplevel_page_graphiql-ide': Braces,
-	'#toplevel_page_edit-post_type-acf-field-group': Database,
 };
 
 function decorateMenu() {

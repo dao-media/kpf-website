@@ -12,6 +12,13 @@ final class MenuOrganizer {
 	public const COMMUNICATIONS_LABEL_SLUG = 'kpf-section-communications';
 	public const UTILITIES_LABEL_SLUG      = 'kpf-section-utilities';
 	private const PLUGINS_DIVIDER_SLUG     = 'kpf-plugins-divider';
+	private const SCF_MENU_SLUG            = 'edit.php?post_type=acf-field-group';
+	private const SCF_POST_TYPES           = array(
+		'acf-field-group',
+		'acf-post-type',
+		'acf-taxonomy',
+		'acf-ui-options-page',
+	);
 
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'reorganize' ), 9999 );
@@ -115,8 +122,67 @@ final class MenuOrganizer {
 		self::split_media_menu();
 		self::customize_pages_submenu();
 		self::customize_plugins_submenu();
+		self::move_scf_to_tools();
 		self::insert_section_labels();
 		self::reorder_menu();
+	}
+
+	/**
+	 * Nest Secure Custom Fields under Tools instead of a top-level sidebar item.
+	 */
+	private static function move_scf_to_tools(): void {
+		global $submenu;
+
+		$scf_parent = self::SCF_MENU_SLUG;
+		if ( ! is_array( $submenu[ $scf_parent ] ?? null ) ) {
+			remove_menu_page( $scf_parent );
+			return;
+		}
+
+		$capability = 'manage_options';
+		$moved      = array();
+		foreach ( $submenu[ $scf_parent ] as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$slug = (string) ( $item[2] ?? '' );
+			if ( '' === $slug ) {
+				continue;
+			}
+
+			$capability = (string) ( $item[1] ?? $capability );
+
+			if ( $slug === $scf_parent ) {
+				$item[0] = __( 'SCF', 'kpf-core' );
+			} elseif ( 'acf-tools' === $slug ) {
+				// Avoid Tools → Tools when nesting under the core Tools menu.
+				$item[0] = __( 'SCF Import / Export', 'kpf-core' );
+			}
+
+			$moved[] = $item;
+		}
+
+		unset( $submenu[ $scf_parent ] );
+		remove_menu_page( $scf_parent );
+
+		if ( $moved === array() ) {
+			return;
+		}
+
+		if ( ! is_array( $submenu['tools.php'] ?? null ) ) {
+			$submenu['tools.php'] = array();
+		}
+
+		$submenu['tools.php'][] = array(
+			'<span class="kpf-tools-menu-divider" aria-hidden="true"></span>',
+			$capability,
+			'kpf-tools-scf-divider',
+		);
+
+		foreach ( $moved as $item ) {
+			$submenu['tools.php'][] = $item;
+		}
 	}
 
 	private static function customize_pages_submenu(): void {
@@ -323,7 +389,25 @@ final class MenuOrganizer {
 	 * @param string $parent_file Current parent file.
 	 */
 	public static function parent_file( string $parent_file ): string {
-		global $pagenow;
+		global $pagenow, $plugin_page, $typenow;
+
+		if ( self::SCF_MENU_SLUG === $parent_file ) {
+			return 'tools.php';
+		}
+
+		$post_type = $typenow;
+		if ( ! is_string( $post_type ) || '' === $post_type ) {
+			$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+			$post_type = is_object( $screen ) ? (string) ( $screen->post_type ?? '' ) : '';
+		}
+
+		if ( in_array( $post_type, self::SCF_POST_TYPES, true ) ) {
+			return 'tools.php';
+		}
+
+		if ( in_array( (string) $plugin_page, array( 'acf-tools', 'scf-beta-features' ), true ) ) {
+			return 'tools.php';
+		}
 
 		if ( 'upload.php' !== $pagenow && 'media-new.php' !== $pagenow && 'async-upload.php' !== $pagenow ) {
 			return $parent_file;
@@ -439,6 +523,24 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu #menu-plugins .wp-submenu .kpf-plugins-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu #menu-tools .wp-submenu li a[href*="kpf-tools-scf-divider"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu #menu-tools .wp-submenu .kpf-tools-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

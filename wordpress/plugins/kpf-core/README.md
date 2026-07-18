@@ -103,6 +103,13 @@ editors can compose freely in the component builder.
 4. Turn **Synced** off when each inserted copy should have independent text and settings.
 5. Assign a **Component Group** before publishing.
 
+Use **Components → Create from upload** to start from an `.html`, `.htm`,
+`.txt`, or WordPress pattern `.json` file (maximum 1 MB). Serialized Gutenberg
+markup is restored exactly; ordinary HTML is converted into editable core blocks
+where possible. The imported result is loaded into the editor canvas for visual
+review before saving. Executable scripts are omitted for security and behavior
+should be added through **Interactions → GSAP**.
+
 Pages and posts include a **Component Library** toolbar button. It displays
 saved components in their nested group hierarchy. Clicking an independent item
 inserts editable blocks; clicking a synced item inserts a linked reference with

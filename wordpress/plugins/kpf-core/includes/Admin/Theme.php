@@ -8,6 +8,7 @@ final class Theme {
 	public static function register(): void {
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ), 5 );
 		add_filter( 'admin_body_class', array( self::class, 'body_class' ) );
+		add_filter( 'admin_footer_text', array( self::class, 'footer_text' ) );
 	}
 
 	public static function enqueue(): void {
@@ -38,5 +39,13 @@ final class Theme {
 
 	public static function body_class( string $classes ): string {
 		return $classes . ' kpf-admin-theme';
+	}
+
+	public static function footer_text(): string {
+		return sprintf(
+			/* translators: %s: LinkedIn profile URL */
+			__( 'Built by <a href="%s">Dane O\'Leary</a> from a custom WordPress fork.', 'kpf-core' ),
+			esc_url( 'https://linkedin.com/in/daneoleary/' )
+		);
 	}
 }

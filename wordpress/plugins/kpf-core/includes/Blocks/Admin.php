@@ -51,11 +51,14 @@ final class Admin {
 		echo ' <a class="page-title-action" href="' .
 			esc_url(admin_url('post-new.php?post_type=wp_block')) . '">' .
 			esc_html__('Build a component', 'kpf-core') . '</a>';
+		echo ' <a class="page-title-action" href="' .
+			esc_url(admin_url('post-new.php?post_type=wp_block&kpf_import=1')) . '">' .
+			esc_html__('Create from upload', 'kpf-core') . '</a>';
 		echo '<hr class="wp-header-end" />';
 
 		echo '<div class="notice notice-info inline"><p>';
 		echo esc_html__(
-			'Build visually with Foundation blocks, then save the result as a pattern. Choose Synced when every use should update together, or Not synced when each inserted copy should be editable on its own.',
+			'Build visually with Foundation blocks or import an HTML, Gutenberg markup, or pattern JSON file. Review the result in the editor canvas, then choose Synced when every use should update together or Not synced when each inserted copy should be editable on its own.',
 			'kpf-core'
 		);
 		echo '</p></div>';

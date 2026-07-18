@@ -8,6 +8,7 @@
 
 use KPF\Core\Blocks\Groups;
 use KPF\Core\Blocks\Registry;
+use KPF\Core\Blocks\Admin;
 
 $GLOBALS['kpf_component_failures'] = 0;
 
@@ -149,6 +150,16 @@ $rest_response = rest_do_request($rest_request);
 kpf_component_assert(
 	200 === $rest_response->get_status(),
 	'Component Group hierarchy is readable through REST'
+);
+
+$_GET = array();
+ob_start();
+Admin::render();
+$manager_html = (string) ob_get_clean();
+kpf_component_assert(
+	str_contains($manager_html, 'kpf_import=1') &&
+	str_contains($manager_html, 'Create from upload'),
+	'Component manager links to the visual file importer'
 );
 
 if ($GLOBALS['kpf_component_failures'] > 0) {

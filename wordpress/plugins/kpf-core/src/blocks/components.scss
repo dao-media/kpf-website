@@ -13,6 +13,61 @@
 	--kpf-shadow: 0 1.1rem 3rem rgba(22, 35, 59, 0.14);
 }
 
+.kpf-component-import-panel .components-notice {
+	margin: 12px 0 0;
+}
+
+.kpf-component-import-modal {
+	max-width: 620px;
+	width: calc(100% - 32px);
+}
+
+.kpf-component-import-dropzone {
+	align-items: center;
+	background: #f7f9fc;
+	border: 2px dashed #aab4c4;
+	border-radius: 12px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	justify-content: center;
+	margin: 20px 0 14px;
+	min-height: 220px;
+	padding: 28px;
+	text-align: center;
+	transition:
+		background-color 160ms ease,
+		border-color 160ms ease;
+}
+
+.kpf-component-import-dropzone:hover,
+.kpf-component-import-dropzone:focus-within {
+	background: #eef3f9;
+	border-color: var(--kpf-ink-soft);
+}
+
+.kpf-component-import-dropzone strong {
+	color: var(--kpf-ink);
+	font-size: 16px;
+	overflow-wrap: anywhere;
+}
+
+.kpf-component-import-dropzone span,
+.kpf-component-import-dropzone small,
+.kpf-component-import-note {
+	color: #646970;
+}
+
+.kpf-component-import-note {
+	font-size: 12px;
+	margin-bottom: 0;
+}
+
+.kpf-component-import-modal .components-notice {
+	margin: 12px 0 0;
+}
+
 .kpf-button {
 	margin: 1rem 0;
 

@@ -52,8 +52,10 @@ final class Settings {
 				'auto_close_days' => 0,
 			),
 			'forms'         => array(
-				'default_form_name' => __('Contact form', 'kpf-core'),
-				'store_ip'          => false,
+				'default_form_name'        => __('Contact form', 'kpf-core'),
+				'store_ip'                 => false,
+				'rate_limit_count'         => 5,
+				'rate_limit_window_minutes' => 15,
 			),
 		);
 	}
@@ -109,7 +111,21 @@ final class Settings {
 				'default_form_name' => sanitize_text_field(
 					(string) ( $input['forms']['default_form_name'] ?? $defaults['forms']['default_form_name'] )
 				),
-				'store_ip'          => ! empty($input['forms']['store_ip']),
+				'store_ip'                  => ! empty($input['forms']['store_ip']),
+				'rate_limit_count'          => min(
+					100,
+					max(1, (int) ( $input['forms']['rate_limit_count'] ?? $defaults['forms']['rate_limit_count'] ))
+				),
+				'rate_limit_window_minutes' => min(
+					1440,
+					max(
+						1,
+						(int) (
+							$input['forms']['rate_limit_window_minutes'] ??
+							$defaults['forms']['rate_limit_window_minutes']
+						)
+					)
+				),
 			),
 		);
 	}

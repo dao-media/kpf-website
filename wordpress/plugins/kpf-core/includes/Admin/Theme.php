@@ -7,6 +7,7 @@ namespace KPF\Core\Admin;
 final class Theme {
 	public static function register(): void {
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ), 5 );
+		add_action( 'admin_head', array( self::class, 'critical_styles' ), 0 );
 		add_filter( 'admin_body_class', array( self::class, 'body_class' ) );
 		add_filter( 'admin_footer_text', array( self::class, 'footer_text' ) );
 	}
@@ -35,6 +36,40 @@ final class Theme {
 			$asset['version'],
 			true
 		);
+	}
+
+	/**
+	 * Prevent WordPress core chrome from painting before the custom shell mounts.
+	 */
+	public static function critical_styles(): void {
+		echo '<style id="kpf-admin-critical">
+			html.kpf-admin-booting {
+				background: #f3f5f8;
+			}
+			html.kpf-admin-booting body {
+				background: #f3f5f8;
+			}
+			html.kpf-admin-booting #wpwrap {
+				opacity: 0;
+				pointer-events: none;
+			}
+			html.kpf-admin-ready #wpwrap {
+				opacity: 1;
+				pointer-events: auto;
+				transition: opacity 90ms ease-out;
+			}
+			@media (prefers-reduced-motion: reduce) {
+				html.kpf-admin-ready #wpwrap {
+					transition: none;
+				}
+			}
+		</style>';
+		echo '<script id="kpf-admin-paint-gate">
+			document.documentElement.classList.add("kpf-admin-booting");
+			window.kpfAdminPaintFallback = window.setTimeout(function () {
+				document.documentElement.classList.add("kpf-admin-ready");
+			}, 2000);
+		</script>';
 	}
 
 	public static function body_class( string $classes ): string {

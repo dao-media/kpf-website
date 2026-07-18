@@ -13,6 +13,7 @@
     "test:components": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/components-smoke.php",
     "test:blocks-graphql": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/blocks-graphql-smoke.php",
     "test:inbox": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/inbox-smoke.php",
+    "test:inbox-rest": "wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/inbox-rest-smoke.php",
     "wp:start": "wp-env start",
     "wp:stop": "wp-env stop",
     "wp:destroy": "wp-env destroy",

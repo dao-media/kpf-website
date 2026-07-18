@@ -2,6 +2,7 @@ import { createRoot } from '@wordpress/element';
 import {
 	Blocks,
 	Braces,
+	CornerDownRight,
 	FileText,
 	Gauge,
 	Image,
@@ -51,6 +52,34 @@ function decorateMenu() {
 	});
 }
 
+function decorateScfSubmenu() {
+	const links = document.querySelectorAll(
+		[
+			'#menu-tools .wp-submenu a[href*="acf-field-group"]',
+			'#menu-tools .wp-submenu a[href*="acf-post-type"]',
+			'#menu-tools .wp-submenu a[href*="acf-taxonomy"]',
+			'#menu-tools .wp-submenu a[href*="acf-ui-options-page"]',
+			'#menu-tools .wp-submenu a[href*="acf-tools"]',
+			'#menu-tools .wp-submenu a[href*="scf-beta-features"]',
+		].join(',')
+	);
+
+	links.forEach((link) => {
+		if (link.dataset.kpfScfIcon === 'true') return;
+
+		link.dataset.kpfScfIcon = 'true';
+		link.classList.add('kpf-scf-submenu-link');
+
+		const host = document.createElement('span');
+		host.className = 'kpf-scf-submenu-icon';
+		host.setAttribute('aria-hidden', 'true');
+		link.prepend(host);
+		createRoot(host).render(
+			<CornerDownRight aria-hidden="true" size={13} strokeWidth={1.8} />
+		);
+	});
+}
+
 function addGlassTracking() {
 	const menu = document.getElementById('adminmenu');
 	if (!menu || menu.dataset.kpfGlassTracking === 'true') return;
@@ -67,9 +96,25 @@ function addGlassTracking() {
 }
 
 decorateMenu();
+decorateScfSubmenu();
 addGlassTracking();
 
 const menu = document.getElementById('adminmenu');
 if (menu) {
-	new MutationObserver(decorateMenu).observe(menu, { childList: true, subtree: true });
+	new MutationObserver(() => {
+		decorateMenu();
+		decorateScfSubmenu();
+	}).observe(menu, { childList: true, subtree: true });
 }
+
+function revealAdminShell() {
+	window.clearTimeout(window.kpfAdminPaintFallback);
+	window.requestAnimationFrame(() => {
+		window.requestAnimationFrame(() => {
+			document.documentElement.classList.add('kpf-admin-ready');
+			document.documentElement.classList.remove('kpf-admin-booting');
+		});
+	});
+}
+
+revealAdminShell();

@@ -3,6 +3,7 @@ frontend/node_modules/
 frontend/.next/
 frontend/.env.local
 frontend/possibleTypes.json
+frontend/public/search-index.json
 wordpress/plugins/kpf-core/node_modules/
 
 .DS_Store

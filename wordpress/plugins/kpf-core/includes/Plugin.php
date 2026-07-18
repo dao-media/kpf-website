@@ -24,6 +24,7 @@ use KPF\Core\Inbox\Comments as InboxComments;
 use KPF\Core\Inbox\Forms as InboxForms;
 use KPF\Core\Inbox\FormsAdmin as InboxFormsAdmin;
 use KPF\Core\Inbox\Notifications as InboxNotifications;
+use KPF\Core\Inbox\Rest as InboxRest;
 use KPF\Core\Inbox\Settings as InboxSettings;
 use KPF\Core\Interactions\Admin as InteractionsAdmin;
 use KPF\Core\Interactions\ContentType as InteractionsContentType;
@@ -134,6 +135,7 @@ final class Plugin {
 		InboxFormsAdmin::register();
 		InboxComments::register();
 		InboxNotifications::register();
+		InboxRest::register();
 		InboxSettings::ensure_defaults();
 
 		PerformanceSettings::register();

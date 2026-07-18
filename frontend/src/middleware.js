@@ -12,6 +12,7 @@ export async function middleware(request) {
 
   const { pathname } = request.nextUrl;
   if (
+    pathname === "/search" ||
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
     pathname.includes(".")

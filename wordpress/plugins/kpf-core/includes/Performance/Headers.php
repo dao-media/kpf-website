@@ -26,6 +26,11 @@ final class Headers {
 			return $result;
 		}
 
+		if ( ! in_array( strtoupper( (string) $request->get_method() ), array( 'GET', 'HEAD' ), true ) ) {
+			$result->header( 'Cache-Control', 'no-store' );
+			return $result;
+		}
+
 		$settings = Settings::get();
 		if ( empty( $settings['browser']['enabled'] ) && empty( $settings['pages']['enabled'] ) ) {
 			return $result;

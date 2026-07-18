@@ -112,13 +112,28 @@ final class Notifications {
 				$meta['email']
 			) . "\n";
 		}
+		if ($meta['phone']) {
+			$body .= sprintf(
+				/* translators: %s: phone number */
+				__('Phone: %s', 'kpf-core'),
+				$meta['phone']
+			) . "\n";
+		}
+		foreach ($meta['fields'] as $label => $value) {
+			$body .= sprintf(
+				/* translators: 1: field label, 2: field value */
+				__('%1$s: %2$s', 'kpf-core'),
+				(string) $label,
+				(string) $value
+			) . "\n";
+		}
 		$body .= "\n" . wp_strip_all_tags($post->post_content) . "\n\n";
 		$body .= get_edit_post_link($post_id, 'raw') . "\n";
 
-		self::send($subject, $body);
+		self::send($subject, $body, (string) $meta['email']);
 	}
 
-	private static function send(string $subject, string $body): void {
+	private static function send(string $subject, string $body, string $reply_to = ''): void {
 		// Avoid noisy mailer failures in CLI/smoke environments.
 		if (defined('WP_CLI') && WP_CLI) {
 			return;
@@ -138,6 +153,9 @@ final class Notifications {
 				$from_name,
 				$email
 			);
+		}
+		if (is_email($reply_to)) {
+			$headers[] = 'Reply-To: ' . $reply_to;
 		}
 
 		wp_mail($email, $subject, $body, $headers);

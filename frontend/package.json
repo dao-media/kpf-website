@@ -3,12 +3,15 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
+		"predev": "npm run search:generate",
 		"dev": "faust dev",
+		"prebuild": "npm run search:generate",
 		"build": "faust build",
 		"generate": "faust generatePossibleTypes",
+		"search:generate": "node scripts/generate-search-index.mjs",
 		"start": "faust start",
 		"lint": "eslint .",
-		"test": "node --test src/components/*.test.js"
+		"test": "node --test src/components/*.test.js src/lib/*.test.js"
 	},
 	"dependencies": {
 		"@apollo/client": "^3.14.0",
@@ -17,6 +20,7 @@
 		"graphql": "^16.12.0",
 		"gsap": "^3.15.0",
 		"lucide-react": "^1.25.0",
+		"minisearch": "^7.2.0",
 		"next": "^16.2.10",
 		"next-secure-headers": "^2.2.0",
 		"react": "^18.3.1",
@@ -31,7 +35,9 @@
 		"@babel/runtime": "^7.26.10",
 		"fast-xml-parser": "^5.3.4",
 		"js-yaml": "^4.1.1",
-		"ajv": ">=8.17.2"
+		"schema-utils": {
+			"ajv": ">=8.17.2"
+		}
 	},
 	"engines": {
 		"node": ">=20.9",

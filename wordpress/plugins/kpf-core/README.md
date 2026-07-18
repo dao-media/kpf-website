@@ -77,6 +77,23 @@ When there are pending comments or unread form submissions, an unread count badg
 appears on the top-level **Inbox** item (and on the relevant submenu). Opening a
 form submission marks it as read.
 
+### Headless form endpoint
+
+The frontend can submit contact forms to its same-origin
+`POST /api/forms/submit` route. That route forwards JSON server-to-server to:
+
+```text
+POST /wp-json/kpf-inbox/v1/public/forms/submit
+```
+
+Accepted fields are `form_name`, `name`, `email`, `phone`, `subject`, `message`,
+`fields`, and the hidden honeypot field `website`. A valid email plus either a
+message or at least one additional field is required. Submissions are sanitized,
+rate limited, stored unread under **Inbox → Forms**, and sent through the existing
+`wp_mail()` notification settings. The WordPress endpoint does not enable CORS;
+browser requests should use the frontend proxy. The proxy signs each request with
+the existing Faust secret so direct, unsigned writes to WordPress are rejected.
+
 ## Reusable components
 
 The component library uses normal WordPress blocks and patterns, so editors can

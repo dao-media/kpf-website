@@ -247,6 +247,28 @@ body.kpf-admin-theme #adminmenu .wp-submenu a {
 	will-change: transform;
 }
 
+body.kpf-admin-theme #menu-tools .wp-submenu a.kpf-scf-submenu-link {
+	align-items: center;
+	display: flex;
+	gap: 6px;
+}
+
+body.kpf-admin-theme #menu-tools .kpf-scf-submenu-icon {
+	align-items: center;
+	color: #8793a6;
+	display: inline-flex;
+	flex: 0 0 13px;
+	justify-content: center;
+	transition: color 140ms ease, transform 140ms ease;
+}
+
+body.kpf-admin-theme #menu-tools .kpf-scf-submenu-link:hover .kpf-scf-submenu-icon,
+body.kpf-admin-theme #menu-tools .kpf-scf-submenu-link:focus .kpf-scf-submenu-icon,
+body.kpf-admin-theme #menu-tools .current .kpf-scf-submenu-icon {
+	color: var(--kpf-admin-navy);
+	transform: translateX(1px);
+}
+
 body.kpf-admin-theme #adminmenu .wp-submenu a:hover,
 body.kpf-admin-theme #adminmenu .wp-submenu a:focus,
 body.kpf-admin-theme #adminmenu .wp-submenu li.current a {

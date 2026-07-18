@@ -35,6 +35,8 @@ $settings = Settings::all();
 kpf_inbox_assert(isset($settings['notifications']['email']), 'Inbox settings expose notification email');
 kpf_inbox_assert(array_key_exists('notify_comments', $settings['notifications']), 'Comment notification toggle exists');
 kpf_inbox_assert(array_key_exists('notify_forms', $settings['notifications']), 'Form notification toggle exists');
+kpf_inbox_assert(isset($settings['forms']['rate_limit_count']), 'Form submission limit setting exists');
+kpf_inbox_assert(isset($settings['forms']['rate_limit_window_minutes']), 'Form rate-limit window setting exists');
 
 $created = Forms::create_submission(
 	array(

@@ -360,6 +360,20 @@ final class Admin {
 			! empty($f['store_ip']),
 			__('Save the visitor IP address with each submission when provided. Leave off unless you need it for moderation.', 'kpf-core')
 		);
+		self::text_row(
+			'forms][rate_limit_count',
+			__('Submission limit', 'kpf-core'),
+			(string) (int) $f['rate_limit_count'],
+			__('Maximum submissions accepted from one visitor during the rate-limit window (1–100).', 'kpf-core'),
+			'number'
+		);
+		self::text_row(
+			'forms][rate_limit_window_minutes',
+			__('Rate-limit window', 'kpf-core'),
+			(string) (int) $f['rate_limit_window_minutes'],
+			__('Minutes before the visitor submission limit resets (1–1440).', 'kpf-core'),
+			'number'
+		);
 		echo '</tbody></table>';
 
 		submit_button(__('Save Inbox settings', 'kpf-core'));

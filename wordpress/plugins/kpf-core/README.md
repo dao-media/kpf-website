@@ -4,10 +4,13 @@ Site-specific WordPress tools for the Kevin Popke Foundation headless stack.
 
 ## Features
 
+- Custom editorial dashboard with content metrics, readiness checks, publishing calendar, and quick actions
 - Unified **Inbox** admin menu for Comments, Form submissions, and related settings
 - WYSIWYG reusable component library with synced and independent patterns
-- Assignable page-design library with HTML/SVG markup and CSS
+- Assignable page-design library with HTML templates and CSS
+- Sanitized SVG uploads in the WordPress Media Library
 - GSAP interaction builder with keyframes, custom easing, and SVG effects
+- Versioned global stylesheet editor under Appearance
 - Scrapbook collection for single photos and multi-photo stories
 - Global, per-post-type, and per-entity metadata inheritance
 - Yoast-style dynamic tags (`%%title%%`, `%%sitename%%`, …) with click-to-copy library
@@ -20,15 +23,19 @@ Site-specific WordPress tools for the Kevin Popke Foundation headless stack.
 
 ## Admin
 
+WordPress admin → **Dashboard** for the foundation content and site-readiness overview
+
 WordPress admin → **Inbox** for comments, form submissions, and notification settings
 
 WordPress admin → **Components** for the reusable component library
 
 WordPress admin → **Scrapbook** for photos and photo stories
 
-WordPress admin → **Pages → Designs** for HTML/SVG/CSS page designs
+WordPress admin → **Pages → Designs** for HTML/CSS page designs
 
 WordPress admin → **Interactions → GSAP** for frontend motion and SVG animation
+
+WordPress admin → **Appearance → Stylesheet** for global frontend CSS and version history
 
 WordPress admin → **SEO**
 
@@ -38,13 +45,13 @@ Editor sidebar → **Scrapbook details** or **Search & sharing**, depending on t
 
 **Pages → Designs** lists every page URL on the site. Rows without a design file
 are marked red; rows with uploaded markup show green **Ready**. Upload an `.html`
-or `.svg` file (and optional `.css`) per URL from that screen. SVG is sanitized
-and kept inline so its paths and groups can be targeted by GSAP selectors.
+file (and optional `.css`) per URL from that screen. HTML templates may still
+contain sanitized inline SVG whose paths and groups can be targeted by GSAP selectors.
 
 Ready designs include an **Edit code & copy** workspace. Its left sidebar
 extracts visible text, image alt text, labels, and form copy into editor-friendly
 fields; changing a field updates the matching markup without reformatting the
-rest of the source. The main pane provides syntax-highlighted HTML, SVG, and CSS editing.
+rest of the source. The main pane provides syntax-highlighted HTML and CSS editing.
 Saves are sanitized and use revision tokens to prevent overwriting a newer edit.
 Each save is added to **Version history**, where an earlier HTML/CSS pair can be
 restored without losing the current version. Administrators can choose how many

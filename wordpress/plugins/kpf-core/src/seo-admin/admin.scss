@@ -244,7 +244,46 @@
 	background: #1d2327;
 	border-color: #1d2327;
 	color: #f0f0f1;
-	max-height: 280px;
+	max-height: 320px;
+}
+
+.kpf-seo-robots-status {
+	background: #f0f6fc;
+	border: 1px solid #c5d9ed;
+	border-radius: 6px;
+	color: #1d2327;
+	font-size: 0.85rem;
+	line-height: 1.45;
+	margin: 0 0 0.85rem;
+	padding: 0.7rem 0.85rem;
+}
+
+.kpf-seo-robots-empty {
+	background: #f6f7f7;
+	border: 1px dashed #c3c4c7;
+	border-radius: 6px;
+	margin: 0 0 0.85rem;
+	padding: 0.75rem 0.85rem;
+}
+
+.kpf-seo-robots-empty strong {
+	display: block;
+	font-size: 0.85rem;
+	margin: 0 0 0.25rem;
+}
+
+.kpf-seo-robots-empty p {
+	color: var(--kpf-seo-muted);
+	font-size: 0.82rem;
+	line-height: 1.45;
+	margin: 0;
+}
+
+.kpf-seo-robots-footnote {
+	color: var(--kpf-seo-muted);
+	font-size: 0.8rem;
+	line-height: 1.45;
+	margin: 0.75rem 0 0;
 }
 
 .kpf-seo-actions {

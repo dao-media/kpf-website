@@ -86,7 +86,7 @@ const SECTION_COPY = {
 	sitemaps: {
 		title: __('Sitemap & robots', 'kpf-core'),
 		description: __(
-			'Help search engines and AI crawlers find public pages, and optionally add expert robots.txt rules.',
+			'Help search engines find public pages. The robots.txt preview shows what is published automatically. Extra crawler instructions are optional.',
 			'kpf-core'
 		),
 	},
@@ -108,14 +108,15 @@ const SECTION_COPY = {
 
 function buildRobotsPreview(settings) {
 	if (!settings) {
-		return '';
+		return { body: '', aiMode: 'allow', hasExtra: false, hasAiRules: false };
 	}
 
 	const lines = ['User-agent: *'];
 	lines.push(settings.global?.robots_index ? 'Allow: /' : 'Disallow: /');
 
 	const aiMode = settings.sitemaps?.ai_crawlers || 'allow';
-	if (aiMode === 'allow' || aiMode === 'block') {
+	const hasAiRules = aiMode === 'allow' || aiMode === 'block';
+	if (hasAiRules) {
 		lines.push('');
 		lines.push('# AI agents and content scanners');
 		AI_USER_AGENTS.forEach((agent) => {
@@ -137,7 +138,12 @@ function buildRobotsPreview(settings) {
 		lines.push(`Sitemap: ${frontend}/sitemap.xml`);
 	}
 
-	return `${lines.join('\n').replace(/\n{3,}/g, '\n\n').trim()}\n`;
+	return {
+		body: `${lines.join('\n').replace(/\n{3,}/g, '\n\n').trim()}\n`,
+		aiMode,
+		hasExtra: Boolean(extra),
+		hasAiRules,
+	};
 }
 
 function pageSlugForTab(tab) {
@@ -332,6 +338,21 @@ export default function App() {
 	const selected = settings.post_types?.[selectedType] || {};
 	const frontendUrl = String(settings.global.frontend_url || '').replace(/\/$/, '');
 	const showSave = activeTab !== 'tags' && activeTab !== 'redirects';
+	const robotsPreview = buildRobotsPreview(settings);
+	const robotsStatusMessage = !robotsPreview.hasAiRules
+		? __(
+				'No special AI crawler rules are published. Search engines still receive the standard robots.txt below after you save.',
+				'kpf-core'
+			)
+		: robotsPreview.aiMode === 'allow'
+			? __(
+					'This preview is the robots.txt actively applied across the site after you save. AI agents are currently allowed to crawl.',
+					'kpf-core'
+				)
+			: __(
+					'This preview is the robots.txt actively applied across the site after you save. AI agents are currently blocked.',
+					'kpf-core'
+				);
 
 	return (
 		<div className="kpf-seo">
@@ -756,7 +777,7 @@ export default function App() {
 							<SelectControl
 								label={__('AI agents and scanners', 'kpf-core')}
 								help={__(
-									'Controls well-known AI crawlers such as GPTBot, ClaudeBot, and PerplexityBot.',
+									'Optional AI-specific rules for crawlers such as GPTBot, ClaudeBot, and PerplexityBot. Choose “No special AI rules” if you do not want an AI section published.',
 									'kpf-core'
 								)}
 								value={settings.sitemaps.ai_crawlers || 'allow'}
@@ -781,7 +802,7 @@ export default function App() {
 							<TextareaControl
 								label={__('Extra crawler instructions', 'kpf-core')}
 								help={__(
-									'Expert only. Added after the automatic rules.',
+									'Optional and expert-only. Leave blank unless you need custom robots.txt lines. Anything you add is appended after the automatic rules and appears in the preview.',
 									'kpf-core'
 								)}
 								value={settings.sitemaps.robots_extra || ''}
@@ -790,7 +811,10 @@ export default function App() {
 							/>
 							<FieldGroup
 								title={__('Example rules', 'kpf-core')}
-								help={__('Paste rules like these into the field above.', 'kpf-core')}
+								help={__(
+									'Only needed for custom cases. Paste rules like these into Extra crawler instructions.',
+									'kpf-core'
+								)}
 							>
 								<pre className="kpf-seo-code">{ROBOTS_EXTRA_EXAMPLE}</pre>
 								<div className="kpf-seo-actions">
@@ -809,13 +833,29 @@ export default function App() {
 					<Section
 						title={__('robots.txt preview', 'kpf-core')}
 						description={__(
-							'What crawlers will see at /robots.txt after you save.',
+							'This is the live file crawlers see at /robots.txt. You do not need to fill Extra crawler instructions for these automatic rules to apply.',
 							'kpf-core'
 						)}
 					>
-						<pre className="kpf-seo-code kpf-seo-code--dark">
-							{buildRobotsPreview(settings)}
-						</pre>
+						<p className="kpf-seo-robots-status">{robotsStatusMessage}</p>
+						{!robotsPreview.hasAiRules && !robotsPreview.hasExtra ? (
+							<div className="kpf-seo-robots-empty">
+								<strong>{__('No special AI or custom rules', 'kpf-core')}</strong>
+								<p>
+									{__(
+										'There is no AI section and no custom instructions. Only the standard search-visibility rules (and sitemap line, if enabled) are published.',
+										'kpf-core'
+									)}
+								</p>
+							</div>
+						) : null}
+						<pre className="kpf-seo-code kpf-seo-code--dark">{robotsPreview.body}</pre>
+						<p className="kpf-seo-robots-footnote">
+							{__(
+								'To add custom instructions, put them in the Extra crawler instructions field. Leave that field blank if you do not need custom rules.',
+								'kpf-core'
+							)}
+						</p>
 					</Section>
 				</div>
 			)}

@@ -136,7 +136,7 @@ function UrlRow({ row, onUpdated, onEdit }) {
 
 	async function uploadFiles() {
 		if (!htmlFile) {
-			setError(__('Choose an HTML or SVG file first.', 'kpf-core'));
+			setError(__('Choose an HTML file first.', 'kpf-core'));
 			return;
 		}
 
@@ -219,10 +219,10 @@ function UrlRow({ row, onUpdated, onEdit }) {
 				<div className="kpf-design-uploaders">
 					<FilePicker
 						id={htmlInputId}
-						label={__('HTML / SVG', 'kpf-core')}
+						label={__('HTML', 'kpf-core')}
 						hint={__('Required page markup', 'kpf-core')}
-						accept=".html,.htm,.svg,text/html,image/svg+xml"
-						extensions={['html', 'htm', 'svg']}
+						accept=".html,.htm,text/html"
+						extensions={['html', 'htm']}
 						file={htmlFile}
 						savedName={row.htmlFilename || ''}
 						required
@@ -304,7 +304,6 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 			[field.label, field.value, field.tag, field.name].join(' ').toLowerCase().includes(needle)
 		);
 	}, [copyFields, copyQuery]);
-	const isSvg = editor?.htmlFilename?.toLowerCase().endsWith('.svg');
 	const dirty = Boolean(editor && (html !== editor.html || css !== editor.css));
 
 	const loadHistory = useCallback(async () => {
@@ -328,7 +327,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 	const save = useCallback(async () => {
 		if (!editor || saving) return;
 		if (html.length > MAX_BYTES || css.length > MAX_BYTES) {
-			setError(__('Markup and CSS must each be 1 MB or smaller.', 'kpf-core'));
+			setError(__('HTML and CSS must each be 1 MB or smaller.', 'kpf-core'));
 			return;
 		}
 
@@ -506,7 +505,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 							<p className="kpf-copy-empty">
 								{copyFields.length
 									? __('No copy matched your search.', 'kpf-core')
-									: __('No editable copy was found in this markup file.', 'kpf-core')}
+									: __('No editable copy was found in this HTML file.', 'kpf-core')}
 							</p>
 						)}
 					</div>
@@ -546,14 +545,8 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 					</div>
 					<CodeEditor
 						id="kpf-design-source"
-						label={
-							activeFile === 'html'
-								? isSvg
-									? __('SVG source', 'kpf-core')
-									: __('HTML source', 'kpf-core')
-								: __('CSS source', 'kpf-core')
-						}
-						language={activeFile === 'html' && isSvg ? 'svg' : activeFile}
+						label={activeFile === 'html' ? __('HTML source', 'kpf-core') : __('CSS source', 'kpf-core')}
+						language={activeFile}
 						value={activeFile === 'html' ? html : css}
 						onChange={activeFile === 'html' ? setHtml : setCss}
 					/>

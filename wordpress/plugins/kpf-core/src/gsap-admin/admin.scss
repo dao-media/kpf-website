@@ -481,17 +481,23 @@
 
 .kpf-bezier-editor {
 	display: grid;
-	grid-template-columns: 180px 1fr;
+	grid-template-columns: 200px 1fr;
 	gap: 16px;
 	padding: 18px;
 	border: 1px solid #ccd5c9;
 	background: #f2f8ef;
+	user-select: none;
+}
+
+.kpf-bezier-editor.is-dragging {
+	cursor: grabbing;
 }
 
 .kpf-bezier-graph svg {
 	display: block;
 	width: 100%;
 	height: auto;
+	touch-action: none;
 }
 
 .kpf-bezier-graph .kpf-bezier-grid {
@@ -503,22 +509,46 @@
 .kpf-bezier-graph line {
 	stroke: #9bb783;
 	stroke-dasharray: 3 3;
+	pointer-events: none;
 }
 
 .kpf-bezier-graph .kpf-bezier-curve {
 	fill: none;
 	stroke: var(--pine);
 	stroke-width: 3;
+	pointer-events: none;
 }
 
-.kpf-bezier-graph circle {
+.kpf-bezier-handle-hit {
+	fill: transparent;
+	stroke: none;
+}
+
+.kpf-bezier-handle-knob {
 	fill: var(--ember);
+	stroke: #fff;
+	stroke-width: 1.5;
+	pointer-events: none;
+	transition: transform 120ms ease, fill 120ms ease;
+}
+
+.kpf-bezier-handle.is-active .kpf-bezier-handle-knob,
+.kpf-bezier-handle:hover .kpf-bezier-handle-knob {
+	fill: #c45a2a;
+}
+
+.kpf-bezier-hint {
+	margin: 8px 0 0;
+	color: #617068;
+	font-size: 11px;
+	line-height: 1.4;
 }
 
 .kpf-bezier-inputs {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
 	gap: 8px;
+	align-content: start;
 }
 
 .kpf-bezier-inputs label span {

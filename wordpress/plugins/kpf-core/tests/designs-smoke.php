@@ -62,17 +62,25 @@ kpf_design_assert(
 
 $svg_template = Meta::sanitize_design(
 	array(
-		'html_filename' => 'illustration.svg',
+		'html_filename' => 'illustration.html',
 		'html'          => '<svg viewBox="0 0 100 100" onload="alert(1)"><defs><linearGradient id="wash"><stop offset="100%" stop-color="#fff"/></linearGradient></defs><path id="line" d="M0 0 L100 100" fill="none" stroke="url(#wash)" stroke-width="4"/><foreignObject><script>alert(1)</script></foreignObject></svg>',
 	)
 );
-kpf_design_assert( 'illustration.svg' === $svg_template['html_filename'], 'SVG files are accepted as design markup' );
-kpf_design_assert( str_contains( $svg_template['html'], '<svg' ), 'SVG root markup is preserved' );
+kpf_design_assert( 'illustration.html' === $svg_template['html_filename'], 'HTML design filenames are accepted' );
+kpf_design_assert( str_contains( $svg_template['html'], '<svg' ), 'Inline SVG markup is preserved inside HTML designs' );
 kpf_design_assert( str_contains( $svg_template['html'], '<path' ), 'SVG path markup is preserved' );
 kpf_design_assert( str_contains( strtolower( $svg_template['html'] ), '<lineargradient' ), 'SVG definitions are preserved' );
 kpf_design_assert( ! str_contains( $svg_template['html'], 'onload' ), 'SVG event handlers are removed' );
 kpf_design_assert( ! str_contains( strtolower( $svg_template['html'] ), '<foreignobject' ), 'SVG foreignObject content is removed' );
 kpf_design_assert( ! str_contains( strtolower( $svg_template['html'] ), '<script' ), 'SVG scripts are removed' );
+
+$rejected_svg_file = Meta::sanitize_design(
+	array(
+		'html_filename' => 'illustration.svg',
+		'html'          => '<svg viewBox="0 0 10 10"><path d="M0 0 L10 10"/></svg>',
+	)
+);
+kpf_design_assert( '' === $rejected_svg_file['html_filename'], 'Standalone SVG files are rejected as page designs' );
 
 $fields = Meta::sanitize_fields(
 	array(

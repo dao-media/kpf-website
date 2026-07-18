@@ -14,7 +14,7 @@ export default function CodeEditor({ id, label, language, value, onChange }) {
 	useEffect(() => {
 		if (!textareaRef.current || !window.wp?.codeEditor?.initialize) return undefined;
 
-		const mode = language === 'css' ? 'text/css' : language === 'svg' ? 'application/xml' : 'text/html';
+		const mode = language === 'css' ? 'text/css' : 'text/html';
 		const settings = {
 			...baseSettings,
 			codemirror: {
@@ -44,7 +44,7 @@ export default function CodeEditor({ id, label, language, value, onChange }) {
 	useEffect(() => {
 		const editor = editorRef.current;
 		if (!editor) return;
-		const mode = language === 'css' ? 'text/css' : language === 'svg' ? 'application/xml' : 'text/html';
+		const mode = language === 'css' ? 'text/css' : 'text/html';
 		if (editor.getOption('mode') !== mode) editor.setOption('mode', mode);
 		if (editor.getValue() !== value) editor.setValue(value);
 		editor.refresh();

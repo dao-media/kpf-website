@@ -110,7 +110,7 @@ final class DashboardWidget {
 					count($checks)
 				)); ?>">
 					<strong><?php echo esc_html((string) $good_count); ?></strong>
-					<span>/ <?php echo esc_html((string) count($checks)); ?></span>
+					<span>&nbsp;/&nbsp;<?php echo esc_html((string) count($checks)); ?></span>
 				</div>
 				<div>
 					<h3><?php esc_html_e('SEO configuration', 'kpf-core'); ?></h3>

@@ -136,7 +136,7 @@ final class Meta {
 
 		return array(
 			'version'       => self::VERSION,
-			'html_filename' => self::sanitize_filename( $value['html_filename'] ?? '', array( 'html', 'htm', 'svg' ) ),
+			'html_filename' => self::sanitize_filename( $value['html_filename'] ?? '', array( 'html', 'htm' ) ),
 			'html'          => self::sanitize_html( self::limit_source( $value['html'] ?? '' ) ),
 			'css_filename'  => self::sanitize_filename( $value['css_filename'] ?? '', array( 'css' ) ),
 			'css'           => self::sanitize_css( self::limit_source( $value['css'] ?? '' ) ),
@@ -275,7 +275,7 @@ final class Meta {
 		if ( 'publish' === $request->get_param( 'status' ) && '' === trim( $clean['html'] ) ) {
 			return new \WP_Error(
 				'kpf_design_html_required',
-				__( 'Add an HTML or SVG template before publishing this design.', 'kpf-core' ),
+				__( 'Add an HTML template before publishing this design.', 'kpf-core' ),
 				array( 'status' => 400 )
 			);
 		}

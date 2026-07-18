@@ -200,7 +200,7 @@ final class Rest {
 		if ( $design_id < 1 || ContentType::POST_TYPE !== get_post_type( $design_id ) ) {
 			return new WP_Error(
 				'kpf_design_not_found',
-				__( 'Upload an HTML or SVG design before saving code changes.', 'kpf-core' ),
+				__( 'Upload an HTML design before saving code changes.', 'kpf-core' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -220,7 +220,7 @@ final class Rest {
 		if ( strlen( $html ) > Meta::MAX_SOURCE_BYTES || strlen( $css ) > Meta::MAX_SOURCE_BYTES ) {
 			return new WP_Error(
 				'kpf_design_source_too_large',
-				__( 'Markup and CSS must each be 1 MB or smaller.', 'kpf-core' ),
+				__( 'HTML and CSS must each be 1 MB or smaller.', 'kpf-core' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -236,7 +236,7 @@ final class Rest {
 		if ( '' === trim( (string) $next['html'] ) ) {
 			return new WP_Error(
 				'kpf_design_html_empty',
-				__( 'The markup editor cannot be empty.', 'kpf-core' ),
+				__( 'The HTML editor cannot be empty.', 'kpf-core' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -273,7 +273,7 @@ final class Rest {
 		if ( $design_id < 1 || ContentType::POST_TYPE !== get_post_type( $design_id ) ) {
 			return new WP_Error(
 				'kpf_design_not_found',
-				__( 'Upload an HTML or SVG design before viewing version history.', 'kpf-core' ),
+				__( 'Upload an HTML design before viewing version history.', 'kpf-core' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -391,12 +391,12 @@ final class Rest {
 		if ( ! $html_file || (int) ( $html_file['error'] ?? UPLOAD_ERR_NO_FILE ) !== UPLOAD_ERR_OK ) {
 			return new WP_Error(
 				'kpf_design_html_required',
-				__( 'Choose an HTML or SVG design file to upload.', 'kpf-core' ),
+				__( 'Choose an HTML design file to upload.', 'kpf-core' ),
 				array( 'status' => 400 )
 			);
 		}
 
-		$html = self::read_upload( $html_file, array( 'html', 'htm', 'svg' ) );
+		$html = self::read_upload( $html_file, array( 'html', 'htm' ) );
 		if ( is_wp_error( $html ) ) {
 			return $html;
 		}
@@ -431,7 +431,7 @@ final class Rest {
 		if ( '' === trim( $next['html'] ) ) {
 			return new WP_Error(
 				'kpf_design_html_empty',
-				__( 'The uploaded markup file is empty after sanitization.', 'kpf-core' ),
+				__( 'The uploaded HTML file is empty after sanitization.', 'kpf-core' ),
 				array( 'status' => 400 )
 			);
 		}

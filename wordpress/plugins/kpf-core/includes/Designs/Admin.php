@@ -72,7 +72,7 @@ final class Admin {
 		echo '<div class="wrap kpf-designs-admin">';
 		echo '<h1>' . esc_html__( 'Designs', 'kpf-core' ) . '</h1>';
 		echo '<p>' . esc_html__(
-			'Upload an HTML or SVG design (and optional CSS) for each site URL, then edit its copy or source code in the browser.',
+			'Upload an HTML design (and optional CSS) for each site URL, then edit its copy or source code in the browser.',
 			'kpf-core'
 		) . '</p>';
 		echo '<div id="kpf-designs-admin-root"></div>';

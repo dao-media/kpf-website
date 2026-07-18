@@ -22,20 +22,27 @@ gsap.registerPlugin(CustomEase, DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin)
 apiFetch.use(apiFetch.createNonceMiddleware(window.kpfGsapAdmin?.nonce || ''));
 
 const REST_BASE = (window.kpfGsapAdmin?.restBase || '/wp-json/kpf-interactions/v1').replace(/\/$/, '');
-const EASES = [
-	'power1.out',
-	'power2.out',
-	'power3.out',
-	'power4.out',
-	'power2.inOut',
-	'back.out(1.7)',
-	'bounce.out',
-	'elastic.out(1, 0.3)',
-	'circ.inOut',
-	'expo.out',
-	'none',
-	'custom',
+
+/** GSAP values stay as-is; labels are motion-friendly names for editors. */
+const EASE_OPTIONS = [
+	{ value: 'power1.out', label: __('Soft landing', 'kpf-core') },
+	{ value: 'power2.out', label: __('Gentle landing', 'kpf-core') },
+	{ value: 'power3.out', label: __('Sharp landing', 'kpf-core') },
+	{ value: 'power4.out', label: __('Dramatic landing', 'kpf-core') },
+	{ value: 'power2.inOut', label: __('Smooth both ends', 'kpf-core') },
+	{ value: 'back.out(1.7)', label: __('Overshoot', 'kpf-core') },
+	{ value: 'bounce.out', label: __('Bounce', 'kpf-core') },
+	{ value: 'elastic.out(1, 0.3)', label: __('Spring', 'kpf-core') },
+	{ value: 'circ.inOut', label: __('Circular arc', 'kpf-core') },
+	{ value: 'expo.out', label: __('Explosive start', 'kpf-core') },
+	{ value: 'none', label: __('Constant speed', 'kpf-core') },
+	{ value: 'custom', label: __('Custom curve', 'kpf-core') },
 ];
+
+function easeLabel(value) {
+	return EASE_OPTIONS.find((option) => option.value === value)?.label || value;
+}
+
 const PROPERTY_FIELDS = [
 	{ key: 'x', label: __('Move X', 'kpf-core'), unit: 'px' },
 	{ key: 'y', label: __('Move Y', 'kpf-core'), unit: 'px' },
@@ -125,35 +132,154 @@ function PropertyGrid({ title, values, onChange }) {
 	);
 }
 
-function BezierEditor({ value, onChange }) {
+function clamp(value, min, max) {
+	return Math.min(max, Math.max(min, value));
+}
+
+function parseBezier(value) {
 	const points = String(value || '0.25,0.1,0.25,1')
 		.split(',')
 		.map((item) => Number(item.trim()));
 	while (points.length < 4) points.push(0);
-	const setPoint = (index, next) => {
-		const updated = points.slice(0, 4);
-		updated[index] = Number(next);
-		onChange(updated.join(','));
-	};
+	return [
+		clamp(Number.isFinite(points[0]) ? points[0] : 0.25, 0, 1),
+		clamp(Number.isFinite(points[1]) ? points[1] : 0.1, -2, 2),
+		clamp(Number.isFinite(points[2]) ? points[2] : 0.25, 0, 1),
+		clamp(Number.isFinite(points[3]) ? points[3] : 1, -2, 2),
+	];
+}
+
+function BezierEditor({ value, onChange }) {
+	const svgRef = useRef(null);
+	const dragRef = useRef(null);
+	const pointsRef = useRef(parseBezier(value));
+	const onChangeRef = useRef(onChange);
+	const [dragging, setDragging] = useState(null);
+	const points = parseBezier(value);
+	pointsRef.current = points;
+	onChangeRef.current = onChange;
 	const [x1, y1, x2, y2] = points;
-	const path = `M 10 110 C ${10 + x1 * 120} ${110 - y1 * 100}, ${10 + x2 * 120} ${
-		110 - y2 * 100
-	}, 130 10`;
+
+	const commitPoints = (next) => {
+		onChangeRef.current(
+			[
+				clamp(next[0], 0, 1),
+				clamp(next[1], -2, 2),
+				clamp(next[2], 0, 1),
+				clamp(next[3], -2, 2),
+			]
+				.map((point) => Number(point.toFixed(3)))
+				.join(',')
+		);
+	};
+
+	const setPoint = (index, next) => {
+		const updated = points.slice();
+		updated[index] = Number(next);
+		commitPoints(updated);
+	};
+
+	useEffect(() => {
+		function clientToBezier(clientX, clientY) {
+			const svg = svgRef.current;
+			if (!svg) return null;
+			const point = svg.createSVGPoint();
+			point.x = clientX;
+			point.y = clientY;
+			const matrix = svg.getScreenCTM();
+			if (!matrix) return null;
+			const local = point.matrixTransform(matrix.inverse());
+			return {
+				x: clamp((local.x - 10) / 120, 0, 1),
+				y: clamp((110 - local.y) / 100, -2, 2),
+			};
+		}
+
+		function onPointerMove(event) {
+			const handle = dragRef.current;
+			if (handle === null) return;
+			const next = clientToBezier(event.clientX, event.clientY);
+			if (!next) return;
+			event.preventDefault();
+			const updated = pointsRef.current.slice();
+			if (handle === 0) {
+				updated[0] = next.x;
+				updated[1] = next.y;
+			} else {
+				updated[2] = next.x;
+				updated[3] = next.y;
+			}
+			commitPoints(updated);
+		}
+
+		function onPointerUp() {
+			dragRef.current = null;
+			setDragging(null);
+		}
+
+		window.addEventListener('pointermove', onPointerMove);
+		window.addEventListener('pointerup', onPointerUp);
+		window.addEventListener('pointercancel', onPointerUp);
+		return () => {
+			window.removeEventListener('pointermove', onPointerMove);
+			window.removeEventListener('pointerup', onPointerUp);
+			window.removeEventListener('pointercancel', onPointerUp);
+		};
+	}, []);
+
+	const startDrag = (handle) => (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		dragRef.current = handle;
+		setDragging(handle);
+	};
+
+	const hx1 = 10 + x1 * 120;
+	const hy1 = 110 - y1 * 100;
+	const hx2 = 10 + x2 * 120;
+	const hy2 = 110 - y2 * 100;
+	const path = `M 10 110 C ${hx1} ${hy1}, ${hx2} ${hy2}, 130 10`;
 
 	return (
-		<div className="kpf-bezier-editor">
+		<div className={`kpf-bezier-editor${dragging !== null ? ' is-dragging' : ''}`}>
 			<div className="kpf-bezier-graph">
-				<svg viewBox="0 0 140 120" role="img" aria-label={__('Custom easing curve', 'kpf-core')}>
+				<svg
+					ref={svgRef}
+					viewBox="0 0 140 120"
+					role="img"
+					aria-label={__('Custom easing curve. Drag the handles to reshape the motion.', 'kpf-core')}
+				>
 					<path className="kpf-bezier-grid" d="M10 10V110H130" />
-					<line x1="10" y1="110" x2={10 + x1 * 120} y2={110 - y1 * 100} />
-					<line x1="130" y1="10" x2={10 + x2 * 120} y2={110 - y2 * 100} />
+					<line x1="10" y1="110" x2={hx1} y2={hy1} />
+					<line x1="130" y1="10" x2={hx2} y2={hy2} />
 					<path className="kpf-bezier-curve" d={path} />
-					<circle cx={10 + x1 * 120} cy={110 - y1 * 100} r="4" />
-					<circle cx={10 + x2 * 120} cy={110 - y2 * 100} r="4" />
+					{[
+						{ handle: 0, cx: hx1, cy: hy1, label: __('Start handle', 'kpf-core') },
+						{ handle: 1, cx: hx2, cy: hy2, label: __('End handle', 'kpf-core') },
+					].map(({ handle, cx, cy, label }) => (
+						<g
+							key={handle}
+							className={`kpf-bezier-handle${dragging === handle ? ' is-active' : ''}`}
+							onPointerDown={startDrag(handle)}
+							style={{ cursor: dragging === handle ? 'grabbing' : 'grab' }}
+						>
+							<circle className="kpf-bezier-handle-hit" cx={cx} cy={cy} r="12" />
+							<circle className="kpf-bezier-handle-knob" cx={cx} cy={cy} r="5" />
+							<title>{label}</title>
+						</g>
+					))}
 				</svg>
+				<p className="kpf-bezier-hint">
+					{__('Drag the orange handles to reshape the curve.', 'kpf-core')}
+				</p>
 			</div>
 			<div className="kpf-bezier-inputs">
-				{['X1', 'Y1', 'X2', 'Y2'].map((label, index) => (
+				{[
+					{ label: __('Start X', 'kpf-core'), index: 0 },
+					{ label: __('Start Y', 'kpf-core'), index: 1 },
+					{ label: __('End X', 'kpf-core'), index: 2 },
+					{ label: __('End Y', 'kpf-core'), index: 3 },
+				].map(({ label, index }) => (
 					<label key={label}>
 						<span>{label}</span>
 						<input
@@ -239,10 +365,7 @@ function KeyframeEditor({ frames, onChange }) {
 						<SelectControl
 							label={__('Ease', 'kpf-core')}
 							value={frame.ease}
-							options={EASES.filter((ease) => ease !== 'custom').map((ease) => ({
-								label: ease,
-								value: ease,
-							}))}
+							options={EASE_OPTIONS.filter((ease) => ease.value !== 'custom')}
 							onChange={(ease) => update(index, { ease })}
 						/>
 					</div>
@@ -768,11 +891,12 @@ function Builder({ animation, onSaved, onDeleted }) {
 								/>
 								<SelectControl
 									label={__('Easing', 'kpf-core')}
+									help={__(
+										'Landing = slows into place. Overshoot/Bounce/Spring add personality. Custom curve lets you drag the handles.',
+										'kpf-core'
+									)}
 									value={config.ease}
-									options={EASES.map((ease) => ({
-										label: ease === 'custom' ? __('Custom cubic bezier', 'kpf-core') : ease,
-										value: ease,
-									}))}
+									options={EASE_OPTIONS}
 									onChange={(ease) => updateConfig({ ease })}
 								/>
 								{config.ease === 'custom' ? (
@@ -842,7 +966,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 						<div><span>{__('Trigger', 'kpf-core')}</span><strong>{config.trigger}</strong></div>
 						<div><span>{__('Model', 'kpf-core')}</span><strong>{config.method}</strong></div>
 						<div><span>{__('Duration', 'kpf-core')}</span><strong>{config.duration}s</strong></div>
-						<div><span>{__('Ease', 'kpf-core')}</span><strong>{config.ease}</strong></div>
+						<div><span>{__('Ease', 'kpf-core')}</span><strong>{easeLabel(config.ease)}</strong></div>
 					</div>
 					<p className="kpf-motion-accessibility">
 						<span>◐</span>

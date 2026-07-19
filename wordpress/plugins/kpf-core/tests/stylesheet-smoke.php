@@ -7,6 +7,7 @@
  */
 
 use KPF\Core\Stylesheet\ContentType;
+use KPF\Core\Stylesheet\Defaults;
 use KPF\Core\Stylesheet\GraphQL;
 use KPF\Core\Stylesheet\Meta;
 use KPF\Core\Stylesheet\Rest;
@@ -30,6 +31,13 @@ $original_revisions = array_map( 'intval', array_keys( wp_get_post_revisions( $p
 
 $assert( $post_id > 0, 'Global stylesheet singleton exists' );
 $assert( ContentType::POST_TYPE === get_post_type( $post_id ), 'Stylesheet uses the hidden content type' );
+
+$foundation = Defaults::css();
+$assert( str_contains( $foundation, '--kpf-parchment: #f8f4ec' ), 'Foundation CSS ships Option 3 parchment' );
+$assert( str_contains( $foundation, '--kpf-ember: #8b1515' ), 'Foundation CSS ships Option 3 ember' );
+$assert( str_contains( $foundation, '.kpf-h0' ), 'Foundation CSS defines H0 display style' );
+$assert( str_contains( $foundation, '.kpf-btn--primary' ), 'Foundation CSS defines primary button states' );
+$assert( str_contains( $foundation, 'rem' ), 'Foundation CSS uses rem units' );
 
 $sanitized = Meta::sanitize_css(
 	'@import "https://bad.example/x.css"; .hero { color: red; behavior: url(test.htc); }'

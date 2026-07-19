@@ -46,12 +46,24 @@ use KPF\Core\Performance\Headers as PerformanceHeaders;
 use KPF\Core\Performance\Optimizations as PerformanceOptimizations;
 use KPF\Core\Performance\Rest as PerformanceRest;
 use KPF\Core\Performance\Settings as PerformanceSettings;
+use KPF\Core\Events\Admin as EventsAdmin;
+use KPF\Core\Events\ContentType as EventsContentType;
+use KPF\Core\Events\Editor as EventsEditor;
+use KPF\Core\Events\GraphQL as EventsGraphQL;
+use KPF\Core\Events\Meta as EventsMeta;
+use KPF\Core\Events\Rest as EventsRest;
 use KPF\Core\Scrapbook\Admin as ScrapbookAdmin;
 use KPF\Core\Scrapbook\ContentType as ScrapbookContentType;
 use KPF\Core\Scrapbook\Editor as ScrapbookEditor;
 use KPF\Core\Scrapbook\GraphQL as ScrapbookGraphQL;
 use KPF\Core\Scrapbook\Meta as ScrapbookMeta;
 use KPF\Core\Scrapbook\Rest as ScrapbookRest;
+use KPF\Core\Team\Admin as TeamAdmin;
+use KPF\Core\Team\ContentType as TeamContentType;
+use KPF\Core\Team\Editor as TeamEditor;
+use KPF\Core\Team\GraphQL as TeamGraphQL;
+use KPF\Core\Team\Meta as TeamMeta;
+use KPF\Core\Team\Rest as TeamRest;
 use KPF\Core\Seo\Admin;
 use KPF\Core\Seo\Conflicts;
 use KPF\Core\Seo\Editor;
@@ -65,6 +77,7 @@ use KPF\Core\Seo\Slugs;
 use KPF\Core\Seo\Tags\Registry as TagRegistry;
 use KPF\Core\Stylesheet\Admin as StylesheetAdmin;
 use KPF\Core\Stylesheet\ContentType as StylesheetContentType;
+use KPF\Core\Stylesheet\Defaults as StylesheetDefaults;
 use KPF\Core\Stylesheet\GraphQL as StylesheetGraphQL;
 use KPF\Core\Stylesheet\Meta as StylesheetMeta;
 use KPF\Core\Stylesheet\Rest as StylesheetRest;
@@ -82,11 +95,14 @@ final class Plugin {
 
 	public function activate(): void {
 		ScrapbookContentType::register_content();
+		EventsContentType::register_content();
+		TeamContentType::register_content();
 		DesignsContentType::register_content();
 		InteractionsContentType::register_content();
 		StylesheetContentType::register_content();
 		StylesheetMeta::register_meta();
 		StylesheetMeta::ensure_stylesheet();
+		StylesheetDefaults::seed_if_empty();
 		InboxForms::register_content();
 		RedirectsTable::install();
 		Settings::ensure_defaults();
@@ -132,6 +148,7 @@ final class Plugin {
 
 		StylesheetContentType::register();
 		StylesheetMeta::register();
+		StylesheetDefaults::register();
 		StylesheetAdmin::register();
 		StylesheetRest::register();
 		StylesheetGraphQL::register();
@@ -142,6 +159,20 @@ final class Plugin {
 		ScrapbookEditor::register();
 		ScrapbookGraphQL::register();
 		ScrapbookRest::register();
+
+		EventsContentType::register();
+		EventsMeta::register();
+		EventsAdmin::register();
+		EventsEditor::register();
+		EventsGraphQL::register();
+		EventsRest::register();
+
+		TeamContentType::register();
+		TeamMeta::register();
+		TeamAdmin::register();
+		TeamEditor::register();
+		TeamGraphQL::register();
+		TeamRest::register();
 
 		InboxSettings::register();
 		InboxForms::register();

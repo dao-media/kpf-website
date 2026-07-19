@@ -13,6 +13,9 @@ final class MenuOrganizer {
 	public const UTILITIES_LABEL_SLUG      = 'kpf-section-utilities';
 	private const PLUGINS_DIVIDER_SLUG     = 'kpf-plugins-divider';
 	private const MEDIA_DIVIDER_SLUG       = 'kpf-media-divider';
+	private const EVENTS_DIVIDER_SLUG      = 'kpf-events-divider';
+	private const EVENTS_MENU_SLUG         = 'edit.php?post_type=kpf_event';
+	private const TEAM_MENU_SLUG           = 'edit.php?post_type=kpf_team';
 	private const SCF_MENU_SLUG            = 'edit.php?post_type=acf-field-group';
 	private const SCF_POST_TYPES           = array(
 		'acf-field-group',
@@ -121,11 +124,65 @@ final class MenuOrganizer {
 		}
 
 		self::customize_media_submenu();
+		self::customize_events_submenu();
 		self::customize_pages_submenu();
 		self::customize_plugins_submenu();
 		self::move_scf_to_tools();
 		self::insert_section_labels();
 		self::reorder_menu();
+	}
+
+	/**
+	 * Events: All, Upcoming, Past, Recurring, divider, Add Event.
+	 */
+	private static function customize_events_submenu(): void {
+		global $submenu;
+
+		$parent = self::EVENTS_MENU_SLUG;
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		$capability = 'edit_posts';
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( is_array( $item ) && ! empty( $item[1] ) ) {
+				$capability = (string) $item[1];
+				break;
+			}
+		}
+
+		$submenu[ $parent ] = array(
+			array(
+				__( 'All Events', 'kpf-core' ),
+				$capability,
+				self::EVENTS_MENU_SLUG,
+			),
+			array(
+				__( 'Upcoming', 'kpf-core' ),
+				$capability,
+				self::EVENTS_MENU_SLUG . '&kpf_event_view=upcoming',
+			),
+			array(
+				__( 'Past', 'kpf-core' ),
+				$capability,
+				self::EVENTS_MENU_SLUG . '&kpf_event_view=past',
+			),
+			array(
+				__( 'Recurring', 'kpf-core' ),
+				$capability,
+				self::EVENTS_MENU_SLUG . '&kpf_event_view=recurring',
+			),
+			array(
+				'<span class="kpf-events-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::EVENTS_DIVIDER_SLUG,
+			),
+			array(
+				__( 'Add Event', 'kpf-core' ),
+				$capability,
+				'post-new.php?post_type=kpf_event',
+			),
+		);
 	}
 
 	/**
@@ -344,6 +401,8 @@ final class MenuOrganizer {
 			self::CONTENT_LABEL_SLUG,
 			'edit.php',
 			'upload.php',
+			self::EVENTS_MENU_SLUG,
+			self::TEAM_MENU_SLUG,
 			'edit.php?post_type=page',
 			'edit.php?post_type=kpf_scrapbook',
 			'kpf-components',
@@ -459,6 +518,22 @@ final class MenuOrganizer {
 			return 'media-new.php';
 		}
 
+		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'post-new.php?post_type=kpf_event';
+		}
+
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$view = isset( $_GET['kpf_event_view'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				? sanitize_key( wp_unslash( (string) $_GET['kpf_event_view'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				: '';
+
+			if ( in_array( $view, array( 'upcoming', 'past', 'recurring' ), true ) ) {
+				return self::EVENTS_MENU_SLUG . '&kpf_event_view=' . $view;
+			}
+
+			return self::EVENTS_MENU_SLUG;
+		}
+
 		if ( 'upload.php' !== $pagenow ) {
 			return $submenu_file;
 		}
@@ -560,6 +635,24 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu #menu-media .wp-submenu .kpf-media-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu a[href*="' . self::EVENTS_DIVIDER_SLUG . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu .kpf-events-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

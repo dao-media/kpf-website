@@ -58,7 +58,9 @@ final class Meta {
 		if ( is_wp_error( $post_id ) || ! $post_id ) {
 			return 0;
 		}
-		update_post_meta( (int) $post_id, self::CSS_META, '' );
+
+		$seed = class_exists( Defaults::class ) ? Defaults::css() : '';
+		update_post_meta( (int) $post_id, self::CSS_META, $seed );
 		return (int) $post_id;
 	}
 

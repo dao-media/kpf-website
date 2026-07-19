@@ -11,6 +11,8 @@ module.exports = {
 		'seo-editor': path.resolve(__dirname, 'src/seo-editor/index.js'),
 		'page-editor': path.resolve(__dirname, 'src/page-editor/index.js'),
 		'scrapbook-editor': path.resolve(__dirname, 'src/scrapbook-editor/index.js'),
+		'events-editor': path.resolve(__dirname, 'src/events-editor/index.js'),
+		'team-editor': path.resolve(__dirname, 'src/team-editor/index.js'),
 		'designs-editor': path.resolve(__dirname, 'src/designs-editor/index.js'),
 		'designs-admin': path.resolve(__dirname, 'src/designs-admin/index.js'),
 		'gsap-admin': path.resolve(__dirname, 'src/gsap-admin/index.js'),

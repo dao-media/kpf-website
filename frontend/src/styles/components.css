@@ -1,16 +1,23 @@
 :root {
-	--kpf-ink: #16233b;
-	--kpf-ink-soft: #2f3f59;
-	--kpf-paper: #f4efe4;
-	--kpf-paper-deep: #e8decb;
-	--kpf-heritage: #8a3138;
-	--kpf-gold: #c89736;
+	/* Option 3 — Documentary Ember (keep in sync with global Stylesheet) */
+	--kpf-parchment: #f8f4ec;
+	--kpf-ink: #12090a;
+	--kpf-ember: #8b1515;
+	--kpf-brass: #c88758;
+	--kpf-deep: #2e0b0b;
+	--kpf-mute: #8f514d;
+	--kpf-ink-soft: #3d2c2d;
+	--kpf-parchment-deep: #ebe3d4;
+	--kpf-paper: var(--kpf-parchment);
+	--kpf-paper-deep: var(--kpf-parchment-deep);
+	--kpf-heritage: var(--kpf-ember);
+	--kpf-gold: var(--kpf-brass);
 	--kpf-success: #2f6c54;
 	--kpf-warning: #a45b16;
 	--kpf-white: #fff;
 	--kpf-radius-sm: 0.35rem;
 	--kpf-radius-lg: 1rem;
-	--kpf-shadow: 0 1.1rem 3rem rgba(22, 35, 59, 0.14);
+	--kpf-shadow: 0 1.1rem 3rem rgba(18, 9, 10, 0.12);
 }
 
 * {
@@ -18,7 +25,7 @@
 }
 
 body {
-	background: #fbfaf7;
+	background: var(--kpf-parchment);
 	color: var(--kpf-ink);
 	margin: 0;
 }

@@ -12,6 +12,7 @@ final class MenuOrganizer {
 	public const COMMUNICATIONS_LABEL_SLUG = 'kpf-section-communications';
 	public const UTILITIES_LABEL_SLUG      = 'kpf-section-utilities';
 	private const PLUGINS_DIVIDER_SLUG     = 'kpf-plugins-divider';
+	private const MEDIA_DIVIDER_SLUG       = 'kpf-media-divider';
 	private const SCF_MENU_SLUG            = 'edit.php?post_type=acf-field-group';
 	private const SCF_POST_TYPES           = array(
 		'acf-field-group',
@@ -119,7 +120,7 @@ final class MenuOrganizer {
 			$menu = array();
 		}
 
-		self::split_media_menu();
+		self::customize_media_submenu();
 		self::customize_pages_submenu();
 		self::customize_plugins_submenu();
 		self::move_scf_to_tools();
@@ -253,29 +254,51 @@ final class MenuOrganizer {
 		$submenu[ $parent ] = $ordered;
 	}
 
-	private static function split_media_menu(): void {
-		global $menu;
+	/**
+	 * Keep a single Media top-level item with Library, Images, Video, divider, Upload.
+	 */
+	private static function customize_media_submenu(): void {
+		global $submenu;
 
-		remove_menu_page( 'upload.php' );
+		$parent = 'upload.php';
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			$submenu[ $parent ] = array();
+		}
 
-		$menu['10.1'] = array(
-			__( 'Images', 'kpf-core' ),
-			'upload_files',
-			'upload.php?attachment-filter=post_mime_type:image',
-			'',
-			'menu-top menu-icon-media',
-			'menu-media-images',
-			'dashicons-format-image',
-		);
+		$capability = 'upload_files';
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( is_array( $item ) && ! empty( $item[1] ) ) {
+				$capability = (string) $item[1];
+				break;
+			}
+		}
 
-		$menu['10.2'] = array(
-			__( 'Videos', 'kpf-core' ),
-			'upload_files',
-			'upload.php?attachment-filter=post_mime_type:video',
-			'',
-			'menu-top menu-icon-media',
-			'menu-media-videos',
-			'dashicons-video-alt3',
+		$submenu[ $parent ] = array(
+			array(
+				__( 'Library', 'kpf-core' ),
+				$capability,
+				'upload.php',
+			),
+			array(
+				__( 'Images', 'kpf-core' ),
+				$capability,
+				'upload.php?attachment-filter=post_mime_type:image',
+			),
+			array(
+				__( 'Video', 'kpf-core' ),
+				$capability,
+				'upload.php?attachment-filter=post_mime_type:video',
+			),
+			array(
+				'<span class="kpf-media-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::MEDIA_DIVIDER_SLUG,
+			),
+			array(
+				__( 'Upload', 'kpf-core' ),
+				$capability,
+				'media-new.php',
+			),
 		);
 	}
 
@@ -320,8 +343,7 @@ final class MenuOrganizer {
 			'index.php',
 			self::CONTENT_LABEL_SLUG,
 			'edit.php',
-			'upload.php?attachment-filter=post_mime_type:image',
-			'upload.php?attachment-filter=post_mime_type:video',
+			'upload.php',
 			'edit.php?post_type=page',
 			'edit.php?post_type=kpf_scrapbook',
 			'kpf-components',
@@ -331,6 +353,7 @@ final class MenuOrganizer {
 			'kpf-seo',
 			'kpf-performance',
 			'themes.php',
+			'kpf-accessibility',
 			'kpf-interactions',
 			'plugins.php',
 			'users.php',
@@ -384,12 +407,12 @@ final class MenuOrganizer {
 	}
 
 	/**
-	 * Keep Images / Videos highlighted as the active top-level item.
+	 * Keep SCF nested under Tools highlighted correctly.
 	 *
 	 * @param string $parent_file Current parent file.
 	 */
 	public static function parent_file( string $parent_file ): string {
-		global $pagenow, $plugin_page, $typenow;
+		global $plugin_page, $typenow;
 
 		if ( self::SCF_MENU_SLUG === $parent_file ) {
 			return 'tools.php';
@@ -409,23 +432,11 @@ final class MenuOrganizer {
 			return 'tools.php';
 		}
 
-		if ( 'upload.php' !== $pagenow && 'media-new.php' !== $pagenow && 'async-upload.php' !== $pagenow ) {
-			return $parent_file;
-		}
-
-		$filter = isset( $_GET['attachment-filter'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			? sanitize_text_field( wp_unslash( (string) $_GET['attachment-filter'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			: '';
-
-		if ( 'post_mime_type:video' === $filter ) {
-			return 'upload.php?attachment-filter=post_mime_type:video';
-		}
-
-		return 'upload.php?attachment-filter=post_mime_type:image';
+		return $parent_file;
 	}
 
 	/**
-	 * Highlight Images vs Videos under the split Media entries.
+	 * Highlight filtered Media and Plugins submenu items.
 	 *
 	 * @param string|null $submenu_file Current submenu file.
 	 */
@@ -444,7 +455,11 @@ final class MenuOrganizer {
 			return 'plugins.php';
 		}
 
-		if ( 'upload.php' !== $pagenow && 'media-new.php' !== $pagenow ) {
+		if ( 'media-new.php' === $pagenow ) {
+			return 'media-new.php';
+		}
+
+		if ( 'upload.php' !== $pagenow ) {
 			return $submenu_file;
 		}
 
@@ -452,11 +467,15 @@ final class MenuOrganizer {
 			? sanitize_text_field( wp_unslash( (string) $_GET['attachment-filter'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			: '';
 
+		if ( 'post_mime_type:image' === $filter ) {
+			return 'upload.php?attachment-filter=post_mime_type:image';
+		}
+
 		if ( 'post_mime_type:video' === $filter ) {
 			return 'upload.php?attachment-filter=post_mime_type:video';
 		}
 
-		return 'upload.php?attachment-filter=post_mime_type:image';
+		return 'upload.php';
 	}
 
 	public static function styles(): void {
@@ -523,6 +542,24 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu #menu-plugins .wp-submenu .kpf-plugins-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu #menu-media .wp-submenu li a[href*="' . self::MEDIA_DIVIDER_SLUG . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu #menu-media .wp-submenu .kpf-media-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

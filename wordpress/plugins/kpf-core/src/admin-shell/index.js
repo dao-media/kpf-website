@@ -1,11 +1,11 @@
 import { createRoot } from '@wordpress/element';
 import {
+	Accessibility,
 	Blocks,
 	Braces,
 	CornerDownRight,
 	FileText,
 	Gauge,
-	Image,
 	Images,
 	Inbox,
 	LayoutDashboard,
@@ -15,7 +15,6 @@ import {
 	SearchCheck,
 	Settings,
 	Users,
-	Video,
 	Wrench,
 	Workflow,
 } from 'lucide-react';
@@ -24,8 +23,7 @@ import './admin.scss';
 const menuIcons = {
 	'#menu-dashboard': LayoutDashboard,
 	'#menu-posts': Newspaper,
-	'#menu-media-images': Image,
-	'#menu-media-videos': Video,
+	'#menu-media': Images,
 	'#menu-pages': FileText,
 	'#menu-posts-kpf_scrapbook': Images,
 	'#toplevel_page_kpf-components': Blocks,
@@ -33,6 +31,7 @@ const menuIcons = {
 	'#toplevel_page_kpf-seo': SearchCheck,
 	'#toplevel_page_kpf-performance': Gauge,
 	'#menu-appearance': Palette,
+	'#toplevel_page_kpf-accessibility': Accessibility,
 	'#toplevel_page_kpf-interactions': Workflow,
 	'#menu-plugins': Plug,
 	'#menu-users': Users,
@@ -53,9 +52,9 @@ function decorateMenu() {
 }
 
 function decorateScfSubmenu() {
+	// Skip the main SCF (Field Groups) link; only nest under Tools children.
 	const links = document.querySelectorAll(
 		[
-			'#menu-tools .wp-submenu a[href*="acf-field-group"]',
 			'#menu-tools .wp-submenu a[href*="acf-post-type"]',
 			'#menu-tools .wp-submenu a[href*="acf-taxonomy"]',
 			'#menu-tools .wp-submenu a[href*="acf-ui-options-page"]',

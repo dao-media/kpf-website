@@ -14,6 +14,8 @@ final class ContentType {
 
 	public static function register_content(): void {
 		add_post_type_support( 'page', 'excerpt' );
+		// Keep page editor support so WPGraphQL still exposes content/editorBlocks for Faust.
+		// The admin UI is replaced by Pages\Editor via replace_editor — not by removing support.
 
 		$capabilities = array(
 			'edit_post'              => 'manage_options',

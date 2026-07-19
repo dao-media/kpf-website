@@ -7,6 +7,7 @@
  */
 
 use KPF\Core\Blocks\Groups;
+use KPF\Core\Blocks\Globals;
 use KPF\Core\Blocks\Registry;
 use KPF\Core\Blocks\Admin;
 
@@ -161,6 +162,131 @@ kpf_component_assert(
 	str_contains($manager_html, 'Create from upload'),
 	'Component manager links to the visual file importer'
 );
+kpf_component_assert(
+	str_contains($manager_html, 'name="global"') &&
+	str_contains($manager_html, 'Globals: Header'),
+	'Component manager exposes a Globals filter'
+);
+
+$behavior = Globals::sanitize_behavior(
+	array(
+		'mode'              => 'sticky-hide-reveal',
+		'retractDelayMs'    => 5000,
+		'scrollThresholdPx' => -3,
+		'overlayHero'       => '1',
+		'zIndex'            => 20,
+	),
+	'header'
+);
+kpf_component_assert(
+	'sticky-hide-reveal' === $behavior['mode'] &&
+	2000 === $behavior['retractDelayMs'] &&
+	0 === $behavior['scrollThresholdPx'] &&
+	true === $behavior['overlayHero'],
+	'Header behavior meta is sanitized and clamped'
+);
+
+$footer_behavior = Globals::sanitize_behavior(
+	array(
+		'mode'      => 'sticky-bottom',
+		'fullWidth' => false,
+	),
+	'footer'
+);
+kpf_component_assert(
+	'sticky-bottom' === $footer_behavior['mode'] &&
+	false === $footer_behavior['fullWidth'],
+	'Footer behavior meta preserves sticky-bottom and contained layout'
+);
+
+$header_a = wp_insert_post(
+	array(
+		'post_type'    => 'wp_block',
+		'post_status'  => 'publish',
+		'post_title'   => 'Smoke Header A',
+		'post_content' => '<!-- wp:paragraph --><p>Header A</p><!-- /wp:paragraph -->',
+	),
+	true
+);
+$header_b = wp_insert_post(
+	array(
+		'post_type'    => 'wp_block',
+		'post_status'  => 'publish',
+		'post_title'   => 'Smoke Header B',
+		'post_content' => '<!-- wp:paragraph --><p>Header B</p><!-- /wp:paragraph -->',
+	),
+	true
+);
+$draft_header = wp_insert_post(
+	array(
+		'post_type'    => 'wp_block',
+		'post_status'  => 'draft',
+		'post_title'   => 'Smoke Header Draft',
+		'post_content' => '<!-- wp:paragraph --><p>Draft header</p><!-- /wp:paragraph -->',
+	),
+	true
+);
+
+kpf_component_assert(
+	! is_wp_error( $header_a ) && ! is_wp_error( $header_b ) && ! is_wp_error( $draft_header ),
+	'Global role smoke fixtures can be created'
+);
+
+if ( ! is_wp_error( $header_a ) && ! is_wp_error( $header_b ) && ! is_wp_error( $draft_header ) ) {
+	update_post_meta( (int) $header_a, Globals::ROLE_META, 'header' );
+	update_post_meta( (int) $header_a, Globals::BEHAVIOR_META, Globals::default_behavior( 'header' ) );
+	Globals::sync_role_map( (int) $header_a, get_post( (int) $header_a ) );
+
+	update_post_meta( (int) $header_b, Globals::ROLE_META, 'header' );
+	update_post_meta( (int) $header_b, Globals::BEHAVIOR_META, Globals::default_behavior( 'header' ) );
+	Globals::sync_role_map( (int) $header_b, get_post( (int) $header_b ) );
+
+	kpf_component_assert(
+		Globals::ROLE_NONE === Globals::get_role( (int) $header_a ) &&
+		(int) $header_b === Globals::get_published_id( 'header' ),
+		'Assigning a new header clears the previous published assignment'
+	);
+
+	update_post_meta( (int) $draft_header, Globals::ROLE_META, 'header' );
+	Globals::sync_role_map( (int) $draft_header, get_post( (int) $draft_header ) );
+	kpf_component_assert(
+		(int) $header_b === Globals::get_published_id( 'header' ),
+		'Draft global headers are not resolved for the front end'
+	);
+
+	$resolved = Globals::resolve_role( 'header' );
+	kpf_component_assert(
+		is_array( $resolved ) &&
+		str_contains( (string) ( $resolved['html'] ?? '' ), 'Header B' ),
+		'Published header HTML is rendered through do_blocks'
+	);
+
+	wp_set_current_user( 0 );
+	kpf_component_assert(
+		! Globals::can_assign_role(),
+		'Anonymous users cannot assign global component roles'
+	);
+	wp_set_current_user( 1 );
+	kpf_component_assert(
+		Globals::can_assign_role(),
+		'Administrators can assign global component roles'
+	);
+
+	$_GET = array( 'page' => 'kpf-components', 'global' => 'header' );
+	ob_start();
+	Admin::render();
+	$filtered_html = (string) ob_get_clean();
+	kpf_component_assert(
+		str_contains( $filtered_html, 'kpf-component-badge--header' ) &&
+		str_contains( $filtered_html, 'Smoke Header B' ),
+		'Component manager badges published Header roles'
+	);
+
+	wp_delete_post( (int) $header_a, true );
+	wp_delete_post( (int) $header_b, true );
+	wp_delete_post( (int) $draft_header, true );
+	delete_option( Globals::MAP_OPTION );
+}
 
 if ($GLOBALS['kpf_component_failures'] > 0) {
 	echo "Completed with {$GLOBALS['kpf_component_failures']} failure(s).\n";

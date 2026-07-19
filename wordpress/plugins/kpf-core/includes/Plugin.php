@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace KPF\Core;
 
+use KPF\Core\Accessibility\Admin as AccessibilityAdmin;
+use KPF\Core\Accessibility\GraphQL as AccessibilityGraphQL;
+use KPF\Core\Accessibility\Rest as AccessibilityRest;
+use KPF\Core\Accessibility\Settings as AccessibilitySettings;
 use KPF\Core\Admin\Dashboard as AdminDashboard;
 use KPF\Core\Admin\MenuOrganizer;
 use KPF\Core\Admin\Theme as AdminTheme;
 use KPF\Core\Blocks\Admin as BlocksAdmin;
+use KPF\Core\Blocks\Globals as BlockGlobals;
 use KPF\Core\Blocks\GraphQL as BlocksGraphQL;
 use KPF\Core\Blocks\Groups as BlockGroups;
 use KPF\Core\Blocks\Patterns as BlockPatterns;
@@ -32,6 +37,9 @@ use KPF\Core\Interactions\GraphQL as InteractionsGraphQL;
 use KPF\Core\Interactions\Meta as InteractionsMeta;
 use KPF\Core\Interactions\Rest as InteractionsRest;
 use KPF\Core\Media\SvgUploads;
+use KPF\Core\Pages\Editor as PagesEditor;
+use KPF\Core\Pages\ListTable as PagesListTable;
+use KPF\Core\Pages\Rest as PagesRest;
 use KPF\Core\Performance\Admin as PerformanceAdmin;
 use KPF\Core\Performance\AdminBar as PerformanceAdminBar;
 use KPF\Core\Performance\Headers as PerformanceHeaders;
@@ -84,6 +92,7 @@ final class Plugin {
 		Settings::ensure_defaults();
 		InboxSettings::ensure_defaults();
 		PerformanceSettings::ensure_defaults();
+		AccessibilitySettings::ensure_defaults();
 		flush_rewrite_rules();
 	}
 
@@ -100,6 +109,7 @@ final class Plugin {
 		BlockGroups::register();
 		BlockRegistry::register();
 		BlockPatterns::register();
+		BlockGlobals::register();
 		BlocksGraphQL::register();
 		BlocksAdmin::register();
 
@@ -109,6 +119,10 @@ final class Plugin {
 		DesignsEditor::register();
 		DesignsRest::register();
 		DesignsGraphQL::register();
+
+		PagesEditor::register();
+		PagesListTable::register();
+		PagesRest::register();
 
 		InteractionsContentType::register();
 		InteractionsMeta::register();
@@ -145,6 +159,11 @@ final class Plugin {
 		PerformanceAdminBar::register();
 		PerformanceSettings::ensure_defaults();
 
+		AccessibilitySettings::register();
+		AccessibilityRest::register();
+		AccessibilityGraphQL::register();
+		AccessibilitySettings::ensure_defaults();
+
 		Settings::register();
 		MetaRepository::register();
 		TagRegistry::boot();
@@ -158,6 +177,8 @@ final class Plugin {
 
 		// Register after SEO so Utilities submenu lists SEO before Performance.
 		PerformanceAdmin::register();
+		// After Appearance in MenuOrganizer order (themes.php → accessibility → interactions).
+		AccessibilityAdmin::register();
 
 		if (get_option('kpf_seo_db_version') !== RedirectsTable::DB_VERSION) {
 			RedirectsTable::install();

@@ -122,6 +122,11 @@ kpf_assert(str_contains($robots_extra, 'User-agent: BadBot'), 'custom robots.txt
 $tags = Registry::catalog();
 kpf_assert(count($tags) >= 10, 'tag catalog populated');
 
+kpf_assert(
+	class_exists(\KPF\Core\Seo\Editor::class),
+	'SEO editor module is available for page/blog edit screens'
+);
+
 if ($post_id) {
 	wp_delete_post($post_id, true);
 }

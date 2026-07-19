@@ -95,6 +95,101 @@ GRAPHQL;
 	kpf_blocks_graphql_assert( 'Donate now' === $blocks[2]['attributes']['text'], 'HTML-sourced button text was not resolved.' );
 	kpf_blocks_graphql_assert( '/donate' === $blocks[2]['attributes']['url'], 'Button URL was not resolved.' );
 
+	$header_id = wp_insert_post(
+		array(
+			'post_type'    => 'wp_block',
+			'post_status'  => 'publish',
+			'post_title'   => 'GraphQL Chrome Header',
+			'post_content' => '<!-- wp:paragraph --><p>Chrome header body</p><!-- /wp:paragraph -->',
+		),
+		true
+	);
+	$footer_id = wp_insert_post(
+		array(
+			'post_type'    => 'wp_block',
+			'post_status'  => 'publish',
+			'post_title'   => 'GraphQL Chrome Footer',
+			'post_content' => '<!-- wp:paragraph --><p>Chrome footer body</p><!-- /wp:paragraph -->',
+		),
+		true
+	);
+
+	kpf_blocks_graphql_assert( ! is_wp_error( $header_id ) && ! is_wp_error( $footer_id ), 'Chrome fixtures failed to create.' );
+
+	update_post_meta( (int) $header_id, \KPF\Core\Blocks\Globals::ROLE_META, 'header' );
+	update_post_meta(
+		(int) $header_id,
+		\KPF\Core\Blocks\Globals::BEHAVIOR_META,
+		array(
+			'mode'            => 'sticky-hide-reveal',
+			'retractDelayMs'  => 220,
+			'overlayHero'     => true,
+			'transparentAtTop'=> true,
+			'zIndex'          => 60,
+		)
+	);
+	\KPF\Core\Blocks\Globals::sync_role_map( (int) $header_id, get_post( (int) $header_id ) );
+
+	update_post_meta( (int) $footer_id, \KPF\Core\Blocks\Globals::ROLE_META, 'footer' );
+	update_post_meta(
+		(int) $footer_id,
+		\KPF\Core\Blocks\Globals::BEHAVIOR_META,
+		array(
+			'mode'      => 'sticky-bottom',
+			'fullWidth' => false,
+		)
+	);
+	\KPF\Core\Blocks\Globals::sync_role_map( (int) $footer_id, get_post( (int) $footer_id ) );
+
+	$chrome_query = <<<'GRAPHQL'
+query SiteChromeSmoke {
+  kpfSiteChrome {
+    header {
+      databaseId
+      title
+      role
+      html
+      behavior {
+        mode
+        retractDelayMs
+        overlayHero
+        transparentAtTop
+        zIndex
+      }
+    }
+    footer {
+      databaseId
+      title
+      role
+      html
+      behavior {
+        mode
+        fullWidth
+      }
+    }
+  }
+}
+GRAPHQL;
+
+	$chrome_result = graphql( array( 'query' => $chrome_query ) );
+	kpf_blocks_graphql_assert( empty( $chrome_result['errors'] ), 'kpfSiteChrome returned GraphQL errors.' );
+
+	$header = $chrome_result['data']['kpfSiteChrome']['header'] ?? null;
+	$footer = $chrome_result['data']['kpfSiteChrome']['footer'] ?? null;
+	kpf_blocks_graphql_assert( is_array( $header ), 'Header chrome was not returned.' );
+	kpf_blocks_graphql_assert( is_array( $footer ), 'Footer chrome was not returned.' );
+	kpf_blocks_graphql_assert( (int) $header_id === (int) $header['databaseId'], 'Header ID mismatch.' );
+	kpf_blocks_graphql_assert( str_contains( (string) $header['html'], 'Chrome header body' ), 'Header HTML missing.' );
+	kpf_blocks_graphql_assert( 'sticky-hide-reveal' === $header['behavior']['mode'], 'Header mode missing.' );
+	kpf_blocks_graphql_assert( true === $header['behavior']['overlayHero'], 'Header overlay missing.' );
+	kpf_blocks_graphql_assert( str_contains( (string) $footer['html'], 'Chrome footer body' ), 'Footer HTML missing.' );
+	kpf_blocks_graphql_assert( 'sticky-bottom' === $footer['behavior']['mode'], 'Footer mode missing.' );
+	kpf_blocks_graphql_assert( false === $footer['behavior']['fullWidth'], 'Footer fullWidth missing.' );
+
+	wp_delete_post( (int) $header_id, true );
+	wp_delete_post( (int) $footer_id, true );
+	delete_option( \KPF\Core\Blocks\Globals::MAP_OPTION );
+
 	echo "Structured Gutenberg GraphQL smoke test passed.\n";
 } finally {
 	wp_delete_post( $page_id, true );

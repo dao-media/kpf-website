@@ -497,8 +497,15 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 											: sprintf(__('<%s> text', 'kpf-core'), field.tag)
 									}
 									value={field.value}
-									rows={Math.min(6, Math.max(2, Math.ceil(field.value.length / 42)))}
-									onChange={(value) => setHtml((source) => updateCopyField(source, field, value))}
+									rows={3}
+									onChange={(value) =>
+										setHtml((source) => {
+											const current = extractCopyFields(source).find(
+												(item) => item.id === field.id
+											);
+											return updateCopyField(source, current || field, value);
+										})
+									}
 								/>
 							))
 						) : (

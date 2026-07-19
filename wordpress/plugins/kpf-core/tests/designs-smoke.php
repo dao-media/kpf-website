@@ -34,6 +34,9 @@ $post_type = get_post_type_object( ContentType::POST_TYPE );
 kpf_design_assert( (bool) $post_type, 'Design post type is registered' );
 kpf_design_assert( false === $post_type->show_ui, 'Design CPT UI is hidden (managed via Pages → Designs)' );
 kpf_design_assert( current_user_can( 'manage_options' ), 'Administrator can manage designs' );
+kpf_design_assert( post_type_supports( 'page', 'editor' ), 'Pages keep editor support for GraphQL content fields' );
+kpf_design_assert( post_type_supports( 'post', 'editor' ), 'Blog posts keep the written body editor' );
+kpf_design_assert( post_type_supports( 'page', 'excerpt' ), 'Pages keep excerpt support for SEO' );
 
 $clean = Meta::sanitize_design(
 	array(

@@ -706,9 +706,11 @@ function Builder({ animation, onSaved, onDeleted }) {
 						onChange={(event) => setDraft({ ...draft, name: event.target.value })}
 						aria-label={__('Animation name', 'kpf-core')}
 					/>
-					<span className={dirty ? 'is-dirty' : ''}>
-						{dirty ? __('Unsaved changes', 'kpf-core') : __('Saved', 'kpf-core')}
-					</span>
+					{dirty ? (
+						<span className="kpf-gsap-dirty">{__('Unsaved', 'kpf-core')}</span>
+					) : (
+						<span>{__('Saved', 'kpf-core')}</span>
+					)}
 				</div>
 				<div>
 					<ToggleControl

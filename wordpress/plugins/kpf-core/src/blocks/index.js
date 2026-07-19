@@ -14,13 +14,14 @@ import {
 	Modal,
 	Notice,
 	PanelBody,
+	RangeControl,
 	SearchControl,
 	SelectControl,
 	Spinner,
 	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
-import { useEntityRecords } from '@wordpress/core-data';
+import { useEntityProp, useEntityRecords } from '@wordpress/core-data';
 import { useDispatch, useSelect } from '@wordpress/data';
 import {
 	PluginDocumentSettingPanel,
@@ -30,6 +31,12 @@ import {
 import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { registerPlugin } from '@wordpress/plugins';
+
+const COMPONENT_GLOBALS = window.kpfComponentGlobals || {};
+const GLOBAL_ROLE_META = COMPONENT_GLOBALS.roleMetaKey || '_kpf_component_global_role';
+const GLOBAL_BEHAVIOR_META =
+	COMPONENT_GLOBALS.behaviorMetaKey || '_kpf_component_behavior';
+const GLOBAL_DEFAULTS = COMPONENT_GLOBALS.defaults || {};
 
 import buttonMetadata from '../../blocks/button/block.json';
 import cardMetadata from '../../blocks/card/block.json';
@@ -843,6 +850,222 @@ function parseComponentImport(filename, source) {
 	return { blocks, removedScripts, title };
 }
 
+function ComponentGlobalPanel() {
+	const postType = useSelect(
+		(select) => select('core/editor')?.getCurrentPostType(),
+		[]
+	);
+	const postStatus = useSelect(
+		(select) => select('core/editor')?.getEditedPostAttribute('status'),
+		[]
+	);
+	const [meta, setMeta] = useEntityProp('postType', 'wp_block', 'meta');
+	const canAssign = Boolean(COMPONENT_GLOBALS.canAssign);
+
+	if (postType !== 'wp_block' || !canAssign) {
+		return null;
+	}
+
+	const role = meta?.[GLOBAL_ROLE_META] || 'none';
+	const behavior = {
+		...(GLOBAL_DEFAULTS[role] || GLOBAL_DEFAULTS.none || {}),
+		...(meta?.[GLOBAL_BEHAVIOR_META] || {}),
+	};
+
+	function updateRole(nextRole) {
+		const defaults = GLOBAL_DEFAULTS[nextRole] || GLOBAL_DEFAULTS.none || {
+			version: 1,
+		};
+		setMeta({
+			...meta,
+			[GLOBAL_ROLE_META]: nextRole,
+			[GLOBAL_BEHAVIOR_META]: { ...defaults, role: nextRole },
+		});
+	}
+
+	function updateBehavior(patch) {
+		setMeta({
+			...meta,
+			[GLOBAL_BEHAVIOR_META]: {
+				...behavior,
+				...patch,
+				role,
+				version: 1,
+			},
+		});
+	}
+
+	return (
+		<PluginDocumentSettingPanel
+			name="kpf-component-global"
+			title={__('Global site component', 'kpf-core')}
+			className="kpf-component-global-panel"
+		>
+			<p>
+				{__(
+					'Assign this published component as the site-wide header or footer. Only one published component can hold each role.',
+					'kpf-core'
+				)}
+			</p>
+			<SelectControl
+				label={__('Site role', 'kpf-core')}
+				value={role}
+				options={[
+					{ label: __('Not a global component', 'kpf-core'), value: 'none' },
+					{ label: __('Site header', 'kpf-core'), value: 'header' },
+					{ label: __('Site footer', 'kpf-core'), value: 'footer' },
+				]}
+				onChange={updateRole}
+				help={
+					postStatus !== 'publish' && role !== 'none'
+						? __(
+								'Publish this component before the front end will use it as global chrome.',
+								'kpf-core'
+							)
+						: undefined
+				}
+			/>
+
+			{role === 'header' ? (
+				<>
+					<SelectControl
+						label={__('Header mode', 'kpf-core')}
+						value={behavior.mode || 'sticky'}
+						options={[
+							{
+								label: __('Inline (scrolls with page)', 'kpf-core'),
+								value: 'inline',
+							},
+							{
+								label: __('Sticky (always visible)', 'kpf-core'),
+								value: 'sticky',
+							},
+							{
+								label: __(
+									'Smart sticky (hide down, reveal up)',
+									'kpf-core'
+								),
+								value: 'sticky-hide-reveal',
+							},
+						]}
+						onChange={(mode) => updateBehavior({ mode })}
+						help={__(
+							'Smart sticky keeps a stable spacer so layout does not jump, then slides the bar with transform-only motion.',
+							'kpf-core'
+						)}
+					/>
+					{behavior.mode === 'sticky-hide-reveal' ? (
+						<>
+							<RangeControl
+								label={__('Retract delay (ms)', 'kpf-core')}
+								value={Number(behavior.retractDelayMs ?? 180)}
+								onChange={(retractDelayMs) =>
+									updateBehavior({ retractDelayMs })
+								}
+								min={0}
+								max={2000}
+								step={20}
+								help={__(
+									'Wait this long after scrolling down before hiding the header. Focus inside the header still keeps it visible.',
+									'kpf-core'
+								)}
+							/>
+							<RangeControl
+								label={__('Scroll threshold (px)', 'kpf-core')}
+								value={Number(behavior.scrollThresholdPx ?? 12)}
+								onChange={(scrollThresholdPx) =>
+									updateBehavior({ scrollThresholdPx })
+								}
+								min={0}
+								max={200}
+								step={1}
+							/>
+							<RangeControl
+								label={__('Transition duration (ms)', 'kpf-core')}
+								value={Number(behavior.transitionMs ?? 280)}
+								onChange={(transitionMs) =>
+									updateBehavior({ transitionMs })
+								}
+								min={0}
+								max={2000}
+								step={20}
+							/>
+							<ToggleControl
+								label={__('Always reveal at top of page', 'kpf-core')}
+								checked={Boolean(behavior.revealAtTop)}
+								onChange={(revealAtTop) =>
+									updateBehavior({ revealAtTop })
+								}
+							/>
+						</>
+					) : null}
+					<ToggleControl
+						label={__('Overlay page / hero content', 'kpf-core')}
+						checked={Boolean(behavior.overlayHero)}
+						onChange={(overlayHero) => updateBehavior({ overlayHero })}
+						help={__(
+							'When on, the header floats over content and does not reserve layout space. Prefer for transparent hero headers.',
+							'kpf-core'
+						)}
+					/>
+					<ToggleControl
+						label={__('Transparent at top of page', 'kpf-core')}
+						checked={Boolean(behavior.transparentAtTop)}
+						onChange={(transparentAtTop) =>
+							updateBehavior({ transparentAtTop })
+						}
+						help={__(
+							'Adds a CSS state class while the window is scrolled to the top so your component styles can go transparent.',
+							'kpf-core'
+						)}
+					/>
+					<RangeControl
+						label={__('Stacking order (z-index)', 'kpf-core')}
+						value={Number(behavior.zIndex ?? 50)}
+						onChange={(zIndex) => updateBehavior({ zIndex })}
+						min={1}
+						max={9999}
+						step={1}
+					/>
+				</>
+			) : null}
+
+			{role === 'footer' ? (
+				<>
+					<SelectControl
+						label={__('Footer mode', 'kpf-core')}
+						value={behavior.mode || 'inline'}
+						options={[
+							{
+								label: __('Normal document flow', 'kpf-core'),
+								value: 'inline',
+							},
+							{
+								label: __('Sticky to bottom on short pages', 'kpf-core'),
+								value: 'sticky-bottom',
+							},
+						]}
+						onChange={(mode) => updateBehavior({ mode })}
+						help={__(
+							'Sticky-bottom keeps the footer at the viewport bottom when page content is shorter than the screen.',
+							'kpf-core'
+						)}
+					/>
+					<ToggleControl
+						label={__('Full width layout', 'kpf-core')}
+						checked={behavior.fullWidth !== false}
+						onChange={(fullWidth) => updateBehavior({ fullWidth })}
+						help={__(
+							'Turn off to constrain the footer to the site content width.',
+							'kpf-core'
+						)}
+					/>
+				</>
+			) : null}
+		</PluginDocumentSettingPanel>
+	);
+}
+
 function ComponentImportPanel() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isReading, setIsReading] = useState(false);
@@ -1237,6 +1460,7 @@ registerPlugin('kpf-component-library', {
 		<>
 			<ComponentLibrarySidebar />
 			<ComponentImportPanel />
+			<ComponentGlobalPanel />
 		</>
 	),
 	icon: 'layout',

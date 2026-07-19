@@ -1,59 +1,44 @@
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { useEntityProp } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
-import { useEffect, useMemo, useState } from '@wordpress/element';
 import {
-	Button,
-	PanelBody,
-	SearchControl,
-	TextControl,
-	TextareaControl,
-	ToggleControl,
-} from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+	createRoot,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { SeoFields, emptySeoMeta } from '../seo-fields/SeoFields';
+import './style.css';
 
 apiFetch.use(apiFetch.createNonceMiddleware(window.kpfSeoEditor?.nonce || ''));
 
 const META_KEY = window.kpfSeoEditor?.metaKey || '_kpf_seo';
+const SUPPORTED_POST_TYPES = window.kpfSeoEditor?.postTypes || ['post'];
+const CANVAS_ROOT_ID = 'kpf-seo-canvas-root';
 
-function emptyMeta() {
-	return {
-		title_template: null,
-		description_template: null,
-		canonical: null,
-		robots_index: null,
-		robots_follow: null,
-		og_title: null,
-		og_description: null,
-		twitter_title: null,
-		twitter_description: null,
-		schema_type: null,
-		custom_json_ld: null,
-		show_in_sitemap: null,
-		custom_meta: [],
-	};
-}
-
-function SeoEditorPanel() {
-	const postType = useSelect((select) => select('core/editor').getCurrentPostType(), []);
-	const postId = useSelect((select) => select('core/editor').getCurrentPostId(), []);
+function useBlogSeoState() {
+	const postType = useSelect((select) => select('core/editor')?.getCurrentPostType(), []);
+	const postId = useSelect((select) => select('core/editor')?.getCurrentPostId(), []);
 	const [meta, setMeta] = useEntityProp('postType', postType, 'meta');
 	const [tags, setTags] = useState([]);
-	const [query, setQuery] = useState('');
+	const [tagQuery, setTagQuery] = useState('');
 	const [preview, setPreview] = useState({ title: '', description: '' });
 
-	const seo = useMemo(() => ({ ...emptyMeta(), ...(meta?.[META_KEY] || {}) }), [meta]);
+	const seo = useMemo(() => ({ ...emptySeoMeta(), ...(meta?.[META_KEY] || {}) }), [meta]);
+	const supported = SUPPORTED_POST_TYPES.includes(postType);
 
 	useEffect(() => {
+		if (!supported) return undefined;
 		apiFetch({ path: '/kpf-seo/v1/tags' })
 			.then((response) => setTags(response.tags || []))
 			.catch(() => setTags([]));
-	}, []);
+		return undefined;
+	}, [supported]);
 
 	useEffect(() => {
-		if (!postId) return;
+		if (!supported || !postId) return undefined;
 		const handle = setTimeout(() => {
 			apiFetch({ path: `/kpf-seo/v1/resolve/${postId}` })
 				.then((response) =>
@@ -65,180 +50,119 @@ function SeoEditorPanel() {
 				.catch(() => setPreview({ title: '', description: '' }));
 		}, 400);
 		return () => clearTimeout(handle);
-	}, [postId, seo.title_template, seo.description_template]);
+	}, [
+		supported,
+		postId,
+		seo.title_template,
+		seo.description_template,
+		seo.og_title,
+		seo.og_description,
+	]);
 
-	function updateSeo(partial) {
+	function updateSeo(next) {
 		setMeta({
 			...meta,
-			[META_KEY]: {
-				...seo,
-				...partial,
-			},
+			[META_KEY]: next,
 		});
 	}
 
-	const filteredTags = tags.filter((tag) =>
-		[tag.token, tag.label, tag.description, tag.invocation]
-			.join(' ')
-			.toLowerCase()
-			.includes(query.toLowerCase())
-	);
+	return {
+		supported,
+		postType,
+		seo,
+		preview,
+		tags,
+		tagQuery,
+		setTagQuery,
+		updateSeo,
+	};
+}
 
-	async function copyTag(invocation) {
-		try {
-			await navigator.clipboard.writeText(invocation);
-		} catch (error) {
-			const input = document.createElement('input');
-			input.value = invocation;
-			document.body.appendChild(input);
-			input.select();
-			document.execCommand('copy');
-			document.body.removeChild(input);
-		}
+function ensureCanvasHost() {
+	const visual =
+		document.querySelector('.edit-post-visual-editor') ||
+		document.querySelector('.editor-visual-editor');
+	if (!visual) {
+		return null;
 	}
 
+	let host = document.getElementById(CANVAS_ROOT_ID);
+	if (!host) {
+		host = document.createElement('div');
+		host.id = CANVAS_ROOT_ID;
+	}
+	host.className = 'kpf-seo-canvas-root kpf-seo-canvas-root--post';
+
+	const iframe =
+		visual.querySelector('iframe[name="editor-canvas"]') ||
+		visual.querySelector('iframe.editor-canvas__iframe') ||
+		visual.querySelector('iframe');
+
+	if (iframe && iframe.nextSibling !== host) {
+		iframe.after(host);
+	} else if (!host.parentElement) {
+		visual.appendChild(host);
+	}
+	return host;
+}
+
+function BlogSeoPanel() {
+	const { seo, preview, tags, tagQuery, setTagQuery, updateSeo } = useBlogSeoState();
 	return (
-		<PluginDocumentSettingPanel
-			name="kpf-seo"
-			title={__('Search & sharing', 'kpf-core')}
-			className="kpf-seo-editor-panel"
-		>
-			<p>
-				{__(
-					'These settings change how this page may look in search results and social shares. Leave fields blank to use the site defaults.',
-					'kpf-core'
-				)}
-			</p>
-			<p>
-				<strong>{__('Current search title', 'kpf-core')}:</strong> {preview.title || '—'}
-			</p>
-			<p>
-				<strong>{__('Current search description', 'kpf-core')}:</strong>{' '}
-				{preview.description || '—'}
-			</p>
-
-			<TextControl
-				label={__('Custom search-title pattern', 'kpf-core')}
-				help={__(
-					'Optional. Leave blank to use the default for this kind of page. You can use placeholders from the section below.',
-					'kpf-core'
-				)}
-				value={seo.title_template || ''}
-				onChange={(value) => updateSeo({ title_template: value || null })}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-			<TextareaControl
-				label={__('Custom search-description pattern', 'kpf-core')}
-				help={__(
-					'Optional. This is the short summary search engines may show below the page title.',
-					'kpf-core'
-				)}
-				value={seo.description_template || ''}
-				onChange={(value) => updateSeo({ description_template: value || null })}
-				__nextHasNoMarginBottom
-			/>
-			<TextControl
-				label={__('Preferred page address (advanced)', 'kpf-core')}
-				help={__(
-					'Usually leave this blank. Use it only when the same content exists at more than one address and search engines should prefer a specific one.',
-					'kpf-core'
-				)}
-				value={seo.canonical || ''}
-				onChange={(value) => updateSeo({ canonical: value || null })}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-			<ToggleControl
-				label={__('Hide this page from search results', 'kpf-core')}
-				help={__(
-					'Use this for private, temporary, or duplicate pages. It asks search engines not to list this page.',
-					'kpf-core'
-				)}
-				checked={seo.robots_index === false}
-				onChange={(checked) => updateSeo({ robots_index: checked ? false : null })}
-			/>
-			<ToggleControl
-				label={__('Ask search engines not to follow links on this page', 'kpf-core')}
-				help={__('Advanced: usually leave this off.', 'kpf-core')}
-				checked={seo.robots_follow === false}
-				onChange={(checked) => updateSeo({ robots_follow: checked ? false : null })}
-			/>
-			<TextControl
-				label={__('Custom social-sharing title', 'kpf-core')}
-				help={__(
-					'Optional. Used when this page is shared on Facebook, LinkedIn, and similar services.',
-					'kpf-core'
-				)}
-				value={seo.og_title || ''}
-				onChange={(value) => updateSeo({ og_title: value || null })}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-			<TextareaControl
-				label={__('Custom social-sharing description', 'kpf-core')}
-				help={__('Optional. Leave blank to use the search description.', 'kpf-core')}
-				value={seo.og_description || ''}
-				onChange={(value) => updateSeo({ og_description: value || null })}
-				__nextHasNoMarginBottom
-			/>
-			<TextControl
-				label={__('Page information type (advanced)', 'kpf-core')}
-				help={__(
-					'Usually leave this blank. A developer may set values such as WebPage, Article, or BlogPosting.',
-					'kpf-core'
-				)}
-				value={seo.schema_type || ''}
-				onChange={(value) => updateSeo({ schema_type: value || null })}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-			<TextareaControl
-				label={__('Custom structured data code (expert only)', 'kpf-core')}
-				help={__(
-					'Leave blank unless a developer gives you validated JSON-LD code.',
-					'kpf-core'
-				)}
-				value={seo.custom_json_ld || ''}
-				onChange={(value) => updateSeo({ custom_json_ld: value || null })}
-				__nextHasNoMarginBottom
-			/>
-
-			<PanelBody title={__('Automatic placeholders', 'kpf-core')} initialOpen={false}>
-				<p>
-					{__(
-						'Copy a placeholder and paste it into a title or description pattern. It will be replaced with this page’s information.',
-						'kpf-core'
-					)}
-				</p>
-				<SearchControl value={query} onChange={setQuery} __nextHasNoMarginBottom />
-				<div style={{ maxHeight: 220, overflow: 'auto', marginTop: 8 }}>
-					{filteredTags.map((tag) => (
-						<div
-							key={tag.token}
-							style={{
-								display: 'flex',
-								justifyContent: 'space-between',
-								gap: 8,
-								marginBottom: 8,
-							}}
-						>
-							<div>
-								<code>{tag.invocation}</code>
-								<div>{tag.label}</div>
-							</div>
-							<Button size="compact" variant="secondary" onClick={() => copyTag(tag.invocation)}>
-								{__('Copy', 'kpf-core')}
-							</Button>
-						</div>
-					))}
-				</div>
-			</PanelBody>
-		</PluginDocumentSettingPanel>
+		<SeoFields
+			seo={seo}
+			preview={preview}
+			tags={tags}
+			tagQuery={tagQuery}
+			onTagQueryChange={setTagQuery}
+			onChange={updateSeo}
+		/>
 	);
 }
 
+function SeoCanvasMount() {
+	const { supported, postType } = useBlogSeoState();
+	const rootRef = useRef(null);
+
+	useEffect(() => {
+		if (!supported || postType !== 'post') {
+			return undefined;
+		}
+
+		let cancelled = false;
+		let observer;
+
+		const mount = () => {
+			if (cancelled) return false;
+			const host = ensureCanvasHost();
+			if (!host) return false;
+
+			if (!rootRef.current) {
+				rootRef.current = createRoot(host);
+			}
+			rootRef.current.render(<BlogSeoPanel />);
+			return true;
+		};
+
+		observer = new MutationObserver(() => {
+			mount();
+		});
+		observer.observe(document.body, { childList: true, subtree: true });
+		mount();
+
+		return () => {
+			cancelled = true;
+			observer?.disconnect();
+			rootRef.current?.unmount();
+			rootRef.current = null;
+			document.getElementById(CANVAS_ROOT_ID)?.remove();
+		};
+	}, [supported, postType]);
+
+	return null;
+}
+
 registerPlugin('kpf-seo-editor', {
-	render: SeoEditorPanel,
+	render: SeoCanvasMount,
 	icon: 'chart-area',
 });

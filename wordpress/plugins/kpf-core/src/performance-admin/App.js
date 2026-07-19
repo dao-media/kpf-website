@@ -530,14 +530,16 @@ export default function App() {
 										: __('Off', 'kpf-core')
 								}
 							/>
-							<Stat
-								label={__('Object cache', 'kpf-core')}
-								value={
-									status?.object_cache
-										? __('Active', 'kpf-core')
-										: __('Not detected', 'kpf-core')
-								}
-							/>
+							{settings.advanced?.object_cache_hint && (
+								<Stat
+									label={__('Object cache', 'kpf-core')}
+									value={
+										status?.object_cache
+											? __('Active', 'kpf-core')
+											: __('Not detected', 'kpf-core')
+									}
+								/>
+							)}
 							<Stat
 								label={__('CDN', 'kpf-core')}
 								value={
@@ -895,6 +897,10 @@ export default function App() {
 						<FieldGroup title={__('WordPress housekeeping', 'kpf-core')}>
 							<ToggleControl
 								label={__('Show object-cache status', 'kpf-core')}
+								help={__(
+									'Adds a read-only Object cache tile to the Overview showing whether a persistent object cache (Redis or Memcached) drop-in is active. Object caching is enabled at the server level, so there is no toggle for it here.',
+									'kpf-core'
+								)}
 								checked={!!settings.advanced.object_cache_hint}
 								onChange={(value) => patch('advanced', 'object_cache_hint', value)}
 							/>

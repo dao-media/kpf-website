@@ -134,6 +134,124 @@ body {
 	outline-offset: 3px;
 }
 
+.kpf-skip-link {
+	background: var(--kpf-ink);
+	border-radius: var(--kpf-radius-sm);
+	color: var(--kpf-white);
+	font-weight: 600;
+	left: 1rem;
+	padding: 0.65rem 1rem;
+	position: absolute;
+	text-decoration: none;
+	top: -100px;
+	z-index: 10000;
+}
+
+.kpf-skip-link:focus,
+.kpf-skip-link:focus-visible {
+	top: 1rem;
+}
+
+.kpf-a11y-live {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+.kpf-site-chrome {
+	min-height: 100vh;
+}
+
+.kpf-site-chrome__main:focus {
+	outline: none;
+}
+
+.kpf-site-chrome--sticky-footer {
+	display: flex;
+	flex-direction: column;
+}
+
+.kpf-site-chrome--sticky-footer .kpf-site-chrome__main {
+	flex: 1 0 auto;
+}
+
+.kpf-site-chrome__header {
+	--kpf-chrome-transition: 280ms;
+	--kpf-chrome-z: 50;
+}
+
+.kpf-site-chrome__header-spacer {
+	pointer-events: none;
+	width: 100%;
+}
+
+.kpf-site-chrome__header-bar {
+	width: 100%;
+}
+
+.kpf-site-chrome__header--sticky .kpf-site-chrome__header-bar,
+.kpf-site-chrome__header--sticky-hide-reveal .kpf-site-chrome__header-bar {
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+	transform: translate3d(0, 0, 0);
+	transition: transform var(--kpf-chrome-transition) ease;
+	will-change: transform;
+	z-index: var(--kpf-chrome-z);
+}
+
+.kpf-site-chrome__header--overlay .kpf-site-chrome__header-spacer {
+	display: none;
+}
+
+.kpf-site-chrome__header--overlay .kpf-site-chrome__header-bar {
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+	z-index: var(--kpf-chrome-z);
+}
+
+.kpf-site-chrome__header--retracted .kpf-site-chrome__header-bar {
+	transform: translate3d(0, -100%, 0);
+}
+
+.kpf-site-chrome__header--transparent-top .kpf-site-chrome__header-bar {
+	background: transparent;
+}
+
+.kpf-site-chrome__footer--contained {
+	margin: 0 auto;
+	max-width: 74rem;
+	width: 100%;
+}
+
+.kpf-site-chrome__footer--full-width {
+	width: 100%;
+}
+
+.kpf-site-chrome__footer--sticky-bottom {
+	margin-top: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-site-chrome__header--sticky .kpf-site-chrome__header-bar,
+	.kpf-site-chrome__header--sticky-hide-reveal .kpf-site-chrome__header-bar {
+		transition: none;
+	}
+
+	.kpf-site-chrome__header--retracted .kpf-site-chrome__header-bar {
+		transform: none;
+	}
+}
+
 .kpf-page {
 	padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 2rem);
 }

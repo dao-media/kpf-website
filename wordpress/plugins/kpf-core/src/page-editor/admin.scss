@@ -1,0 +1,96 @@
+@import '../seo-fields/style.css';
+
+.kpf-page-editor-wrap {
+	max-width: 960px;
+}
+
+.kpf-page-editor {
+	display: grid;
+	gap: 24px;
+	margin-top: 16px;
+}
+
+.kpf-page-editor--loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 240px;
+}
+
+.kpf-page-editor__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	position: sticky;
+	top: 32px;
+	z-index: 10;
+	padding: 12px 0;
+	background: var(--kpf-admin-canvas, #f3f5f8);
+	border-bottom: 1px solid var(--kpf-admin-line, #e2e8f0);
+}
+
+.kpf-page-editor__toolbar-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+}
+
+.kpf-page-editor__notice {
+	font-size: 13px;
+	color: #007017;
+}
+
+.kpf-page-editor__notice.is-error {
+	color: #b32d2e;
+}
+
+.kpf-page-editor__section {
+	display: grid;
+	gap: 16px;
+	padding: 20px 22px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+}
+
+.kpf-page-editor__section h2 {
+	margin: 0;
+	font-size: 1.15rem;
+}
+
+.kpf-page-editor__section--split {
+	grid-template-columns: 1fr;
+	gap: 28px;
+
+	@media (min-width: 782px) {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.kpf-page-editor__fields {
+	display: grid;
+	gap: 16px;
+}
+
+.kpf-page-editor__featured {
+	display: block;
+	width: 100%;
+	max-width: 280px;
+	height: auto;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.kpf-page-editor__image-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.kpf-page-editor .kpf-seo-editor {
+	width: 100%;
+}

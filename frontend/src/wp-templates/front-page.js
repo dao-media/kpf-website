@@ -1,11 +1,11 @@
 import { gql } from "@apollo/client";
 import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
-import GlobalStylesheet, {
-  KPF_STYLESHEET_QUERY,
-} from "@/components/GlobalStylesheet";
+import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
 import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
+import PageDesignRenderer from "@/components/PageDesignRenderer";
 import SeoHead from "@/components/SeoHead";
-import WordPressContent from "@/components/WordPressContent";
+const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
+const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 
 export default function FrontPageTemplate(props) {
   const seo = props?.data?.kpfSeoHome;
@@ -13,14 +13,9 @@ export default function FrontPageTemplate(props) {
 
   return (
     <>
-      <GlobalStylesheet css={props?.data?.kpfStylesheet} />
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={seo} />
-      <WordPressContent
-        title={page?.title}
-        content={page?.content}
-        blocks={page?.editorBlocks}
-      />
+      <PageDesignRenderer page={page} />
     </>
   );
 }
@@ -28,11 +23,49 @@ export default function FrontPageTemplate(props) {
 FrontPageTemplate.query = gql`
   query GetHomeSeo {
     ${KPF_STYLESHEET_QUERY}
+    ${KPF_SITE_CHROME_QUERY}
+    ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_GSAP_QUERY}
     home: kpfFrontPage {
+      id
+      databaseId
       title
       content
       ${KPF_EDITOR_BLOCKS_QUERY}
+      excerpt
+      slug
+      uri
+      link
+      date
+      modified
+      author {
+        node {
+          name
+          uri
+        }
+      }
+      featuredImage {
+        node {
+          sourceUrl
+          srcSet
+          altText
+          caption
+          mediaDetails {
+            width
+            height
+          }
+        }
+      }
+      kpfPageDesign {
+        databaseId
+        title
+        html
+        css
+      }
+      kpfDesignFields {
+        key
+        value
+      }
     }
     kpfSeoHome {
       title

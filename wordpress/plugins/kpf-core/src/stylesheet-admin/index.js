@@ -272,9 +272,11 @@ function App() {
 					<span>{__('Global CSS applied across the headless frontend.', 'kpf-core')}</span>
 				</div>
 				<div className="kpf-stylesheet-actions">
-					<span className={dirty ? 'is-dirty' : ''}>
-						{dirty ? __('Unsaved changes', 'kpf-core') : __('All changes saved', 'kpf-core')}
-					</span>
+					{dirty ? (
+						<span className="kpf-stylesheet-dirty">{__('Unsaved', 'kpf-core')}</span>
+					) : (
+						<span>{__('All changes saved', 'kpf-core')}</span>
+					)}
 					<Button
 						variant="secondary"
 						aria-expanded={historyOpen}

@@ -1,5 +1,25 @@
-function escapeTemplateValue(value) {
+/**
+ * Decode common HTML entities so values that were already escaped
+ * (or stored with numeric entities) are not double-escaped into visible codes.
+ */
+function decodeHtmlEntities(value) {
   return String(value ?? "")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([\da-f]+);/gi, (_, code) =>
+      String.fromCodePoint(parseInt(code, 16)),
+    )
+    .replace(/&nbsp;/gi, "\u00a0")
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;|&#0?39;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&");
+}
+
+function escapeTemplateValue(value) {
+  // Decode first so apostrophes/ampersands render as real characters on the FE,
+  // not as literal &#039; / &amp; text from double-escaping.
+  return decodeHtmlEntities(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -67,6 +87,7 @@ function renderDesignTemplate(template, model) {
 }
 
 module.exports = {
+  decodeHtmlEntities,
   escapeTemplateValue,
   renderDesignTemplate,
 };

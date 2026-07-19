@@ -51,6 +51,21 @@ describe("page design templates", () => {
     );
   });
 
+  it("does not double-escape pre-encoded field values into visible entity codes", () => {
+    assert.equal(
+      renderDesignTemplate("<p>{{fields.heading}}</p>", {
+        fields: { heading: "Kevin&#039;s &amp; friends" },
+      }),
+      "<p>Kevin&#039;s &amp; friends</p>",
+    );
+    assert.equal(
+      renderDesignTemplate("<p>{{fields.heading}}</p>", {
+        fields: { heading: "Kevin's — “quote”" },
+      }),
+      "<p>Kevin&#039;s — “quote”</p>",
+    );
+  });
+
   it("renders placeholders inside inline SVG markup", () => {
     assert.equal(
       renderDesignTemplate(

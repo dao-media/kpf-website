@@ -27,7 +27,7 @@ final class ContentType {
 					'search_items'          => __('Search scrapbook', 'kpf-core'),
 					'not_found'             => __('No scrapbook items found.', 'kpf-core'),
 					'not_found_in_trash'    => __('No scrapbook items found in Trash.', 'kpf-core'),
-					'all_items'             => __('All scrapbook items', 'kpf-core'),
+					'all_items'             => __('Manage', 'kpf-core'),
 					'item_published'        => __('Scrapbook item published.', 'kpf-core'),
 					'item_updated'          => __('Scrapbook item updated.', 'kpf-core'),
 					'featured_image'        => __('Cover image', 'kpf-core'),

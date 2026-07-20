@@ -1,6 +1,6 @@
 import apiFetch from '@wordpress/api-fetch';
 import { Button, Notice, Spinner, TextareaControl } from '@wordpress/components';
-import { createRoot, useCallback, useEffect, useMemo, useState } from '@wordpress/element';
+import { createRoot, useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import CodeEditor from './CodeEditor';
 import { extractCopyFields, updateCopyField } from './copyFields';
@@ -267,6 +267,7 @@ function UrlRow({ row, onUpdated, onEdit }) {
 }
 
 function DesignEditorWorkspace({ row, onBack, onSaved }) {
+	const shellRef = useRef(null);
 	const [editor, setEditor] = useState(null);
 	const [html, setHtml] = useState('');
 	const [css, setCss] = useState('');
@@ -295,6 +296,33 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 			.catch((err) => setError(err?.message || __('Could not open this design.', 'kpf-core')))
 			.finally(() => setLoading(false));
 	}, [row.id]);
+
+	useEffect(() => {
+		document.body.classList.add('kpf-designs-editing');
+		return () => {
+			document.body.classList.remove('kpf-designs-editing');
+		};
+	}, []);
+
+	useEffect(() => {
+		if (loading || !editor) return undefined;
+
+		const shell = shellRef.current;
+		if (!shell) return undefined;
+
+		const fit = () => {
+			const top = shell.getBoundingClientRect().top;
+			const next = Math.max(420, Math.floor(window.innerHeight - top - 12));
+			shell.style.height = `${next}px`;
+		};
+
+		fit();
+		window.requestAnimationFrame(fit);
+		window.addEventListener('resize', fit);
+		return () => {
+			window.removeEventListener('resize', fit);
+		};
+	}, [editor, loading]);
 
 	const copyFields = useMemo(() => extractCopyFields(html), [html]);
 	const filteredCopy = useMemo(() => {
@@ -427,7 +455,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 	}
 
 	return (
-		<div className="kpf-design-editor">
+		<div className="kpf-design-editor" ref={shellRef}>
 			<header className="kpf-design-editor-header">
 				<div>
 					<Button variant="link" onClick={leaveEditor} className="kpf-editor-back">
@@ -556,6 +584,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 						language={activeFile}
 						value={activeFile === 'html' ? html : css}
 						onChange={activeFile === 'html' ? setHtml : setCss}
+						enableTagPicker={activeFile === 'html'}
 					/>
 				</main>
 			</div>

@@ -139,4 +139,14 @@ final class Meta {
 		$value = get_post_meta($post_id, self::META_KEY, true);
 		return array_merge(self::defaults(), self::sanitize(is_array($value) ? $value : array()));
 	}
+
+	/**
+	 * @param array<string, mixed> $value
+	 * @return array<string, mixed>
+	 */
+	public static function update(int $post_id, array $value): array {
+		$clean = self::sanitize($value);
+		update_post_meta($post_id, self::META_KEY, $clean);
+		return $clean;
+	}
 }

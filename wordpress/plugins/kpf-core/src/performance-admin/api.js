@@ -23,4 +23,15 @@ export const performanceApi = {
 			method: 'POST',
 			data: { scope },
 		}),
+	getImageCapabilities: () => apiFetch({ path: '/kpf-performance/v1/images/capabilities' }),
+	regenerateImages: ({ offset = 0, limit = 10, attachmentId = 0 } = {}) =>
+		apiFetch({
+			path: '/kpf-performance/v1/images/regenerate',
+			method: 'POST',
+			data: {
+				offset,
+				limit,
+				attachment_id: attachmentId,
+			},
+		}),
 };

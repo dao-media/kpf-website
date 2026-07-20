@@ -59,9 +59,16 @@ final class Rest {
 			'kpf-seo/v1',
 			'/resolve/(?P<id>\d+)',
 			array(
-				'methods'             => 'GET',
-				'callback'            => array( self::class, 'resolve_post' ),
-				'permission_callback' => array( self::class, 'can_edit' ),
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( self::class, 'resolve_post' ),
+					'permission_callback' => array( self::class, 'can_edit' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( self::class, 'resolve_post' ),
+					'permission_callback' => array( self::class, 'can_edit' ),
+				),
 			)
 		);
 
@@ -208,7 +215,27 @@ final class Rest {
 		if (! get_post($post_id)) {
 			return new WP_Error('kpf_seo_missing_post', 'Post not found.', array( 'status' => 404 ));
 		}
-		return new WP_REST_Response(Resolver::for_post($post_id), 200);
+
+		$overrides = array();
+		if ('POST' === $request->get_method()) {
+			$params = $request->get_json_params();
+			$params = is_array($params) ? $params : array();
+
+			if (isset($params['seo']) && is_array($params['seo'])) {
+				$overrides['seo'] = $params['seo'];
+			}
+			if (array_key_exists('title', $params)) {
+				$overrides['title'] = sanitize_text_field((string) $params['title']);
+			}
+			if (array_key_exists('excerpt', $params)) {
+				$overrides['excerpt'] = sanitize_textarea_field((string) $params['excerpt']);
+			}
+			if (array_key_exists('featured_media', $params)) {
+				$overrides['featured_media'] = absint($params['featured_media']);
+			}
+		}
+
+		return new WP_REST_Response(Resolver::for_post($post_id, $overrides), 200);
 	}
 
 	public static function list_redirects(): WP_REST_Response {

@@ -28,13 +28,6 @@ final class Admin {
 
 		$code_editor_settings = wp_enqueue_code_editor( array( 'type' => 'text/html' ) );
 
-		wp_enqueue_style(
-			'kpf-designs-admin',
-			KPF_CORE_URL . 'build/designs-admin.css',
-			array(),
-			KPF_CORE_VERSION
-		);
-
 		$asset_file = KPF_CORE_PATH . 'build/designs-admin.asset.php';
 		$asset      = is_readable( $asset_file )
 			? require $asset_file
@@ -42,6 +35,13 @@ final class Admin {
 				'dependencies' => array( 'wp-api-fetch', 'wp-element', 'wp-i18n', 'wp-components' ),
 				'version'      => KPF_CORE_VERSION,
 			);
+
+		wp_enqueue_style(
+			'kpf-designs-admin',
+			KPF_CORE_URL . 'build/designs-admin.css',
+			array(),
+			$asset['version']
+		);
 
 		wp_enqueue_script(
 			'kpf-designs-admin',
@@ -60,6 +60,7 @@ final class Admin {
 				'maxSourceBytes'    => Meta::MAX_SOURCE_BYTES,
 				'codeEditor'        => is_array( $code_editor_settings ) ? $code_editor_settings : array(),
 				'canManageSettings' => current_user_can( 'manage_options' ),
+				'placeholders'      => Placeholders::all(),
 			)
 		);
 	}
@@ -71,7 +72,7 @@ final class Admin {
 
 		echo '<div class="wrap kpf-designs-admin">';
 		echo '<h1>' . esc_html__( 'Designs', 'kpf-core' ) . '</h1>';
-		echo '<p>' . esc_html__(
+		echo '<p class="kpf-designs-intro">' . esc_html__(
 			'Upload an HTML design (and optional CSS) for each site URL, then edit its copy or source code in the browser.',
 			'kpf-core'
 		) . '</p>';

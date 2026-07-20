@@ -3,6 +3,7 @@ import {
 	Button,
 	CheckboxControl,
 	Notice,
+	RangeControl,
 	SelectControl,
 	Spinner,
 	TextControl,
@@ -39,6 +40,7 @@ const TTL_OPTIONS = (window.kpfPerformanceAdmin?.ttlOptions || []).map((option) 
 
 const DNS_PREFETCH_CATALOG = window.kpfPerformanceAdmin?.dnsPrefetch || [];
 const DNS_PREFETCH_GROUPS = window.kpfPerformanceAdmin?.dnsPrefetchGroups || {};
+const INITIAL_IMAGE_CAPS = window.kpfPerformanceAdmin?.imageCapabilities || null;
 
 const SECTION_COPY = {
 	overview: {
@@ -58,7 +60,7 @@ const SECTION_COPY = {
 	media: {
 		title: __('Media', 'kpf-core'),
 		description: __(
-			'Image delivery, lazy loading, modern formats, and long-lived browser caching for media files.',
+			'Compress uploads, choose ImageMagick or GD, generate WebP/AVIF, regenerate thumbnails, and control browser caching.',
 			'kpf-core'
 		),
 	},
@@ -273,6 +275,9 @@ export default function App() {
 	const [applying, setApplying] = useState(false);
 	const [purging, setPurging] = useState(false);
 	const [notice, setNotice] = useState(null);
+	const [imageCaps, setImageCaps] = useState(INITIAL_IMAGE_CAPS);
+	const [regenerating, setRegenerating] = useState(false);
+	const [regenProgress, setRegenProgress] = useState(null);
 	const [activeTab, setActiveTab] = useState(
 		window.kpfPerformanceAdmin?.initialTab || 'overview'
 	);
@@ -289,9 +294,10 @@ export default function App() {
 
 		async function load() {
 			try {
-				const [nextSettings, nextStatus] = await Promise.all([
+				const [nextSettings, nextStatus, nextCaps] = await Promise.all([
 					performanceApi.getSettings(),
 					performanceApi.getStatus(),
+					performanceApi.getImageCapabilities().catch(() => INITIAL_IMAGE_CAPS),
 				]);
 				if (cancelled) {
 					return;
@@ -299,6 +305,9 @@ export default function App() {
 				setSettings(nextSettings);
 				setSaved(nextSettings);
 				setStatus(nextStatus);
+				if (nextCaps) {
+					setImageCaps(nextCaps);
+				}
 			} catch (error) {
 				if (!cancelled) {
 					setNotice({
@@ -421,6 +430,51 @@ export default function App() {
 		}
 	}
 
+	async function regenerateThumbnails() {
+		setRegenerating(true);
+		setNotice(null);
+		setRegenProgress({ offset: 0, total: imageCaps?.attachment_count || 0 });
+
+		let offset = 0;
+		let total = imageCaps?.attachment_count || 0;
+		let errorCount = 0;
+		let done = false;
+
+		try {
+			while (!done) {
+				const batch = await performanceApi.regenerateImages({ offset, limit: 5 });
+				offset = batch.offset ?? offset + (batch.processed || 0);
+				total = batch.total ?? total;
+				errorCount += Object.keys(batch.errors || {}).length;
+				done = !!batch.done;
+				setRegenProgress({ offset, total });
+			}
+
+			const caps = await performanceApi.getImageCapabilities().catch(() => null);
+			if (caps) {
+				setImageCaps(caps);
+			}
+
+			setNotice({
+				status: errorCount > 0 ? 'warning' : 'success',
+				message:
+					errorCount > 0
+						? __(
+								'Thumbnails regenerated with some errors. Check the Media Library for failed items.',
+								'kpf-core'
+							)
+						: __('All image thumbnails and modern-format variants regenerated.', 'kpf-core'),
+			});
+		} catch (error) {
+			setNotice({
+				status: 'error',
+				message: error?.message || __('Could not regenerate thumbnails.', 'kpf-core'),
+			});
+		} finally {
+			setRegenerating(false);
+		}
+	}
+
 	const copy = SECTION_COPY[activeTab] || SECTION_COPY.overview;
 
 	if (loading || !settings) {
@@ -518,7 +572,7 @@ export default function App() {
 								label={__('Media', 'kpf-core')}
 								value={
 									settings.media?.enabled
-										? formatTtl(settings.media.browser_ttl)
+										? `${formatTtl(settings.media.browser_ttl)} · Q${settings.media.quality ?? 85}`
 										: __('Off', 'kpf-core')
 								}
 							/>
@@ -646,6 +700,184 @@ export default function App() {
 								onChange={(value) => patch('media', 'browser_ttl', value)}
 							/>
 						</FieldGroup>
+
+						<FieldGroup
+							title={__('Compression & engine', 'kpf-core')}
+							help={__(
+								'Quality 85 is the recommended default — close to Smush “lossy” sweet spot. Lower values shrink files further at the cost of detail.',
+								'kpf-core'
+							)}
+						>
+							<RangeControl
+								label={__('Image quality / compression', 'kpf-core')}
+								help={
+									Number(settings.media.quality) === 85
+										? __('Recommended (85).', 'kpf-core')
+										: __('0 = maximum compression, 100 = near-lossless.', 'kpf-core')
+								}
+								min={0}
+								max={100}
+								value={Number(settings.media.quality ?? 85)}
+								onChange={(value) => patch('media', 'quality', value ?? 85)}
+								marks={[
+									{ value: 0, label: '0' },
+									{ value: 85, label: '85' },
+									{ value: 100, label: '100' },
+								]}
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
+							<SelectControl
+								label={__('Image editor engine', 'kpf-core')}
+								help={
+									imageCaps?.active_editor
+										? `${__('Active:', 'kpf-core')} ${imageCaps.active_editor.replace(
+												'WP_Image_Editor_',
+												''
+											)}`
+										: __('WordPress will pick the best available editor.', 'kpf-core')
+								}
+								value={settings.media.editor_engine || 'auto'}
+								options={[
+									{ label: __('Auto (prefer ImageMagick)', 'kpf-core'), value: 'auto' },
+									{
+										label: imageCaps?.imagick
+											? __('ImageMagick', 'kpf-core')
+											: __('ImageMagick (not installed)', 'kpf-core'),
+										value: 'imagick',
+									},
+									{
+										label: imageCaps?.gd
+											? __('GD library', 'kpf-core')
+											: __('GD library (not installed)', 'kpf-core'),
+										value: 'gd',
+									},
+								]}
+								onChange={(value) => patch('media', 'editor_engine', value)}
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+							/>
+							<ToggleControl
+								label={__('Optimize on upload', 'kpf-core')}
+								help={__(
+									'Compress and optionally resize originals as soon as they are uploaded.',
+									'kpf-core'
+								)}
+								checked={!!settings.media.optimize_on_upload}
+								onChange={(value) => patch('media', 'optimize_on_upload', value)}
+							/>
+							<ToggleControl
+								label={__('Strip EXIF metadata', 'kpf-core')}
+								help={__(
+									'Removes camera GPS and orientation data. Uses ImageMagick when available.',
+									'kpf-core'
+								)}
+								checked={!!settings.media.strip_exif}
+								onChange={(value) => patch('media', 'strip_exif', value)}
+							/>
+							<div className="kpf-perf__inline-fields">
+								<TextControl
+									label={__('Max upload width (px)', 'kpf-core')}
+									help={__('0 = no limit. Recommended: 2560.', 'kpf-core')}
+									type="number"
+									min={0}
+									value={String(settings.media.max_width ?? 0)}
+									onChange={(value) => patch('media', 'max_width', Number(value) || 0)}
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+								/>
+								<TextControl
+									label={__('Max upload height (px)', 'kpf-core')}
+									help={__('0 = no limit.', 'kpf-core')}
+									type="number"
+									min={0}
+									value={String(settings.media.max_height ?? 0)}
+									onChange={(value) => patch('media', 'max_height', Number(value) || 0)}
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+								/>
+								<TextControl
+									label={__('Big image threshold (px)', 'kpf-core')}
+									help={__(
+										'WordPress scales originals above this. 0 disables the threshold.',
+										'kpf-core'
+									)}
+									type="number"
+									min={0}
+									value={String(settings.media.big_image_threshold ?? 2560)}
+									onChange={(value) =>
+										patch('media', 'big_image_threshold', Number(value) || 0)
+									}
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+								/>
+							</div>
+						</FieldGroup>
+
+						<FieldGroup
+							title={__('Modern formats', 'kpf-core')}
+							help={__(
+								'Generate WebP/AVIF sidecars alongside JPEG/PNG sizes. The headless frontend can prefer these via public config.',
+								'kpf-core'
+							)}
+						>
+							{imageCaps ? (
+								<p className="kpf-perf__muted">
+									{__('Server support:', 'kpf-core')}{' '}
+									{imageCaps.webp
+										? __('WebP yes', 'kpf-core')
+										: __('WebP no', 'kpf-core')}
+									{' · '}
+									{imageCaps.avif
+										? __('AVIF yes', 'kpf-core')
+										: __('AVIF no', 'kpf-core')}
+									{' · '}
+									{imageCaps.imagick
+										? __('ImageMagick yes', 'kpf-core')
+										: __('ImageMagick no', 'kpf-core')}
+									{' · '}
+									{imageCaps.gd ? __('GD yes', 'kpf-core') : __('GD no', 'kpf-core')}
+								</p>
+							) : null}
+							<ToggleControl
+								label={__('Generate WebP variants', 'kpf-core')}
+								help={
+									imageCaps && !imageCaps.webp
+										? __('Not available on this server.', 'kpf-core')
+										: __('Creates .webp files for full and thumbnail sizes.', 'kpf-core')
+								}
+								checked={!!settings.media.generate_webp}
+								disabled={imageCaps && !imageCaps.webp}
+								onChange={(value) => patch('media', 'generate_webp', value)}
+							/>
+							<ToggleControl
+								label={__('Prefer WebP when available', 'kpf-core')}
+								help={__(
+									'Signals the frontend / CDN to serve WebP when the client supports it.',
+									'kpf-core'
+								)}
+								checked={!!settings.media.prefer_webp}
+								onChange={(value) => patch('media', 'prefer_webp', value)}
+							/>
+							<ToggleControl
+								label={__('Generate AVIF variants', 'kpf-core')}
+								help={
+									imageCaps && !imageCaps.avif
+										? __('Not available on this server (needs ImageMagick or PHP imageavif).', 'kpf-core')
+										: __('Smaller than WebP; fewer browsers support it.', 'kpf-core')
+								}
+								checked={!!settings.media.generate_avif}
+								disabled={imageCaps && !imageCaps.avif}
+								onChange={(value) => patch('media', 'generate_avif', value)}
+							/>
+							<ToggleControl
+								label={__('Prefer AVIF when available', 'kpf-core')}
+								help={__('Aggressive: smallest files, fewer browser edge cases.', 'kpf-core')}
+								checked={!!settings.media.prefer_avif}
+								onChange={(value) => patch('media', 'prefer_avif', value)}
+							/>
+						</FieldGroup>
+
 						<FieldGroup title={__('Loading', 'kpf-core')}>
 							<ToggleControl
 								label={__('Lazy-load images', 'kpf-core')}
@@ -663,24 +895,37 @@ export default function App() {
 								onChange={(value) => patch('media', 'responsive_images', value)}
 							/>
 						</FieldGroup>
-						<FieldGroup title={__('Formats', 'kpf-core')}>
-							<ToggleControl
-								label={__('Prefer WebP when available', 'kpf-core')}
-								checked={!!settings.media.prefer_webp}
-								onChange={(value) => patch('media', 'prefer_webp', value)}
-							/>
-							<ToggleControl
-								label={__('Prefer AVIF when available', 'kpf-core')}
-								help={__('Aggressive: smaller files, fewer browser edge cases.', 'kpf-core')}
-								checked={!!settings.media.prefer_avif}
-								onChange={(value) => patch('media', 'prefer_avif', value)}
-							/>
-							<ToggleControl
-								label={__('Strip EXIF metadata on upload', 'kpf-core')}
-								checked={!!settings.media.strip_exif}
-								onChange={(value) => patch('media', 'strip_exif', value)}
-							/>
+
+						<FieldGroup
+							title={__('Regenerate thumbnails', 'kpf-core')}
+							help={__(
+								'Rebuilds WordPress image sizes and WebP/AVIF sidecars. Important for headless sites that request srcset sizes from GraphQL.',
+								'kpf-core'
+							)}
+						>
+							<p className="kpf-perf__muted">
+								{imageCaps?.attachment_count != null
+									? `${imageCaps.attachment_count} ${__('optimizable images in the Media Library.', 'kpf-core')}`
+									: __('Counts images in the Media Library.', 'kpf-core')}
+							</p>
+							{regenerating && regenProgress ? (
+								<p className="kpf-perf__muted">
+									{__('Progress:', 'kpf-core')} {regenProgress.offset} /{' '}
+									{regenProgress.total || '…'}
+								</p>
+							) : null}
+							<Button
+								variant="secondary"
+								onClick={regenerateThumbnails}
+								isBusy={regenerating}
+								disabled={regenerating || !settings.media.enabled}
+							>
+								{regenerating
+									? __('Regenerating…', 'kpf-core')
+									: __('Regenerate all thumbnails', 'kpf-core')}
+							</Button>
 						</FieldGroup>
+
 						<FieldGroup title={__('Media CDN', 'kpf-core')}>
 							<TextControl
 								label={__('Media CDN base URL', 'kpf-core')}

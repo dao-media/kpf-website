@@ -134,6 +134,8 @@ final class Admin {
 				'ttlOptions'        => self::ttl_options(),
 				'dnsPrefetch'       => DnsPrefetch::catalog(),
 				'dnsPrefetchGroups' => DnsPrefetch::groups(),
+				'imageCapabilities' => Images::capabilities(),
+				'dynamicRestUrl'    => esc_url_raw( rest_url( 'kpf-dynamic/v1' ) ),
 			)
 		);
 	}

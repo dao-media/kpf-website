@@ -9,9 +9,10 @@ use WP_Post;
 
 final class Resolver {
 	/**
+	 * @param array<string, mixed> $overrides Optional draft values from the editor preview.
 	 * @return array<string, mixed>
 	 */
-	public static function for_post(int $post_id): array {
+	public static function for_post(int $post_id, array $overrides = array()): array {
 		$post = get_post($post_id);
 		if (! $post instanceof WP_Post) {
 			return self::empty_payload();
@@ -20,8 +21,10 @@ final class Resolver {
 		$settings = Settings::get();
 		$global   = $settings['global'];
 		$type     = $settings['post_types'][ $post->post_type ] ?? Settings::default_post_type($post->post_type);
-		$entity   = MetaRepository::get($post_id);
-		$context  = self::context_for_post($post, $settings);
+		$entity   = isset($overrides['seo']) && is_array($overrides['seo'])
+			? Sanitizer::sanitize_entity_meta($overrides['seo'])
+			: MetaRepository::get($post_id);
+		$context  = self::context_for_post($post, $settings, $overrides);
 
 		$title_tpl = self::first_string(
 			$entity['title_template'] ?? null,
@@ -58,7 +61,13 @@ final class Resolver {
 			$context
 		);
 
-		$image_id  = $entity['og_image_id'] ?: (int) get_post_thumbnail_id($post) ?: (int) $global['og_default_image_id'];
+		if (array_key_exists('featured_media', $overrides)) {
+			$featured_id = absint($overrides['featured_media']);
+		} else {
+			$featured_id = (int) get_post_thumbnail_id($post);
+		}
+
+		$image_id  = $entity['og_image_id'] ?: $featured_id ?: (int) $global['og_default_image_id'];
 		$image_url = $image_id ? (string) wp_get_attachment_image_url($image_id, 'full') : '';
 
 		$twitter_title = Engine::render(
@@ -96,28 +105,57 @@ final class Resolver {
 			true
 		);
 
+		$primary_category = PrimaryTerms::resolve(
+			$post,
+			'category',
+			isset($entity['primary_category_id']) ? (int) $entity['primary_category_id'] : null
+		);
+		$primary_topic = PrimaryTerms::resolve(
+			$post,
+			'post_tag',
+			isset($entity['primary_topic_id']) ? (int) $entity['primary_topic_id'] : null
+		);
+
+		$topic_terms = get_the_terms($post, 'post_tag');
+		$og_tags     = array();
+		if (is_array($topic_terms)) {
+			foreach ($topic_terms as $term) {
+				if ($term instanceof \WP_Term) {
+					$og_tags[] = (string) $term->name;
+				}
+			}
+		}
+
+		$breadcrumbs = Breadcrumbs::for_post($post, $settings, $canonical, $title, $primary_category);
+
 		return array(
-			'title'       => $title,
-			'description' => $description,
-			'canonical'   => $canonical,
-			'robots'      => $robots,
-			'openGraph'   => array(
+			'title'            => $title,
+			'description'      => $description,
+			'canonical'        => $canonical,
+			'robots'           => $robots,
+			'openGraph'        => array(
 				'title'       => $og_title,
 				'description' => $og_description,
 				'imageUrl'    => $image_url,
 				'type'        => (string) ($type['og_type'] ?? 'website'),
 				'url'         => $canonical,
+				'section'     => $primary_category ? (string) $primary_category->name : '',
+				'tags'        => $og_tags,
 			),
-			'twitter'     => array(
+			'twitter'          => array(
 				'card'        => (string) $global['twitter_card'],
 				'site'        => (string) $global['twitter_site'],
 				'title'       => $twitter_title,
 				'description' => $twitter_description,
 				'imageUrl'    => $twitter_image_url,
 			),
-			'customMeta'  => array_values($custom_meta),
-			'schema'      => $schema,
-			'showInSitemap' => $show_in_sitemap && 'publish' === $post->post_status && $robots['index'],
+			'customMeta'       => array_values($custom_meta),
+			'schema'           => $schema,
+			'showInSitemap'    => $show_in_sitemap && 'publish' === $post->post_status && $robots['index'],
+			'focusKeyphrase'   => (string) ($entity['focus_keyphrase'] ?? ''),
+			'primaryCategory'  => PrimaryTerms::to_payload($primary_category, $settings),
+			'primaryTopic'     => PrimaryTerms::to_payload($primary_topic, $settings),
+			'breadcrumbs'      => $breadcrumbs,
 		);
 	}
 
@@ -159,27 +197,38 @@ final class Resolver {
 		);
 
 		return array(
-			'title'         => $title !== '' ? $title : (string) $context['sitename'],
-			'description'   => $description,
-			'canonical'     => $canonical,
-			'robots'        => $robots,
-			'openGraph'     => array(
+			'title'           => $title !== '' ? $title : (string) $context['sitename'],
+			'description'     => $description,
+			'canonical'       => $canonical,
+			'robots'          => $robots,
+			'openGraph'       => array(
 				'title'       => $title,
 				'description' => $description,
 				'imageUrl'    => $image_url,
 				'type'        => (string) ($settings['social']['og_type_default'] ?? 'website'),
 				'url'         => $canonical,
+				'section'     => '',
+				'tags'        => array(),
 			),
-			'twitter'       => array(
+			'twitter'         => array(
 				'card'        => (string) $global['twitter_card'],
 				'site'        => (string) $global['twitter_site'],
 				'title'       => $title,
 				'description' => $description,
 				'imageUrl'    => $image_url,
 			),
-			'customMeta'    => array_values($custom_meta),
-			'schema'        => Schema::build_for_home($settings, $canonical, $title, $description, $image_url),
-			'showInSitemap' => true,
+			'customMeta'      => array_values($custom_meta),
+			'schema'          => Schema::build_for_home($settings, $canonical, $title, $description, $image_url),
+			'showInSitemap'   => true,
+			'focusKeyphrase'  => '',
+			'primaryCategory' => null,
+			'primaryTopic'    => null,
+			'breadcrumbs'     => array(
+				array(
+					'name' => (string) ($context['sitename'] ?? get_bloginfo('name')),
+					'url'  => $canonical,
+				),
+			),
 		);
 	}
 
@@ -188,32 +237,38 @@ final class Resolver {
 	 */
 	public static function empty_payload(): array {
 		return array(
-			'title'         => '',
-			'description'   => '',
-			'canonical'     => '',
-			'robots'        => array(
+			'title'           => '',
+			'description'     => '',
+			'canonical'       => '',
+			'robots'          => array(
 				'index'     => true,
 				'follow'    => true,
 				'noarchive' => false,
 				'nosnippet' => false,
 			),
-			'openGraph'     => array(
+			'openGraph'       => array(
 				'title'       => '',
 				'description' => '',
 				'imageUrl'    => '',
 				'type'        => 'website',
 				'url'         => '',
+				'section'     => '',
+				'tags'        => array(),
 			),
-			'twitter'       => array(
+			'twitter'         => array(
 				'card'        => 'summary_large_image',
 				'site'        => '',
 				'title'       => '',
 				'description' => '',
 				'imageUrl'    => '',
 			),
-			'customMeta'    => array(),
-			'schema'        => array(),
-			'showInSitemap' => false,
+			'customMeta'      => array(),
+			'schema'          => array(),
+			'showInSitemap'   => false,
+			'focusKeyphrase'  => '',
+			'primaryCategory' => null,
+			'primaryTopic'    => null,
+			'breadcrumbs'     => array(),
 		);
 	}
 
@@ -221,15 +276,35 @@ final class Resolver {
 	 * @param array<string, mixed> $settings
 	 * @return array<string, mixed>
 	 */
-	public static function context_for_post(WP_Post $post, array $settings): array {
+	/**
+	 * @param array<string, mixed> $settings
+	 * @param array<string, mixed> $overrides
+	 * @return array<string, mixed>
+	 */
+	public static function context_for_post(WP_Post $post, array $settings, array $overrides = array()): array {
 		$context = self::base_context($settings);
 		$pto     = get_post_type_object($post->post_type);
+		$entity  = isset($overrides['seo']) && is_array($overrides['seo'])
+			? Sanitizer::sanitize_entity_meta($overrides['seo'])
+			: MetaRepository::get((int) $post->ID);
 
 		$excerpt = $post->post_excerpt !== '' ? $post->post_excerpt : wp_trim_words(wp_strip_all_tags($post->post_content), 40, '…');
 		$author  = get_the_author_meta('display_name', (int) $post->post_author);
 
-		$categories = get_the_terms($post, 'category');
-		$tags       = get_the_terms($post, 'post_tag');
+		if (array_key_exists('excerpt', $overrides)) {
+			$excerpt = (string) $overrides['excerpt'];
+		}
+
+		$primary_category = PrimaryTerms::resolve(
+			$post,
+			'category',
+			isset($entity['primary_category_id']) ? (int) $entity['primary_category_id'] : null
+		);
+		$primary_topic = PrimaryTerms::resolve(
+			$post,
+			'post_tag',
+			isset($entity['primary_topic_id']) ? (int) $entity['primary_topic_id'] : null
+		);
 
 		$path = (string) get_page_uri($post);
 		if ('page' !== $post->post_type) {
@@ -239,18 +314,21 @@ final class Resolver {
 			$path = '/' . ltrim($path, '/');
 		}
 
-		$context['post_id']      = (int) $post->ID;
-		$context['title']        = get_the_title($post);
-		$context['excerpt']      = $excerpt;
-		$context['author']       = is_string($author) ? $author : '';
-		$context['category']     = (is_array($categories) && isset($categories[0])) ? $categories[0]->name : '';
-		$context['tag']          = (is_array($tags) && isset($tags[0])) ? $tags[0]->name : '';
-		$context['date']         = get_the_date('', $post) ?: '';
-		$context['modified']     = get_the_modified_date('', $post) ?: '';
-		$context['pt_singular']  = $pto ? (string) $pto->labels->singular_name : $post->post_type;
-		$context['pt_plural']    = $pto ? (string) $pto->labels->name : $post->post_type;
-		$context['page']         = '';
-		$context['permalink']    = $path ?: '/';
+		$context['post_id']     = (int) $post->ID;
+		$context['title']       = array_key_exists('title', $overrides)
+			? (string) $overrides['title']
+			: get_the_title($post);
+		$context['excerpt']     = $excerpt;
+		$context['author']      = is_string($author) ? $author : '';
+		$context['category']    = $primary_category ? (string) $primary_category->name : '';
+		$context['tag']         = $primary_topic ? (string) $primary_topic->name : '';
+		$context['focuskw']     = (string) ($entity['focus_keyphrase'] ?? '');
+		$context['date']        = get_the_date('', $post) ?: '';
+		$context['modified']    = get_the_modified_date('', $post) ?: '';
+		$context['pt_singular'] = $pto ? (string) $pto->labels->singular_name : $post->post_type;
+		$context['pt_plural']   = $pto ? (string) $pto->labels->name : $post->post_type;
+		$context['page']        = '';
+		$context['permalink']   = $path ?: '/';
 
 		return $context;
 	}

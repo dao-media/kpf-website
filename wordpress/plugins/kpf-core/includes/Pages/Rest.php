@@ -237,6 +237,7 @@ final class Rest {
 			'seoPreview'       => array(
 				'title'       => (string) ( $resolved['title'] ?? '' ),
 				'description' => (string) ( $resolved['description'] ?? '' ),
+				'openGraph'   => is_array( $resolved['openGraph'] ?? null ) ? $resolved['openGraph'] : null,
 			),
 			'designId'         => $design_id,
 			'designTitle'      => is_array( $design ) ? (string) $design['title'] : '',

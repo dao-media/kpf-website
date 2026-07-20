@@ -113,13 +113,16 @@ final class Sanitizer {
 			'robots_nosnippet'     => self::nullable_bool($input['robots_nosnippet'] ?? null),
 			'og_title'             => self::nullable_template($input['og_title'] ?? null),
 			'og_description'       => self::nullable_template($input['og_description'] ?? null),
-			'og_image_id'          => isset($input['og_image_id']) ? absint($input['og_image_id']) : null,
+			'og_image_id'          => self::nullable_id($input['og_image_id'] ?? null),
 			'twitter_title'        => self::nullable_template($input['twitter_title'] ?? null),
 			'twitter_description'  => self::nullable_template($input['twitter_description'] ?? null),
-			'twitter_image_id'     => isset($input['twitter_image_id']) ? absint($input['twitter_image_id']) : null,
+			'twitter_image_id'     => self::nullable_id($input['twitter_image_id'] ?? null),
 			'schema_type'          => self::nullable_string($input['schema_type'] ?? null),
 			'custom_json_ld'       => self::nullable_json_ld($input['custom_json_ld'] ?? null),
 			'show_in_sitemap'      => self::nullable_bool($input['show_in_sitemap'] ?? null),
+			'primary_category_id'  => self::nullable_id($input['primary_category_id'] ?? null),
+			'primary_topic_id'     => self::nullable_id($input['primary_topic_id'] ?? null),
+			'focus_keyphrase'      => self::nullable_string($input['focus_keyphrase'] ?? null),
 			'custom_meta'          => self::sanitize_custom_meta($input['custom_meta'] ?? array()),
 		);
 	}
@@ -158,6 +161,17 @@ final class Sanitizer {
 			return null;
 		}
 		return sanitize_text_field((string) $value);
+	}
+
+	/**
+	 * @param mixed $value
+	 */
+	public static function nullable_id($value): ?int {
+		if (null === $value || '' === $value || false === $value) {
+			return null;
+		}
+		$id = absint($value);
+		return $id > 0 ? $id : null;
 	}
 
 	/**

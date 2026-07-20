@@ -61,6 +61,11 @@
 	font-size: 1.15rem;
 }
 
+.kpf-page-editor__section h2 .kpf-label-with-tag {
+	font-size: inherit;
+	font-weight: inherit;
+}
+
 .kpf-page-editor__section--split {
 	grid-template-columns: 1fr;
 	gap: 28px;

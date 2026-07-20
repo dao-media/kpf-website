@@ -27,6 +27,8 @@ export const KPF_SEO_FRAGMENT = `
       imageUrl
       type
       url
+      section
+      tags
     }
     twitter {
       card
@@ -44,6 +46,23 @@ export const KPF_SEO_FRAGMENT = `
       media
     }
     schemaJson
+    focusKeyphrase
+    primaryCategory {
+      id
+      name
+      slug
+      url
+    }
+    primaryTopic {
+      id
+      name
+      slug
+      url
+    }
+    breadcrumbs {
+      name
+      url
+    }
   }
 `;
 
@@ -91,6 +110,22 @@ export default function SeoHead({ seo }) {
       {openGraph?.imageUrl ? (
         <meta property="og:image" content={openGraph.imageUrl} key="og:image" />
       ) : null}
+      {openGraph?.section ? (
+        <meta
+          property="article:section"
+          content={openGraph.section}
+          key="article:section"
+        />
+      ) : null}
+      {(openGraph?.tags || []).map((tag, index) =>
+        tag ? (
+          <meta
+            property="article:tag"
+            content={tag}
+            key={`article:tag-${index}`}
+          />
+        ) : null
+      )}
 
       {twitter?.card ? (
         <meta name="twitter:card" content={twitter.card} key="twitter:card" />

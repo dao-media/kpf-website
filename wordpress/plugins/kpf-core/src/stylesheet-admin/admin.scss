@@ -174,7 +174,7 @@
 }
 
 .kpf-stylesheet-workspace > main {
-	background: #0f172a;
+	background: #1e1e1e;
 	min-width: 0;
 }
 
@@ -184,40 +184,77 @@
 }
 
 .kpf-stylesheet-code .CodeMirror {
-	background: #0f172a;
+	background: #1e1e1e;
 	box-sizing: border-box;
-	color: #e2e8f0;
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	color: #d4d4d4;
+	font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
 	font-size: 13px;
 	line-height: 1.65;
 	padding: 14px 0;
 }
 
 .kpf-stylesheet-code .CodeMirror-gutters {
-	background: #0b1220;
-	border-right: 1px solid #1e293b;
+	background: #1e1e1e;
+	border-right: 1px solid #2b2b2b;
 }
 
 .kpf-stylesheet-code .CodeMirror-linenumber {
-	color: #64748b;
+	color: #858585;
+	min-width: 2.5em;
+	padding: 0 8px 0 12px;
+}
+
+.kpf-stylesheet-code .CodeMirror-activeline .CodeMirror-linenumber {
+	color: #c6c6c6;
+}
+
+.kpf-stylesheet-code .CodeMirror-activeline-background {
+	background: #2a2a2a;
+}
+
+.kpf-stylesheet-code .CodeMirror-cursor {
+	border-left: 2px solid #aeafad;
+}
+
+.kpf-stylesheet-code .CodeMirror-selected,
+.kpf-stylesheet-code .CodeMirror-focused .CodeMirror-selected {
+	background: #264f78 !important;
 }
 
 .kpf-stylesheet-code .cm-s-default .cm-tag,
-.kpf-stylesheet-code .cm-s-default .cm-qualifier {
-	color: #7dd3fc;
+.kpf-stylesheet-code .cm-s-default .cm-qualifier,
+.kpf-stylesheet-code .cm-s-default .cm-builtin {
+	color: #569cd6;
 }
 
-.kpf-stylesheet-code .cm-s-default .cm-property {
-	color: #93c5fd;
+.kpf-stylesheet-code .cm-s-default .cm-property,
+.kpf-stylesheet-code .cm-s-default .cm-attribute,
+.kpf-stylesheet-code .cm-s-default .cm-variable-2 {
+	color: #9cdcfe;
+}
+
+.kpf-stylesheet-code .cm-s-default .cm-string {
+	color: #ce9178;
 }
 
 .kpf-stylesheet-code .cm-s-default .cm-number,
 .kpf-stylesheet-code .cm-s-default .cm-atom {
-	color: #fbbf24;
+	color: #b5cea8;
+}
+
+.kpf-stylesheet-code .cm-s-default .cm-keyword,
+.kpf-stylesheet-code .cm-s-default .cm-meta {
+	color: #c586c0;
 }
 
 .kpf-stylesheet-code .cm-s-default .cm-comment {
-	color: #64748b;
+	color: #6a9955;
+	font-style: italic;
+}
+
+.kpf-stylesheet-code .CodeMirror-matchingbracket {
+	color: #ffd700 !important;
+	outline: 1px solid rgb(255 215 0 / 35%);
 }
 
 .kpf-stylesheet-history {

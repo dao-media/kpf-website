@@ -160,7 +160,7 @@ final class Registry {
 			'category',
 			array(
 				'label'       => 'Primary category',
-				'description' => 'First assigned category name.',
+				'description' => 'Chosen primary category, or the first assigned category.',
 				'group'       => 'Taxonomy',
 				'callback'    => static fn( array $ctx ): string => (string) ($ctx['category'] ?? ''),
 			)
@@ -168,10 +168,19 @@ final class Registry {
 		self::register(
 			'tag',
 			array(
-				'label'       => 'Primary tag',
-				'description' => 'First assigned post tag name.',
+				'label'       => 'Primary topic',
+				'description' => 'Chosen primary topic, or the first assigned topic.',
 				'group'       => 'Taxonomy',
 				'callback'    => static fn( array $ctx ): string => (string) ($ctx['tag'] ?? ''),
+			)
+		);
+		self::register(
+			'focuskw',
+			array(
+				'label'       => 'Focus keyphrase',
+				'description' => 'The focus keyphrase set for this content.',
+				'group'       => 'Content',
+				'callback'    => static fn( array $ctx ): string => (string) ($ctx['focuskw'] ?? ''),
 			)
 		);
 		self::register(

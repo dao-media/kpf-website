@@ -143,10 +143,6 @@ final class AdminBar {
 		}
 
 		echo '<style id="kpf-performance-admin-bar">
-			#wp-admin-bar-kpf-performance > .ab-item::before {
-				content: "\\f226";
-				top: 2px;
-			}
 			#wp-admin-bar-kpf-performance-purge-page.kpf-perf-ab-disabled > .ab-item {
 				opacity: 0.45;
 				pointer-events: none;

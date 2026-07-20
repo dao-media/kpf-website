@@ -1,11 +1,95 @@
 .kpf-seo-canvas-root {
 	box-sizing: border-box;
+	flex: 0 0 auto;
 	width: 100%;
-	padding: 8px 24px 48px;
+	padding: 8px 24px 24px;
 	background: #fff;
 	border-top: 1px solid #e0e0e0;
 }
 
 .kpf-seo-canvas-root .kpf-seo-editor {
 	margin: 0 auto;
+}
+
+.kpf-seo-canvas-root .kpf-seo-editor--collapsible {
+	gap: 14px;
+}
+
+.kpf-seo-canvas-root .kpf-seo-editor__previews {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	align-items: start;
+}
+
+@media (max-width: 960px) {
+	.kpf-seo-canvas-root .kpf-seo-editor__previews {
+		grid-template-columns: 1fr;
+	}
+}
+
+.kpf-seo-document-panel .kpf-seo-editor {
+	width: 100%;
+	gap: 14px;
+}
+
+.kpf-seo-document-panel .kpf-seo-editor__heading {
+	display: none;
+}
+
+.kpf-seo-editor--compact .kpf-seo-editor__preview {
+	padding: 12px 14px;
+}
+
+.kpf-post-field-tag {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 8px;
+	vertical-align: middle;
+}
+
+.kpf-post-field-tag--title {
+	display: flex;
+	justify-content: flex-end;
+	margin: 0 0 8px;
+}
+
+.kpf-post-field-tag .kpf-label-with-tag__chip,
+.components-panel__body-title .kpf-label-with-tag__chip,
+.editor-post-panel__row-label .kpf-label-with-tag__chip,
+.components-base-control__label .kpf-label-with-tag__chip {
+	appearance: none;
+	margin: 0;
+	padding: 1px 7px;
+	border: 1px solid #c3c4c7;
+	border-radius: 999px;
+	background: #f6f7f7;
+	color: #1e1e1e;
+	cursor: pointer;
+	line-height: 1.5;
+	vertical-align: middle;
+}
+
+.kpf-post-field-tag .kpf-label-with-tag__chip:hover,
+.kpf-post-field-tag .kpf-label-with-tag__chip:focus,
+.components-panel__body-title .kpf-label-with-tag__chip:hover,
+.editor-post-panel__row-label .kpf-label-with-tag__chip:hover {
+	border-color: #1b2a4a;
+	background: #eef2f7;
+	outline: none;
+}
+
+.kpf-post-field-tag .kpf-label-with-tag__chip code,
+.components-panel__body-title .kpf-label-with-tag__chip code,
+.editor-post-panel__row-label .kpf-label-with-tag__chip code {
+	font-size: 11px;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	background: transparent;
+	padding: 0;
+}
+
+/* Keep panel title buttons clickable; chip sits after the title text. */
+.components-panel__body-title {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
 }

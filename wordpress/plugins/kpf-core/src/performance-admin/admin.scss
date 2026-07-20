@@ -325,3 +325,16 @@
 	font-size: 0.8rem;
 	line-height: 1.4;
 }
+
+.kpf-perf__muted {
+	color: var(--kpf-perf-muted);
+	font-size: 0.85rem;
+	line-height: 1.45;
+	margin: 0;
+}
+
+.kpf-perf__inline-fields {
+	display: grid;
+	gap: 0.85rem;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}

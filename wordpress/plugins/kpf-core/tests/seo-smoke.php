@@ -70,6 +70,51 @@ kpf_assert(str_contains((string) $resolved['title'], 'SEO Smoke Post'), 'resolve
 kpf_assert($resolved['robots']['index'] === false, 'entity robots override wins');
 kpf_assert(! empty($resolved['schema']['@graph']), 'schema graph generated');
 
+$cat_a = wp_insert_term('SEO Cat A', 'category');
+$cat_b = wp_insert_term('SEO Cat B', 'category');
+kpf_assert(! is_wp_error($cat_a) && ! is_wp_error($cat_b), 'creates smoke categories');
+$cat_a_id = (int) $cat_a['term_id'];
+$cat_b_id = (int) $cat_b['term_id'];
+wp_set_post_terms($post_id, array( $cat_a_id, $cat_b_id ), 'category');
+
+update_post_meta(
+	$post_id,
+	'_kpf_seo',
+	array(
+		'title_template'      => '%%title%% %%sep%% %%category%%',
+		'primary_category_id' => $cat_b_id,
+		'focus_keyphrase'     => 'smoke keyphrase',
+		'schema_type'         => 'Article',
+	)
+);
+
+$with_primary = Resolver::for_post((int) $post_id);
+kpf_assert(
+	($with_primary['primaryCategory']['id'] ?? 0) === $cat_b_id,
+	'primary category resolves to chosen term'
+);
+kpf_assert(
+	str_contains((string) $with_primary['title'], 'SEO Cat B'),
+	'%%category%% uses primary category'
+);
+kpf_assert(
+	($with_primary['openGraph']['section'] ?? '') === 'SEO Cat B',
+	'open graph article:section uses primary category'
+);
+kpf_assert(
+	($with_primary['focusKeyphrase'] ?? '') === 'smoke keyphrase',
+	'focus keyphrase exposed on payload'
+);
+$crumb_names = array_map(
+	static fn( $crumb ) => (string) ( $crumb['name'] ?? '' ),
+	(array) ( $with_primary['breadcrumbs'] ?? array() )
+);
+kpf_assert(in_array('SEO Cat B', $crumb_names, true), 'breadcrumbs include primary category');
+kpf_assert(
+	in_array('focuskw', array_column(Registry::catalog(), 'token'), true),
+	'focuskw tag is registered'
+);
+
 $home = Resolver::for_home();
 kpf_assert($home['canonical'] !== '', 'home canonical present');
 
@@ -129,6 +174,12 @@ kpf_assert(
 
 if ($post_id) {
 	wp_delete_post($post_id, true);
+}
+if (! empty($cat_a_id)) {
+	wp_delete_term($cat_a_id, 'category');
+}
+if (! empty($cat_b_id)) {
+	wp_delete_term($cat_b_id, 'category');
 }
 if (! is_wp_error($redirect) && isset($redirect['id'])) {
 	Repository::delete((int) $redirect['id']);

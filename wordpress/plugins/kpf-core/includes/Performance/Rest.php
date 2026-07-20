@@ -80,6 +80,26 @@ final class Rest {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		register_rest_route(
+			'kpf-performance/v1',
+			'/images/capabilities',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'image_capabilities' ),
+				'permission_callback' => array( self::class, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			'kpf-performance/v1',
+			'/images/regenerate',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( self::class, 'regenerate_images' ),
+				'permission_callback' => array( self::class, 'can_manage' ),
+			)
+		);
 	}
 
 	public static function can_manage(): bool {
@@ -158,6 +178,28 @@ final class Rest {
 		return new WP_REST_Response( $result, 200 );
 	}
 
+	public static function image_capabilities(): WP_REST_Response {
+		return new WP_REST_Response( Images::capabilities(), 200 );
+	}
+
+	public static function regenerate_images( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+		if ( $attachment_id > 0 ) {
+			$result = Images::regenerate_attachment( $attachment_id );
+			if ( is_wp_error( $result ) ) {
+				$result->add_data( array( 'status' => 400 ) );
+				return $result;
+			}
+
+			return new WP_REST_Response( $result, 200 );
+		}
+
+		$offset = max( 0, absint( $request->get_param( 'offset' ) ) );
+		$limit  = max( 1, min( 50, absint( $request->get_param( 'limit' ) ?: 10 ) ) );
+
+		return new WP_REST_Response( Images::regenerate_batch( $offset, $limit ), 200 );
+	}
+
 	/**
 	 * Public subset for the headless frontend / edge layer.
 	 */
@@ -175,13 +217,17 @@ final class Rest {
 					'exclude_paths'          => $settings['pages']['exclude_paths'],
 				),
 				'media'   => array(
-					'enabled'           => $settings['media']['enabled'],
-					'browser_ttl'       => $settings['media']['browser_ttl'],
-					'lazy_load'         => $settings['media']['lazy_load'],
-					'prefer_webp'       => $settings['media']['prefer_webp'],
-					'prefer_avif'       => $settings['media']['prefer_avif'],
-					'responsive_images' => $settings['media']['responsive_images'],
-					'cdn_url'           => $settings['media']['cdn_url'],
+					'enabled'             => $settings['media']['enabled'],
+					'browser_ttl'         => $settings['media']['browser_ttl'],
+					'lazy_load'           => $settings['media']['lazy_load'],
+					'prefer_webp'         => $settings['media']['prefer_webp'],
+					'prefer_avif'         => $settings['media']['prefer_avif'],
+					'generate_webp'       => $settings['media']['generate_webp'] ?? false,
+					'generate_avif'       => $settings['media']['generate_avif'] ?? false,
+					'quality'             => $settings['media']['quality'] ?? 85,
+					'responsive_images'   => $settings['media']['responsive_images'],
+					'cdn_url'             => $settings['media']['cdn_url'],
+					'big_image_threshold' => $settings['media']['big_image_threshold'] ?? 2560,
 				),
 				'code'    => array(
 					'enabled'            => $settings['code']['enabled'],

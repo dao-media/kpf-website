@@ -11,6 +11,10 @@ use KPF\Core\Accessibility\Settings as AccessibilitySettings;
 use KPF\Core\Admin\Dashboard as AdminDashboard;
 use KPF\Core\Admin\MenuOrganizer;
 use KPF\Core\Admin\Theme as AdminTheme;
+use KPF\Core\Code\Admin as CodeAdmin;
+use KPF\Core\Code\ContentType as CodeContentType;
+use KPF\Core\Code\GraphQL as CodeGraphQL;
+use KPF\Core\Code\Meta as CodeMeta;
 use KPF\Core\Blocks\Admin as BlocksAdmin;
 use KPF\Core\Blocks\Globals as BlockGlobals;
 use KPF\Core\Blocks\GraphQL as BlocksGraphQL;
@@ -43,9 +47,15 @@ use KPF\Core\Pages\Rest as PagesRest;
 use KPF\Core\Performance\Admin as PerformanceAdmin;
 use KPF\Core\Performance\AdminBar as PerformanceAdminBar;
 use KPF\Core\Performance\Headers as PerformanceHeaders;
+use KPF\Core\Performance\Images as PerformanceImages;
 use KPF\Core\Performance\Optimizations as PerformanceOptimizations;
 use KPF\Core\Performance\Rest as PerformanceRest;
 use KPF\Core\Performance\Settings as PerformanceSettings;
+use KPF\Core\DynamicContent\Admin as DynamicContentAdmin;
+use KPF\Core\DynamicContent\GraphQL as DynamicContentGraphQL;
+use KPF\Core\DynamicContent\Registration as DynamicContentRegistration;
+use KPF\Core\DynamicContent\Rest as DynamicContentRest;
+use KPF\Core\DynamicContent\Settings as DynamicContentSettings;
 use KPF\Core\Events\Admin as EventsAdmin;
 use KPF\Core\Events\ContentType as EventsContentType;
 use KPF\Core\Events\Editor as EventsEditor;
@@ -99,6 +109,7 @@ final class Plugin {
 		TeamContentType::register_content();
 		DesignsContentType::register_content();
 		InteractionsContentType::register_content();
+		CodeContentType::register_content();
 		StylesheetContentType::register_content();
 		StylesheetMeta::register_meta();
 		StylesheetMeta::ensure_stylesheet();
@@ -108,6 +119,7 @@ final class Plugin {
 		Settings::ensure_defaults();
 		InboxSettings::ensure_defaults();
 		PerformanceSettings::ensure_defaults();
+		DynamicContentSettings::ensure_defaults();
 		AccessibilitySettings::ensure_defaults();
 		flush_rewrite_rules();
 	}
@@ -145,6 +157,11 @@ final class Plugin {
 		InteractionsAdmin::register();
 		InteractionsRest::register();
 		InteractionsGraphQL::register();
+
+		CodeContentType::register();
+		CodeMeta::register();
+		CodeAdmin::register();
+		CodeGraphQL::register();
 
 		StylesheetContentType::register();
 		StylesheetMeta::register();
@@ -186,6 +203,7 @@ final class Plugin {
 		PerformanceSettings::register();
 		PerformanceRest::register();
 		PerformanceHeaders::register();
+		PerformanceImages::register();
 		PerformanceOptimizations::register();
 		PerformanceAdminBar::register();
 		PerformanceSettings::ensure_defaults();
@@ -197,6 +215,11 @@ final class Plugin {
 
 		Settings::register();
 		MetaRepository::register();
+		DynamicContentSettings::register();
+		DynamicContentRegistration::register();
+		DynamicContentRest::register();
+		DynamicContentGraphQL::register();
+		DynamicContentAdmin::register();
 		TagRegistry::boot();
 		Rest::register();
 		Slugs::register();

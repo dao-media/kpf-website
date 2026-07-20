@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import SearchPage from "@/components/SearchPage";
 
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
+const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
   /\/$/,
@@ -13,6 +14,7 @@ const SEARCH_SHELL_QUERY = `
   query SearchShellChrome {
     kpfStylesheet
     ${KPF_ACCESSIBILITY_QUERY}
+    ${KPF_CODE_SNIPPETS_QUERY}
     kpfSiteChrome {
       header {
         databaseId
@@ -88,6 +90,7 @@ export async function getStaticProps() {
   let kpfStylesheet = "";
   let kpfSiteChrome = null;
   let kpfAccessibility = null;
+  let kpfCodeSnippets = [];
 
   if (wordpressUrl) {
     try {
@@ -104,6 +107,7 @@ export async function getStaticProps() {
         kpfStylesheet = payload?.data?.kpfStylesheet || "";
         kpfSiteChrome = payload?.data?.kpfSiteChrome || null;
         kpfAccessibility = payload?.data?.kpfAccessibility || null;
+        kpfCodeSnippets = payload?.data?.kpfCodeSnippets || [];
       }
     } catch {
       // Fall back to hardcoded header / empty stylesheet when WP is offline.
@@ -115,6 +119,7 @@ export async function getStaticProps() {
       kpfStylesheet,
       kpfSiteChrome,
       kpfAccessibility,
+      kpfCodeSnippets,
     },
     revalidate: 60,
   };

@@ -35,10 +35,14 @@ function CssEditor({ value, onChange }) {
 			codemirror: {
 				...(CODE_EDITOR_SETTINGS.codemirror || {}),
 				mode: 'text/css',
+				theme: 'default',
 				lineNumbers: true,
 				lineWrapping: false,
 				indentUnit: 2,
 				tabSize: 2,
+				styleActiveLine: true,
+				matchBrackets: true,
+				autoCloseBrackets: true,
 				autofocus: true,
 			},
 		};

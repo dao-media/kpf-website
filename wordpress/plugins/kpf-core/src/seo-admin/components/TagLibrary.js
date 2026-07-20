@@ -47,42 +47,55 @@ export default function TagLibrary({ tags = [], compact = false }) {
 
 	return (
 		<div className={compact ? 'kpf-tag-library is-compact' : 'kpf-tag-library'}>
-			<SearchControl
-				label={__('Search automatic placeholders', 'kpf-core')}
-				value={query}
-				onChange={setQuery}
-				__nextHasNoMarginBottom
-			/>
-			<div className="kpf-tag-library__groups">
-				{Object.entries(groups).map(([group, items]) => (
-					<div key={group} className="kpf-tag-group">
-						<h3 className="kpf-tag-group__title">{group}</h3>
-						{items.map((tag) => (
-							<div key={tag.token} className="kpf-tag-row">
-								<div className="kpf-tag-row__header">
-									<code>{tag.invocation}</code>
-									<Button
-										variant="secondary"
-										size="compact"
-										onClick={() => copyTag(tag.invocation)}
-									>
-										{__('Copy', 'kpf-core')}
-									</Button>
-								</div>
-								<div className="kpf-tag-row__meta">
-									<strong>{tag.label}</strong>
-									<span>{tag.description}</span>
-								</div>
-							</div>
-						))}
-					</div>
-				))}
-				{filtered.length === 0 ? (
-					<p className="kpf-tag-library__empty">
-						{__('No placeholders match your search.', 'kpf-core')}
+			<section className="kpf-tag-library__featured">
+				<header className="kpf-tag-library__featured-header">
+					<h2 className="kpf-tag-library__featured-title">
+						{__('SEO pattern tags (%%)', 'kpf-core')}
+					</h2>
+					<p className="kpf-tag-library__featured-copy">
+						{__(
+							'These %% tokens work in search title and description patterns. Copy one, then paste it into a template field.',
+							'kpf-core'
+						)}
 					</p>
-				) : null}
-			</div>
+				</header>
+				<SearchControl
+					label={__('Search automatic placeholders', 'kpf-core')}
+					value={query}
+					onChange={setQuery}
+					__nextHasNoMarginBottom
+				/>
+				<div className="kpf-tag-library__groups">
+					{Object.entries(groups).map(([group, items]) => (
+						<div key={group} className="kpf-tag-group">
+							<h3 className="kpf-tag-group__title">{group}</h3>
+							{items.map((tag) => (
+								<div key={tag.token} className="kpf-tag-row">
+									<div className="kpf-tag-row__header">
+										<code>{tag.invocation}</code>
+										<Button
+											variant="secondary"
+											size="compact"
+											onClick={() => copyTag(tag.invocation)}
+										>
+											{__('Copy', 'kpf-core')}
+										</Button>
+									</div>
+									<div className="kpf-tag-row__meta">
+										<strong>{tag.label}</strong>
+										<span>{tag.description}</span>
+									</div>
+								</div>
+							))}
+						</div>
+					))}
+					{filtered.length === 0 ? (
+						<p className="kpf-tag-library__empty">
+							{__('No placeholders match your search.', 'kpf-core')}
+						</p>
+					) : null}
+				</div>
+			</section>
 			{copied ? (
 				<Snackbar>
 					{__('Copied', 'kpf-core')}: {copied}

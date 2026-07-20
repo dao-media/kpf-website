@@ -151,6 +151,75 @@ body.kpf-admin-theme #adminmenu .kpf-lucide-menu-icon svg {
 	display: block;
 }
 
+/* Admin bar Lucide icons (also applied on the frontend toolbar).
+ * WordPress colors dashicons via ::before only — Lucide SVGs need an
+ * explicit color on the host or currentColor paints transparent. */
+#wpadminbar .kpf-lucide-ab-icon {
+	color: #a7aaad;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	float: left;
+	width: 20px;
+	height: 32px;
+	margin-right: 6px;
+	padding: 0 !important;
+	background: transparent !important;
+	font-size: 0 !important;
+	line-height: 1 !important;
+	speak: never;
+}
+
+#wpadminbar .kpf-lucide-ab-icon::before {
+	content: none !important;
+	display: none !important;
+	background: none !important;
+	mask: none !important;
+	-webkit-mask: none !important;
+}
+
+#wpadminbar .kpf-lucide-ab-item::before {
+	content: none !important;
+	display: none !important;
+}
+
+#wpadminbar .kpf-lucide-ab-icon svg {
+	display: block;
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	stroke: currentColor;
+	fill: none;
+	color: inherit;
+}
+
+#wpadminbar .ab-top-menu > li:hover > .ab-item .kpf-lucide-ab-icon,
+#wpadminbar .ab-top-menu > li.hover > .ab-item .kpf-lucide-ab-icon,
+#wpadminbar .ab-top-menu > li > .ab-item:focus .kpf-lucide-ab-icon {
+	color: #72aee6;
+}
+
+#wpadminbar #wp-admin-bar-kpf-performance > .ab-item {
+	display: flex;
+	align-items: center;
+}
+
+/* Dashicon fallback until Lucide mounts (and if JS fails). */
+#wpadminbar #wp-admin-bar-kpf-performance > .ab-item .ab-icon:not(.kpf-lucide-ab-icon)::before {
+	content: "\f226";
+	top: 2px;
+}
+
+body.kpf-admin-theme #wpadminbar .kpf-lucide-ab-icon {
+	color: var(--kpf-admin-muted);
+}
+
+body.kpf-admin-theme #wpadminbar .ab-top-menu > li:hover > .ab-item .kpf-lucide-ab-icon,
+body.kpf-admin-theme #wpadminbar .ab-top-menu > li.hover > .ab-item .kpf-lucide-ab-icon,
+body.kpf-admin-theme #wpadminbar .ab-top-menu > li > .ab-item:focus .kpf-lucide-ab-icon {
+	color: var(--kpf-admin-navy);
+}
+
 body.kpf-admin-theme #adminmenu li.menu-top:hover,
 body.kpf-admin-theme #adminmenu li.opensub,
 body.kpf-admin-theme #adminmenu li.wp-has-current-submenu,

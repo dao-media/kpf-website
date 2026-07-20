@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace KPF\Core\Seo;
 
 /**
- * In-canvas SEO panel for blog posts (pages use the dedicated page editor).
+ * In-canvas SEO panel for blog posts and events
+ * (pages and team members use dedicated editors).
  */
 final class Editor {
-	private const SCREEN_POST_TYPES = array( 'post' );
+	private const SCREEN_POST_TYPES = array( 'post', 'kpf_event' );
 
 	public static function register(): void {
 		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue' ) );
@@ -63,6 +64,18 @@ final class Editor {
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
 				'metaKey'   => MetaRepository::META_KEY,
 				'postTypes' => self::SCREEN_POST_TYPES,
+				'fieldTags' => array(
+					'title'               => '%%title%%',
+					'excerpt'             => '%%excerpt%%',
+					'category'            => '%%category%%',
+					'tag'                 => '%%tag%%',
+					'author'              => '%%author%%',
+					'date'                => '%%date%%',
+					'seo.focus_keyphrase' => '%%focuskw%%',
+					'seo.title'           => '%%title%%',
+					'seo.description'     => '%%excerpt%%',
+					'seo.canonical'       => '%%permalink%%',
+				),
 			)
 		);
 	}

@@ -46,7 +46,18 @@ final class Schema {
 		}
 
 		if (! empty($schema['enable_article']) && in_array($schema_type, array( 'Article', 'NewsArticle', 'BlogPosting' ), true)) {
-			$graph[] = array(
+			$primary_category = PrimaryTerms::resolve(
+				$post,
+				'category',
+				isset($entity['primary_category_id']) ? (int) $entity['primary_category_id'] : null
+			);
+			$primary_topic = PrimaryTerms::resolve(
+				$post,
+				'post_tag',
+				isset($entity['primary_topic_id']) ? (int) $entity['primary_topic_id'] : null
+			);
+
+			$article = array(
 				'@type'            => $schema_type,
 				'@id'              => $canonical . '#article',
 				'headline'         => $title,
@@ -60,10 +71,41 @@ final class Schema {
 				),
 				'image'            => $image_url !== '' ? array( $image_url ) : array(),
 			);
+
+			if ($primary_category) {
+				$article['articleSection'] = (string) $primary_category->name;
+			}
+
+			$keywords = array();
+			if (! empty($entity['focus_keyphrase'])) {
+				$keywords[] = (string) $entity['focus_keyphrase'];
+			}
+			if ($primary_topic) {
+				$keywords[] = (string) $primary_topic->name;
+			}
+			$topic_terms = get_the_terms($post, 'post_tag');
+			if (is_array($topic_terms)) {
+				foreach ($topic_terms as $term) {
+					if ($term instanceof \WP_Term && ( ! $primary_topic || (int) $term->term_id !== (int) $primary_topic->term_id )) {
+						$keywords[] = (string) $term->name;
+					}
+				}
+			}
+			$keywords = array_values(array_unique(array_filter($keywords)));
+			if ($keywords !== array()) {
+				$article['keywords'] = implode(', ', $keywords);
+			}
+
+			$graph[] = $article;
 		}
 
 		if (! empty($schema['enable_breadcrumbs'])) {
-			$graph[] = self::breadcrumb_node($post, $settings, $canonical, $title);
+			$primary_category = PrimaryTerms::resolve(
+				$post,
+				'category',
+				isset($entity['primary_category_id']) ? (int) $entity['primary_category_id'] : null
+			);
+			$graph[] = self::breadcrumb_node($post, $settings, $canonical, $title, $primary_category);
 		}
 
 		$org = self::organization_node($settings, $org_id);
@@ -178,40 +220,21 @@ final class Schema {
 	 * @param array<string, mixed> $settings
 	 * @return array<string, mixed>
 	 */
-	private static function breadcrumb_node(WP_Post $post, array $settings, string $canonical, string $title): array {
-		$items = array(
-			array(
-				'@type'    => 'ListItem',
-				'position' => 1,
-				'name'     => (string) ($settings['global']['site_title'] ?: get_bloginfo('name')),
-				'item'     => Resolver::frontend_url($settings, '/'),
-			),
-		);
-
-		if ('page' === $post->post_type) {
-			$ancestors = array_reverse(get_post_ancestors($post));
-			$position  = 2;
-			foreach ($ancestors as $ancestor_id) {
-				$items[] = array(
-					'@type'    => 'ListItem',
-					'position' => $position,
-					'name'     => get_the_title($ancestor_id),
-					'item'     => Resolver::frontend_url($settings, (string) get_page_uri($ancestor_id)),
-				);
-				++$position;
-			}
+	private static function breadcrumb_node(
+		WP_Post $post,
+		array $settings,
+		string $canonical,
+		string $title,
+		?\WP_Term $primary_category = null
+	): array {
+		$trail = Breadcrumbs::for_post($post, $settings, $canonical, $title, $primary_category);
+		$items = array();
+		foreach ($trail as $index => $crumb) {
 			$items[] = array(
 				'@type'    => 'ListItem',
-				'position' => $position,
-				'name'     => $title,
-				'item'     => $canonical,
-			);
-		} else {
-			$items[] = array(
-				'@type'    => 'ListItem',
-				'position' => 2,
-				'name'     => $title,
-				'item'     => $canonical,
+				'position' => $index + 1,
+				'name'     => $crumb['name'],
+				'item'     => $crumb['url'],
 			);
 		}
 

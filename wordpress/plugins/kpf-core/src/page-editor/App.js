@@ -11,12 +11,14 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import LabelWithTag from '../design-tags/LabelWithTag';
 import { SeoFields, emptySeoMeta } from '../seo-fields/SeoFields';
 
 // Ensure the core data store is registered for media lookups.
 void coreStore;
 
 const config = window.kpfPageEditor || {};
+const designTags = config.designTags || {};
 
 apiFetch.use(apiFetch.createNonceMiddleware(config.nonce || ''));
 
@@ -54,7 +56,6 @@ export default function App({ pageId }) {
 	const [error, setError] = useState('');
 	const [notice, setNotice] = useState('');
 	const [tags, setTags] = useState([]);
-	const [tagQuery, setTagQuery] = useState('');
 	const [preview, setPreview] = useState({ title: '', description: '' });
 	const [form, setForm] = useState(null);
 	const { receiveEntityRecords } = useDispatch('core') || {};
@@ -103,26 +104,64 @@ export default function App({ pageId }) {
 
 	useEffect(() => {
 		if (!form || !pageId) return undefined;
+		let cancelled = false;
 		const handle = setTimeout(() => {
-			apiFetch({ path: `/kpf-seo/v1/resolve/${pageId}` })
-				.then((response) =>
+			apiFetch({
+				path: `/kpf-seo/v1/resolve/${pageId}`,
+				method: 'POST',
+				data: {
+					seo: form.seo || {},
+					title: form.title || '',
+					excerpt: form.excerpt || '',
+					featured_media: form.featuredImageId || 0,
+				},
+			})
+				.then((response) => {
+					if (cancelled) return;
 					setPreview({
 						title: response.title || '',
 						description: response.description || '',
-					})
-				)
+						openGraph: response.openGraph || null,
+					});
+				})
 				.catch(() => null);
-		}, 400);
-		return () => clearTimeout(handle);
+		}, 250);
+		return () => {
+			cancelled = true;
+			clearTimeout(handle);
+		};
 	}, [
 		pageId,
 		form?.seo?.title_template,
 		form?.seo?.description_template,
 		form?.seo?.og_title,
 		form?.seo?.og_description,
+		form?.seo?.og_image_id,
+		form?.seo?.focus_keyphrase,
+		form?.seo?.primary_category_id,
+		form?.seo?.primary_topic_id,
 		form?.title,
 		form?.excerpt,
+		form?.featuredImageId,
+		form?.featuredImageUrl,
+		mediaUrl,
 	]);
+
+	const livePreview = useMemo(() => {
+		const imageUrl = form?.seo?.og_image_id
+			? preview?.openGraph?.imageUrl || ''
+			: mediaUrl || form?.featuredImageUrl || preview?.openGraph?.imageUrl || '';
+		if (!imageUrl || imageUrl === preview?.openGraph?.imageUrl) {
+			return preview;
+		}
+		return {
+			...preview,
+			openGraph: {
+				...(preview?.openGraph || {}),
+				imageUrl,
+			},
+		};
+	}, [preview, form?.seo?.og_image_id, form?.featuredImageUrl, mediaUrl]);
 
 	const permalinkPreview = useMemo(() => {
 		if (!form?.link) return '';
@@ -236,7 +275,11 @@ export default function App({ pageId }) {
 
 			<section className="kpf-page-editor__section">
 				<TextControl
-					label={__('Page title', 'kpf-core')}
+					label={
+						<LabelWithTag tag={designTags.title}>
+							{__('Page title', 'kpf-core')}
+						</LabelWithTag>
+					}
 					value={form.title || ''}
 					onChange={(title) => {
 						const next = { title };
@@ -249,7 +292,9 @@ export default function App({ pageId }) {
 					__nextHasNoMarginBottom
 				/>
 				<TextControl
-					label={__('Slug', 'kpf-core')}
+					label={
+						<LabelWithTag tag={designTags.slug}>{__('Slug', 'kpf-core')}</LabelWithTag>
+					}
 					help={
 						permalinkPreview
 							? sprintf(__('Permalink preview: %s', 'kpf-core'), permalinkPreview)
@@ -265,11 +310,10 @@ export default function App({ pageId }) {
 			<section className="kpf-page-editor__section">
 				<SeoFields
 					seo={form.seo}
-					preview={preview}
+					preview={livePreview}
 					tags={tags}
-					tagQuery={tagQuery}
-					onTagQueryChange={setTagQuery}
 					onChange={(seo) => updateForm({ seo })}
+					designTags={designTags}
 				/>
 			</section>
 
@@ -303,8 +347,11 @@ export default function App({ pageId }) {
 							{schema.map((field) => (
 								<TextareaControl
 									key={field.key}
-									label={field.label || field.key}
-									help={`{{fields.${field.key}}}`}
+									label={
+										<LabelWithTag tag={`{{fields.${field.key}}}`}>
+											{field.label || field.key}
+										</LabelWithTag>
+									}
 									value={form.fieldValues?.[field.key] || ''}
 									onChange={(value) => updateFieldValue(field.key, value)}
 									__nextHasNoMarginBottom
@@ -354,7 +401,11 @@ export default function App({ pageId }) {
 						__nextHasNoMarginBottom
 					/>
 					<TextControl
-						label={__('Publish date', 'kpf-core')}
+						label={
+							<LabelWithTag tag={designTags.date}>
+								{__('Publish date', 'kpf-core')}
+							</LabelWithTag>
+						}
 						help={__('Local WordPress datetime (YYYY-MM-DD HH:MM:SS).', 'kpf-core')}
 						value={form.date || ''}
 						onChange={(date) => updateForm({ date })}
@@ -363,7 +414,11 @@ export default function App({ pageId }) {
 					/>
 				</div>
 				<div>
-					<h2>{__('Featured image', 'kpf-core')}</h2>
+					<h2>
+						<LabelWithTag tag={designTags['featuredImage.url']}>
+							{__('Featured image', 'kpf-core')}
+						</LabelWithTag>
+					</h2>
 					{mediaUrl ? (
 						<img className="kpf-page-editor__featured" src={mediaUrl} alt="" />
 					) : null}
@@ -396,7 +451,11 @@ export default function App({ pageId }) {
 						) : null}
 					</div>
 					<TextareaControl
-						label={__('Excerpt', 'kpf-core')}
+						label={
+							<LabelWithTag tag={designTags.excerpt}>
+								{__('Excerpt', 'kpf-core')}
+							</LabelWithTag>
+						}
 						help={__(
 							'Short summary used by SEO and design placeholders when available.',
 							'kpf-core'

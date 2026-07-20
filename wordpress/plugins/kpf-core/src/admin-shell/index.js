@@ -1,18 +1,28 @@
 import { createRoot } from '@wordpress/element';
 import {
 	Accessibility,
+	ArrowDownToLine,
 	Blocks,
-	Braces,
 	CalendarDays,
+	Code2,
 	CornerDownRight,
+	Eye,
 	FileText,
 	Gauge,
+	Globe,
+	House,
 	Images,
 	Inbox,
 	LayoutDashboard,
+	Menu,
+	MessageSquare,
 	Newspaper,
+	Paintbrush,
 	Palette,
+	Pencil,
+	Plus,
 	Plug,
+	Search,
 	SearchCheck,
 	Settings,
 	Users,
@@ -37,12 +47,35 @@ const menuIcons = {
 	'#menu-appearance': Palette,
 	'#toplevel_page_kpf-accessibility': Accessibility,
 	'#toplevel_page_kpf-interactions': Workflow,
+	'#menu-posts-kpf_code': Code2,
 	'#menu-plugins': Plug,
 	'#menu-users': Users,
 	'#menu-tools': Wrench,
 	'#menu-settings': Settings,
-	'#toplevel_page_graphiql-ide': Braces,
+	// GraphQL keeps its official elephant logo — do not Lucide-replace it.
 };
+
+/** Top admin bar (#wpadminbar) — GraphQL / WP logo / avatar stay as-is. */
+const adminBarIcons = {
+	'wp-admin-bar-menu-toggle': Menu,
+	'wp-admin-bar-site-name': House,
+	'wp-admin-bar-updates': ArrowDownToLine,
+	'wp-admin-bar-comments': MessageSquare,
+	'wp-admin-bar-new-content': Plus,
+	'wp-admin-bar-edit': Pencil,
+	'wp-admin-bar-view': Eye,
+	'wp-admin-bar-customize': Paintbrush,
+	'wp-admin-bar-search': Search,
+	'wp-admin-bar-kpf-performance': Gauge,
+	'wp-admin-bar-archive': Globe,
+};
+
+const ADMIN_BAR_SKIP = new Set([
+	'wp-admin-bar-wp-logo',
+	'wp-admin-bar-wpgraphql-ide',
+	'wp-admin-bar-my-account',
+	'wp-admin-bar-user-info',
+]);
 
 function decorateMenu() {
 	Object.entries(menuIcons).forEach(([selector, Icon]) => {
@@ -52,6 +85,47 @@ function decorateMenu() {
 		host.dataset.kpfLucide = 'true';
 		host.classList.add('kpf-lucide-menu-icon');
 		createRoot(host).render(<Icon aria-hidden="true" size={17} strokeWidth={1.8} />);
+	});
+}
+
+function ensureAdminBarIconHost(item) {
+	let host = item.querySelector(':scope > .ab-item .ab-icon, :scope > .ab-item > .ab-icon');
+	if (host) return host;
+
+	const link = item.querySelector(':scope > .ab-item');
+	if (!link) return null;
+
+	host = document.createElement('span');
+	host.className = 'ab-icon';
+	host.setAttribute('aria-hidden', 'true');
+	link.prepend(host);
+	return host;
+}
+
+function decorateAdminBar() {
+	const bar = document.getElementById('wpadminbar');
+	if (!bar) return;
+
+	Object.entries(adminBarIcons).forEach(([id, Icon]) => {
+		if (ADMIN_BAR_SKIP.has(id)) return;
+
+		const item = document.getElementById(id);
+		if (!item) return;
+
+		// Respect existing brand/site artwork (blavatar, custom images).
+		if (item.querySelector('.blavatar, img')) return;
+
+		const host = ensureAdminBarIconHost(item);
+		if (!host || host.dataset.kpfLucide === 'true') return;
+
+		const link = item.querySelector(':scope > .ab-item');
+		if (link) {
+			link.classList.add('kpf-lucide-ab-item');
+		}
+
+		host.dataset.kpfLucide = 'true';
+		host.classList.add('kpf-lucide-ab-icon');
+		createRoot(host).render(<Icon aria-hidden="true" size={18} strokeWidth={1.8} />);
 	});
 }
 
@@ -99,6 +173,7 @@ function addGlassTracking() {
 }
 
 decorateMenu();
+decorateAdminBar();
 decorateScfSubmenu();
 addGlassTracking();
 
@@ -108,6 +183,13 @@ if (menu) {
 		decorateMenu();
 		decorateScfSubmenu();
 	}).observe(menu, { childList: true, subtree: true });
+}
+
+const adminBar = document.getElementById('wpadminbar');
+if (adminBar) {
+	new MutationObserver(() => {
+		decorateAdminBar();
+	}).observe(adminBar, { childList: true, subtree: true });
 }
 
 function revealAdminShell() {

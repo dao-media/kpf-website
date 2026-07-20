@@ -20,7 +20,7 @@ final class ContentType {
 				'labels'              => array(
 					'name'                  => __('Team', 'kpf-core'),
 					'singular_name'         => __('Team member', 'kpf-core'),
-					'add_new'               => __('Add Team Member', 'kpf-core'),
+					'add_new'               => __('Add New', 'kpf-core'),
 					'add_new_item'          => __('Add Team Member', 'kpf-core'),
 					'edit_item'             => __('Edit Team Member', 'kpf-core'),
 					'new_item'              => __('New Team Member', 'kpf-core'),
@@ -28,7 +28,7 @@ final class ContentType {
 					'search_items'          => __('Search team', 'kpf-core'),
 					'not_found'             => __('No team members found.', 'kpf-core'),
 					'not_found_in_trash'    => __('No team members found in Trash.', 'kpf-core'),
-					'all_items'             => __('All Team Members', 'kpf-core'),
+					'all_items'             => __('Manage', 'kpf-core'),
 					'item_published'        => __('Team member published.', 'kpf-core'),
 					'item_updated'          => __('Team member updated.', 'kpf-core'),
 					'featured_image'        => __('Profile image', 'kpf-core'),

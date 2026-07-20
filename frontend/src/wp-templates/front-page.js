@@ -5,6 +5,7 @@ import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
 import SeoHead from "@/components/SeoHead";
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
+const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 
 export default function FrontPageTemplate(props) {
@@ -25,6 +26,7 @@ FrontPageTemplate.query = gql`
     ${KPF_STYLESHEET_QUERY}
     ${KPF_SITE_CHROME_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
+    ${KPF_CODE_SNIPPETS_QUERY}
     ${KPF_GSAP_QUERY}
     home: kpfFrontPage {
       id

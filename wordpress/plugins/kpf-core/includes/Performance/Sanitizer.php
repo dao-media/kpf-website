@@ -42,15 +42,23 @@ final class Sanitizer {
 				'rest_ttl'               => self::ttl( $pages['rest_ttl'] ?? 0 ),
 			),
 			'media'    => array(
-				'enabled'           => (bool) ( $media['enabled'] ?? $defaults['media']['enabled'] ),
-				'browser_ttl'       => self::ttl( $media['browser_ttl'] ?? 0 ),
-				'lazy_load'         => (bool) ( $media['lazy_load'] ?? false ),
-				'lazy_load_native'  => (bool) ( $media['lazy_load_native'] ?? false ),
-				'prefer_webp'       => (bool) ( $media['prefer_webp'] ?? false ),
-				'prefer_avif'       => (bool) ( $media['prefer_avif'] ?? false ),
-				'responsive_images' => (bool) ( $media['responsive_images'] ?? true ),
-				'cdn_url'           => esc_url_raw( (string) ( $media['cdn_url'] ?? '' ) ),
-				'strip_exif'        => (bool) ( $media['strip_exif'] ?? false ),
+				'enabled'              => (bool) ( $media['enabled'] ?? $defaults['media']['enabled'] ),
+				'browser_ttl'          => self::ttl( $media['browser_ttl'] ?? 0 ),
+				'lazy_load'            => (bool) ( $media['lazy_load'] ?? false ),
+				'lazy_load_native'     => (bool) ( $media['lazy_load_native'] ?? false ),
+				'prefer_webp'          => (bool) ( $media['prefer_webp'] ?? false ),
+				'prefer_avif'          => (bool) ( $media['prefer_avif'] ?? false ),
+				'generate_webp'        => (bool) ( $media['generate_webp'] ?? false ),
+				'generate_avif'        => (bool) ( $media['generate_avif'] ?? false ),
+				'optimize_on_upload'   => (bool) ( $media['optimize_on_upload'] ?? false ),
+				'quality'              => Images::clamp_quality( $media['quality'] ?? 85 ),
+				'editor_engine'        => self::editor_engine( $media['editor_engine'] ?? 'auto' ),
+				'max_width'            => max( 0, absint( $media['max_width'] ?? 0 ) ),
+				'max_height'           => max( 0, absint( $media['max_height'] ?? 0 ) ),
+				'big_image_threshold'  => max( 0, absint( $media['big_image_threshold'] ?? 2560 ) ),
+				'responsive_images'    => (bool) ( $media['responsive_images'] ?? true ),
+				'cdn_url'              => esc_url_raw( (string) ( $media['cdn_url'] ?? '' ) ),
+				'strip_exif'           => (bool) ( $media['strip_exif'] ?? false ),
 			),
 			'code'     => array(
 				'enabled'           => (bool) ( $code['enabled'] ?? $defaults['code']['enabled'] ),
@@ -93,6 +101,14 @@ final class Sanitizer {
 				'debug_headers'     => (bool) ( $advanced['debug_headers'] ?? false ),
 			),
 		);
+	}
+
+	/**
+	 * @param mixed $value
+	 */
+	private static function editor_engine( $value ): string {
+		$value = sanitize_key( (string) $value );
+		return in_array( $value, array( 'auto', 'imagick', 'gd' ), true ) ? $value : 'auto';
 	}
 
 	/**

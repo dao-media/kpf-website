@@ -95,6 +95,11 @@ $fields = Meta::sanitize_fields(
 kpf_design_assert( 2 === count( $fields ), 'Custom design fields normalize keys and remove duplicates' );
 kpf_design_assert( 'hero_heading' === $fields[0]['key'], 'Custom field keys are placeholder-safe' );
 kpf_design_assert( count( Placeholders::all() ) >= 20, 'Placeholder registry includes standard page data' );
+$placeholder_groups = array_unique( array_column( Placeholders::all(), 'group' ) );
+kpf_design_assert( in_array( 'seo_patterns', $placeholder_groups, true ), 'Placeholder library includes SEO %% patterns section' );
+$seo_pattern_tokens = array_column( Placeholders::seo_pattern_items(), 'token' );
+kpf_design_assert( in_array( '%%focuskw%%', $seo_pattern_tokens, true ), 'SEO patterns include %%focuskw%%' );
+kpf_design_assert( in_array( '%%category%%', $seo_pattern_tokens, true ), 'SEO patterns include %%category%%' );
 
 $page_id = wp_insert_post(
 	array(

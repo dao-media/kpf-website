@@ -14,8 +14,12 @@ final class MenuOrganizer {
 	private const PLUGINS_DIVIDER_SLUG     = 'kpf-plugins-divider';
 	private const MEDIA_DIVIDER_SLUG       = 'kpf-media-divider';
 	private const EVENTS_DIVIDER_SLUG      = 'kpf-events-divider';
+	private const CODE_DIVIDER_SLUG        = 'kpf-code-divider';
+	private const CODE_DIVIDER_AFTER_NEW   = 'kpf-code-divider-after-new';
+	private const CODE_DYNAMIC_CONTENT     = 'kpf-dynamic-content';
 	private const EVENTS_MENU_SLUG         = 'edit.php?post_type=kpf_event';
 	private const TEAM_MENU_SLUG           = 'edit.php?post_type=kpf_team';
+	private const CODE_MENU_SLUG           = 'edit.php?post_type=kpf_code';
 	private const SCF_MENU_SLUG            = 'edit.php?post_type=acf-field-group';
 	private const SCF_POST_TYPES           = array(
 		'acf-field-group',
@@ -53,7 +57,7 @@ final class MenuOrganizer {
 		$labels->search_items         = __( 'Search Blogs', 'kpf-core' );
 		$labels->not_found            = __( 'No blogs found.', 'kpf-core' );
 		$labels->not_found_in_trash   = __( 'No blogs found in Trash.', 'kpf-core' );
-		$labels->all_items            = __( 'All Blogs', 'kpf-core' );
+		$labels->all_items            = __( 'Manage', 'kpf-core' );
 		$labels->menu_name            = __( 'Blogs', 'kpf-core' );
 		$labels->name_admin_bar       = __( 'Blog', 'kpf-core' );
 		$labels->archives             = __( 'Blog Archives', 'kpf-core' );
@@ -125,11 +129,104 @@ final class MenuOrganizer {
 
 		self::customize_media_submenu();
 		self::customize_events_submenu();
+		self::customize_team_submenu();
+		self::customize_code_submenu();
 		self::customize_pages_submenu();
 		self::customize_plugins_submenu();
 		self::move_scf_to_tools();
 		self::insert_section_labels();
 		self::reorder_menu();
+	}
+
+	/**
+	 * Team: Manage, Add New.
+	 */
+	private static function customize_team_submenu(): void {
+		global $submenu;
+
+		$parent = self::TEAM_MENU_SLUG;
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		$capability = 'edit_posts';
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( is_array( $item ) && ! empty( $item[1] ) ) {
+				$capability = (string) $item[1];
+				break;
+			}
+		}
+
+		$submenu[ $parent ] = array(
+			array(
+				__( 'Manage', 'kpf-core' ),
+				$capability,
+				self::TEAM_MENU_SLUG,
+			),
+			array(
+				__( 'Add New', 'kpf-core' ),
+				$capability,
+				'post-new.php?post_type=kpf_team',
+			),
+		);
+	}
+
+	/**
+	 * Code: All, Active, Inactive, divider, Add New, divider, Dynamic Content.
+	 */
+	private static function customize_code_submenu(): void {
+		global $submenu;
+
+		$parent = self::CODE_MENU_SLUG;
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		$capability = 'edit_theme_options';
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( is_array( $item ) && ! empty( $item[1] ) ) {
+				$capability = (string) $item[1];
+				break;
+			}
+		}
+
+		$submenu[ $parent ] = array(
+			array(
+				__( 'All Code', 'kpf-core' ),
+				$capability,
+				self::CODE_MENU_SLUG,
+			),
+			array(
+				__( 'Active', 'kpf-core' ),
+				$capability,
+				self::CODE_MENU_SLUG . '&post_status=publish',
+			),
+			array(
+				__( 'Inactive', 'kpf-core' ),
+				$capability,
+				self::CODE_MENU_SLUG . '&post_status=draft',
+			),
+			array(
+				'<span class="kpf-code-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::CODE_DIVIDER_SLUG,
+			),
+			array(
+				__( 'Add New', 'kpf-core' ),
+				$capability,
+				'post-new.php?post_type=kpf_code',
+			),
+			array(
+				'<span class="kpf-code-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::CODE_DIVIDER_AFTER_NEW,
+			),
+			array(
+				__( 'Dynamic Content', 'kpf-core' ),
+				$capability,
+				self::CODE_MENU_SLUG . '&page=' . self::CODE_DYNAMIC_CONTENT,
+			),
+		);
 	}
 
 	/**
@@ -414,6 +511,7 @@ final class MenuOrganizer {
 			'themes.php',
 			'kpf-accessibility',
 			'kpf-interactions',
+			self::CODE_MENU_SLUG,
 			'plugins.php',
 			'users.php',
 			'tools.php',
@@ -491,6 +589,10 @@ final class MenuOrganizer {
 			return 'tools.php';
 		}
 
+		if ( self::CODE_DYNAMIC_CONTENT === (string) $plugin_page ) {
+			return self::CODE_MENU_SLUG;
+		}
+
 		return $parent_file;
 	}
 
@@ -500,7 +602,11 @@ final class MenuOrganizer {
 	 * @param string|null $submenu_file Current submenu file.
 	 */
 	public static function submenu_file( ?string $submenu_file ): ?string {
-		global $pagenow;
+		global $pagenow, $plugin_page;
+
+		if ( self::CODE_DYNAMIC_CONTENT === (string) $plugin_page ) {
+			return self::CODE_MENU_SLUG . '&page=' . self::CODE_DYNAMIC_CONTENT;
+		}
 
 		if ( 'plugins.php' === $pagenow ) {
 			$status = isset( $_GET['plugin_status'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -522,6 +628,14 @@ final class MenuOrganizer {
 			return 'post-new.php?post_type=kpf_event';
 		}
 
+		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_team' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'post-new.php?post_type=kpf_team';
+		}
+
+		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_code' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'post-new.php?post_type=kpf_code';
+		}
+
 		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$view = isset( $_GET['kpf_event_view'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				? sanitize_key( wp_unslash( (string) $_GET['kpf_event_view'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -532,6 +646,18 @@ final class MenuOrganizer {
 			}
 
 			return self::EVENTS_MENU_SLUG;
+		}
+
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_code' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$status = isset( $_GET['post_status'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				? sanitize_key( wp_unslash( (string) $_GET['post_status'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				: '';
+
+			if ( in_array( $status, array( 'publish', 'draft' ), true ) ) {
+				return self::CODE_MENU_SLUG . '&post_status=' . $status;
+			}
+
+			return self::CODE_MENU_SLUG;
 		}
 
 		if ( 'upload.php' !== $pagenow ) {
@@ -653,6 +779,25 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu .kpf-events-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu a[href*="' . self::CODE_DIVIDER_SLUG . '"],
+			#adminmenu a[href*="' . self::CODE_DIVIDER_AFTER_NEW . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu .kpf-code-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

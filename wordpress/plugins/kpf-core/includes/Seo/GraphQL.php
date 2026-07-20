@@ -37,6 +37,14 @@ final class GraphQL {
 					'imageUrl'    => array( 'type' => 'String' ),
 					'type'        => array( 'type' => 'String' ),
 					'url'         => array( 'type' => 'String' ),
+					'section'     => array(
+						'type'        => 'String',
+						'description' => 'Primary category name for article:section.',
+					),
+					'tags'        => array(
+						'type'        => array( 'list_of' => 'String' ),
+						'description' => 'Topic names for article:tag.',
+					),
 				),
 			)
 		);
@@ -71,22 +79,50 @@ final class GraphQL {
 		);
 
 		register_graphql_object_type(
+			'KpfSeoTerm',
+			array(
+				'description' => 'A primary taxonomy term used for SEO.',
+				'fields'      => array(
+					'id'   => array( 'type' => 'Int' ),
+					'name' => array( 'type' => 'String' ),
+					'slug' => array( 'type' => 'String' ),
+					'url'  => array( 'type' => 'String' ),
+				),
+			)
+		);
+
+		register_graphql_object_type(
+			'KpfSeoBreadcrumb',
+			array(
+				'description' => 'A breadcrumb trail item.',
+				'fields'      => array(
+					'name' => array( 'type' => 'String' ),
+					'url'  => array( 'type' => 'String' ),
+				),
+			)
+		);
+
+		register_graphql_object_type(
 			'KpfSeo',
 			array(
 				'description' => 'Resolved KPF SEO metadata.',
 				'fields'      => array(
-					'title'         => array( 'type' => 'String' ),
-					'description'   => array( 'type' => 'String' ),
-					'canonical'     => array( 'type' => 'String' ),
-					'robots'        => array( 'type' => 'KpfSeoRobots' ),
-					'openGraph'     => array( 'type' => 'KpfSeoOpenGraph' ),
-					'twitter'       => array( 'type' => 'KpfSeoTwitter' ),
-					'customMeta'    => array( 'type' => array( 'list_of' => 'KpfSeoCustomMeta' ) ),
-					'schemaJson'    => array(
+					'title'           => array( 'type' => 'String' ),
+					'description'     => array( 'type' => 'String' ),
+					'canonical'       => array( 'type' => 'String' ),
+					'robots'          => array( 'type' => 'KpfSeoRobots' ),
+					'openGraph'       => array( 'type' => 'KpfSeoOpenGraph' ),
+					'twitter'         => array( 'type' => 'KpfSeoTwitter' ),
+					'customMeta'      => array( 'type' => array( 'list_of' => 'KpfSeoCustomMeta' ) ),
+					'schemaJson'      => array(
 						'type'        => 'String',
 						'description' => 'JSON-LD graph encoded as a string.',
 					),
-					'showInSitemap' => array( 'type' => 'Boolean' ),
+					'showInSitemap'   => array( 'type' => 'Boolean' ),
+					'focusKeyphrase'  => array( 'type' => 'String' ),
+					'primaryCategory' => array( 'type' => 'KpfSeoTerm' ),
+					'primaryTopic'    => array( 'type' => 'KpfSeoTerm' ),
+					'breadcrumbs'     => array( 'type' => array( 'list_of' => 'KpfSeoBreadcrumb' ) ),
 				),
 			)
 		);
@@ -132,15 +168,19 @@ final class GraphQL {
 	 */
 	private static function to_graphql(array $payload): array {
 		return array(
-			'title'         => (string) ($payload['title'] ?? ''),
-			'description'   => (string) ($payload['description'] ?? ''),
-			'canonical'     => (string) ($payload['canonical'] ?? ''),
-			'robots'        => $payload['robots'] ?? array(),
-			'openGraph'     => $payload['openGraph'] ?? array(),
-			'twitter'       => $payload['twitter'] ?? array(),
-			'customMeta'    => array_values((array) ($payload['customMeta'] ?? array())),
-			'schemaJson'    => wp_json_encode($payload['schema'] ?? array()) ?: '{}',
-			'showInSitemap' => (bool) ($payload['showInSitemap'] ?? false),
+			'title'           => (string) ($payload['title'] ?? ''),
+			'description'     => (string) ($payload['description'] ?? ''),
+			'canonical'       => (string) ($payload['canonical'] ?? ''),
+			'robots'          => $payload['robots'] ?? array(),
+			'openGraph'       => $payload['openGraph'] ?? array(),
+			'twitter'         => $payload['twitter'] ?? array(),
+			'customMeta'      => array_values((array) ($payload['customMeta'] ?? array())),
+			'schemaJson'      => wp_json_encode($payload['schema'] ?? array()) ?: '{}',
+			'showInSitemap'   => (bool) ($payload['showInSitemap'] ?? false),
+			'focusKeyphrase'  => (string) ($payload['focusKeyphrase'] ?? ''),
+			'primaryCategory' => $payload['primaryCategory'] ?? null,
+			'primaryTopic'    => $payload['primaryTopic'] ?? null,
+			'breadcrumbs'     => array_values((array) ($payload['breadcrumbs'] ?? array())),
 		);
 	}
 }

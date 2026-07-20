@@ -14,6 +14,7 @@ import { seoApi } from './api';
 import { FieldGroup, Section, Stat } from './components/Section';
 import TagLibrary from './components/TagLibrary';
 import TemplateField from './components/TemplateField';
+import SeoPlaceholderGuide from '../seo-fields/SeoPlaceholderGuide';
 
 const emptyRedirect = {
 	source_path: '',
@@ -100,7 +101,7 @@ const SECTION_COPY = {
 	tags: {
 		title: __('Placeholders', 'kpf-core'),
 		description: __(
-			'Copy a placeholder, then paste it into a page-title or description pattern so wording updates automatically.',
+			'Copy a placeholder, then paste it into a page-title or description pattern so wording updates automatically. Includes %%focuskw%%, %%category%% (primary category), and %%tag%% (primary topic).',
 			'kpf-core'
 		),
 	},
@@ -475,7 +476,7 @@ export default function App() {
 						<TemplateField
 							label={__('Default page-title pattern', 'kpf-core')}
 							help={__(
-								'Builds the title shown in search results. Example: %%title%% %%sep%% %%sitename%%.',
+								'Builds the title shown in search results. Example: %%title%% %%sep%% %%sitename%%. Posts can also use %%category%%, %%tag%%, and %%focuskw%%.',
 								'kpf-core'
 							)}
 							value={settings.global.title_template}
@@ -484,7 +485,7 @@ export default function App() {
 						<TemplateField
 							label={__('Default search-description pattern', 'kpf-core')}
 							help={__(
-								'Builds the short summary under a search result. %%excerpt%% uses the page excerpt.',
+								'Builds the short summary under a search result. %%excerpt%% uses the page excerpt; %%focuskw%%, %%category%%, and %%tag%% also work on posts.',
 								'kpf-core'
 							)}
 							value={settings.global.description_template}
@@ -520,9 +521,14 @@ export default function App() {
 					</Section>
 					<Section
 						title={__('Placeholders', 'kpf-core')}
-						description={__('Click Copy, then paste into a title or description pattern.', 'kpf-core')}
+						description={__(
+							'Browse every valid %% token, or open the Placeholders tab for the full library.',
+							'kpf-core'
+						)}
 					>
-						<TagLibrary tags={tags} compact />
+						<div className="kpf-seo__placeholder-guide-wrap">
+							<SeoPlaceholderGuide tags={tags} />
+						</div>
 					</Section>
 				</div>
 			)}

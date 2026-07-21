@@ -9,7 +9,8 @@ final class Theme {
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ), 5 );
 		add_action( 'wp_enqueue_scripts', array( self::class, 'enqueue_admin_bar' ), 5 );
 		add_action( 'admin_head', array( self::class, 'critical_styles' ), 0 );
-		add_filter( 'admin_body_class', array( self::class, 'body_class' ) );
+		add_filter( 'admin_body_class', array( self::class, 'admin_body_class' ) );
+		add_filter( 'body_class', array( self::class, 'frontend_body_class' ) );
 		add_filter( 'admin_footer_text', array( self::class, 'footer_text' ) );
 	}
 
@@ -91,8 +92,22 @@ final class Theme {
 		</script>';
 	}
 
-	public static function body_class( string $classes ): string {
+	public static function admin_body_class( string $classes ): string {
 		return $classes . ' kpf-admin-theme';
+	}
+
+	/**
+	 * Match the light toolbar design on the public site when the admin bar is shown.
+	 *
+	 * @param string[] $classes Body classes.
+	 * @return string[]
+	 */
+	public static function frontend_body_class( array $classes ): array {
+		if ( is_admin_bar_showing() ) {
+			$classes[] = 'kpf-toolbar-theme';
+		}
+
+		return $classes;
 	}
 
 	public static function footer_text(): string {

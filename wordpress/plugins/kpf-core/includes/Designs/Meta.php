@@ -5,16 +5,19 @@ declare(strict_types=1);
 namespace KPF\Core\Designs;
 
 final class Meta {
-	public const DESIGN_META      = '_kpf_design';
-	public const PAGE_DESIGN_META = '_kpf_page_design_id';
-	public const PAGE_FIELDS_META = '_kpf_design_fields';
-	public const VERSION          = 1;
-	public const MAX_SOURCE_BYTES = 1048576;
-	public const MAX_FIELDS       = 50;
-	public const HISTORY_OPTION   = 'kpf_design_history_limit';
-	public const HISTORY_DEFAULT  = 20;
-	public const HISTORY_MIN      = 2;
-	public const HISTORY_MAX      = 100;
+	public const DESIGN_META           = '_kpf_design';
+	public const PAGE_DESIGN_META      = '_kpf_page_design_id';
+	public const PAGE_FIELDS_META      = '_kpf_design_fields';
+	public const TEMPLATE_TYPE_META    = '_kpf_design_template_post_type';
+	public const TEMPLATE_VIEW_META    = '_kpf_design_template_view';
+	public const ROLE_META             = '_kpf_design_role';
+	public const VERSION               = 1;
+	public const MAX_SOURCE_BYTES      = 1048576;
+	public const MAX_FIELDS            = 50;
+	public const HISTORY_OPTION        = 'kpf_design_history_limit';
+	public const HISTORY_DEFAULT       = 20;
+	public const HISTORY_MIN           = 2;
+	public const HISTORY_MAX           = 100;
 
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_meta' ), 10 );
@@ -73,6 +76,45 @@ final class Meta {
 					return current_user_can( 'edit_post', $post_id );
 				},
 				'revisions_enabled' => true,
+			)
+		);
+
+		register_post_meta(
+			ContentType::POST_TYPE,
+			self::TEMPLATE_TYPE_META,
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'sanitize_key',
+				'auth_callback'     => static fn(): bool => current_user_can( 'manage_options' ),
+			)
+		);
+
+		register_post_meta(
+			ContentType::POST_TYPE,
+			self::TEMPLATE_VIEW_META,
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'sanitize_key',
+				'auth_callback'     => static fn(): bool => current_user_can( 'manage_options' ),
+			)
+		);
+
+		register_post_meta(
+			ContentType::POST_TYPE,
+			self::ROLE_META,
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'default'           => '',
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'sanitize_key',
+				'auth_callback'     => static fn(): bool => current_user_can( 'manage_options' ),
 			)
 		);
 	}
@@ -205,12 +247,161 @@ final class Meta {
 
 	public static function page_has_design( int $page_id ): bool {
 		$design_id = (int) get_post_meta( $page_id, self::PAGE_DESIGN_META, true );
+		return self::design_is_ready( $design_id );
+	}
+
+	public static function design_is_ready( int $design_id ): bool {
 		if ( $design_id < 1 || ContentType::POST_TYPE !== get_post_type( $design_id ) ) {
 			return false;
 		}
 
 		$design = self::get_design( $design_id );
 		return '' !== trim( (string) $design['html'] );
+	}
+
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	public static function resolve_published_design( int $design_id ): ?array {
+		$post = $design_id > 0 ? get_post( $design_id ) : null;
+		if ( ! $post || ContentType::POST_TYPE !== $post->post_type || 'publish' !== $post->post_status ) {
+			return null;
+		}
+
+		$meta = self::get_design( $design_id );
+		if ( '' === trim( (string) $meta['html'] ) ) {
+			return null;
+		}
+
+		return array(
+			'databaseId' => $design_id,
+			'title'      => get_the_title( $design_id ),
+			'html'       => (string) $meta['html'],
+			'css'        => (string) $meta['css'],
+		);
+	}
+
+	/**
+	 * Create or return the design record for a system role (fallback / maintenance).
+	 */
+	public static function ensure_system_design( string $role ): int {
+		$role = sanitize_key( $role );
+		if ( ! Settings::is_valid_role( $role ) ) {
+			return 0;
+		}
+
+		$existing = Settings::design_id_for_role( $role );
+		if ( $existing > 0 && ContentType::POST_TYPE === get_post_type( $existing ) ) {
+			update_post_meta( $existing, self::ROLE_META, $role );
+			return $existing;
+		}
+
+		$title = Settings::ROLE_MAINTENANCE === $role
+			? __( 'Coming soon / maintenance design', 'kpf-core' )
+			: __( 'Fallback page design', 'kpf-core' );
+
+		$design_id = wp_insert_post(
+			array(
+				'post_type'   => ContentType::POST_TYPE,
+				'post_status' => 'publish',
+				'post_title'  => $title,
+			),
+			true
+		);
+
+		if ( is_wp_error( $design_id ) || ! $design_id ) {
+			return 0;
+		}
+
+		$design_id = (int) $design_id;
+		update_post_meta( $design_id, self::DESIGN_META, self::design_defaults() );
+		update_post_meta( $design_id, self::ROLE_META, $role );
+		Settings::set_design_id_for_role( $role, $design_id );
+
+		return $design_id;
+	}
+
+	public static function find_template_design_id( string $post_type, string $view ): int {
+		$post_type = sanitize_key( $post_type );
+		$view      = sanitize_key( $view );
+		if ( '' === $post_type || '' === $view ) {
+			return 0;
+		}
+
+		$found = get_posts(
+			array(
+				'post_type'              => ContentType::POST_TYPE,
+				'post_status'            => array( 'publish', 'draft', 'private' ),
+				'posts_per_page'         => 1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'meta_query'             => array(
+					'relation' => 'AND',
+					array(
+						'key'   => self::TEMPLATE_TYPE_META,
+						'value' => $post_type,
+					),
+					array(
+						'key'   => self::TEMPLATE_VIEW_META,
+						'value' => $view,
+					),
+				),
+			)
+		);
+
+		return ! empty( $found[0] ) ? (int) $found[0] : 0;
+	}
+
+	public static function template_has_design( string $post_type, string $view ): bool {
+		$design_id = self::find_template_design_id( $post_type, $view );
+		if ( $design_id < 1 ) {
+			return false;
+		}
+
+		$design = self::get_design( $design_id );
+		return '' !== trim( (string) $design['html'] );
+	}
+
+	/**
+	 * Create or return the design record for a post-type template slot.
+	 */
+	public static function ensure_template_design( string $post_type, string $view ): int {
+		$post_type = sanitize_key( $post_type );
+		$view      = sanitize_key( $view );
+		if ( ! Templates::is_valid_post_type( $post_type ) || ! Templates::is_valid_view( $view ) ) {
+			return 0;
+		}
+
+		$existing = self::find_template_design_id( $post_type, $view );
+		if ( $existing > 0 ) {
+			return $existing;
+		}
+
+		$title = Templates::VIEW_ARCHIVE === $view
+			? sprintf( __( 'Archive design: %s', 'kpf-core' ), $post_type )
+			: sprintf( __( 'Singular design: %s', 'kpf-core' ), $post_type );
+
+		$design_id = wp_insert_post(
+			array(
+				'post_type'   => ContentType::POST_TYPE,
+				'post_status' => 'publish',
+				'post_title'  => $title,
+			),
+			true
+		);
+
+		if ( is_wp_error( $design_id ) || ! $design_id ) {
+			return 0;
+		}
+
+		$design_id = (int) $design_id;
+		update_post_meta( $design_id, self::DESIGN_META, self::design_defaults() );
+		update_post_meta( $design_id, self::TEMPLATE_TYPE_META, $post_type );
+		update_post_meta( $design_id, self::TEMPLATE_VIEW_META, $view );
+
+		return $design_id;
 	}
 
 	public static function history_limit(): int {

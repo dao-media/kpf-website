@@ -17,7 +17,6 @@ import {
 	Menu,
 	MessageSquare,
 	Newspaper,
-	Paintbrush,
 	Palette,
 	Pencil,
 	Plus,
@@ -44,7 +43,7 @@ const menuIcons = {
 	'#toplevel_page_kpf-inbox': Inbox,
 	'#toplevel_page_kpf-seo': SearchCheck,
 	'#toplevel_page_kpf-performance': Gauge,
-	'#menu-appearance': Palette,
+	'#toplevel_page_kpf-stylesheet': Palette,
 	'#toplevel_page_kpf-accessibility': Accessibility,
 	'#toplevel_page_kpf-interactions': Workflow,
 	'#menu-posts-kpf_code': Code2,
@@ -52,7 +51,7 @@ const menuIcons = {
 	'#menu-users': Users,
 	'#menu-tools': Wrench,
 	'#menu-settings': Settings,
-	// GraphQL keeps its official elephant logo — do not Lucide-replace it.
+	// GraphQL keeps its official elephant logo; tinted via tintSvgMenuIcons().
 };
 
 /** Top admin bar (#wpadminbar) — GraphQL / WP logo / avatar stay as-is. */
@@ -64,7 +63,6 @@ const adminBarIcons = {
 	'wp-admin-bar-new-content': Plus,
 	'wp-admin-bar-edit': Pencil,
 	'wp-admin-bar-view': Eye,
-	'wp-admin-bar-customize': Paintbrush,
 	'wp-admin-bar-search': Search,
 	'wp-admin-bar-kpf-performance': Gauge,
 	'wp-admin-bar-archive': Globe,
@@ -77,6 +75,55 @@ const ADMIN_BAR_SKIP = new Set([
 	'wp-admin-bar-user-info',
 ]);
 
+function ensureExpandedActiveSubmenus() {
+	if (document.body.classList.contains('folded')) {
+		document.querySelectorAll('#adminmenu > li.kpf-submenu-expanded').forEach((item) => {
+			item.classList.remove('kpf-submenu-expanded');
+		});
+		return;
+	}
+
+	document.querySelectorAll('#adminmenu > li.wp-has-submenu').forEach((item) => {
+		const submenu = item.querySelector(':scope > .wp-submenu');
+		if (!submenu) {
+			return;
+		}
+
+		const hasActiveChild = Boolean(
+			submenu.querySelector('li.current, a.current, [aria-current="page"]')
+		);
+		const markedOpen =
+			item.classList.contains('wp-has-current-submenu') ||
+			item.classList.contains('wp-menu-open');
+
+		if (!hasActiveChild && !markedOpen) {
+			item.classList.remove('kpf-submenu-expanded');
+			return;
+		}
+
+		// Keep active sections expanded even when WP only marks a child `.current`
+		// (e.g. Comments under Inbox) without reliably applying open classes.
+		if (!item.classList.contains('wp-has-current-submenu')) {
+			item.classList.add('wp-has-current-submenu');
+		}
+		if (!item.classList.contains('wp-menu-open')) {
+			item.classList.add('wp-menu-open');
+		}
+		if (!item.classList.contains('kpf-submenu-expanded')) {
+			item.classList.add('kpf-submenu-expanded');
+		}
+		item.classList.remove('wp-not-current-submenu');
+
+		const topLink = item.querySelector(':scope > a.menu-top');
+		if (topLink) {
+			if (!topLink.classList.contains('wp-has-current-submenu')) {
+				topLink.classList.add('wp-has-current-submenu');
+			}
+			topLink.classList.remove('wp-not-current-submenu');
+		}
+	});
+}
+
 function decorateMenu() {
 	Object.entries(menuIcons).forEach(([selector, Icon]) => {
 		const host = document.querySelector(`${selector} > a .wp-menu-image`);
@@ -86,6 +133,36 @@ function decorateMenu() {
 		host.classList.add('kpf-lucide-menu-icon');
 		createRoot(host).render(<Icon aria-hidden="true" size={17} strokeWidth={1.8} />);
 	});
+
+	tintSvgMenuIcons();
+}
+
+/**
+ * WPGraphQL (and similar plugins) register menu icons as fixed-fill SVG
+ * background-images. Remap them through a CSS mask so they pick up the same
+ * muted / hover / current colors as Lucide icons via currentColor.
+ */
+function tintSvgMenuIcons() {
+	document
+		.querySelectorAll('#adminmenu > li > a.menu-top .wp-menu-image.svg')
+		.forEach((host) => {
+			if (host.dataset.kpfSvgTint === 'true' || host.dataset.kpfLucide === 'true') {
+				return;
+			}
+
+			const background = host.style.backgroundImage || '';
+			const match = background.match(/url\((['"]?)(data:image\/svg\+xml[^'")]+)\1\)/i);
+			if (!match) {
+				return;
+			}
+
+			const svgUrl = match[2];
+			host.dataset.kpfSvgTint = 'true';
+			host.classList.add('kpf-svg-menu-icon');
+			host.style.backgroundImage = 'none';
+			host.style.setProperty('-webkit-mask-image', `url("${svgUrl}")`);
+			host.style.setProperty('mask-image', `url("${svgUrl}")`);
+		});
 }
 
 function ensureAdminBarIconHost(item) {
@@ -175,6 +252,7 @@ function addGlassTracking() {
 decorateMenu();
 decorateAdminBar();
 decorateScfSubmenu();
+ensureExpandedActiveSubmenus();
 addGlassTracking();
 
 const menu = document.getElementById('adminmenu');
@@ -182,6 +260,7 @@ if (menu) {
 	new MutationObserver(() => {
 		decorateMenu();
 		decorateScfSubmenu();
+		ensureExpandedActiveSubmenus();
 	}).observe(menu, { childList: true, subtree: true });
 }
 
@@ -191,6 +270,11 @@ if (adminBar) {
 		decorateAdminBar();
 	}).observe(adminBar, { childList: true, subtree: true });
 }
+
+// Folded/auto-fold toggles change whether submenus should stay inline.
+new MutationObserver(() => {
+	ensureExpandedActiveSubmenus();
+}).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
 function revealAdminShell() {
 	window.clearTimeout(window.kpfAdminPaintFallback);

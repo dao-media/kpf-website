@@ -45,16 +45,25 @@ export default function App({ Component, pageProps }) {
   const css = stylesheetFromPageProps(pageProps);
   const accessibility = accessibilityFromPageProps(pageProps);
   const codeSnippets = codeSnippetsFromPageProps(pageProps);
+  const isMaintenanceRoute =
+    router.pathname === "/coming-soon" ||
+    router.asPath?.split("?")[0]?.replace(/\/$/, "") === "/coming-soon";
 
   return (
     <FaustProvider pageProps={pageProps}>
       <AccessibilityRuntime config={accessibility} />
       <GlobalStylesheet css={css} />
-      <CodeSnippetsRuntime snippets={codeSnippets} slot="header" />
-      <SiteChrome chrome={chrome}>
+      {isMaintenanceRoute ? (
         <Component {...pageProps} key={router.asPath} />
-      </SiteChrome>
-      <CodeSnippetsRuntime snippets={codeSnippets} slot="footer" />
+      ) : (
+        <>
+          <CodeSnippetsRuntime snippets={codeSnippets} slot="header" />
+          <SiteChrome chrome={chrome}>
+            <Component {...pageProps} key={router.asPath} />
+          </SiteChrome>
+          <CodeSnippetsRuntime snippets={codeSnippets} slot="footer" />
+        </>
+      )}
     </FaustProvider>
   );
 }

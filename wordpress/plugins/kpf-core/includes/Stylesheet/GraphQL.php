@@ -19,7 +19,7 @@ final class GraphQL {
 			'kpfStylesheet',
 			array(
 				'type'        => 'String',
-				'description' => 'The sanitized global stylesheet managed in WordPress Appearance.',
+				'description' => 'The sanitized global stylesheet managed in WordPress (Stylesheet admin).',
 				'resolve'     => static fn(): string => self::resolve_css(),
 			)
 		);

@@ -508,7 +508,7 @@ final class MenuOrganizer {
 			self::UTILITIES_LABEL_SLUG,
 			'kpf-seo',
 			'kpf-performance',
-			'themes.php',
+			'kpf-stylesheet',
 			'kpf-accessibility',
 			'kpf-interactions',
 			self::CODE_MENU_SLUG,

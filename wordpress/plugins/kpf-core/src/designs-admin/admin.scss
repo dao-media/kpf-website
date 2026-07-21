@@ -52,6 +52,83 @@
 	overflow: hidden;
 }
 
+.kpf-designs-tabs {
+	background: var(--kpf-soft);
+	border-bottom: 1px solid var(--kpf-line);
+	display: flex;
+	gap: 0;
+	padding: 0 8px;
+}
+
+.kpf-designs-tabs button {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	color: var(--kpf-muted);
+	cursor: pointer;
+	display: inline-flex;
+	font-size: 13px;
+	font-weight: 600;
+	gap: 8px;
+	margin: 0;
+	padding: 14px 16px 12px;
+}
+
+.kpf-designs-tabs button:hover {
+	color: var(--kpf-ink);
+}
+
+.kpf-designs-tabs button.is-active {
+	border-bottom-color: var(--kpf-navy);
+	color: var(--kpf-ink);
+}
+
+.kpf-designs-tabs button span {
+	background: var(--kpf-line);
+	border-radius: 999px;
+	color: var(--kpf-text);
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1;
+	min-width: 1.5rem;
+	padding: 4px 7px;
+	text-align: center;
+}
+
+.kpf-designs-tabs button.is-active span {
+	background: var(--kpf-navy);
+	color: #fff;
+}
+
+.kpf-designs-tab-note {
+	color: var(--kpf-muted);
+	font-size: 13px;
+	line-height: 1.45;
+	margin: 0;
+	padding: 12px 16px 0;
+}
+
+.kpf-designs-site-panel {
+	border-bottom: 1px solid var(--kpf-line);
+	padding-bottom: 8px;
+}
+
+.kpf-designs-toolbar-label {
+	color: var(--kpf-ink);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.kpf-maintenance-toggle {
+	max-width: 40rem;
+	padding: 8px 16px 12px;
+}
+
+.kpf-maintenance-toggle .components-base-control {
+	margin-bottom: 0;
+}
+
 .kpf-designs-admin .kpf-designs-toolbar {
 	align-items: center;
 	background: var(--kpf-canvas);

@@ -58,7 +58,20 @@ faustwp_update_setting("frontend_uri", "http://localhost:3000");
 faustwp_update_setting("disable_theme", "1");
 '
 
+# Headless: activate the blank theme WordPress still requires, then remove all others.
+if npx wp-env run cli bash -lc 'test -f wp-content/themes/kpf-blank/style.css' >/dev/null 2>&1; then
+  $WP theme activate kpf-blank --skip-plugins || echo "WARNING: could not activate kpf-blank." >&2
+  INACTIVE_THEMES="$($WP theme list --status=inactive --field=name --skip-plugins 2>/dev/null || true)"
+  if [[ -n "${INACTIVE_THEMES}" ]]; then
+    # shellcheck disable=SC2086
+    $WP theme delete ${INACTIVE_THEMES} --skip-plugins || echo "WARNING: could not delete inactive themes." >&2
+  fi
+else
+  echo "WARNING: kpf-blank theme not mounted yet. Restart wp-env after pulling theme changes." >&2
+fi
+
 echo "WordPress bootstrap complete."
 echo "Admin login: admin / 1234"
 echo "Site URL: http://localhost:8888"
 echo "WP Admin: http://localhost:8888/wp-admin"
+echo "Active theme: kpf-blank (headless stub)"

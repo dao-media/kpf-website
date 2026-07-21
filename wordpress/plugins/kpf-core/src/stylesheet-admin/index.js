@@ -271,7 +271,7 @@ function App() {
 		<div className="kpf-stylesheet-shell">
 			<header className="kpf-stylesheet-header">
 				<div>
-					<p>{__('Appearance', 'kpf-core')}</p>
+					<p>{__('Styles', 'kpf-core')}</p>
 					<h1>{__('Stylesheet', 'kpf-core')}</h1>
 					<span>{__('Global CSS applied across the headless frontend.', 'kpf-core')}</span>
 				</div>

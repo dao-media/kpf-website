@@ -1,5 +1,5 @@
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Notice, Spinner, TextareaControl } from '@wordpress/components';
+import { Button, Notice, Spinner, TextareaControl, ToggleControl } from '@wordpress/components';
 import { createRoot, useCallback, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import CodeEditor from './CodeEditor';
@@ -11,6 +11,24 @@ apiFetch.use(apiFetch.createNonceMiddleware(window.kpfDesignsAdmin?.nonce || '')
 const REST_BASE = (window.kpfDesignsAdmin?.restBase || '/wp-json/kpf-designs/v1').replace(/\/$/, '');
 const MAX_BYTES = Number(window.kpfDesignsAdmin?.maxSourceBytes || 1048576);
 const CAN_MANAGE_SETTINGS = Boolean(window.kpfDesignsAdmin?.canManageSettings);
+
+function isTemplateRow(row) {
+	return row?.kind === 'template';
+}
+
+function isSystemRow(row) {
+	return row?.kind === 'system';
+}
+
+function designApiPath(row) {
+	if (isSystemRow(row)) {
+		return `${REST_BASE}/system/${encodeURIComponent(row.role)}`;
+	}
+	if (isTemplateRow(row)) {
+		return `${REST_BASE}/template/${encodeURIComponent(row.postType)}/${encodeURIComponent(row.view)}`;
+	}
+	return `${REST_BASE}/page/${row.id}`;
+}
 
 function StatusBadge({ ready }) {
 	return (
@@ -126,13 +144,13 @@ function FilePicker({
 	);
 }
 
-function UrlRow({ row, onUpdated, onEdit }) {
+function UrlRow({ row, onUpdated, onEdit, onSettings }) {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 	const [htmlFile, setHtmlFile] = useState(null);
 	const [cssFile, setCssFile] = useState(null);
-	const htmlInputId = `kpf-design-html-${row.id}`;
-	const cssInputId = `kpf-design-css-${row.id}`;
+	const htmlInputId = `kpf-design-html-${String(row.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+	const cssInputId = `kpf-design-css-${String(row.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
 
 	async function uploadFiles() {
 		if (!htmlFile) {
@@ -149,13 +167,16 @@ function UrlRow({ row, onUpdated, onEdit }) {
 				body.append('css', cssFile);
 			}
 			const response = await apiFetch({
-				url: `${REST_BASE}/page/${row.id}/upload`,
+				url: `${designApiPath(row)}/upload`,
 				method: 'POST',
 				body,
 			});
 			setHtmlFile(null);
 			setCssFile(null);
 			onUpdated(response.url);
+			if (response.settings && onSettings) {
+				onSettings(response.settings);
+			}
 		} catch (err) {
 			setError(err?.message || __('Upload failed.', 'kpf-core'));
 		} finally {
@@ -168,12 +189,15 @@ function UrlRow({ row, onUpdated, onEdit }) {
 		setError('');
 		try {
 			const response = await apiFetch({
-				url: `${REST_BASE}/page/${row.id}/clear`,
+				url: `${designApiPath(row)}/clear`,
 				method: 'POST',
 			});
 			setHtmlFile(null);
 			setCssFile(null);
 			onUpdated(response.url);
+			if (response.settings && onSettings) {
+				onSettings(response.settings);
+			}
 		} catch (err) {
 			setError(err?.message || __('Could not clear this design.', 'kpf-core'));
 		} finally {
@@ -199,7 +223,17 @@ function UrlRow({ row, onUpdated, onEdit }) {
 				<strong>{row.title}</strong>
 				<div className="kpf-design-path">
 					<code>{row.path}</code>
-					<span className="kpf-design-page-status">{row.status}</span>
+					<span className="kpf-design-page-status">
+						{isSystemRow(row)
+							? row.role === 'maintenance'
+								? __('Maintenance', 'kpf-core')
+								: __('Fallback', 'kpf-core')
+							: isTemplateRow(row)
+								? row.view === 'archive'
+									? __('Archive', 'kpf-core')
+									: __('Singular', 'kpf-core')
+								: row.status}
+					</span>
 				</div>
 				{error ? (
 					<Notice status="error" isDismissible={false}>
@@ -208,9 +242,21 @@ function UrlRow({ row, onUpdated, onEdit }) {
 				) : null}
 			</td>
 			<td>
-				<a href={row.url} target="_blank" rel="noreferrer">
-					{row.url}
-				</a>
+				{isSystemRow(row) ? (
+					row.url ? (
+						<a href={row.url} target="_blank" rel="noreferrer">
+							{row.path}
+						</a>
+					) : (
+						<span>{row.path}</span>
+					)
+				) : isTemplateRow(row) ? (
+					<code>{row.path}</code>
+				) : (
+					<a href={row.url} target="_blank" rel="noreferrer">
+						{row.url}
+					</a>
+				)}
 			</td>
 			<td>
 				<StatusBadge ready={Boolean(row.ready)} />
@@ -286,7 +332,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 
 	useEffect(() => {
 		setLoading(true);
-		apiFetch({ url: `${REST_BASE}/page/${row.id}` })
+		apiFetch({ url: designApiPath(row) })
 			.then((response) => {
 				setEditor(response);
 				setHtml(response.html || '');
@@ -295,7 +341,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 			})
 			.catch((err) => setError(err?.message || __('Could not open this design.', 'kpf-core')))
 			.finally(() => setLoading(false));
-	}, [row.id]);
+	}, [row]);
 
 	useEffect(() => {
 		document.body.classList.add('kpf-designs-editing');
@@ -333,12 +379,13 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 		);
 	}, [copyFields, copyQuery]);
 	const dirty = Boolean(editor && (html !== editor.html || css !== editor.css));
+	const apiPath = designApiPath(row);
 
 	const loadHistory = useCallback(async () => {
 		setHistoryLoading(true);
 		setHistoryError('');
 		try {
-			const response = await apiFetch({ url: `${REST_BASE}/page/${row.id}/revisions` });
+			const response = await apiFetch({ url: `${apiPath}/revisions` });
 			setHistory(response.revisions || []);
 			setHistoryLimit(Number(response.limit || 0));
 		} catch (err) {
@@ -346,7 +393,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 		} finally {
 			setHistoryLoading(false);
 		}
-	}, [row.id]);
+	}, [apiPath]);
 
 	useEffect(() => {
 		if (historyOpen) loadHistory();
@@ -364,7 +411,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 		setNotice('');
 		try {
 			const response = await apiFetch({
-				url: `${REST_BASE}/page/${row.id}`,
+				url: apiPath,
 				method: 'POST',
 				data: {
 					html,
@@ -375,7 +422,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 			setEditor(response.editor);
 			setHtml(response.editor.html || '');
 			setCss(response.editor.css || '');
-			onSaved(response.url);
+			onSaved(response.url, response);
 			setNotice(__('Design saved.', 'kpf-core'));
 			if (historyOpen) loadHistory();
 		} catch (err) {
@@ -383,7 +430,7 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 		} finally {
 			setSaving(false);
 		}
-	}, [css, editor, historyOpen, html, loadHistory, onSaved, row.id, saving]);
+	}, [apiPath, css, editor, historyOpen, html, loadHistory, onSaved, saving]);
 
 	async function restoreVersion(version) {
 		if (dirty && !window.confirm(__('Discard your unsaved changes and restore this version?', 'kpf-core'))) {
@@ -398,14 +445,14 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 		setNotice('');
 		try {
 			const response = await apiFetch({
-				url: `${REST_BASE}/page/${row.id}/revisions/${version.id}/restore`,
+				url: `${apiPath}/revisions/${version.id}/restore`,
 				method: 'POST',
 				data: { revision: editor.revision },
 			});
 			setEditor(response.editor);
 			setHtml(response.editor.html || '');
 			setCss(response.editor.css || '');
-			onSaved(response.url);
+			onSaved(response.url, response);
 			setNotice(__('Version restored. The previous current version remains in history.', 'kpf-core'));
 			await loadHistory();
 		} catch (err) {
@@ -462,9 +509,21 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 						← {__('All designs', 'kpf-core')}
 					</Button>
 					<h2>{row.title}</h2>
-					<a href={row.url} target="_blank" rel="noreferrer">
-						{row.path}
-					</a>
+					{isSystemRow(row) ? (
+						row.url ? (
+							<a href={row.url} target="_blank" rel="noreferrer">
+								{row.path}
+							</a>
+						) : (
+							<code>{row.path}</code>
+						)
+					) : isTemplateRow(row) ? (
+						<code>{row.path}</code>
+					) : (
+						<a href={row.url} target="_blank" rel="noreferrer">
+							{row.path}
+						</a>
+					)}
 				</div>
 				<div className="kpf-editor-save">
 					<span className={dirty ? 'is-dirty' : ''}>
@@ -652,67 +711,124 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 }
 
 function DesignsAdminApp() {
-	const [rows, setRows] = useState([]);
+	const [pageRows, setPageRows] = useState([]);
+	const [templateRows, setTemplateRows] = useState([]);
+	const [systemRows, setSystemRows] = useState([]);
+	const [tab, setTab] = useState('pages');
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
 	const [query, setQuery] = useState('');
 	const [editingRow, setEditingRow] = useState(null);
-	const [settings, setSettings] = useState({ historyLimit: 20, minimum: 2, maximum: 100 });
+	const [settings, setSettings] = useState({
+		historyLimit: 20,
+		minimum: 2,
+		maximum: 100,
+		maintenanceEnabled: false,
+		maintenancePath: '/coming-soon/',
+	});
 	const [historyLimitDraft, setHistoryLimitDraft] = useState(20);
 	const [settingsSaving, setSettingsSaving] = useState(false);
 	const [settingsNotice, setSettingsNotice] = useState('');
+
+	const applySettings = useCallback((next) => {
+		setSettings(next);
+		setHistoryLimitDraft(Number(next.historyLimit));
+		setSystemRows(next.system || []);
+	}, []);
 
 	const load = useCallback(() => {
 		setLoading(true);
 		Promise.all([
 			apiFetch({ url: `${REST_BASE}/urls` }),
+			apiFetch({ url: `${REST_BASE}/templates` }),
 			apiFetch({ url: `${REST_BASE}/settings` }),
 		])
-			.then(([urlResponse, settingsResponse]) => {
-				setRows(urlResponse.urls || []);
-				setSettings(settingsResponse);
-				setHistoryLimitDraft(Number(settingsResponse.historyLimit));
+			.then(([urlResponse, templateResponse, settingsResponse]) => {
+				setPageRows(urlResponse.urls || []);
+				setTemplateRows(templateResponse.templates || []);
+				applySettings(settingsResponse);
 				setError('');
 			})
 			.catch((err) => {
-				setError(err?.message || __('Could not load site URLs.', 'kpf-core'));
+				setError(err?.message || __('Could not load designs.', 'kpf-core'));
 			})
 			.finally(() => setLoading(false));
-	}, []);
+	}, [applySettings]);
 
 	useEffect(() => {
 		load();
 	}, [load]);
 
+	const activeRows =
+		tab === 'templates' ? templateRows : tab === 'site' ? systemRows : pageRows;
+
 	const filtered = useMemo(() => {
 		const needle = query.trim().toLowerCase();
-		if (!needle) return rows;
-		return rows.filter((row) =>
-			[row.title, row.path, row.url, row.status].join(' ').toLowerCase().includes(needle)
+		if (!needle) return activeRows;
+		return activeRows.filter((row) =>
+			[row.title, row.path, row.url, row.status, row.typeLabel, row.view, row.postType, row.role]
+				.filter(Boolean)
+				.join(' ')
+				.toLowerCase()
+				.includes(needle)
 		);
-	}, [rows, query]);
+	}, [activeRows, query]);
 
 	function updateRow(next) {
-		setRows((current) => current.map((row) => (row.id === next.id ? { ...row, ...next } : row)));
+		if (isSystemRow(next)) {
+			setSystemRows((current) =>
+				current.map((row) => (row.id === next.id ? { ...row, ...next } : row))
+			);
+			return;
+		}
+		if (isTemplateRow(next)) {
+			setTemplateRows((current) =>
+				current.map((row) => (row.id === next.id ? { ...row, ...next } : row))
+			);
+			return;
+		}
+		setPageRows((current) => current.map((row) => (row.id === next.id ? { ...row, ...next } : row)));
 	}
 
-	async function saveHistoryLimit() {
+	async function saveSettings(payload, notice) {
 		setSettingsSaving(true);
 		setSettingsNotice('');
 		try {
 			const response = await apiFetch({
 				url: `${REST_BASE}/settings`,
 				method: 'POST',
-				data: { historyLimit: historyLimitDraft },
+				data: payload,
 			});
-			setSettings(response);
-			setHistoryLimitDraft(Number(response.historyLimit));
-			setSettingsNotice(__('Version history setting saved.', 'kpf-core'));
+			applySettings(response);
+			setSettingsNotice(notice || __('Settings saved.', 'kpf-core'));
 		} catch (err) {
-			setError(err?.message || __('Could not save the version history setting.', 'kpf-core'));
+			setError(err?.message || __('Could not save settings.', 'kpf-core'));
 		} finally {
 			setSettingsSaving(false);
 		}
+	}
+
+	async function saveHistoryLimit() {
+		await saveSettings(
+			{ historyLimit: historyLimitDraft },
+			__('Version history setting saved.', 'kpf-core')
+		);
+	}
+
+	async function toggleMaintenance(enabled) {
+		const maintenanceRow = systemRows.find((row) => row.role === 'maintenance');
+		if (enabled && !maintenanceRow?.ready) {
+			setError(
+				__('Upload a coming soon design before turning maintenance mode on.', 'kpf-core')
+			);
+			return;
+		}
+		await saveSettings(
+			{ maintenanceEnabled: enabled },
+			enabled
+				? __('Maintenance mode is on. Visitors are redirected to the coming soon page.', 'kpf-core')
+				: __('Maintenance mode is off.', 'kpf-core')
+		);
 	}
 
 	if (loading) {
@@ -728,18 +844,23 @@ function DesignsAdminApp() {
 			<DesignEditorWorkspace
 				row={editingRow}
 				onBack={() => setEditingRow(null)}
-				onSaved={(next) => {
+				onSaved={(next, extra) => {
 					updateRow(next);
+					if (extra?.settings) {
+						applySettings(extra.settings);
+					}
 					setEditingRow((current) => ({ ...current, ...next }));
 				}}
 			/>
 		);
 	}
 
+	const maintenanceRow = systemRows.find((row) => row.role === 'maintenance');
+
 	return (
 		<div className="kpf-designs-table-wrap">
 			{error ? (
-				<Notice status="error" isDismissible={false}>
+				<Notice status="error" isDismissible onRemove={() => setError('')}>
 					{error}
 				</Notice>
 			) : null}
@@ -748,22 +869,79 @@ function DesignsAdminApp() {
 					{settingsNotice}
 				</Notice>
 			) : null}
+			<div className="kpf-designs-tabs" role="tablist" aria-label={__('Design categories', 'kpf-core')}>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={tab === 'pages'}
+					className={tab === 'pages' ? 'is-active' : ''}
+					onClick={() => {
+						setTab('pages');
+						setQuery('');
+					}}
+				>
+					{__('Single pages', 'kpf-core')}
+					<span>{pageRows.length}</span>
+				</button>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={tab === 'templates'}
+					className={tab === 'templates' ? 'is-active' : ''}
+					onClick={() => {
+						setTab('templates');
+						setQuery('');
+					}}
+				>
+					{__('Dynamic templates', 'kpf-core')}
+					<span>{templateRows.length}</span>
+				</button>
+				<button
+					type="button"
+					role="tab"
+					aria-selected={tab === 'site'}
+					className={tab === 'site' ? 'is-active' : ''}
+					onClick={() => {
+						setTab('site');
+						setQuery('');
+					}}
+				>
+					{__('Site', 'kpf-core')}
+					<span>{systemRows.filter((row) => row.ready).length}</span>
+				</button>
+			</div>
 			<div className="kpf-designs-toolbar">
-				<label htmlFor="kpf-designs-search">{__('Search URLs', 'kpf-core')}</label>
-				<input
-					id="kpf-designs-search"
-					type="search"
-					value={query}
-					onChange={(event) => setQuery(event.target.value)}
-					placeholder={__('Filter by title or path…', 'kpf-core')}
-				/>
-				<span>
-					{sprintf(
-						__('%1$d ready · %2$d missing', 'kpf-core'),
-						rows.filter((row) => row.ready).length,
-						rows.filter((row) => !row.ready).length
-					)}
-				</span>
+				{tab !== 'site' ? (
+					<>
+						<label htmlFor="kpf-designs-search">
+							{tab === 'templates'
+								? __('Search templates', 'kpf-core')
+								: __('Search pages', 'kpf-core')}
+						</label>
+						<input
+							id="kpf-designs-search"
+							type="search"
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							placeholder={
+								tab === 'templates'
+									? __('Filter by post type or path…', 'kpf-core')
+									: __('Filter by title or path…', 'kpf-core')
+							}
+						/>
+						<span>
+							{sprintf(
+								__('%1$d ready · %2$d missing', 'kpf-core'),
+								activeRows.filter((row) => row.ready).length,
+								activeRows.filter((row) => !row.ready).length
+							)}
+						</span>
+					</>
+				) : (
+					<span className="kpf-designs-toolbar-label">
+						{__('Fallback and coming soon / maintenance designs', 'kpf-core')}
+					</span>
+				)}
 				<div className="kpf-history-setting">
 					<label htmlFor="kpf-history-limit">{__('Versions to keep', 'kpf-core')}</label>
 					{CAN_MANAGE_SETTINGS ? (
@@ -792,11 +970,69 @@ function DesignsAdminApp() {
 					)}
 				</div>
 			</div>
+			{tab === 'templates' ? (
+				<p className="kpf-designs-tab-note">
+					{__(
+						'Assign one design to every singular item of a post type, or to that post type’s archive listing.',
+						'kpf-core'
+					)}
+				</p>
+			) : null}
+			{tab === 'site' ? (
+				<div className="kpf-designs-site-panel">
+					<p className="kpf-designs-tab-note">
+						{__(
+							'Fallback applies to any page without its own design. Maintenance redirects every public URL to the coming soon page while it is on.',
+							'kpf-core'
+						)}
+					</p>
+					{CAN_MANAGE_SETTINGS ? (
+						<div className="kpf-maintenance-toggle">
+							<ToggleControl
+								label={__('Enable coming soon / maintenance mode', 'kpf-core')}
+								help={
+									settings.maintenanceEnabled
+										? sprintf(
+												__(
+													'Visitors are redirected to %s. WordPress admin, login, and APIs stay available.',
+													'kpf-core'
+												),
+												settings.maintenancePath || '/coming-soon/'
+											)
+										: __(
+												'When enabled, the frontend redirects all public URLs to the coming soon design.',
+												'kpf-core'
+											)
+								}
+								checked={Boolean(settings.maintenanceEnabled)}
+								disabled={settingsSaving || (!maintenanceRow?.ready && !settings.maintenanceEnabled)}
+								onChange={toggleMaintenance}
+							/>
+						</div>
+					) : (
+						<p className="kpf-designs-tab-note">
+							{settings.maintenanceEnabled
+								? __('Maintenance mode is currently on.', 'kpf-core')
+								: __('Maintenance mode is currently off.', 'kpf-core')}
+						</p>
+					)}
+				</div>
+			) : null}
 			<table className="widefat striped kpf-designs-table">
 				<thead>
 					<tr>
-						<th>{__('Page', 'kpf-core')}</th>
-						<th>{__('URL', 'kpf-core')}</th>
+						<th>
+							{tab === 'templates'
+								? __('Template', 'kpf-core')
+								: tab === 'site'
+									? __('Site design', 'kpf-core')
+									: __('Page', 'kpf-core')}
+						</th>
+						<th>
+							{tab === 'templates' || tab === 'site'
+								? __('Applies to', 'kpf-core')
+								: __('URL', 'kpf-core')}
+						</th>
 						<th>{__('Status', 'kpf-core')}</th>
 						<th>{__('Design file', 'kpf-core')}</th>
 					</tr>
@@ -804,7 +1040,13 @@ function DesignsAdminApp() {
 				<tbody>
 					{filtered.length === 0 ? (
 						<tr>
-							<td colSpan={4}>{__('No site URLs matched that search.', 'kpf-core')}</td>
+							<td colSpan={4}>
+								{tab === 'templates'
+									? __('No templates matched that search.', 'kpf-core')
+									: tab === 'site'
+										? __('No site designs available.', 'kpf-core')
+										: __('No pages matched that search.', 'kpf-core')}
+							</td>
 						</tr>
 					) : (
 						filtered.map((row) => (
@@ -813,6 +1055,7 @@ function DesignsAdminApp() {
 								row={row}
 								onUpdated={updateRow}
 								onEdit={setEditingRow}
+								onSettings={applySettings}
 							/>
 						))
 					)}

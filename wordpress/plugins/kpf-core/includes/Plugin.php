@@ -9,6 +9,7 @@ use KPF\Core\Accessibility\GraphQL as AccessibilityGraphQL;
 use KPF\Core\Accessibility\Rest as AccessibilityRest;
 use KPF\Core\Accessibility\Settings as AccessibilitySettings;
 use KPF\Core\Admin\Dashboard as AdminDashboard;
+use KPF\Core\Admin\HeadlessAppearance;
 use KPF\Core\Admin\MenuOrganizer;
 use KPF\Core\Admin\Theme as AdminTheme;
 use KPF\Core\Code\Admin as CodeAdmin;
@@ -28,6 +29,7 @@ use KPF\Core\Designs\Editor as DesignsEditor;
 use KPF\Core\Designs\GraphQL as DesignsGraphQL;
 use KPF\Core\Designs\Meta as DesignsMeta;
 use KPF\Core\Designs\Rest as DesignsRest;
+use KPF\Core\Designs\Settings as DesignsSettings;
 use KPF\Core\Inbox\Admin as InboxAdmin;
 use KPF\Core\Inbox\Comments as InboxComments;
 use KPF\Core\Inbox\Forms as InboxForms;
@@ -121,6 +123,7 @@ final class Plugin {
 		PerformanceSettings::ensure_defaults();
 		DynamicContentSettings::ensure_defaults();
 		AccessibilitySettings::ensure_defaults();
+		DesignsSettings::ensure_defaults();
 		flush_rewrite_rules();
 	}
 
@@ -132,6 +135,7 @@ final class Plugin {
 
 		AdminDashboard::register();
 		AdminTheme::register();
+		HeadlessAppearance::register();
 		MenuOrganizer::register();
 
 		BlockGroups::register();
@@ -143,6 +147,7 @@ final class Plugin {
 
 		DesignsContentType::register();
 		DesignsMeta::register();
+		DesignsSettings::register();
 		DesignsAdmin::register();
 		DesignsEditor::register();
 		DesignsRest::register();
@@ -231,7 +236,7 @@ final class Plugin {
 
 		// Register after SEO so Utilities submenu lists SEO before Performance.
 		PerformanceAdmin::register();
-		// After Appearance in MenuOrganizer order (themes.php → accessibility → interactions).
+		// After Stylesheet in MenuOrganizer order (stylesheet → accessibility → interactions).
 		AccessibilityAdmin::register();
 
 		if (get_option('kpf_seo_db_version') !== RedirectsTable::DB_VERSION) {

@@ -11,17 +11,19 @@ final class Admin {
 	}
 
 	public static function menu(): void {
-		add_theme_page(
+		add_menu_page(
 			__( 'Stylesheet', 'kpf-core' ),
 			__( 'Stylesheet', 'kpf-core' ),
 			'edit_theme_options',
 			ContentType::MENU_SLUG,
-			array( self::class, 'render' )
+			array( self::class, 'render' ),
+			'dashicons-editor-code',
+			58
 		);
 	}
 
 	public static function enqueue( string $hook ): void {
-		if ( 'appearance_page_' . ContentType::MENU_SLUG !== $hook ) {
+		if ( 'toplevel_page_' . ContentType::MENU_SLUG !== $hook ) {
 			return;
 		}
 

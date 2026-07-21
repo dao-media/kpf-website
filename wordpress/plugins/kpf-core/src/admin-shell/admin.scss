@@ -1,4 +1,5 @@
-body.kpf-admin-theme {
+body.kpf-admin-theme,
+body.kpf-toolbar-theme {
 	--kpf-admin-navy: #1b2a4a;
 	--kpf-admin-navy-hover: #24385f;
 	--kpf-admin-ink: #0f172a;
@@ -8,6 +9,10 @@ body.kpf-admin-theme {
 	--kpf-admin-canvas: #f3f5f8;
 	--kpf-admin-soft: #f8fafc;
 	--kpf-admin-glass: rgb(226 232 240 / 76%);
+}
+
+/* Canvas fills stay wp-admin-only so the public site theme is untouched. */
+body.wp-admin.kpf-admin-theme {
 	background: var(--kpf-admin-canvas);
 	color: var(--kpf-admin-text);
 }
@@ -56,6 +61,28 @@ body.kpf-admin-theme #adminmenu {
 
 body.kpf-admin-theme #adminmenu a {
 	color: var(--kpf-admin-text);
+}
+
+/* WP color schemes paint this for dark sidebars (near-white). */
+body.kpf-admin-theme #collapse-menu {
+	border-top: 1px solid var(--kpf-admin-line);
+	margin-top: 8px;
+	padding-top: 4px;
+}
+
+body.kpf-admin-theme #collapse-button,
+body.kpf-admin-theme #collapse-button .collapse-button-label,
+body.kpf-admin-theme #collapse-button .collapse-button-icon:after {
+	color: var(--kpf-admin-text) !important;
+}
+
+body.kpf-admin-theme #collapse-button:hover,
+body.kpf-admin-theme #collapse-button:hover .collapse-button-label,
+body.kpf-admin-theme #collapse-button:hover .collapse-button-icon:after,
+body.kpf-admin-theme #collapse-button:focus,
+body.kpf-admin-theme #collapse-button:focus .collapse-button-label,
+body.kpf-admin-theme #collapse-button:focus .collapse-button-icon:after {
+	color: var(--kpf-admin-navy) !important;
 }
 
 body.kpf-admin-theme #adminmenu a.menu-top {
@@ -151,6 +178,20 @@ body.kpf-admin-theme #adminmenu .kpf-lucide-menu-icon svg {
 	display: block;
 }
 
+/* Fixed-fill SVG menu icons (e.g. WPGraphQL elephant) → currentColor. */
+body.kpf-admin-theme #adminmenu .kpf-svg-menu-icon {
+	background-color: currentColor !important;
+	background-image: none !important;
+	background-repeat: no-repeat !important;
+	opacity: 1 !important;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 18px auto;
+	mask-size: 18px auto;
+}
+
 /* Admin bar Lucide icons (also applied on the frontend toolbar).
  * WordPress colors dashicons via ::before only — Lucide SVGs need an
  * explicit color on the host or currentColor paints transparent. */
@@ -210,13 +251,17 @@ body.kpf-admin-theme #adminmenu .kpf-lucide-menu-icon svg {
 	top: 2px;
 }
 
-body.kpf-admin-theme #wpadminbar .kpf-lucide-ab-icon {
+body.kpf-admin-theme #wpadminbar .kpf-lucide-ab-icon,
+body.kpf-toolbar-theme #wpadminbar .kpf-lucide-ab-icon {
 	color: var(--kpf-admin-muted);
 }
 
 body.kpf-admin-theme #wpadminbar .ab-top-menu > li:hover > .ab-item .kpf-lucide-ab-icon,
 body.kpf-admin-theme #wpadminbar .ab-top-menu > li.hover > .ab-item .kpf-lucide-ab-icon,
-body.kpf-admin-theme #wpadminbar .ab-top-menu > li > .ab-item:focus .kpf-lucide-ab-icon {
+body.kpf-admin-theme #wpadminbar .ab-top-menu > li > .ab-item:focus .kpf-lucide-ab-icon,
+body.kpf-toolbar-theme #wpadminbar .ab-top-menu > li:hover > .ab-item .kpf-lucide-ab-icon,
+body.kpf-toolbar-theme #wpadminbar .ab-top-menu > li.hover > .ab-item .kpf-lucide-ab-icon,
+body.kpf-toolbar-theme #wpadminbar .ab-top-menu > li > .ab-item:focus .kpf-lucide-ab-icon {
 	color: var(--kpf-admin-navy);
 }
 
@@ -296,7 +341,30 @@ body.kpf-admin-theme #adminmenu .wp-submenu {
 	box-sizing: border-box;
 }
 
-body.kpf-admin-theme #adminmenu .wp-has-current-submenu .wp-submenu {
+/* Active parents keep their submenu in the sidebar (never flyout-only). */
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-current-submenu > .wp-submenu,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-menu-open > .wp-submenu,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu.kpf-submenu-expanded > .wp-submenu,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu li.current) > .wp-submenu,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu a.current) > .wp-submenu,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu [aria-current='page']) > .wp-submenu {
+	background: transparent !important;
+	backdrop-filter: none !important;
+	border: 0 !important;
+	border-radius: 0 !important;
+	box-shadow: none !important;
+	display: block !important;
+	left: auto !important;
+	margin: 0 !important;
+	min-width: 0 !important;
+	padding: 4px 0 7px !important;
+	position: relative !important;
+	top: auto !important;
+	width: auto !important;
+}
+
+body.kpf-admin-theme #adminmenu .wp-has-current-submenu .wp-submenu,
+body.kpf-admin-theme #adminmenu li.kpf-submenu-expanded > .wp-submenu {
 	border: 0;
 	border-radius: 0;
 	box-shadow: none;
@@ -359,7 +427,8 @@ body.kpf-admin-theme.folded #adminmenu a.menu-top {
 }
 
 /* Toolbar uses the same light shell and glass dropdown language. */
-body.kpf-admin-theme #wpadminbar {
+body.kpf-admin-theme #wpadminbar,
+body.kpf-toolbar-theme #wpadminbar {
 	background: rgb(255 255 255 / 96%);
 	border-bottom: 1px solid var(--kpf-admin-line);
 	box-shadow: 0 1px 4px rgb(15 23 42 / 5%);
@@ -368,25 +437,37 @@ body.kpf-admin-theme #wpadminbar {
 body.kpf-admin-theme #wpadminbar .ab-item,
 body.kpf-admin-theme #wpadminbar a.ab-item,
 body.kpf-admin-theme #wpadminbar > #wp-toolbar span.ab-label,
-body.kpf-admin-theme #wpadminbar > #wp-toolbar span.noticon {
+body.kpf-admin-theme #wpadminbar > #wp-toolbar span.noticon,
+body.kpf-toolbar-theme #wpadminbar .ab-item,
+body.kpf-toolbar-theme #wpadminbar a.ab-item,
+body.kpf-toolbar-theme #wpadminbar > #wp-toolbar span.ab-label,
+body.kpf-toolbar-theme #wpadminbar > #wp-toolbar span.noticon {
 	color: var(--kpf-admin-text);
 }
 
 body.kpf-admin-theme #wpadminbar .ab-icon::before,
-body.kpf-admin-theme #wpadminbar .ab-item::before {
+body.kpf-admin-theme #wpadminbar .ab-item::before,
+body.kpf-toolbar-theme #wpadminbar .ab-icon::before,
+body.kpf-toolbar-theme #wpadminbar .ab-item::before {
 	color: var(--kpf-admin-muted);
 }
 
 body.kpf-admin-theme #wpadminbar .ab-top-menu > li.hover > .ab-item,
 body.kpf-admin-theme #wpadminbar.nojq .quicklinks .ab-top-menu > li > .ab-item:focus,
 body.kpf-admin-theme #wpadminbar:not(.mobile) .ab-top-menu > li:hover > .ab-item,
-body.kpf-admin-theme #wpadminbar:not(.mobile) .ab-top-menu > li > .ab-item:focus {
+body.kpf-admin-theme #wpadminbar:not(.mobile) .ab-top-menu > li > .ab-item:focus,
+body.kpf-toolbar-theme #wpadminbar .ab-top-menu > li.hover > .ab-item,
+body.kpf-toolbar-theme #wpadminbar.nojq .quicklinks .ab-top-menu > li > .ab-item:focus,
+body.kpf-toolbar-theme #wpadminbar:not(.mobile) .ab-top-menu > li:hover > .ab-item,
+body.kpf-toolbar-theme #wpadminbar:not(.mobile) .ab-top-menu > li > .ab-item:focus {
 	background: rgb(226 232 240 / 72%);
 	color: var(--kpf-admin-navy);
 }
 
 body.kpf-admin-theme #wpadminbar .menupop .ab-sub-wrapper,
-body.kpf-admin-theme #wpadminbar .shortlink-input {
+body.kpf-admin-theme #wpadminbar .shortlink-input,
+body.kpf-toolbar-theme #wpadminbar .menupop .ab-sub-wrapper,
+body.kpf-toolbar-theme #wpadminbar .shortlink-input {
 	background: rgb(255 255 255 / 96%);
 	backdrop-filter: blur(16px) saturate(140%);
 	border: 1px solid var(--kpf-admin-line);
@@ -394,16 +475,21 @@ body.kpf-admin-theme #wpadminbar .shortlink-input {
 }
 
 body.kpf-admin-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary,
-body.kpf-admin-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary .ab-submenu {
+body.kpf-admin-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary .ab-submenu,
+body.kpf-toolbar-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary,
+body.kpf-toolbar-theme #wpadminbar .quicklinks .menupop ul.ab-sub-secondary .ab-submenu {
 	background: #f8fafc;
 }
 
-body.kpf-admin-theme #wpadminbar .ab-submenu .ab-item {
+body.kpf-admin-theme #wpadminbar .ab-submenu .ab-item,
+body.kpf-toolbar-theme #wpadminbar .ab-submenu .ab-item {
 	color: #526077;
 }
 
 body.kpf-admin-theme #wpadminbar .ab-submenu .ab-item:hover,
-body.kpf-admin-theme #wpadminbar .ab-submenu .ab-item:focus {
+body.kpf-admin-theme #wpadminbar .ab-submenu .ab-item:focus,
+body.kpf-toolbar-theme #wpadminbar .ab-submenu .ab-item:hover,
+body.kpf-toolbar-theme #wpadminbar .ab-submenu .ab-item:focus {
 	background: #eef2f7;
 	color: var(--kpf-admin-navy);
 }
@@ -660,7 +746,8 @@ body.kpf-admin-theme #wpfooter {
 		margin-right: 12px;
 	}
 
-	body.kpf-admin-theme #wpadminbar {
+	body.kpf-admin-theme #wpadminbar,
+	body.kpf-toolbar-theme #wpadminbar {
 		border-bottom: 0;
 	}
 

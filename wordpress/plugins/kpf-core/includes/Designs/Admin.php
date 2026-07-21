@@ -73,7 +73,7 @@ final class Admin {
 		echo '<div class="wrap kpf-designs-admin">';
 		echo '<h1>' . esc_html__( 'Designs', 'kpf-core' ) . '</h1>';
 		echo '<p class="kpf-designs-intro">' . esc_html__(
-			'Upload an HTML design (and optional CSS) for each site URL, then edit its copy or source code in the browser.',
+			'Assign HTML/CSS designs to individual pages, dynamic templates, a site-wide fallback, or a coming soon / maintenance page.',
 			'kpf-core'
 		) . '</p>';
 		echo '<div id="kpf-designs-admin-root"></div>';
@@ -105,6 +105,7 @@ final class Admin {
 			$path      = is_string( $path ) && '' !== $path ? $path : '/';
 
 			$rows[] = array(
+				'kind'         => 'page',
 				'id'           => $page_id,
 				'title'        => get_the_title( $page ) ?: __( '(no title)', 'kpf-core' ),
 				'status'       => (string) $page->post_status,

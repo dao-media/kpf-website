@@ -255,7 +255,7 @@ final class Dashboard {
 			$actions[] = self::action( 'memory', __( 'Add memory', 'kpf-core' ), __( 'Grow the foundation scrapbook', 'kpf-core' ), 'BookHeart', admin_url( 'post-new.php?post_type=' . ScrapbookContentType::POST_TYPE ) );
 		}
 		if ( current_user_can( 'manage_options' ) ) {
-			$actions[] = self::action( 'stylesheet', __( 'Stylesheet', 'kpf-core' ), __( 'Edit global frontend styles', 'kpf-core' ), 'Braces', admin_url( 'themes.php?page=kpf-stylesheet' ) );
+			$actions[] = self::action( 'stylesheet', __( 'Stylesheet', 'kpf-core' ), __( 'Edit global frontend styles', 'kpf-core' ), 'Braces', admin_url( 'admin.php?page=kpf-stylesheet' ) );
 		}
 		return $actions;
 	}

@@ -1,0 +1,10 @@
+/*
+Theme Name: KPF Blank
+Theme URI: https://kevinpopkefoundation.org
+Description: Minimal required theme for headless WordPress. Public pages are rendered by the Faust/Next frontend; this theme exists only because WordPress requires an active theme.
+Author: Kevin Popke Foundation
+Version: 1.0.0
+Text Domain: kpf-blank
+Requires at least: 6.0
+Requires PHP: 8.0
+*/

@@ -1,6 +1,6 @@
 <?php
 /**
- * Smoke tests for Appearance → Stylesheet.
+ * Smoke tests for the Stylesheet admin.
  *
  * Run with:
  * wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/stylesheet-smoke.php

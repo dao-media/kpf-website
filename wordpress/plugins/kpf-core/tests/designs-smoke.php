@@ -11,6 +11,8 @@ use KPF\Core\Designs\ContentType;
 use KPF\Core\Designs\GraphQL;
 use KPF\Core\Designs\Meta;
 use KPF\Core\Designs\Placeholders;
+use KPF\Core\Designs\Settings;
+use KPF\Core\Designs\Templates;
 
 $GLOBALS['kpf_design_failures'] = 0;
 
@@ -135,6 +137,7 @@ $resolved = GraphQL::resolve_design( $page_id );
 kpf_design_assert( is_array( $resolved ) && $resolved['databaseId'] === $design_id, 'Published HTML design resolves' );
 kpf_design_assert( str_contains( $resolved['html'], '{{page.title}}' ), 'GraphQL design preserves placeholders' );
 kpf_design_assert( ! array_key_exists( 'type', $resolved ), 'GraphQL design payload has no type field' );
+kpf_design_assert( 'page' === ( $resolved['source'] ?? '' ), 'Assigned page designs report page source' );
 
 $editor_request = new WP_REST_Request( 'GET' );
 $editor_request->set_param( 'id', $page_id );
@@ -251,6 +254,102 @@ kpf_design_assert(
 
 wp_delete_post( $page_id, true );
 wp_delete_post( $design_id, true );
+
+$template_rows = Templates::rows();
+kpf_design_assert( count( $template_rows ) >= 4, 'Dynamic templates catalog includes singular and archive rows' );
+$post_types = array_unique( array_column( $template_rows, 'postType' ) );
+kpf_design_assert( in_array( 'post', $post_types, true ), 'Posts appear in the dynamic templates catalog' );
+kpf_design_assert( in_array( 'page', $post_types, true ), 'Pages appear in the dynamic templates catalog' );
+$archive_rows = array_values(
+	array_filter( $template_rows, static fn( array $row ): bool => 'archive' === ( $row['view'] ?? '' ) )
+);
+kpf_design_assert(
+	count( $archive_rows ) === count( $post_types ),
+	'Every cataloged post type has an archive template row'
+);
+
+$template_design_id = Meta::ensure_template_design( 'post', Templates::VIEW_SINGULAR );
+kpf_design_assert( $template_design_id > 0, 'ensure_template_design creates a singular template design' );
+kpf_design_assert(
+	'post' === get_post_meta( $template_design_id, Meta::TEMPLATE_TYPE_META, true ) &&
+	Templates::VIEW_SINGULAR === get_post_meta( $template_design_id, Meta::TEMPLATE_VIEW_META, true ),
+	'Template designs store post type and view meta'
+);
+update_post_meta( $template_design_id, Meta::DESIGN_META, $clean );
+wp_update_post( array( 'ID' => $template_design_id, 'post_status' => 'publish' ) );
+kpf_design_assert( Meta::template_has_design( 'post', Templates::VIEW_SINGULAR ), 'template_has_design is true after HTML is saved' );
+
+$resolved_template = GraphQL::resolve_template( 'post', Templates::VIEW_SINGULAR );
+kpf_design_assert(
+	is_array( $resolved_template ) &&
+	$resolved_template['databaseId'] === $template_design_id &&
+	'post' === $resolved_template['postType'] &&
+	Templates::VIEW_SINGULAR === $resolved_template['view'],
+	'Published template designs resolve over GraphQL'
+);
+
+$template_editor_request = new WP_REST_Request( 'GET' );
+$template_editor_request->set_param( 'post_type', 'post' );
+$template_editor_request->set_param( 'view', Templates::VIEW_SINGULAR );
+$template_editor_response = KPF\Core\Designs\Rest::editor_template( $template_editor_request );
+$template_editor_data = $template_editor_response instanceof WP_REST_Response ? $template_editor_response->get_data() : array();
+kpf_design_assert(
+	isset( $template_editor_data['revision'], $template_editor_data['html'] ) &&
+	str_contains( $template_editor_data['html'], '{{page.title}}' ),
+	'Template editor endpoint returns source and a revision token'
+);
+
+$archive_design_id = Meta::ensure_template_design( 'post', Templates::VIEW_ARCHIVE );
+kpf_design_assert( $archive_design_id > 0 && $archive_design_id !== $template_design_id, 'Archive templates get a separate design record' );
+
+wp_delete_post( $template_design_id, true );
+wp_delete_post( $archive_design_id, true );
+
+$fallback_id = Meta::ensure_system_design( Settings::ROLE_FALLBACK );
+kpf_design_assert( $fallback_id > 0, 'ensure_system_design creates a fallback design' );
+update_post_meta( $fallback_id, Meta::DESIGN_META, $clean );
+wp_update_post( array( 'ID' => $fallback_id, 'post_status' => 'publish' ) );
+
+$bare_page_id = wp_insert_post(
+	array(
+		'post_type'   => 'page',
+		'post_title'  => 'Fallback smoke page',
+		'post_status' => 'publish',
+	)
+);
+$fallback_resolved = GraphQL::resolve_design( (int) $bare_page_id );
+kpf_design_assert(
+	is_array( $fallback_resolved ) &&
+	'fallback' === ( $fallback_resolved['source'] ?? '' ) &&
+	$fallback_resolved['databaseId'] === $fallback_id,
+	'Pages without an assigned design use the site fallback'
+);
+
+$maintenance_id = Meta::ensure_system_design( Settings::ROLE_MAINTENANCE );
+kpf_design_assert( $maintenance_id > 0, 'ensure_system_design creates a maintenance design' );
+update_post_meta( $maintenance_id, Meta::DESIGN_META, $clean );
+wp_update_post( array( 'ID' => $maintenance_id, 'post_status' => 'publish' ) );
+
+Settings::update( array( 'maintenance_enabled' => true ) );
+$public_maintenance = Settings::public_maintenance();
+kpf_design_assert(
+	true === $public_maintenance['enabled'] && true === $public_maintenance['ready'],
+	'Maintenance mode can be enabled once a design is ready'
+);
+
+$maintenance_design = GraphQL::resolve_maintenance_design();
+kpf_design_assert(
+	is_array( $maintenance_design ) && $maintenance_design['databaseId'] === $maintenance_id,
+	'Maintenance design resolves over GraphQL'
+);
+
+Settings::update( array( 'maintenance_enabled' => false ) );
+Settings::set_design_id_for_role( Settings::ROLE_FALLBACK, 0 );
+Settings::set_design_id_for_role( Settings::ROLE_MAINTENANCE, 0 );
+wp_delete_post( $bare_page_id, true );
+wp_delete_post( $fallback_id, true );
+wp_delete_post( $maintenance_id, true );
+
 if ( null === $original_history_limit ) {
 	delete_option( Meta::HISTORY_OPTION );
 } else {

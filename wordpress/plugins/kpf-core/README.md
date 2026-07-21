@@ -10,7 +10,7 @@ Site-specific WordPress tools for the Kevin Popke Foundation headless stack.
 - Assignable page-design library with HTML templates and CSS
 - Sanitized SVG uploads in the WordPress Media Library
 - GSAP interaction builder with keyframes, custom easing, and SVG effects
-- Versioned global stylesheet editor under Appearance
+- Versioned global stylesheet editor (headless; no WP theme UI)
 - Scrapbook collection for single photos and multi-photo stories
 - Global, per-post-type, and per-entity metadata inheritance
 - Yoast-style dynamic tags (`%%title%%`, `%%sitename%%`, …) with click-to-copy library
@@ -35,11 +35,13 @@ WordPress admin → **Pages → Designs** for HTML/CSS page designs
 
 WordPress admin → **Interactions → GSAP** for frontend motion and SVG animation
 
-WordPress admin → **Appearance → Stylesheet** for global frontend CSS and version history
+WordPress admin → **Stylesheet** for global frontend CSS and version history
 
 WordPress admin → **SEO**
 
-Editor sidebar → **Scrapbook details** or **Search & sharing**, depending on the content type
+This install is headless: the public site is Faust/Next. WordPress keeps a
+minimal `kpf-blank` theme only because core requires an active theme. Appearance /
+Themes / Customizer / Site Editor are removed from the admin.
 
 ## Page designs
 

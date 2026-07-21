@@ -6,6 +6,9 @@
     "https://downloads.wordpress.org/plugin/faustwp.latest-stable.zip",
     "./wordpress/plugins/kpf-core"
   ],
+  "themes": [
+    "./wordpress/themes/kpf-blank"
+  ],
   "port": 8888,
   "testsEnvironment": false,
   "config": {

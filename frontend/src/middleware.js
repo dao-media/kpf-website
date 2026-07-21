@@ -5,18 +5,72 @@ const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
   ""
 );
 
+function normalizePath(path) {
+  if (!path) return "/";
+  let next = path.startsWith("/") ? path : `/${path}`;
+  if (next.length > 1 && next.endsWith("/")) {
+    next = next.slice(0, -1);
+  }
+  return next || "/";
+}
+
+function pathAllowed(pathname, allowlist = [], maintenancePath = "/coming-soon") {
+  const current = normalizePath(pathname);
+  const maintenance = normalizePath(maintenancePath);
+  if (current === maintenance) {
+    return true;
+  }
+
+  return (allowlist || []).some((entry) => {
+    const allowed = normalizePath(entry);
+    return current === allowed || current.startsWith(`${allowed}/`);
+  });
+}
+
+function shouldSkipSeoLookup(pathname) {
+  return (
+    pathname === "/search" ||
+    pathname === "/coming-soon" ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname.includes(".")
+  );
+}
+
 export async function middleware(request) {
   if (!wordpressUrl) {
     return NextResponse.next();
   }
 
   const { pathname } = request.nextUrl;
-  if (
-    pathname === "/search" ||
-    pathname.startsWith("/api/") ||
-    pathname.startsWith("/_next/") ||
-    pathname.includes(".")
-  ) {
+
+  // Static/Next internals never need maintenance or SEO redirect checks.
+  if (pathname.startsWith("/_next/") || pathname.includes(".")) {
+    return NextResponse.next();
+  }
+
+  try {
+    const maintenanceLookup = await fetch(
+      `${wordpressUrl}/wp-json/kpf-designs/v1/public/maintenance`,
+      {
+        headers: { Accept: "application/json" },
+      }
+    );
+
+    if (maintenanceLookup.ok) {
+      const maintenance = await maintenanceLookup.json();
+      if (maintenance?.enabled) {
+        const targetPath = maintenance.path || "/coming-soon/";
+        if (!pathAllowed(pathname, maintenance.allowlist, targetPath)) {
+          return NextResponse.redirect(new URL(targetPath, request.url), 302);
+        }
+      }
+    }
+  } catch (error) {
+    // Fail open for maintenance checks.
+  }
+
+  if (shouldSkipSeoLookup(pathname)) {
     return NextResponse.next();
   }
 
@@ -27,7 +81,6 @@ export async function middleware(request) {
       )}`,
       {
         headers: { Accept: "application/json" },
-        // Edge-friendly short timeout behavior depends on runtime; fail open.
       }
     );
 

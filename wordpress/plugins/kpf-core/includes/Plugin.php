@@ -75,12 +75,6 @@ use KPF\Core\Scrapbook\Editor as ScrapbookEditor;
 use KPF\Core\Scrapbook\GraphQL as ScrapbookGraphQL;
 use KPF\Core\Scrapbook\Meta as ScrapbookMeta;
 use KPF\Core\Scrapbook\Rest as ScrapbookRest;
-use KPF\Core\Team\Admin as TeamAdmin;
-use KPF\Core\Team\ContentType as TeamContentType;
-use KPF\Core\Team\Editor as TeamEditor;
-use KPF\Core\Team\GraphQL as TeamGraphQL;
-use KPF\Core\Team\Meta as TeamMeta;
-use KPF\Core\Team\Rest as TeamRest;
 use KPF\Core\Seo\Admin;
 use KPF\Core\Seo\Conflicts;
 use KPF\Core\Seo\Editor;
@@ -113,7 +107,6 @@ final class Plugin {
 	public function activate(): void {
 		ScrapbookContentType::register_content();
 		EventsContentType::register_content();
-		TeamContentType::register_content();
 		DesignsContentType::register_content();
 		InteractionsContentType::register_content();
 		CodeContentType::register_content();
@@ -200,13 +193,6 @@ final class Plugin {
 		EventsEditor::register();
 		EventsGraphQL::register();
 		EventsRest::register();
-
-		TeamContentType::register();
-		TeamMeta::register();
-		TeamAdmin::register();
-		TeamEditor::register();
-		TeamGraphQL::register();
-		TeamRest::register();
 
 		InboxSettings::register();
 		InboxForms::register();

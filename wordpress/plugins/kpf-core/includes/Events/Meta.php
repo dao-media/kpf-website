@@ -70,7 +70,6 @@ final class Meta {
 			'recurrence'       => self::default_recurrence(),
 			'exceptions'       => array(),
 			'reschedules'      => array(),
-			'host_ids'         => array(),
 			'co_host_term_ids' => array(),
 		);
 	}
@@ -231,14 +230,6 @@ final class Meta {
 						),
 					),
 				),
-				'host_ids'         => array(
-					'type'    => 'array',
-					'default' => array(),
-					'items'   => array(
-						'type'    => 'integer',
-						'minimum' => 1,
-					),
-				),
 				'co_host_term_ids' => array(
 					'type'    => 'array',
 					'default' => array(),
@@ -294,7 +285,6 @@ final class Meta {
 			'recurrence'       => self::sanitize_recurrence($value['recurrence'] ?? array()),
 			'exceptions'       => self::sanitize_exceptions($value['exceptions'] ?? array()),
 			'reschedules'      => self::sanitize_reschedules($value['reschedules'] ?? array()),
-			'host_ids'         => self::sanitize_id_list($value['host_ids'] ?? array()),
 			'co_host_term_ids' => self::sanitize_id_list($value['co_host_term_ids'] ?? array()),
 		);
 	}

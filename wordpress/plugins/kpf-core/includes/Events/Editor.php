@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace KPF\Core\Events;
 
-use KPF\Core\Team\ContentType as TeamContentType;
-
 final class Editor {
 	public static function register(): void {
 		add_action('enqueue_block_editor_assets', array( self::class, 'enqueue' ));
@@ -55,13 +53,11 @@ final class Editor {
 			'kpf-events-editor',
 			'kpfEventsEditor',
 			array(
-				'metaKey'          => Meta::META_KEY,
-				'teamPostType'     => TeamContentType::POST_TYPE,
-				'liveTaxonomy'     => ContentType::LIVE_TAXONOMY,
-				'partnerTaxonomy'  => ContentType::PARTNER_TAXONOMY,
-				'partnerLogoMeta'  => ContentType::PARTNER_LOGO_META,
-				'newTeamMemberUrl' => admin_url('post-new.php?post_type=' . TeamContentType::POST_TYPE),
-				'timezones'        => $timezones,
+				'metaKey'         => Meta::META_KEY,
+				'liveTaxonomy'    => ContentType::LIVE_TAXONOMY,
+				'partnerTaxonomy' => ContentType::PARTNER_TAXONOMY,
+				'partnerLogoMeta' => ContentType::PARTNER_LOGO_META,
+				'timezones'       => $timezones,
 			)
 		);
 	}

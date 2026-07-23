@@ -16,10 +16,11 @@ final class MenuOrganizer {
 	private const EVENTS_DIVIDER_SLUG      = 'kpf-events-divider';
 	private const CODE_DIVIDER_SLUG        = 'kpf-code-divider';
 	private const CODE_DIVIDER_AFTER_NEW   = 'kpf-code-divider-after-new';
+	private const FORMS_MENU_SLUG          = 'kpf-forms';
+	private const FORMS_DIVIDER_SLUG       = 'kpf-forms-divider';
 	private const CODE_DYNAMIC_CONTENT     = 'kpf-dynamic-content';
 	private const CODE_QUERIES             = 'kpf-queries';
 	private const EVENTS_MENU_SLUG         = 'edit.php?post_type=kpf_event';
-	private const TEAM_MENU_SLUG           = 'edit.php?post_type=kpf_team';
 	private const CODE_MENU_SLUG           = 'edit.php?post_type=kpf_code';
 	private const SCF_MENU_SLUG            = 'edit.php?post_type=acf-field-group';
 	private const SCF_POST_TYPES           = array(
@@ -130,8 +131,8 @@ final class MenuOrganizer {
 
 		self::customize_media_submenu();
 		self::customize_events_submenu();
-		self::customize_team_submenu();
 		self::customize_code_submenu();
+		self::customize_forms_submenu();
 		self::customize_pages_submenu();
 		self::customize_plugins_submenu();
 		self::move_scf_to_tools();
@@ -140,17 +141,17 @@ final class MenuOrganizer {
 	}
 
 	/**
-	 * Team: Manage, Add New.
+	 * Forms: All Forms, Add New, divider, Settings.
 	 */
-	private static function customize_team_submenu(): void {
+	private static function customize_forms_submenu(): void {
 		global $submenu;
 
-		$parent = self::TEAM_MENU_SLUG;
+		$parent = self::FORMS_MENU_SLUG;
 		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
 			return;
 		}
 
-		$capability = 'edit_posts';
+		$capability = 'edit_theme_options';
 		foreach ( $submenu[ $parent ] as $item ) {
 			if ( is_array( $item ) && ! empty( $item[1] ) ) {
 				$capability = (string) $item[1];
@@ -158,18 +159,34 @@ final class MenuOrganizer {
 			}
 		}
 
-		$submenu[ $parent ] = array(
-			array(
-				__( 'Manage', 'kpf-core' ),
-				$capability,
-				self::TEAM_MENU_SLUG,
-			),
-			array(
-				__( 'Add New', 'kpf-core' ),
-				$capability,
-				'post-new.php?post_type=kpf_team',
-			),
-		);
+		$rebuilt       = array();
+		$divider_added = false;
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+
+			$slug = (string) ( $item[2] ?? '' );
+			if ( self::FORMS_DIVIDER_SLUG === $slug ) {
+				continue;
+			}
+
+			$is_settings = str_contains( $slug, self::FORMS_MENU_SLUG . '-settings' );
+			if ( $is_settings && ! $divider_added ) {
+				$rebuilt[] = array(
+					'<span class="kpf-forms-menu-divider" aria-hidden="true"></span>',
+					$capability,
+					self::FORMS_DIVIDER_SLUG,
+				);
+				$divider_added = true;
+			}
+
+			$rebuilt[] = $item;
+		}
+
+		if ( $divider_added ) {
+			$submenu[ $parent ] = $rebuilt;
+		}
 	}
 
 	/**
@@ -505,7 +522,6 @@ final class MenuOrganizer {
 			'edit.php',
 			'upload.php',
 			self::EVENTS_MENU_SLUG,
-			self::TEAM_MENU_SLUG,
 			'edit.php?post_type=page',
 			'edit.php?post_type=kpf_scrapbook',
 			'kpf-components',
@@ -636,10 +652,6 @@ final class MenuOrganizer {
 
 		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return 'post-new.php?post_type=kpf_event';
-		}
-
-		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_team' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return 'post-new.php?post_type=kpf_team';
 		}
 
 		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_code' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -808,6 +820,24 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu .kpf-code-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu a[href*="' . self::FORMS_DIVIDER_SLUG . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu .kpf-forms-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

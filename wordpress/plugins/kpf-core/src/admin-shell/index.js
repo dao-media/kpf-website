@@ -25,7 +25,6 @@ import {
 	SearchCheck,
 	Settings,
 	Users,
-	UsersRound,
 	Wrench,
 	Workflow,
 } from 'lucide-react';
@@ -36,7 +35,6 @@ const menuIcons = {
 	'#menu-posts': Newspaper,
 	'#menu-media': Images,
 	'#menu-posts-kpf_event': CalendarDays,
-	'#menu-posts-kpf_team': UsersRound,
 	'#menu-pages': FileText,
 	'#menu-posts-kpf_scrapbook': Images,
 	'#toplevel_page_kpf-components': Blocks,

@@ -1,87 +1,171 @@
 /**
  * Kevin Popke Foundation — global foundation stylesheet
- * Palette: Option 3 Documentary Ember
- * Units: rem (fluid type via clamp)
+ * Source of truth: Figma Design System (Option 3 / Main)
+ * File: Iz5XryrkvcSuW2wIIOFM0I · collections KPF / Primitives, Color, Spacing
+ * Units: rem (16px root); fluid type via clamp where helpful
  */
 
 :root {
-	/* —— Palette (Option 3) —— */
-	--kpf-parchment: #f8f4ec;
-	--kpf-ink: #12090a;
-	--kpf-ember: #8b1515;
-	--kpf-brass: #c88758;
-	--kpf-deep: #2e0b0b;
-	--kpf-mute: #8f514d;
+	/* —— Primitive ramps (Figma: KPF / Primitives) —— */
+	--kpf-parchment-50: #fdfbfa;
+	--kpf-parchment-100: #fbf9f7;
+	--kpf-parchment-200: #faf7f4;
+	--kpf-parchment-300: #f8f4f1;
+	--kpf-parchment-400: #f6f1ed;
+	--kpf-parchment: #f4efea; /* parchment/500 */
+	--kpf-parchment-600: #e9e1da;
+	--kpf-parchment-deep: #dfd6cc; /* parchment/700 */
+	--kpf-parchment-800: #d4c8bc;
+	--kpf-parchment-900: #8a827a;
 
-	/* Surfaces & helpers */
-	--kpf-surface: #ffffff;
-	--kpf-parchment-deep: #ebe3d4;
-	--kpf-ink-soft: #3d2c2d;
-	--kpf-ink-faint: rgba(18, 9, 10, 0.08);
-	--kpf-ember-soft: rgba(139, 21, 21, 0.12);
-	--kpf-brass-soft: rgba(200, 135, 88, 0.18);
+	--kpf-ink-50: #bcb6b6;
+	--kpf-ink-100: #908585;
+	--kpf-mute: #6b5c5c; /* ink/200 */
+	--kpf-ink-300: #5b4b4c;
+	--kpf-ink-400: #4b3a3b;
+	--kpf-ink-soft: #3d2c2d; /* ink/500 */
+	--kpf-ink-600: #2e2021;
+	--kpf-ink-700: #211516;
+	--kpf-ink: #12090a; /* ink/800 */
+	--kpf-ink-900: #0c0606;
+	--kpf-ink-faint: color-mix(in srgb, var(--kpf-ink) 8%, transparent);
+
+	--kpf-ember-50: #f6eaea;
+	--kpf-ember-100: #f0dcdc;
+	--kpf-ember-soft: #ebd1d1; /* ember/200 · color/bg/brand-soft */
+	--kpf-ember-300: #da8c8c;
+	--kpf-ember-400: #c94848;
+	--kpf-ember: #bb0d0d; /* ember/500 */
+	--kpf-ember-600: #9d0e0d;
+	--kpf-ember-700: #820e0e;
+	--kpf-deep: #640f0e; /* ember/800 */
+	--kpf-ember-900: #410a09;
+
+	--kpf-brass-50: #faf5ea;
+	--kpf-brass-100: #f7eedc;
+	--kpf-brass-200: #f4e8d0;
+	--kpf-brass-soft: #e5cfa7; /* brass/300 · color/action/focus-ring */
+	--kpf-brass-400: #d6b67e;
+	--kpf-brass: #c9a15b; /* brass/500 */
+	--kpf-brass-600: #a88446;
+	--kpf-brass-700: #8c6c34;
+	--kpf-brass-800: #6b4f1f;
+	--kpf-brass-900: #463314;
+	--kpf-brass-text: #83673c; /* accessible brass for text/links */
+
+	--kpf-neutral-50: #faf8f6;
+	--kpf-neutral-100: #f7f3ef;
+	--kpf-neutral-200: #f4efea;
+	--kpf-neutral-300: #d6ccc9;
+	--kpf-neutral-400: #b8aaa8;
+	--kpf-neutral-500: #9e8c8c;
+	--kpf-neutral-600: #7c6a6b;
+	--kpf-neutral-700: #5f4e4e;
+	--kpf-neutral-800: #3d2c2d;
+	--kpf-neutral-900: #281d1d;
 	--kpf-white: #ffffff;
+	--kpf-black: #000000;
+	--kpf-surface: #ffffff;
 
-	/* Legacy aliases (existing component CSS) */
+	--kpf-success: #2f6c54;
+	--kpf-success-100: #d9ebe3;
+	--kpf-warning: #a45b16;
+	--kpf-warning-100: #f5e6d4;
+	--kpf-error: #bb0d0d;
+	--kpf-error-100: #ebd1d1;
+	--kpf-danger: var(--kpf-error);
+
+	--kpf-doc-blue: #1f59d9;
+	--kpf-doc-green: #1f8c52;
+	--kpf-doc-semantic: var(--kpf-doc-blue);
+	--kpf-doc-class: var(--kpf-doc-green);
+
+	/* Legacy aliases */
 	--kpf-paper: var(--kpf-parchment);
 	--kpf-paper-deep: var(--kpf-parchment-deep);
 	--kpf-heritage: var(--kpf-ember);
 	--kpf-gold: var(--kpf-brass);
-	--kpf-success: #2f6c54;
-	--kpf-warning: #a45b16;
 
-	/* Type families */
-	--kpf-font-display: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
-	--kpf-font-body: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
-	--kpf-font-ui: "Avenir Next", Avenir, "Helvetica Neue", Helvetica, sans-serif;
+	/* —— Type (Figma text styles: Geist / Roboto) —— */
+	--kpf-font-display: "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
+	--kpf-font-body: "Roboto", "Helvetica Neue", Arial, sans-serif;
+	--kpf-font-ui: "Roboto", "Helvetica Neue", Arial, sans-serif;
 
-	/* Type scale (rem) — fluid between ~360px and ~1200px */
-	--kpf-text-h0: clamp(2.75rem, 1.6rem + 5vw, 4.5rem);
-	--kpf-text-h1: clamp(2.25rem, 1.45rem + 3.5vw, 3.5rem);
-	--kpf-text-h2: clamp(1.875rem, 1.3rem + 2.4vw, 2.75rem);
-	--kpf-text-h3: clamp(1.5rem, 1.2rem + 1.4vw, 2.125rem);
-	--kpf-text-h4: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
-	--kpf-text-h5: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
-	--kpf-text-h6: 1.0625rem;
+	/* Display anchors: H1 48/56 · H2 34/42 · H3 24/32 · H4 20/28 */
+	--kpf-text-h0: clamp(2.75rem, 1.7rem + 4.5vw, 3.5rem);
+	--kpf-text-h1: clamp(2rem, 1.35rem + 2.8vw, 3rem); /* 48px */
+	--kpf-text-h2: clamp(1.625rem, 1.25rem + 1.6vw, 2.125rem); /* 34px */
+	--kpf-text-h3: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem); /* 24px */
+	--kpf-text-h4: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem); /* 20px */
+	--kpf-text-h5: 1.125rem;
+	--kpf-text-h6: 0.8125rem; /* caption / eyebrow scale */
 
-	--kpf-text-lead: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem);
+	--kpf-text-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.125rem); /* Body/Large 18 */
 	--kpf-text-l: 1.125rem;
-	--kpf-text-m: 1rem;
-	--kpf-text-s: 0.875rem;
+	--kpf-text-m: 1rem; /* Body/Medium 16 */
+	--kpf-text-s: 0.875rem; /* Body/Small 14 */
 
-	--kpf-text-ui: 0.9375rem;
-	--kpf-text-ui-s: 0.8125rem;
+	--kpf-text-ui: 0.9375rem; /* UI/Button 15 */
+	--kpf-text-ui-s: 0.8125rem; /* UI/Label 13 */
 	--kpf-text-placeholder: 0.9375rem;
-	--kpf-text-tooltip: 0.8125rem;
+	--kpf-text-tooltip: 0.75rem; /* UI/Caption 12 */
 
-	/* Line heights */
-	--kpf-leading-display: 1.12;
-	--kpf-leading-heading: 1.2;
-	--kpf-leading-body: 1.65;
-	--kpf-leading-ui: 1.4;
+	--kpf-leading-display: 1.167; /* 56/48 */
+	--kpf-leading-heading: 1.25;
+	--kpf-leading-body: 1.625; /* 26/16 */
+	--kpf-leading-ui: 1.2;
 
-	/* Letter spacing */
 	--kpf-tracking-display: -0.02em;
 	--kpf-tracking-tight: -0.015em;
-	--kpf-tracking-ui: 0.01em;
+	--kpf-tracking-ui: 0.02em;
 
-	/* Spacing rhythm */
-	--kpf-space-2xs: 0.25rem;
-	--kpf-space-xs: 0.5rem;
-	--kpf-space-sm: 0.75rem;
-	--kpf-space-md: 1rem;
-	--kpf-space-lg: 1.5rem;
-	--kpf-space-xl: 2rem;
-	--kpf-space-2xl: 3rem;
+	/* —— Spacing (Figma px → rem) —— */
+	--kpf-space-micro: 0.125rem; /* 2 */
+	--kpf-space-2xs: 0.25rem; /* 4 */
+	--kpf-space-tight: 0.375rem; /* 6 */
+	--kpf-space-xs: 0.5rem; /* 8 */
+	--kpf-space-field: 0.625rem; /* 10 */
+	--kpf-space-sm: 0.75rem; /* 12 */
+	--kpf-space-control-x: 0.875rem; /* 14 */
+	--kpf-space-md: 1rem; /* 16 */
+	--kpf-space-button-x-icon: 1.125rem; /* 18 */
+	--kpf-space-inset: 1.25rem; /* 20 */
+	--kpf-space-lg: 1.5rem; /* 24 */
+	--kpf-space-button-x: 1.75rem; /* 28 */
+	--kpf-space-xl: 2rem; /* 32 */
+	--kpf-space-3xl: 2.5rem; /* 40 */
+	--kpf-space-2xl: 3rem; /* 48 */
+	--kpf-space-toggle-pad-mini: 0.125rem;
 
-	/* Controls */
-	--kpf-radius-sm: 0.35rem;
-	--kpf-radius-md: 0.5rem;
-	--kpf-radius-lg: 1rem;
+	/* —— Radius / stroke / control sizes —— */
+	--kpf-radius-none: 0;
+	--kpf-radius-xs: 0.25rem; /* 4 */
+	--kpf-radius-sm: 0.375rem; /* 6 */
+	--kpf-radius-md: 0.5rem; /* 8 — buttons, fields, cards */
+	--kpf-radius-lg: 1rem; /* 16 */
 	--kpf-radius-pill: 999px;
-	--kpf-control-height: 2.75rem;
-	--kpf-control-height-sm: 2.25rem;
-	--kpf-shadow: 0 1.1rem 3rem rgba(18, 9, 10, 0.12);
+
+	--kpf-stroke: 0.0625rem; /* 1 */
+	--kpf-stroke-strong: 0.125rem; /* 2 */
+	--kpf-stroke-icon: 0.109375rem; /* 1.75 */
+
+	--kpf-control-height: 2.75rem; /* 44 */
+	--kpf-control-height-sm: 2.25rem; /* 36 */
+	--kpf-icon-size: 1.25rem; /* 20 */
+	--kpf-size-icon-mini: 0.75rem; /* 12 */
+	--kpf-size-icon-md: 2rem; /* 32 */
+	--kpf-size-icon-lg: 2.5rem; /* 40 */
+	--kpf-size-icon-well: 3rem; /* 48 */
+	--kpf-size-checkbox: 1.25rem; /* 20 */
+	--kpf-size-checkbox-mini: 0.875rem; /* 14 */
+	--kpf-size-toggle-track-w: 3rem; /* 48 */
+	--kpf-size-toggle-track-h: 1.75rem; /* 28 */
+	--kpf-size-toggle-thumb: 1.375rem; /* 22 */
+	--kpf-size-toggle-track-w-mini: 2.25rem; /* 36 */
+	--kpf-size-toggle-track-h-mini: 1.25rem; /* 20 */
+	--kpf-size-toggle-thumb-mini: 1rem; /* 16 */
+
+	--kpf-shadow: 0 1.1rem 3rem color-mix(in srgb, var(--kpf-ink) 12%, transparent);
 	--kpf-focus-ring: 0 0 0 0.1875rem var(--kpf-brass-soft);
 	--kpf-transition: 160ms ease;
 }
@@ -293,11 +377,11 @@ textarea,
 .kpf-select,
 .kpf-textarea {
 	background: var(--kpf-surface);
-	border: 0.0625rem solid var(--kpf-parchment-deep);
+	border: var(--kpf-stroke) solid var(--kpf-parchment-deep);
 	border-radius: var(--kpf-radius-md);
 	color: var(--kpf-ink);
 	min-height: var(--kpf-control-height);
-	padding: 0.625rem 0.875rem;
+	padding: var(--kpf-space-field) var(--kpf-space-control-x);
 	transition:
 		border-color var(--kpf-transition),
 		box-shadow var(--kpf-transition),
@@ -396,10 +480,10 @@ textarea:disabled,
 /* —— Hyperlinks —— */
 a,
 .kpf-link {
-	color: var(--kpf-brass);
+	color: var(--kpf-brass-text);
 	font-weight: 600;
 	text-decoration: underline;
-	text-decoration-color: rgba(200, 135, 88, 0.45);
+	text-decoration-color: color-mix(in srgb, var(--kpf-brass-text) 45%, transparent);
 	text-decoration-thickness: 0.08em;
 	text-underline-offset: 0.18em;
 	transition:
@@ -410,7 +494,7 @@ a,
 a:visited,
 .kpf-link:visited {
 	color: var(--kpf-mute);
-	text-decoration-color: rgba(143, 81, 77, 0.45);
+	text-decoration-color: color-mix(in srgb, var(--kpf-mute) 45%, transparent);
 }
 
 a:hover,
@@ -445,19 +529,19 @@ a[aria-disabled="true"],
 /* —— Buttons —— */
 .kpf-btn {
 	align-items: center;
-	border: 0.125rem solid transparent;
-	border-radius: var(--kpf-radius-pill);
+	border: var(--kpf-stroke-strong) solid transparent;
+	border-radius: var(--kpf-radius-md);
 	cursor: pointer;
 	display: inline-flex;
 	font-family: var(--kpf-font-ui);
 	font-size: var(--kpf-text-ui);
 	font-weight: 700;
-	gap: 0.5rem;
+	gap: var(--kpf-space-tight);
 	justify-content: center;
-	letter-spacing: 0.02em;
+	letter-spacing: var(--kpf-tracking-ui);
 	line-height: 1.1;
 	min-height: var(--kpf-control-height);
-	padding: 0.75rem 1.35rem;
+	padding: var(--kpf-space-field) var(--kpf-space-button-x);
 	text-decoration: none;
 	transition:
 		background-color var(--kpf-transition),
@@ -506,8 +590,8 @@ a[aria-disabled="true"],
 }
 
 .kpf-btn--primary:active {
-	background: #1f0808;
-	border-color: #1f0808;
+	background: var(--kpf-ember-900);
+	border-color: var(--kpf-ember-900);
 	color: var(--kpf-white);
 }
 
@@ -546,23 +630,23 @@ a[aria-disabled="true"],
 .kpf-btn--brass {
 	background: var(--kpf-brass);
 	border-color: var(--kpf-brass);
-	color: var(--kpf-deep);
+	color: var(--kpf-ink);
 }
 
 .kpf-btn--brass:hover {
-	background: #b57445;
-	border-color: #b57445;
-	color: var(--kpf-deep);
+	background: var(--kpf-brass-600);
+	border-color: var(--kpf-brass-600);
+	color: var(--kpf-ink);
 }
 
 .kpf-btn--brass:active {
-	background: #9f6338;
-	border-color: #9f6338;
-	color: var(--kpf-deep);
+	background: var(--kpf-brass-700);
+	border-color: var(--kpf-brass-700);
+	color: var(--kpf-ink);
 }
 
 .kpf-btn--brass:visited {
-	color: var(--kpf-deep);
+	color: var(--kpf-ink);
 }
 
 /* Ghost / text */
@@ -580,7 +664,7 @@ a[aria-disabled="true"],
 }
 
 .kpf-btn--ghost:active {
-	background: rgba(46, 11, 11, 0.12);
+	background: color-mix(in srgb, var(--kpf-deep) 12%, transparent);
 	color: var(--kpf-deep);
 }
 
@@ -658,6 +742,171 @@ a[aria-disabled="true"],
 
 	.kpf-btn--full-mobile {
 		width: 100%;
+	}
+}
+
+/* —— Forms builder layout —— */
+.kpf-form {
+	display: grid;
+	gap: var(--kpf-space-md);
+	width: 100%;
+}
+
+.kpf-form__rows {
+	display: grid;
+	gap: var(--kpf-space-md);
+}
+
+.kpf-form__row {
+	display: grid;
+	gap: var(--kpf-space-md);
+}
+
+.kpf-form__row--cols-2,
+.kpf-form__cols {
+	grid-template-columns: 1fr;
+}
+
+.kpf-form__col,
+.kpf-form__col--full {
+	min-width: 0;
+}
+
+.kpf-form__col--half {
+	min-width: 0;
+}
+
+.kpf-field {
+	display: grid;
+	gap: 0.4rem;
+}
+
+.kpf-field__label {
+	color: var(--kpf-ink);
+	font-family: var(--kpf-font-ui);
+	font-size: var(--kpf-text-ui-s);
+	font-weight: 600;
+	letter-spacing: var(--kpf-tracking-ui);
+}
+
+.kpf-field__control {
+	width: 100%;
+}
+
+.kpf-field__help {
+	color: var(--kpf-mute);
+	font-family: var(--kpf-font-ui);
+	font-size: var(--kpf-text-ui-s);
+	margin: 0;
+}
+
+.kpf-field__error {
+	color: var(--kpf-error);
+	font-family: var(--kpf-font-ui);
+	font-size: var(--kpf-text-ui-s);
+	margin: 0;
+}
+
+.kpf-field__choices,
+.kpf-field__ranking {
+	display: grid;
+	gap: 0.45rem;
+	margin: 0;
+	padding: 0;
+}
+
+.kpf-field__choice,
+.kpf-field__toggle {
+	align-items: flex-start;
+	display: flex;
+	gap: 0.55rem;
+	font-family: var(--kpf-font-ui);
+	font-size: var(--kpf-text-ui);
+}
+
+.kpf-field__tel,
+.kpf-field__social {
+	display: grid;
+	gap: 0.5rem;
+	grid-template-columns: minmax(6rem, 8rem) minmax(0, 1fr);
+}
+
+.kpf-field__city-state {
+	position: relative;
+}
+
+.kpf-field__suggestions {
+	background: var(--kpf-surface);
+	border: 0.0625rem solid var(--kpf-parchment-deep);
+	border-radius: var(--kpf-radius-md);
+	list-style: none;
+	margin: 0.25rem 0 0;
+	max-height: 12rem;
+	overflow: auto;
+	padding: 0.25rem;
+	position: absolute;
+	width: 100%;
+	z-index: 5;
+}
+
+.kpf-field__suggestions button {
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	display: block;
+	padding: 0.5rem 0.65rem;
+	text-align: left;
+	width: 100%;
+}
+
+.kpf-field__suggestions button:hover,
+.kpf-field__suggestions button:focus-visible {
+	background: var(--kpf-parchment);
+}
+
+.kpf-field__ranking {
+	list-style: decimal;
+	padding-left: 1.25rem;
+}
+
+.kpf-field__ranking li {
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+.kpf-field__honeypot {
+	height: 0;
+	left: -10000px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	width: 0;
+}
+
+.kpf-form__actions {
+	display: flex;
+	gap: 0.75rem;
+}
+
+.kpf-form__status {
+	font-family: var(--kpf-font-ui);
+	font-size: var(--kpf-text-ui);
+	margin: 0;
+}
+
+.kpf-form__status--success {
+	color: var(--kpf-success);
+}
+
+.kpf-form__status--error {
+	color: var(--kpf-error);
+}
+
+@media (min-width: 40rem) {
+	.kpf-form__row--cols-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 

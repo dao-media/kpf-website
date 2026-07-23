@@ -114,7 +114,6 @@ final class GraphQL {
 					'recurrence'     => array( 'type' => 'KpfEventRecurrence' ),
 					'exceptions'     => array( 'type' => array( 'list_of' => 'KpfEventException' ) ),
 					'reschedules'    => array( 'type' => array( 'list_of' => 'KpfEventReschedule' ) ),
-					'hostIds'        => array( 'type' => array( 'list_of' => 'Int' ) ),
 					'coHostTermIds'  => array( 'type' => array( 'list_of' => 'Int' ) ),
 					'coHosts'        => array( 'type' => array( 'list_of' => 'KpfEventPartnerDetails' ) ),
 					'occurrenceDate' => array(
@@ -211,7 +210,6 @@ final class GraphQL {
 				},
 				$meta['reschedules']
 			),
-			'hostIds'       => $meta['host_ids'],
 			'coHostTermIds' => $meta['co_host_term_ids'],
 			'coHosts'       => $co_hosts,
 		);

@@ -21,13 +21,17 @@ When Figma Option 3 and CSS diverge, prefer Option 3 for new Figma work and note
 
 ### Format
 ```css
---kpf-parchment: #f8f4ec;   /* code Documentary Ember */
---kpf-ember: #8b1515;
---kpf-brass: #c88758;
+--kpf-parchment: #f4efea;   /* parchment/500 — Figma Option 3 */
+--kpf-ember: #bb0d0d;       /* ember/500 */
+--kpf-brass: #c9a15b;       /* brass/500 */
+--kpf-brass-text: #83673c;  /* accessible link/eyebrow text */
 ```
 
 Figma Option 3 Main anchors (library primitives):
 - Parchment `#f4efea` · Ink `#12090a` · Ember `#bb0d0d` · Brass `#c9a15b` · Deep `#640f0e` · Mute `#6b5c5c`
+- Brass text (accessible): `#83673c` → `--kpf-brass-text`
+- Fonts: Geist (display) · Roboto (body/UI)
+- Button radius: `radius/md` (8px) — not pill
 
 ### Naming translation
 | CSS | Figma variable | WEB code syntax |
@@ -89,7 +93,7 @@ Three-layer model: **Primitive → Semantic → Component** (never hardcode hex 
 
 - Global foundation stylesheet ships from WP and is injected/mirrored on the frontend
 - Fluid type via `clamp()`; spacing in rem
-- Control height: `--kpf-control-height` (2.75rem); radius pill for buttons
+- Control height: `--kpf-control-height` (2.75rem / 44px); button radius `--kpf-radius-md` (8px)
 - Prefer semantic tokens in new work: `color/bg/*`, `color/text/*`, `color/border/*`, `color/action/*`
 
 ## 7. Project Structure

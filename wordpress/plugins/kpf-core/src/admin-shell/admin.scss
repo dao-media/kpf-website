@@ -9,6 +9,12 @@ body.kpf-toolbar-theme {
 	--kpf-admin-canvas: #f3f5f8;
 	--kpf-admin-soft: #f8fafc;
 	--kpf-admin-glass: rgb(226 232 240 / 76%);
+	/* Soft sidebar motion — longer settle, ease-out expo */
+	--kpf-sidebar-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--kpf-sidebar-ease-color: cubic-bezier(0.33, 1, 0.68, 1);
+	--kpf-sidebar-duration: 340ms;
+	--kpf-sidebar-duration-fast: 280ms;
+	--kpf-sidebar-duration-slow: 420ms;
 }
 
 /* Canvas fills stay wp-admin-only so the public site theme is untouched. */
@@ -98,10 +104,10 @@ body.kpf-admin-theme #adminmenu a.menu-top {
 	padding: 0;
 	position: relative;
 	transition:
-		background-color 160ms ease,
-		border-color 160ms ease,
-		box-shadow 180ms ease,
-		color 160ms ease;
+		background-color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
+		border-color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
+		box-shadow var(--kpf-sidebar-duration) var(--kpf-sidebar-ease),
+		color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color);
 	width: calc(100% - 14px);
 	z-index: 1;
 }
@@ -128,11 +134,11 @@ body.kpf-admin-theme #adminmenu a.menu-top::before {
 	opacity: 0;
 	pointer-events: none;
 	position: absolute;
-	transform: translate3d(-12px, 0, 0) scaleX(0.88);
+	transform: translate3d(-10px, 0, 0) scaleX(0.92);
 	transform-origin: left center;
 	transition:
-		opacity 150ms ease,
-		transform 200ms cubic-bezier(0.2, 0.75, 0.25, 1);
+		opacity var(--kpf-sidebar-duration) var(--kpf-sidebar-ease-color),
+		transform var(--kpf-sidebar-duration-slow) var(--kpf-sidebar-ease);
 	will-change: opacity, transform;
 	z-index: 0;
 }
@@ -146,7 +152,7 @@ body.kpf-admin-theme #adminmenu div.wp-menu-name {
 	padding: 9px 7px 9px 1px;
 	position: relative;
 	text-rendering: optimizelegibility;
-	transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1);
+	transition: transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
 	transform: translate3d(0, 0, 0);
 	will-change: transform;
 	z-index: 1;
@@ -160,8 +166,8 @@ body.kpf-admin-theme #adminmenu div.wp-menu-image {
 	justify-content: center;
 	position: relative;
 	transition:
-		color 160ms ease,
-		transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1);
+		color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
+		transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
 	width: 35px;
 	z-index: 1;
 }
@@ -312,13 +318,13 @@ body.kpf-admin-theme #adminmenu li.menu-top:not(.current, .wp-has-current-submen
 body.kpf-admin-theme #adminmenu li.opensub:not(.current, .wp-has-current-submenu) > a.menu-top .wp-menu-image,
 body.kpf-admin-theme #adminmenu li:not(.current, .wp-has-current-submenu) > a.menu-top:focus .wp-menu-image {
 	color: var(--kpf-admin-navy) !important;
-	transform: scale(1.13);
+	transform: scale(1.06);
 }
 
 body.kpf-admin-theme #adminmenu li.menu-top:not(.current, .wp-has-current-submenu):hover > a.menu-top .wp-menu-name,
 body.kpf-admin-theme #adminmenu li.opensub:not(.current, .wp-has-current-submenu) > a.menu-top .wp-menu-name,
 body.kpf-admin-theme #adminmenu li:not(.current, .wp-has-current-submenu) > a.menu-top:focus .wp-menu-name {
-	transform: translate3d(2px, 0, 0);
+	transform: translate3d(1px, 0, 0);
 }
 
 body.kpf-admin-theme #adminmenu li.wp-has-current-submenu::after,
@@ -382,7 +388,10 @@ body.kpf-admin-theme #adminmenu .wp-submenu a {
 	font-size: 12px;
 	margin: 1px 6px;
 	text-rendering: optimizelegibility;
-	transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+	transition:
+		background-color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
+		color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
+		transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
 	will-change: transform;
 }
 
@@ -408,7 +417,9 @@ body.kpf-admin-theme #menu-tools .kpf-scf-submenu-icon {
 	display: inline-flex;
 	flex: 0 0 13px;
 	justify-content: center;
-	transition: color 140ms ease, transform 140ms ease;
+	transition:
+		color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
+		transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
 }
 
 body.kpf-admin-theme #menu-tools .kpf-scf-submenu-link:hover .kpf-scf-submenu-icon,
@@ -423,7 +434,7 @@ body.kpf-admin-theme #adminmenu .wp-submenu a:focus,
 body.kpf-admin-theme #adminmenu .wp-submenu li.current a {
 	background: rgb(226 232 240 / 72%) !important;
 	color: var(--kpf-admin-navy) !important;
-	transform: translateX(2px);
+	transform: translateX(1px);
 }
 
 body.kpf-admin-theme #adminmenu li.kpf-menu-section-label .separator {

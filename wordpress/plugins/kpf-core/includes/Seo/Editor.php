@@ -6,7 +6,7 @@ namespace KPF\Core\Seo;
 
 /**
  * In-canvas SEO panel for blog posts and events
- * (pages and team members use dedicated editors).
+ * (pages use a dedicated editor).
  */
 final class Editor {
 	private const SCREEN_POST_TYPES = array( 'post', 'kpf_event' );

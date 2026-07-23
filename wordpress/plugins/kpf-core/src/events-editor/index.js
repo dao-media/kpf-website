@@ -20,10 +20,8 @@ import { registerPlugin } from '@wordpress/plugins';
 
 const cfg = window.kpfEventsEditor || {};
 const META_KEY = cfg.metaKey || '_kpf_event';
-const TEAM_POST_TYPE = cfg.teamPostType || 'kpf_team';
 const LIVE_TAXONOMY = cfg.liveTaxonomy || 'kpf_live_event';
 const PARTNER_TAXONOMY = cfg.partnerTaxonomy || 'kpf_event_partner';
-const NEW_TEAM_URL = cfg.newTeamMemberUrl || 'post-new.php?post_type=kpf_team';
 const TIMEZONES = cfg.timezones || [{ label: 'America/New_York', value: 'America/New_York' }];
 
 const DEFAULT_RECURRENCE = {
@@ -54,7 +52,6 @@ const DEFAULTS = {
 	recurrence: DEFAULT_RECURRENCE,
 	exceptions: [],
 	reschedules: [],
-	host_ids: [],
 	co_host_term_ids: [],
 };
 
@@ -98,72 +95,6 @@ function useMeta() {
 	};
 
 	return { details, update };
-}
-
-function HostPicker({ hostIds, onChange }) {
-	const [search, setSearch] = useState('');
-	const teamMembers = useSelect(
-		(select) =>
-			select('core').getEntityRecords('postType', TEAM_POST_TYPE, {
-				per_page: 100,
-				search: search || undefined,
-				status: 'publish,draft,pending,private,future',
-				_fields: 'id,title',
-			}) || [],
-		[search]
-	);
-
-	const selected = useSelect(
-		(select) =>
-			(hostIds || []).map((id) => select('core').getEntityRecord('postType', TEAM_POST_TYPE, id)).filter(Boolean),
-		[hostIds]
-	);
-
-	const suggestions = useMemo(() => {
-		const names = new Set();
-		[...selected, ...teamMembers].forEach((member) => {
-			const title = member?.title?.rendered || member?.title?.raw || '';
-			if (title) {
-				names.add(title.replace(/<[^>]+>/g, ''));
-			}
-		});
-		return Array.from(names);
-	}, [selected, teamMembers]);
-
-	const tokens = selected.map((member) =>
-		(member?.title?.rendered || member?.title?.raw || `#${member.id}`).replace(/<[^>]+>/g, '')
-	);
-
-	const resolveIdByTitle = (title) => {
-		const match = [...selected, ...teamMembers].find((member) => {
-			const name = (member?.title?.rendered || member?.title?.raw || '').replace(/<[^>]+>/g, '');
-			return name === title;
-		});
-		return match?.id || 0;
-	};
-
-	return (
-		<>
-			<FormTokenField
-				label={__('Host(s)', 'kpf-core')}
-				value={tokens}
-				suggestions={suggestions}
-				onInputChange={setSearch}
-				onChange={(nextTokens) => {
-					const ids = nextTokens.map(resolveIdByTitle).filter(Boolean);
-					onChange(ids);
-				}}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-			<p style={{ marginTop: 4, fontSize: 12 }}>
-				{__('No matching team member?', 'kpf-core')}{' '}
-				<a href={NEW_TEAM_URL} target="_blank" rel="noreferrer">
-					{__('Add a new team member', 'kpf-core')}
-				</a>
-			</p>
-		</>
-	);
 }
 
 function CoHostPicker({ termIds, onChange }) {
@@ -843,18 +774,12 @@ function EventsPanel() {
 
 			<PluginDocumentSettingPanel
 				name="kpf-event-hosts"
-				title={__('Hosts & co-hosts', 'kpf-core')}
+				title={__('Co-hosts', 'kpf-core')}
 			>
-				<HostPicker
-					hostIds={details.host_ids || []}
-					onChange={(host_ids) => update({ host_ids })}
+				<CoHostPicker
+					termIds={details.co_host_term_ids || []}
+					onChange={(co_host_term_ids) => update({ co_host_term_ids })}
 				/>
-				<div style={{ marginTop: 16 }}>
-					<CoHostPicker
-						termIds={details.co_host_term_ids || []}
-						onChange={(co_host_term_ids) => update({ co_host_term_ids })}
-					/>
-				</div>
 			</PluginDocumentSettingPanel>
 		</>
 	);

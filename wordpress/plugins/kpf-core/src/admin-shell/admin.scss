@@ -348,16 +348,16 @@ body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu.kpf-submenu-expan
 body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu li.current) > .wp-submenu,
 body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu a.current) > .wp-submenu,
 body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu [aria-current='page']) > .wp-submenu {
-	background: transparent !important;
+	background: rgb(241 245 249 / 92%) !important;
 	backdrop-filter: none !important;
-	border: 0 !important;
-	border-radius: 0 !important;
+	border: 1px solid rgb(226 232 240 / 85%) !important;
+	border-radius: 10px !important;
 	box-shadow: none !important;
 	display: block !important;
 	left: auto !important;
-	margin: 0 !important;
+	margin: 3px 8px 8px !important;
 	min-width: 0 !important;
-	padding: 4px 0 7px !important;
+	padding: 6px 0 !important;
 	position: relative !important;
 	top: auto !important;
 	width: auto !important;
@@ -365,10 +365,12 @@ body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-submenu:has(> .wp-submenu
 
 body.kpf-admin-theme #adminmenu .wp-has-current-submenu .wp-submenu,
 body.kpf-admin-theme #adminmenu li.kpf-submenu-expanded > .wp-submenu {
-	border: 0;
-	border-radius: 0;
+	background: rgb(241 245 249 / 92%);
+	border: 1px solid rgb(226 232 240 / 85%);
+	border-radius: 10px;
 	box-shadow: none;
-	padding: 4px 0 7px;
+	margin: 3px 8px 8px;
+	padding: 6px 0;
 }
 
 body.kpf-admin-theme #adminmenu .wp-submenu a {
@@ -382,6 +384,16 @@ body.kpf-admin-theme #adminmenu .wp-submenu a {
 	text-rendering: optimizelegibility;
 	transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
 	will-change: transform;
+}
+
+/* Nested under an expanded parent: quieter hover so the group fill stays primary. */
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-current-submenu > .wp-submenu a:hover,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-current-submenu > .wp-submenu a:focus,
+body.kpf-admin-theme:not(.folded) #adminmenu li.wp-has-current-submenu > .wp-submenu li.current a,
+body.kpf-admin-theme:not(.folded) #adminmenu li.kpf-submenu-expanded > .wp-submenu a:hover,
+body.kpf-admin-theme:not(.folded) #adminmenu li.kpf-submenu-expanded > .wp-submenu a:focus,
+body.kpf-admin-theme:not(.folded) #adminmenu li.kpf-submenu-expanded > .wp-submenu li.current a {
+	background: rgb(255 255 255 / 78%) !important;
 }
 
 body.kpf-admin-theme #menu-tools .wp-submenu a.kpf-scf-submenu-link {

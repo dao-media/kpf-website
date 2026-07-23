@@ -8,6 +8,7 @@ Site-specific WordPress tools for the Kevin Popke Foundation headless stack.
 - Unified **Inbox** admin menu for Comments, Form submissions, and related settings
 - WYSIWYG reusable component library with synced and independent patterns
 - Assignable page-design library with HTML templates and CSS
+- Reusable content Queries under Code for design loops (`{{#each queries.slug}}`)
 - Sanitized SVG uploads in the WordPress Media Library
 - GSAP interaction builder with keyframes, custom easing, and SVG effects
 - Versioned global stylesheet editor (headless; no WP theme UI)
@@ -32,6 +33,8 @@ WordPress admin → **Components** for the reusable component library
 WordPress admin → **Scrapbook** for photos and photo stories
 
 WordPress admin → **Pages → Designs** for HTML/CSS page designs
+
+WordPress admin → **Code → Queries** for reusable content loops used in designs
 
 WordPress admin → **Interactions → GSAP** for frontend motion and SVG animation
 
@@ -66,6 +69,22 @@ HTML templates use escaped placeholders such as `{{page.title}}`,
 `{{page.featuredImage.url}}`, and `{{fields.hero_heading}}`. Rendered WordPress
 block content is the one intentionally raw value and uses
 `{{{page.content}}}`.
+
+Saved content queries (Code → Queries) can be looped in designs:
+
+```html
+{{#each queries.latest_news}}
+  <a href="{{link}}">{{title}}</a>
+{{/each}}
+
+{{#if queries.latest_news.pagination.hasNext}}
+  <a href="?page={{queries.latest_news.pagination.page}}">Next</a>
+{{/if}}
+```
+
+Queries are stored as allowlisted JSON (post type, count, order, exclusions,
+taxonomy filters, custom-field filters, related-post rules, pagination) — never
+raw PHP.
 
 ## Inbox
 

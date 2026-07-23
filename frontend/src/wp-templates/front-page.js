@@ -63,6 +63,33 @@ FrontPageTemplate.query = gql`
         title
         html
         css
+        source
+        queries {
+          slug
+          title
+          items {
+            databaseId
+            title
+            excerpt
+            link
+            uri
+            slug
+            date
+            featuredImage {
+              url
+              alt
+            }
+          }
+          pagination {
+            page
+            perPage
+            total
+            totalPages
+            hasNext
+            hasPrevious
+            enabled
+          }
+        }
       }
       kpfDesignFields {
         key

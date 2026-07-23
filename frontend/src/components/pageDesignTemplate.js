@@ -17,8 +17,6 @@ function decodeHtmlEntities(value) {
 }
 
 function escapeTemplateValue(value) {
-  // Decode first so apostrophes/ampersands render as real characters on the FE,
-  // not as literal &#039; / &amp; text from double-escaping.
   return decodeHtmlEntities(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -28,7 +26,8 @@ function escapeTemplateValue(value) {
 }
 
 function resolvePath(model, path) {
-  return path
+  if (!path) return "";
+  return String(path)
     .split(".")
     .reduce(
       (value, key) =>
@@ -37,6 +36,17 @@ function resolvePath(model, path) {
           : "",
       model,
     );
+}
+
+function isTruthy(value) {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value && typeof value === "object") {
+    if (Object.prototype.hasOwnProperty.call(value, "items")) {
+      return Array.isArray(value.items) && value.items.length > 0;
+    }
+    return Object.keys(value).length > 0;
+  }
+  return Boolean(value);
 }
 
 function sanitizeUrlAttributes(html) {
@@ -56,11 +66,120 @@ function sanitizeUrlAttributes(html) {
   );
 }
 
+function findMatchingClose(source, openIndex, openRe, closeRe) {
+  const openMatch = source.slice(openIndex).match(openRe);
+  if (!openMatch || openMatch.index !== 0) {
+    return -1;
+  }
+
+  let index = openIndex + openMatch[0].length;
+  let depth = 1;
+
+  while (index < source.length && depth > 0) {
+    const rest = source.slice(index);
+    const nextOpen = rest.search(openRe);
+    const nextClose = rest.search(closeRe);
+
+    if (nextClose === -1) {
+      return -1;
+    }
+
+    if (nextOpen !== -1 && nextOpen < nextClose) {
+      const matched = rest.slice(nextOpen).match(openRe);
+      depth += 1;
+      index += nextOpen + (matched ? matched[0].length : 1);
+      continue;
+    }
+
+    const matched = rest.slice(nextClose).match(closeRe);
+    depth -= 1;
+    if (depth === 0) {
+      return {
+        start: index + nextClose,
+        end: index + nextClose + (matched ? matched[0].length : 1),
+      };
+    }
+    index += nextClose + (matched ? matched[0].length : 1);
+  }
+
+  return -1;
+}
+
+function renderSections(template, model) {
+  let source = String(template || "");
+  const eachOpen = /\{\{\s*#each\s+([^{}]+?)\s*\}\}/i;
+  const eachClose = /\{\{\s*\/each\s*\}\}/i;
+  const ifOpen = /\{\{\s*#if\s+([^{}]+?)\s*\}\}/i;
+  const ifClose = /\{\{\s*\/if\s*\}\}/i;
+
+  while (true) {
+    const openMatch = source.match(eachOpen);
+    if (!openMatch) break;
+    const openIndex = openMatch.index ?? -1;
+    if (openIndex < 0) break;
+    const close = findMatchingClose(source, openIndex, eachOpen, eachClose);
+    if (close === -1) break;
+
+    const path = openMatch[1].trim();
+    const inner = source.slice(openIndex + openMatch[0].length, close.start);
+    const value = resolvePath(model, path);
+    const items = Array.isArray(value)
+      ? value
+      : Array.isArray(value?.items)
+        ? value.items
+        : [];
+
+    const renderedItems = items
+      .map((item, index) => {
+        const scoped = {
+          ...model,
+          ...(item && typeof item === "object" ? item : { value: item }),
+          this: item,
+          "@index": index,
+          "@first": index === 0,
+          "@last": index === items.length - 1,
+        };
+        return renderDesignTemplate(inner, scoped);
+      })
+      .join("");
+
+    source =
+      source.slice(0, openIndex) + renderedItems + source.slice(close.end);
+  }
+
+  while (true) {
+    const openMatch = source.match(ifOpen);
+    if (!openMatch) break;
+    const openIndex = openMatch.index ?? -1;
+    if (openIndex < 0) break;
+    const close = findMatchingClose(source, openIndex, ifOpen, ifClose);
+    if (close === -1) break;
+
+    const path = openMatch[1].trim();
+    const inner = source.slice(openIndex + openMatch[0].length, close.start);
+    const elseMatch = inner.match(/\{\{\s*else\s*\}\}/i);
+    let truthyBlock = inner;
+    let falsyBlock = "";
+    if (elseMatch) {
+      truthyBlock = inner.slice(0, elseMatch.index);
+      falsyBlock = inner.slice(elseMatch.index + elseMatch[0].length);
+    }
+
+    const chosen = isTruthy(resolvePath(model, path))
+      ? truthyBlock
+      : falsyBlock;
+    const rendered = renderDesignTemplate(chosen, model);
+    source = source.slice(0, openIndex) + rendered + source.slice(close.end);
+  }
+
+  return source;
+}
+
 function renderDesignTemplate(template, model) {
-  const source = String(template || "");
+  const withSections = renderSections(template, model);
   const rawValues = [];
 
-  const withRawContent = source.replace(
+  const withRawContent = withSections.replace(
     /\{\{\{\s*([^{}]+?)\s*\}\}\}/g,
     (_match, token) => {
       const path = token.trim();
@@ -73,7 +192,7 @@ function renderDesignTemplate(template, model) {
   );
 
   const rendered = withRawContent.replace(
-    /\{\{\s*([^{}]+?)\s*\}\}/g,
+    /\{\{\s*(?!else\b)([^{}#\/]+?)\s*\}\}/g,
     (_match, token) => escapeTemplateValue(resolvePath(model, token.trim())),
   );
 
@@ -86,8 +205,17 @@ function renderDesignTemplate(template, model) {
   return sanitizeUrlAttributes(withContent);
 }
 
+function discoverQuerySlugs(template) {
+  const source = String(template || "");
+  const matches = [
+    ...source.matchAll(/\{\{\s*#each\s+queries\.([a-z0-9_-]+)\s*\}\}/gi),
+  ];
+  return [...new Set(matches.map((match) => match[1].toLowerCase()))];
+}
+
 module.exports = {
   decodeHtmlEntities,
   escapeTemplateValue,
   renderDesignTemplate,
+  discoverQuerySlugs,
 };

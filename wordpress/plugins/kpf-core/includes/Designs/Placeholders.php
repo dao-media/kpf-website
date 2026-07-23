@@ -123,6 +123,7 @@ final class Placeholders {
 			'seo_patterns' => 40,
 			'fields'       => 50,
 			'site'         => 55,
+			'queries'      => 57,
 			'library'      => 60,
 		);
 		return $order[ $group ] ?? 100;

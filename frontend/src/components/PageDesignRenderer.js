@@ -6,6 +6,19 @@ function textOnly(value) {
   return String(value || "").replace(/<[^>]*>/g, "").trim();
 }
 
+function queriesFromDesign(design) {
+  const map = {};
+  for (const query of design?.queries || []) {
+    if (!query?.slug) continue;
+    map[query.slug] = {
+      ...query,
+      items: query.items || [],
+      pagination: query.pagination || {},
+    };
+  }
+  return map;
+}
+
 export function buildDesignModel(page) {
   const fields = Object.fromEntries(
     (page?.kpfDesignFields || [])
@@ -14,6 +27,7 @@ export function buildDesignModel(page) {
   );
   const image = page?.featuredImage?.node;
   const author = page?.author?.node;
+  const design = page?.kpfPageDesign;
 
   return {
     page: {
@@ -44,6 +58,7 @@ export function buildDesignModel(page) {
       },
     },
     fields,
+    queries: queriesFromDesign(design),
   };
 }
 

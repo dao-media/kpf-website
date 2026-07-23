@@ -30,6 +30,11 @@ use KPF\Core\Designs\GraphQL as DesignsGraphQL;
 use KPF\Core\Designs\Meta as DesignsMeta;
 use KPF\Core\Designs\Rest as DesignsRest;
 use KPF\Core\Designs\Settings as DesignsSettings;
+use KPF\Core\Queries\Admin as QueriesAdmin;
+use KPF\Core\Queries\ContentType as QueriesContentType;
+use KPF\Core\Queries\GraphQL as QueriesGraphQL;
+use KPF\Core\Queries\Meta as QueriesMeta;
+use KPF\Core\Queries\Rest as QueriesRest;
 use KPF\Core\Inbox\Admin as InboxAdmin;
 use KPF\Core\Inbox\Comments as InboxComments;
 use KPF\Core\Inbox\Forms as InboxForms;
@@ -112,6 +117,7 @@ final class Plugin {
 		DesignsContentType::register_content();
 		InteractionsContentType::register_content();
 		CodeContentType::register_content();
+		QueriesContentType::register_content();
 		StylesheetContentType::register_content();
 		StylesheetMeta::register_meta();
 		StylesheetMeta::ensure_stylesheet();
@@ -144,6 +150,12 @@ final class Plugin {
 		BlockGlobals::register();
 		BlocksGraphQL::register();
 		BlocksAdmin::register();
+
+		QueriesContentType::register();
+		QueriesMeta::register();
+		QueriesAdmin::register();
+		QueriesRest::register();
+		QueriesGraphQL::register();
 
 		DesignsContentType::register();
 		DesignsMeta::register();

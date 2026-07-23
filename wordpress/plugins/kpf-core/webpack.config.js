@@ -18,6 +18,7 @@ module.exports = {
 		'gsap-admin': path.resolve(__dirname, 'src/gsap-admin/index.js'),
 		'performance-admin': path.resolve(__dirname, 'src/performance-admin/index.js'),
 		'dynamic-content-admin': path.resolve(__dirname, 'src/dynamic-content-admin/index.js'),
+		'queries-admin': path.resolve(__dirname, 'src/queries-admin/index.js'),
 		'accessibility-admin': path.resolve(__dirname, 'src/accessibility-admin/index.js'),
 		'stylesheet-admin': path.resolve(__dirname, 'src/stylesheet-admin/index.js'),
 	},

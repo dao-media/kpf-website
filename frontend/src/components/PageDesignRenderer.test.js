@@ -106,4 +106,50 @@ describe("page design templates", () => {
       '<a href="donate">Open</a>',
     );
   });
+
+  it("renders query loops with nested fields", () => {
+    assert.equal(
+      renderDesignTemplate(
+        '{{#each queries.news}}<li><a href="{{link}}">{{title}}</a></li>{{/each}}',
+        {
+          queries: {
+            news: {
+              items: [
+                { title: "One & Two", link: "/one/" },
+                { title: "Three", link: "/three/" },
+              ],
+            },
+          },
+        },
+      ),
+      '<li><a href="/one/">One &amp; Two</a></li><li><a href="/three/">Three</a></li>',
+    );
+  });
+
+  it("supports nested conditionals with else", () => {
+    assert.equal(
+      renderDesignTemplate(
+        "{{#if title}}Hello {{title}}{{else}}Empty{{/if}}",
+        { title: "World" },
+      ),
+      "Hello World",
+    );
+    assert.equal(
+      renderDesignTemplate(
+        "{{#if title}}Hello {{title}}{{else}}Empty{{/if}}",
+        { title: "" },
+      ),
+      "Empty",
+    );
+  });
+
+  it("discovers query slugs from design HTML", () => {
+    const { discoverQuerySlugs } = require("./pageDesignTemplate");
+    assert.deepEqual(
+      discoverQuerySlugs(
+        "{{#each queries.latest_news}}x{{/each}} {{#each queries.events}}y{{/each}}",
+      ),
+      ["latest_news", "events"],
+    );
+  });
 });

@@ -24,6 +24,7 @@ final class GraphQL {
 					'html'       => array( 'type' => 'String' ),
 					'css'        => array( 'type' => 'String' ),
 					'source'     => array( 'type' => 'String' ),
+					'contextId'  => array( 'type' => 'Int' ),
 				),
 			)
 		);
@@ -161,13 +162,15 @@ final class GraphQL {
 		$design_id = (int) get_post_meta( $page_id, Meta::PAGE_DESIGN_META, true );
 		$resolved  = Meta::resolve_published_design( $design_id );
 		if ( $resolved ) {
-			$resolved['source'] = 'page';
+			$resolved['source']    = 'page';
+			$resolved['contextId'] = $page_id;
 			return $resolved;
 		}
 
 		$fallback = self::resolve_fallback();
 		if ( $fallback ) {
-			$fallback['source'] = 'fallback';
+			$fallback['source']    = 'fallback';
+			$fallback['contextId'] = $page_id;
 			return $fallback;
 		}
 

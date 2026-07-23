@@ -17,6 +17,7 @@ final class MenuOrganizer {
 	private const CODE_DIVIDER_SLUG        = 'kpf-code-divider';
 	private const CODE_DIVIDER_AFTER_NEW   = 'kpf-code-divider-after-new';
 	private const CODE_DYNAMIC_CONTENT     = 'kpf-dynamic-content';
+	private const CODE_QUERIES             = 'kpf-queries';
 	private const EVENTS_MENU_SLUG         = 'edit.php?post_type=kpf_event';
 	private const TEAM_MENU_SLUG           = 'edit.php?post_type=kpf_team';
 	private const CODE_MENU_SLUG           = 'edit.php?post_type=kpf_code';
@@ -172,7 +173,7 @@ final class MenuOrganizer {
 	}
 
 	/**
-	 * Code: All, Active, Inactive, divider, Add New, divider, Dynamic Content.
+	 * Code: All, Active, Inactive, divider, Add New, divider, Dynamic Content, Queries.
 	 */
 	private static function customize_code_submenu(): void {
 		global $submenu;
@@ -225,6 +226,11 @@ final class MenuOrganizer {
 				__( 'Dynamic Content', 'kpf-core' ),
 				$capability,
 				self::CODE_MENU_SLUG . '&page=' . self::CODE_DYNAMIC_CONTENT,
+			),
+			array(
+				__( 'Queries', 'kpf-core' ),
+				$capability,
+				self::CODE_MENU_SLUG . '&page=' . self::CODE_QUERIES,
 			),
 		);
 	}
@@ -589,7 +595,7 @@ final class MenuOrganizer {
 			return 'tools.php';
 		}
 
-		if ( self::CODE_DYNAMIC_CONTENT === (string) $plugin_page ) {
+		if ( in_array( (string) $plugin_page, array( self::CODE_DYNAMIC_CONTENT, self::CODE_QUERIES ), true ) ) {
 			return self::CODE_MENU_SLUG;
 		}
 
@@ -606,6 +612,10 @@ final class MenuOrganizer {
 
 		if ( self::CODE_DYNAMIC_CONTENT === (string) $plugin_page ) {
 			return self::CODE_MENU_SLUG . '&page=' . self::CODE_DYNAMIC_CONTENT;
+		}
+
+		if ( self::CODE_QUERIES === (string) $plugin_page ) {
+			return self::CODE_MENU_SLUG . '&page=' . self::CODE_QUERIES;
 		}
 
 		if ( 'plugins.php' === $pagenow ) {

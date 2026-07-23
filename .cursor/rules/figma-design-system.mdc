@@ -1,0 +1,112 @@
+---
+description: KPF Figma ↔ code design system integration rules for MCP agents
+globs:
+alwaysApply: false
+---
+
+# KPF Design System Rules (Figma MCP)
+
+Source of visual truth for the Figma library: **Option 3 / Main** (`Homepage / Desktop — Option 3`, node `121:62` in file `Iz5XryrkvcSuW2wIIOFM0I`).
+Source of production CSS tokens: `wordpress/plugins/kpf-core/assets/stylesheet/foundation.css` (mirrored in `frontend/src/styles/components.css`).
+
+When Figma Option 3 and CSS diverge, prefer Option 3 for new Figma work and note a code sync follow-up.
+
+## 1. Token Definitions
+
+### Where tokens live
+- **CSS (runtime):** `:root` custom properties in `wordpress/plugins/kpf-core/assets/stylesheet/foundation.css`
+- **Frontend mirror:** `frontend/src/styles/components.css` (keep in sync with foundation)
+- **Figma:** Variable collections `KPF / Primitives`, `KPF / Color`, `KPF / Spacing` on the Design System page
+- **No Style Dictionary / Tokens Studio pipeline yet** — CSS is hand-authored
+
+### Format
+```css
+--kpf-parchment: #f8f4ec;   /* code Documentary Ember */
+--kpf-ember: #8b1515;
+--kpf-brass: #c88758;
+```
+
+Figma Option 3 Main anchors (library primitives):
+- Parchment `#f4efea` · Ink `#12090a` · Ember `#bb0d0d` · Brass `#c9a15b` · Deep `#640f0e` · Mute `#6b5c5c`
+
+### Naming translation
+| CSS | Figma variable | WEB code syntax |
+|-----|----------------|-----------------|
+| `--kpf-ember` | `ember/500` (primitive) | `var(--kpf-ember)` |
+| semantic bg | `color/bg/page` | `var(--kpf-parchment)` |
+| semantic text | `color/text/primary` | `var(--kpf-ink)` |
+
+Three-layer model: **Primitive → Semantic → Component** (never hardcode hex in components).
+
+### Accessibility
+- Body text ≥ 4.5:1 on parchment/surface
+- Large text / UI chrome ≥ 3:1
+- Brass decorative (`brass/500`) fails on parchment for body text — use `color/text/link` / `brass/700+` for text links
+- Focus ring: brass soft outline (`--kpf-focus-ring`)
+
+## 2. Component Library
+
+### Code
+- Global foundation classes: `.kpf-btn`, `.kpf-btn--primary|secondary|brass|ghost`, `.kpf-input`, `.kpf-field*`, `.kpf-link`
+- React: Faust/Next pages under `frontend/src/`; forms via `FormRenderer.js`; page designs via `PageDesignRenderer.js`
+- No Storybook — WordPress admin + foundation stylesheet are the living specs
+
+### Figma
+- Page: **Design System**
+- Components use variant axes `Style` / `State` / `Icon` (leading|trailing|none) — not one variant per icon
+- Icons: Lucide library INSTANCE_SWAP (matches `frontend/src/components/Icon.js`)
+
+### Class ↔ Figma mapping
+| Figma component | CSS |
+|-----------------|-----|
+| Button / Primary | `.kpf-btn.kpf-btn--primary` |
+| Button / Secondary | `.kpf-btn.kpf-btn--secondary` |
+| Button / Outline | `.kpf-btn.kpf-btn--secondary` (outline) |
+| Text Link | `.kpf-link` / `.kpf-btn--ghost` |
+| Text Field | `.kpf-field` + `.kpf-input` |
+| Card / Accordion | design-system only until coded |
+
+## 3. Frameworks & Libraries
+
+- **Frontend:** Next.js (Faust.js / WordPress headless), React
+- **CMS plugin:** WordPress PHP + webpack-built admin (`wordpress/plugins/kpf-core`)
+- **Icons:** `lucide-react` via `Icon.js`
+- **Motion:** GSAP (`GsapRuntime.js`)
+- **Styling:** Global CSS custom properties + utility/component classes (not Tailwind, not CSS Modules for foundation)
+
+## 4. Asset Management
+
+- Brand explorations: `Branding/`
+- WP media / GraphQL media for site imagery
+- Figma mockups hold Option 1–3 homepage explorations on page **Mockups**
+
+## 5. Icon System
+
+- **Code:** Lucide PascalCase names (`Heart`, `ChevronDown`) — see `frontend/src/components/Icon.js`
+- **Figma:** Lucide Icons library (subscribed); swap via INSTANCE_SWAP, never variant-per-icon
+
+## 6. Styling Approach
+
+- Global foundation stylesheet ships from WP and is injected/mirrored on the frontend
+- Fluid type via `clamp()`; spacing in rem
+- Control height: `--kpf-control-height` (2.75rem); radius pill for buttons
+- Prefer semantic tokens in new work: `color/bg/*`, `color/text/*`, `color/border/*`, `color/action/*`
+
+## 7. Project Structure
+
+```
+frontend/src/          Next/Faust app (pages, components, styles)
+wordpress/plugins/kpf-core/
+  assets/stylesheet/   foundation.css (token + component source)
+  includes/            PHP (Forms, Design Tokens, Inbox, …)
+  src/                 Admin React apps (forms-admin, tokens-admin, …)
+Branding/              Brand explorations
+```
+
+## Agent rules when editing Figma
+
+1. Load `figma-use` + `figma-generate-library` before `use_figma`
+2. Bind fills/strokes/gaps/radii to variables — no raw hex in components
+3. Label docs: **blue** = semantic token, **green** = CSS class / primitive name
+4. One `setCurrentPageAsync` per `use_figma` call; never parallelize mutating `use_figma`
+5. Return all created node/variable IDs; tag with `dsb` sharedPluginData

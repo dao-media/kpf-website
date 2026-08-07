@@ -11,6 +11,7 @@ module.exports = {
 		'seo-editor': path.resolve(__dirname, 'src/seo-editor/index.js'),
 		'page-editor': path.resolve(__dirname, 'src/page-editor/index.js'),
 		'scrapbook-editor': path.resolve(__dirname, 'src/scrapbook-editor/index.js'),
+		'grantee-editor': path.resolve(__dirname, 'src/grantee-editor/index.js'),
 		'events-editor': path.resolve(__dirname, 'src/events-editor/index.js'),
 		'designs-editor': path.resolve(__dirname, 'src/designs-editor/index.js'),
 		'designs-admin': path.resolve(__dirname, 'src/designs-admin/index.js'),
@@ -18,7 +19,10 @@ module.exports = {
 		'performance-admin': path.resolve(__dirname, 'src/performance-admin/index.js'),
 		'dynamic-content-admin': path.resolve(__dirname, 'src/dynamic-content-admin/index.js'),
 		'queries-admin': path.resolve(__dirname, 'src/queries-admin/index.js'),
+		'forms-admin': path.resolve(__dirname, 'src/forms-admin/index.js'),
 		'accessibility-admin': path.resolve(__dirname, 'src/accessibility-admin/index.js'),
 		'stylesheet-admin': path.resolve(__dirname, 'src/stylesheet-admin/index.js'),
+		'tokens-admin': path.resolve(__dirname, 'src/tokens-admin/index.js'),
+		'backups-admin': path.resolve(__dirname, 'src/backups-admin/index.js'),
 	},
 };

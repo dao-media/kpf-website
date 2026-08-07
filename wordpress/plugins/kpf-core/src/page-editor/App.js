@@ -83,6 +83,9 @@ export default function App({ pageId }) {
 				if (cancelled) return;
 				setForm({
 					...payload,
+					// New pages are auto-drafts; surface them as Draft in the UI.
+					status:
+						payload.status === 'auto-draft' ? 'draft' : payload.status || 'draft',
 					seo: { ...emptySeoMeta(), ...(payload.seo || {}) },
 					fieldValues: payload.fieldValues || {},
 				});

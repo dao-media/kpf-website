@@ -6,92 +6,93 @@ namespace KPF\Core\Events;
 
 final class GraphQL {
 	public static function register(): void {
-		add_action('graphql_register_types', array( self::class, 'register_types' ));
+		add_action( 'graphql_register_types', array( self::class, 'register_types' ) );
 	}
 
 	public static function register_types(): void {
-		if (! function_exists('register_graphql_object_type')) {
+		if ( ! function_exists( 'register_graphql_object_type' ) ) {
 			return;
 		}
 
 		register_graphql_enum_type(
-			'KpfEventLocationTypeEnum',
+			'KpfEventFrequencyEnum',
 			array(
-				'description' => 'Indoor / outdoor setting for an event.',
+				'description' => 'How often an event occurs.',
 				'values'      => array(
-					'INDOOR'  => array( 'value' => 'indoor' ),
-					'OUTDOOR' => array( 'value' => 'outdoor' ),
-					'BOTH'    => array( 'value' => 'both' ),
-					'TBD'     => array( 'value' => 'tbd' ),
-				),
-			)
-		);
-
-		register_graphql_enum_type(
-			'KpfEventFoodDrinksEnum',
-			array(
-				'description' => 'Whether food and/or drinks are served.',
-				'values'      => array(
-					'BOTH'   => array( 'value' => 'both' ),
-					'FOOD'   => array( 'value' => 'food' ),
-					'DRINKS' => array( 'value' => 'drinks' ),
-					'NONE'   => array( 'value' => 'none' ),
+					'ONE_TIME'     => array( 'value' => 'one_time' ),
+					'WEEKLY'       => array( 'value' => 'weekly' ),
+					'MONTHLY'      => array( 'value' => 'monthly' ),
+					'QUARTERLY'    => array( 'value' => 'quarterly' ),
+					'SEMIANNUALLY' => array( 'value' => 'semiannually' ),
+					'ANNUALLY'     => array( 'value' => 'annually' ),
 				),
 			)
 		);
 
 		register_graphql_object_type(
-			'KpfEventRecurrence',
+			'KpfEventNthWeekday',
 			array(
-				'description' => 'Recurrence rule for a repeating event.',
+				'fields' => array(
+					'n'   => array( 'type' => 'Int' ),
+					'day' => array( 'type' => 'String' ),
+				),
+			)
+		);
+
+		register_graphql_object_type(
+			'KpfEventAnchor',
+			array(
+				'fields' => array(
+					'month' => array( 'type' => 'Int' ),
+					'day'   => array( 'type' => 'Int' ),
+				),
+			)
+		);
+
+		register_graphql_object_type(
+			'KpfEventSchedule',
+			array(
+				'description' => 'Frequency-specific schedule details (all preferred / optional).',
 				'fields'      => array(
-					'frequency'   => array( 'type' => 'String' ),
-					'interval'    => array( 'type' => 'Int' ),
-					'byWeekday'   => array( 'type' => array( 'list_of' => 'String' ) ),
-					'byMonthday'  => array( 'type' => array( 'list_of' => 'Int' ) ),
-					'byMonth'     => array( 'type' => array( 'list_of' => 'Int' ) ),
-					'monthlyMode' => array( 'type' => 'String' ),
-					'nthWeekdayN' => array( 'type' => 'Int' ),
-					'nthWeekdayDay' => array( 'type' => 'String' ),
-					'endMode'     => array( 'type' => 'String' ),
-					'until'       => array( 'type' => 'String' ),
-					'count'       => array( 'type' => 'Int' ),
+					'startDate'    => array( 'type' => 'String' ),
+					'byWeekday'    => array( 'type' => array( 'list_of' => 'String' ) ),
+					'monthlyMode'  => array( 'type' => 'String' ),
+					'byMonthday'   => array( 'type' => 'Int' ),
+					'nthWeekday'   => array( 'type' => 'KpfEventNthWeekday' ),
+					'byMonth'      => array( 'type' => array( 'list_of' => 'Int' ) ),
+					'anchors'      => array( 'type' => array( 'list_of' => 'KpfEventAnchor' ) ),
 				),
 			)
 		);
 
 		register_graphql_object_type(
-			'KpfEventException',
+			'KpfEventHostDetails',
 			array(
 				'fields' => array(
-					'date'   => array( 'type' => 'String' ),
-					'reason' => array( 'type' => 'String' ),
+					'termId'  => array( 'type' => 'Int' ),
+					'name'    => array( 'type' => 'String' ),
+					'slug'    => array( 'type' => 'String' ),
+					'logoId'  => array( 'type' => 'Int' ),
+					'logoUrl' => array( 'type' => 'String' ),
 				),
 			)
 		);
 
 		register_graphql_object_type(
-			'KpfEventReschedule',
+			'KpfEventLocation',
 			array(
-				'fields' => array(
-					'originalDate' => array( 'type' => 'String' ),
-					'newDate'      => array( 'type' => 'String' ),
-					'startTime'    => array( 'type' => 'String' ),
-					'endTime'      => array( 'type' => 'String' ),
-					'note'         => array( 'type' => 'String' ),
-				),
-			)
-		);
-
-		register_graphql_object_type(
-			'KpfEventPartnerDetails',
-			array(
-				'fields' => array(
-					'termId'    => array( 'type' => 'Int' ),
-					'name'      => array( 'type' => 'String' ),
-					'slug'      => array( 'type' => 'String' ),
-					'logoId'    => array( 'type' => 'Int' ),
-					'logoUrl'   => array( 'type' => 'String' ),
+				'description' => 'Flexible event location: area, street address, or directions link.',
+				'fields'      => array(
+					'mode'        => array( 'type' => 'String' ),
+					'label'       => array( 'type' => 'String' ),
+					'line1'       => array( 'type' => 'String' ),
+					'line2'       => array( 'type' => 'String' ),
+					'city'        => array( 'type' => 'String' ),
+					'state'       => array( 'type' => 'String' ),
+					'postalCode'  => array( 'type' => 'String' ),
+					'url'         => array( 'type' => 'String' ),
+					'display'     => array( 'type' => 'String' ),
+					'mapsUrl'     => array( 'type' => 'String' ),
 				),
 			)
 		);
@@ -99,31 +100,20 @@ final class GraphQL {
 		register_graphql_object_type(
 			'KpfEventDetails',
 			array(
-				'description' => 'Scheduling and hosting details for a foundation event.',
+				'description' => 'Card fields for a foundation event.',
 				'fields'      => array(
-					'startDate'      => array( 'type' => 'String' ),
-					'endDate'        => array( 'type' => 'String' ),
-					'startTime'      => array( 'type' => 'String' ),
-					'endTime'        => array( 'type' => 'String' ),
-					'timezone'       => array( 'type' => 'String' ),
-					'locationType'   => array( 'type' => 'KpfEventLocationTypeEnum' ),
-					'description'    => array( 'type' => 'String' ),
-					'details'        => array( 'type' => 'String' ),
-					'foodDrinks'     => array( 'type' => 'KpfEventFoodDrinksEnum' ),
-					'isRecurring'    => array( 'type' => 'Boolean' ),
-					'recurrence'     => array( 'type' => 'KpfEventRecurrence' ),
-					'exceptions'     => array( 'type' => array( 'list_of' => 'KpfEventException' ) ),
-					'reschedules'    => array( 'type' => array( 'list_of' => 'KpfEventReschedule' ) ),
-					'coHostTermIds'  => array( 'type' => array( 'list_of' => 'Int' ) ),
-					'coHosts'        => array( 'type' => array( 'list_of' => 'KpfEventPartnerDetails' ) ),
-					'occurrenceDate' => array(
-						'type'        => 'String',
-						'description' => 'YYYYMMDD or YYYY-MM-DD for a recurring occurrence request.',
-						'resolve'     => static function (): ?string {
-							$raw = get_query_var(ContentType::OCCURRENCE_QUERY);
-							return is_string($raw) && '' !== $raw ? $raw : null;
-						},
-					),
+					'logline'       => array( 'type' => 'String' ),
+					'description'   => array( 'type' => 'String' ),
+					'contactEmail'  => array( 'type' => 'String' ),
+					'contactPhone'  => array( 'type' => 'String' ),
+					'website'       => array( 'type' => 'String' ),
+					'location'      => array( 'type' => 'KpfEventLocation' ),
+					'frequency'     => array( 'type' => 'KpfEventFrequencyEnum' ),
+					'durationDays'  => array( 'type' => 'Int' ),
+					'schedule'      => array( 'type' => 'KpfEventSchedule' ),
+					'scheduleLabel' => array( 'type' => 'String' ),
+					'hostTermIds'   => array( 'type' => array( 'list_of' => 'Int' ) ),
+					'hosts'         => array( 'type' => array( 'list_of' => 'KpfEventHostDetails' ) ),
 				),
 			)
 		);
@@ -133,10 +123,13 @@ final class GraphQL {
 			'eventDetails',
 			array(
 				'type'        => 'KpfEventDetails',
-				'description' => 'Structured event scheduling and host details.',
-				'resolve'     => static function ($source): array {
-					$id = is_object($source) && isset($source->ID) ? (int) $source->ID : 0;
-					return self::details($id);
+				'description' => 'Structured event card details.',
+				'resolve'     => static function ( $source ): array {
+					$id = is_object( $source ) && isset( $source->ID ) ? (int) $source->ID : 0;
+					if ( isset( $source->databaseId ) ) {
+						$id = (int) $source->databaseId;
+					}
+					return self::details( $id );
 				},
 			)
 		);
@@ -145,73 +138,72 @@ final class GraphQL {
 	/**
 	 * @return array<string, mixed>
 	 */
-	public static function details(int $post_id): array {
-		$meta = Meta::get($post_id);
-		$rec  = is_array($meta['recurrence'] ?? null) ? $meta['recurrence'] : Meta::default_recurrence();
+	public static function details( int $post_id ): array {
+		$meta     = Meta::get( $post_id );
+		$schedule = is_array( $meta['schedule'] ?? null ) ? $meta['schedule'] : Meta::default_schedule();
 
-		$co_hosts = array();
-		foreach ($meta['co_host_term_ids'] as $term_id) {
-			$term = get_term((int) $term_id, ContentType::PARTNER_TAXONOMY);
-			if (! $term || is_wp_error($term)) {
+		$hosts = array();
+		foreach ( $meta['host_term_ids'] as $term_id ) {
+			$term = get_term( (int) $term_id, ContentType::HOST_TAXONOMY );
+			if ( ! $term || is_wp_error( $term ) ) {
 				continue;
 			}
-			$logo_id = (int) get_term_meta((int) $term_id, ContentType::PARTNER_LOGO_META, true);
-			$co_hosts[] = array(
+			$logo_id = (int) get_term_meta( (int) $term_id, ContentType::HOST_LOGO_META, true );
+			$hosts[] = array(
 				'termId'  => (int) $term_id,
 				'name'    => $term->name,
 				'slug'    => $term->slug,
 				'logoId'  => $logo_id,
-				'logoUrl' => $logo_id > 0 ? (string) wp_get_attachment_image_url($logo_id, 'medium') : '',
+				'logoUrl' => $logo_id > 0 ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '',
 			);
 		}
 
+		$nth      = is_array( $schedule['nth_weekday'] ?? null ) ? $schedule['nth_weekday'] : array( 'n' => 1, 'day' => 'MO' );
+		$location = is_array( $meta['location'] ?? null ) ? $meta['location'] : Meta::default_location();
+
 		return array(
-			'startDate'     => $meta['start_date'],
-			'endDate'       => $meta['end_date'],
-			'startTime'     => $meta['start_time'],
-			'endTime'       => $meta['end_time'],
-			'timezone'      => $meta['timezone'],
-			'locationType'  => $meta['location_type'],
+			'logline'       => $meta['logline'],
 			'description'   => $meta['description'],
-			'details'       => $meta['details'],
-			'foodDrinks'    => $meta['food_drinks'],
-			'isRecurring'   => (bool) $meta['is_recurring'],
-			'recurrence'    => array(
-				'frequency'     => $rec['frequency'],
-				'interval'      => (int) $rec['interval'],
-				'byWeekday'     => $rec['by_weekday'],
-				'byMonthday'    => $rec['by_monthday'],
-				'byMonth'       => $rec['by_month'],
-				'monthlyMode'   => $rec['monthly_mode'],
-				'nthWeekdayN'   => (int) ($rec['nth_weekday']['n'] ?? 1),
-				'nthWeekdayDay' => (string) ($rec['nth_weekday']['day'] ?? 'MO'),
-				'endMode'       => $rec['end_mode'],
-				'until'         => $rec['until'],
-				'count'         => (int) $rec['count'],
+			'contactEmail'  => $meta['contact_email'],
+			'contactPhone'  => $meta['contact_phone'],
+			'website'       => $meta['website'],
+			'location'      => array(
+				'mode'       => (string) ( $location['mode'] ?? 'none' ),
+				'label'      => (string) ( $location['label'] ?? '' ),
+				'line1'      => (string) ( $location['line1'] ?? '' ),
+				'line2'      => (string) ( $location['line2'] ?? '' ),
+				'city'       => (string) ( $location['city'] ?? '' ),
+				'state'      => (string) ( $location['state'] ?? '' ),
+				'postalCode' => (string) ( $location['postal_code'] ?? '' ),
+				'url'        => (string) ( $location['url'] ?? '' ),
+				'display'    => Meta::format_location_label( $meta ),
+				'mapsUrl'    => Meta::location_maps_url( $meta ),
 			),
-			'exceptions'    => array_map(
-				static function (array $row): array {
-					return array(
-						'date'   => $row['date'],
-						'reason' => $row['reason'],
-					);
-				},
-				$meta['exceptions']
+			'frequency'     => $meta['frequency'],
+			'durationDays'  => (int) $meta['duration_days'],
+			'schedule'      => array(
+				'startDate'   => (string) ( $schedule['start_date'] ?? '' ),
+				'byWeekday'   => (array) ( $schedule['by_weekday'] ?? array() ),
+				'monthlyMode' => (string) ( $schedule['monthly_mode'] ?? 'day_of_month' ),
+				'byMonthday'  => (int) ( $schedule['by_monthday'] ?? 0 ),
+				'nthWeekday'  => array(
+					'n'   => (int) ( $nth['n'] ?? 1 ),
+					'day' => (string) ( $nth['day'] ?? 'MO' ),
+				),
+				'byMonth'     => array_map( 'intval', (array) ( $schedule['by_month'] ?? array() ) ),
+				'anchors'     => array_map(
+					static function ( array $row ): array {
+						return array(
+							'month' => (int) $row['month'],
+							'day'   => (int) $row['day'],
+						);
+					},
+					(array) ( $schedule['anchors'] ?? array() )
+				),
 			),
-			'reschedules'   => array_map(
-				static function (array $row): array {
-					return array(
-						'originalDate' => $row['original_date'],
-						'newDate'      => $row['new_date'],
-						'startTime'    => $row['start_time'],
-						'endTime'      => $row['end_time'],
-						'note'         => $row['note'],
-					);
-				},
-				$meta['reschedules']
-			),
-			'coHostTermIds' => $meta['co_host_term_ids'],
-			'coHosts'       => $co_hosts,
+			'scheduleLabel' => Meta::format_schedule_label( $meta ),
+			'hostTermIds'   => $meta['host_term_ids'],
+			'hosts'         => $hosts,
 		);
 	}
 }

@@ -8,6 +8,11 @@ use KPF\Core\Accessibility\Admin as AccessibilityAdmin;
 use KPF\Core\Accessibility\GraphQL as AccessibilityGraphQL;
 use KPF\Core\Accessibility\Rest as AccessibilityRest;
 use KPF\Core\Accessibility\Settings as AccessibilitySettings;
+use KPF\Core\Backups\Admin as BackupsAdmin;
+use KPF\Core\Backups\AdminBar as BackupsAdminBar;
+use KPF\Core\Backups\Rest as BackupsRest;
+use KPF\Core\Backups\Scheduler as BackupsScheduler;
+use KPF\Core\Backups\Settings as BackupsSettings;
 use KPF\Core\Admin\Dashboard as AdminDashboard;
 use KPF\Core\Admin\HeadlessAppearance;
 use KPF\Core\Admin\MenuOrganizer;
@@ -23,6 +28,9 @@ use KPF\Core\Blocks\Groups as BlockGroups;
 use KPF\Core\Blocks\Patterns as BlockPatterns;
 use KPF\Core\Blocks\Registry as BlockRegistry;
 use KPF\Core\Compat\WpGraphqlTelemetry;
+use KPF\Core\Design\Admin as DesignAdmin;
+use KPF\Core\Design\Tokens\Admin as DesignTokensAdmin;
+use KPF\Core\Design\Tokens\Rest as DesignTokensRest;
 use KPF\Core\Designs\Admin as DesignsAdmin;
 use KPF\Core\Designs\ContentType as DesignsContentType;
 use KPF\Core\Designs\Editor as DesignsEditor;
@@ -30,6 +38,12 @@ use KPF\Core\Designs\GraphQL as DesignsGraphQL;
 use KPF\Core\Designs\Meta as DesignsMeta;
 use KPF\Core\Designs\Rest as DesignsRest;
 use KPF\Core\Designs\Settings as DesignsSettings;
+use KPF\Core\Forms\Admin as FormsAdmin;
+use KPF\Core\Forms\ContentType as FormsContentType;
+use KPF\Core\Forms\GraphQL as FormsGraphQL;
+use KPF\Core\Forms\Meta as FormsMeta;
+use KPF\Core\Forms\Rest as FormsRest;
+use KPF\Core\Forms\Settings as FormsSettings;
 use KPF\Core\Queries\Admin as QueriesAdmin;
 use KPF\Core\Queries\ContentType as QueriesContentType;
 use KPF\Core\Queries\GraphQL as QueriesGraphQL;
@@ -47,6 +61,7 @@ use KPF\Core\Interactions\ContentType as InteractionsContentType;
 use KPF\Core\Interactions\GraphQL as InteractionsGraphQL;
 use KPF\Core\Interactions\Meta as InteractionsMeta;
 use KPF\Core\Interactions\Rest as InteractionsRest;
+use KPF\Core\Media\AdminSrcset;
 use KPF\Core\Media\SvgUploads;
 use KPF\Core\Pages\Editor as PagesEditor;
 use KPF\Core\Pages\ListTable as PagesListTable;
@@ -69,6 +84,17 @@ use KPF\Core\Events\Editor as EventsEditor;
 use KPF\Core\Events\GraphQL as EventsGraphQL;
 use KPF\Core\Events\Meta as EventsMeta;
 use KPF\Core\Events\Rest as EventsRest;
+use KPF\Core\Grantees\Admin as GranteesAdmin;
+use KPF\Core\Grantees\ContentType as GranteesContentType;
+use KPF\Core\Grantees\Editor as GranteesEditor;
+use KPF\Core\Grantees\GraphQL as GranteesGraphQL;
+use KPF\Core\Grantees\Meta as GranteesMeta;
+use KPF\Core\Grantees\Rest as GranteesRest;
+use KPF\Core\Grants\Admin as GrantsAdmin;
+use KPF\Core\Grants\ContentType as GrantsContentType;
+use KPF\Core\Grants\GraphQL as GrantsGraphQL;
+use KPF\Core\Grants\Meta as GrantsMeta;
+use KPF\Core\Grants\Rest as GrantsRest;
 use KPF\Core\Scrapbook\Admin as ScrapbookAdmin;
 use KPF\Core\Scrapbook\ContentType as ScrapbookContentType;
 use KPF\Core\Scrapbook\Editor as ScrapbookEditor;
@@ -106,11 +132,16 @@ final class Plugin {
 
 	public function activate(): void {
 		ScrapbookContentType::register_content();
+		GrantsContentType::register_content();
+		GranteesContentType::register_content();
+		GrantsContentType::maybe_migrate_from_grantees();
 		EventsContentType::register_content();
+		EventsContentType::maybe_migrate_hosts();
 		DesignsContentType::register_content();
 		InteractionsContentType::register_content();
 		CodeContentType::register_content();
 		QueriesContentType::register_content();
+		FormsContentType::register_content();
 		StylesheetContentType::register_content();
 		StylesheetMeta::register_meta();
 		StylesheetMeta::ensure_stylesheet();
@@ -119,9 +150,11 @@ final class Plugin {
 		RedirectsTable::install();
 		Settings::ensure_defaults();
 		InboxSettings::ensure_defaults();
+		FormsSettings::ensure_defaults();
 		PerformanceSettings::ensure_defaults();
 		DynamicContentSettings::ensure_defaults();
 		AccessibilitySettings::ensure_defaults();
+		BackupsSettings::ensure_defaults();
 		DesignsSettings::ensure_defaults();
 		flush_rewrite_rules();
 	}
@@ -131,6 +164,7 @@ final class Plugin {
 
 		WpGraphqlTelemetry::register();
 		SvgUploads::register();
+		AdminSrcset::register();
 
 		AdminDashboard::register();
 		AdminTheme::register();
@@ -149,6 +183,14 @@ final class Plugin {
 		QueriesAdmin::register();
 		QueriesRest::register();
 		QueriesGraphQL::register();
+
+		FormsContentType::register();
+		FormsMeta::register();
+		FormsSettings::register();
+		FormsSettings::ensure_defaults();
+		FormsAdmin::register();
+		FormsRest::register();
+		FormsGraphQL::register();
 
 		DesignsContentType::register();
 		DesignsMeta::register();
@@ -176,9 +218,12 @@ final class Plugin {
 		StylesheetContentType::register();
 		StylesheetMeta::register();
 		StylesheetDefaults::register();
+		DesignAdmin::register();
 		StylesheetAdmin::register();
 		StylesheetRest::register();
 		StylesheetGraphQL::register();
+		DesignTokensAdmin::register();
+		DesignTokensRest::register();
 
 		ScrapbookContentType::register();
 		ScrapbookMeta::register();
@@ -186,6 +231,19 @@ final class Plugin {
 		ScrapbookEditor::register();
 		ScrapbookGraphQL::register();
 		ScrapbookRest::register();
+
+		GrantsContentType::register();
+		GrantsMeta::register();
+		GrantsAdmin::register();
+		GrantsGraphQL::register();
+		GrantsRest::register();
+
+		GranteesContentType::register();
+		GranteesMeta::register();
+		GranteesAdmin::register();
+		GranteesEditor::register();
+		GranteesGraphQL::register();
+		GranteesRest::register();
 
 		EventsContentType::register();
 		EventsMeta::register();
@@ -216,6 +274,12 @@ final class Plugin {
 		AccessibilityGraphQL::register();
 		AccessibilitySettings::ensure_defaults();
 
+		BackupsSettings::register();
+		BackupsRest::register();
+		BackupsScheduler::register();
+		BackupsAdminBar::register();
+		BackupsSettings::ensure_defaults();
+
 		Settings::register();
 		MetaRepository::register();
 		DynamicContentSettings::register();
@@ -236,6 +300,8 @@ final class Plugin {
 		PerformanceAdmin::register();
 		// After Stylesheet in MenuOrganizer order (stylesheet → accessibility → interactions).
 		AccessibilityAdmin::register();
+		// Utilities: below Plugins in MenuOrganizer $desired list.
+		BackupsAdmin::register();
 
 		if (get_option('kpf_seo_db_version') !== RedirectsTable::DB_VERSION) {
 			RedirectsTable::install();

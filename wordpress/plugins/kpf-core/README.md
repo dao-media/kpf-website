@@ -9,10 +9,13 @@ Site-specific WordPress tools for the Kevin Popke Foundation headless stack.
 - WYSIWYG reusable component library with synced and independent patterns
 - Assignable page-design library with HTML templates and CSS
 - Reusable content Queries under Code for design loops (`{{#each queries.slug}}`)
+- Visual Forms builder under Communications with conditional fields and Inbox handoff
 - Sanitized SVG uploads in the WordPress Media Library
-- GSAP interaction builder with keyframes, custom easing, and SVG effects
-- Versioned global stylesheet editor (headless; no WP theme UI)
+- GSAP interaction builder with keyframes, premium eases (CustomEase / CustomWiggle / CustomBounce / EasePack), and premium effects (DrawSVG, MorphSVG, MotionPath, SplitText, ScrambleText, TextPlugin, Physics2D / PhysicsProps)
+- Versioned global stylesheet editor and design tokens manager under **Design** (headless; no WP theme UI)
 - Scrapbook collection for single photos and multi-photo stories
+- Grants + Grantees: awards (recipient, date, amount, check photo) and recipient organizations for the partners slider
+- Events collection for Events-page cards (hosts, frequency schedule, contacts; no public archive)
 - Global, per-post-type, and per-entity metadata inheritance
 - Yoast-style dynamic tags (`%%title%%`, `%%sitename%%`, …) with click-to-copy library
 - Open Graph, X/Twitter, robots, canonical, custom meta tags
@@ -28,17 +31,21 @@ WordPress admin → **Dashboard** for the foundation content and site-readiness 
 
 WordPress admin → **Inbox** for comments, form submissions, and notification settings
 
-WordPress admin → **Components** for the reusable component library
-
 WordPress admin → **Scrapbook** for photos and photo stories
+
+WordPress admin → **Grants** for awards and recipient organizations (Grantees)
+
+WordPress admin → **Events** for Events-page cards (hosts, frequency, contacts)
 
 WordPress admin → **Pages → Designs** for HTML/CSS page designs
 
 WordPress admin → **Code → Queries** for reusable content loops used in designs
 
-WordPress admin → **Interactions → GSAP** for frontend motion and SVG animation
+WordPress admin → **Forms** (Communications) for the visual form builder
 
-WordPress admin → **Stylesheet** for global frontend CSS and version history
+WordPress admin → **Interactions → GSAP** for frontend motion with the full GSAP premium plugin suite
+
+WordPress admin → **Design** (Utilities) for Stylesheet, Tokens, and the reusable Components library
 
 WordPress admin → **SEO**
 
@@ -86,12 +93,62 @@ Queries are stored as allowlisted JSON (post type, count, order, exclusions,
 taxonomy filters, custom-field filters, related-post rules, pagination) — never
 raw PHP.
 
+## Forms builder
+
+**Forms** (under Communications, before Inbox) is a visual builder for public
+site forms. Definitions are a hidden `kpf_form` CPT with an allowlisted JSON
+meta bag (`status`, settings, rows/columns, fields, conditions). Submissions
+still land in **Inbox → Forms** (`kpf_form_entry`); the builder never replaces
+the inbox.
+
+**Forms → Settings** stores shared captcha keys:
+
+- **Cloudflare Turnstile** site + secret keys (selectable when both keys are saved)
+- **Google reCAPTCHA** site + secret keys, version (v2 checkbox / v3 score), and
+  optional v3 minimum score
+
+Each form’s Captcha setting only lists providers that are configured, plus
+honeypot and off. Secret keys never leave WordPress; only the site key is
+exposed to the Faust renderer.
+
+Embed a form in a page design with:
+
+```html
+{{form:contact}}
+```
+
+The Faust renderer resolves that marker to `FormRenderer`, which evaluates
+conditional logic (field / path / history / referrer / UTM / query / auth /
+schedule), formats telephone numbers, and suggests US cities via
+`/api/forms/cities`. Semantic classes are styled in **Design → Stylesheet** /
+foundation CSS (`.kpf-form`, `.kpf-form__row`, `.kpf-form__col`, `.kpf-field`,
+`.kpf-field__label`, `.kpf-field__control`, `.kpf-field__help`,
+`.kpf-field__error`, plus type modifiers like `.kpf-field--tel`). Promote shared
+values via **Design → Tokens**.
+
+GraphQL: `kpfForm(slug)`, `kpfForms(slugs)`, and `KpfPageDesign.forms` for
+batch embeds.
+
+## Design (Utilities)
+
+**Design** groups the global **Stylesheet**, **Tokens**, and **Components** managers.
+
+- **Stylesheet** — versioned site-wide CSS for the Faust frontend.
+- **Tokens** — inventory of CSS variables (`--token`) and classes (`.name`) from
+  the global stylesheet and page designs. Create or promote managed globals
+  (written into a marked block in the stylesheet). Editing a value or renaming
+  a token updates matching design HTML/CSS as well.
+- **Components** — reusable synced / independent Gutenberg patterns for the
+  Foundation block library.
+
+Pages → Designs remains the place to edit full design markup.
+
 ## Inbox
 
 The default **Comments** menu is replaced with **Inbox**, which has three sections:
 
 1. **Comments** — the normal WordPress comments screen
-2. **Forms** — form submissions waiting for review (read/unread)
+2. **Forms** — form submissions waiting for review (read/unread), optionally filterable by builder form slug
 3. **Settings** — notification email, comment/form alert toggles, and related options
 
 When there are pending comments or unread form submissions, an unread count badge
@@ -107,10 +164,17 @@ The frontend can submit contact forms to its same-origin
 POST /wp-json/kpf-inbox/v1/public/forms/submit
 ```
 
-Accepted fields are `form_name`, `name`, `email`, `phone`, `subject`, `message`,
-`fields`, and the hidden honeypot field `website`. A valid email plus either a
-message or at least one additional field is required. Submissions are sanitized,
-rate limited, stored unread under **Inbox → Forms**, and sent through the existing
+Accepted fields are `form_name`, `form_id`, `form_slug`, `name`, `email`,
+`phone`, `subject`, `message`, `fields`, `context`, `captcha_token` /
+`turnstile_token`, and the hidden honeypot field `website`. Classic contact
+posts require a valid email plus either a message or at least one additional
+field. Builder submissions may omit the top-level email when values live in
+`fields`, and persist `form_slug` / definition id for inbox filtering. Optional
+webhooks from the form definition fire asynchronously after a successful store.
+Turnstile and reCAPTCHA modes use keys from **Forms → Settings** and verify
+tokens with the provider (`kpf_forms_verify_turnstile` /
+`kpf_forms_verify_recaptcha` can override). Submissions are sanitized, rate
+limited, stored unread under **Inbox → Forms**, and sent through the existing
 `wp_mail()` notification settings. The WordPress endpoint does not enable CORS;
 browser requests should use the frontend proxy. The proxy signs each request with
 the existing Faust secret so direct, unsigned writes to WordPress are rejected.
@@ -135,13 +199,13 @@ editors can compose freely in the component builder.
 
 ### Saving and reusing
 
-1. Open **Components → Build a component**, or build a group of blocks in any page.
+1. Open **Design → Components → Build a component**, or build a group of blocks in any page.
 2. Save it as a WordPress pattern.
 3. Choose **Synced** when changing the source should update every use.
 4. Turn **Synced** off when each inserted copy should have independent text and settings.
 5. Assign a **Component Group** before publishing.
 
-Use **Components → Create from upload** to start from an `.html`, `.htm`,
+Use **Design → Components → Create from upload** to start from an `.html`, `.htm`,
 `.txt`, or WordPress pattern `.json` file (maximum 1 MB). Serialized Gutenberg
 markup is restored exactly; ordinary HTML is converted into editable core blocks
 where possible. The imported result is loaded into the editor canvas for visual
@@ -155,7 +219,7 @@ an **Edit original** action.
 
 ### Group hierarchy
 
-**Components → Manage group hierarchy** supports parent and child folders. The
+**Design → Components → Manage group hierarchy** supports parent and child folders. The
 starter structure is:
 
 ```text
@@ -291,6 +355,155 @@ Connection filters:
 - `featured: Boolean`
 - `decade: String` using a decade slug such as `1990`
 - `orderByDisplay: true` for manual order, then newest first
+
+## Grants & Grantees
+
+**Grants** (Content) manage individual Foundation awards. **Grantees** nest under
+the same menu and store recipient organizations (partners slider + grant
+dropdown). Neither type is a public frontend route.
+
+### Grant fields
+
+| Field | Required | Storage |
+| --- | --- | --- |
+| Title | Auto | Composed: `Recipient · Mon YYYY · $amount` |
+| Recipient | Yes | `_kpf_grant.grantee_id` (+ denormalized `recipient_name`) |
+| Amount (USD) | Optional | `_kpf_grant.grant_amount` |
+| Month + year awarded | Preferred | `_kpf_grant.awarded_month` / `awarded_year` |
+| Check presentation photo | Optional | `_kpf_grant.check_photo_id` |
+
+List table defaults to **Awarded ↓**. Recipient and Amount columns are sortable.
+
+### Grantee fields
+
+| Field | Required | Storage |
+| --- | --- | --- |
+| Business / organization name | Yes | Post title |
+| Logo / profile image (JPEG, PNG, SVG) | Preferred | Featured image |
+| Point of contact | Optional | `_kpf_grantee.contact_name` (admin only) |
+| Website | Preferred | `_kpf_grantee.website` |
+| Mission / blurb | Optional | `_kpf_grantee.blurb` |
+
+### GraphQL
+
+```graphql
+query GrantsAndGrantees {
+  grants(first: 50) {
+    nodes {
+      title
+      grantDetails {
+        granteeId
+        recipientName
+        grantAmount
+        grantAmountLabel
+        awardedMonth
+        awardedYear
+        awardedLabel
+        checkPhotoUrl
+      }
+    }
+  }
+  grantees(first: 50) {
+    nodes {
+      title
+      featuredImage {
+        node {
+          sourceUrl
+        }
+      }
+      granteeDetails {
+        contactName
+        website
+        blurb
+        organization
+        logoUrl
+      }
+    }
+  }
+}
+```
+
+### REST
+
+```text
+GET /wp-json/wp/v2/kpf_grant
+GET /wp-json/wp/v2/kpf_grant/{id}
+GET /wp-json/wp/v2/kpf_grantee
+GET /wp-json/wp/v2/kpf_grantee/{id}
+```
+
+Editable meta: `meta._kpf_grant` / `meta._kpf_grantee`. Read-only
+`grantDetails` / `granteeDetails` resolve labels and media URLs.
+
+A one-shot migrator (`kpf_grants_split_v1`) splits legacy combined grantee posts
+into canonical organizations + grant awards while preserving logos and check photos.
+
+## Events
+
+**Events** (Content) manage cards for the mostly-static Events page. Entries are
+admin + API only (no public archive routes). Manage reusable **Hosts** (name +
+logo) under **Events → Hosts**, then assign them on each event.
+
+### Fields
+
+| Field | Storage |
+| --- | --- |
+| Title | Post title |
+| Host(s) + logo | `kpf_event_host` + `_kpf_host_logo` |
+| Logline | `_kpf_event.logline` |
+| Description | `_kpf_event.description` |
+| Contact email / phone / website | `_kpf_event.contact_*` / `website` |
+| Location (area / address / directions) | `_kpf_event.location` |
+| Frequency + schedule | `_kpf_event.frequency` + `schedule` + `duration_days` |
+
+Location modes:
+- `area` — city/state and/or ZIP (optional place name)
+- `address` — street address + city/state/ZIP
+- `directions` — custom URL for driving directions (hotel, venue map, etc.)
+
+For `area` and `address`, leave the custom URL blank to auto-build a Google Maps
+directions link from the filled fields. GraphQL exposes `location.display` and
+`location.mapsUrl` for cards.
+
+Frequencies: one time, weekly, monthly, quarterly, semiannually, annually.
+Schedule details are preferred; when blank, `scheduleLabel` falls back to the
+frequency name (e.g. `Quarterly`).
+
+### GraphQL
+
+```graphql
+query Events {
+  foundationEvents(first: 50) {
+    nodes {
+      title
+      featuredImage { node { sourceUrl } }
+      eventDetails {
+        logline
+        description
+        contactEmail
+        contactPhone
+        website
+        location {
+          mode
+          label
+          line1
+          line2
+          city
+          state
+          postalCode
+          url
+          display
+          mapsUrl
+        }
+        frequency
+        durationDays
+        scheduleLabel
+        hosts { name slug logoUrl }
+      }
+    }
+  }
+}
+```
 
 ## Dynamic tags
 

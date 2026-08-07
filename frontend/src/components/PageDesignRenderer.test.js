@@ -152,4 +152,50 @@ describe("page design templates", () => {
       ["latest_news", "events"],
     );
   });
+
+  it("preserves form embed markers through rendering", () => {
+    const { renderDesignTemplate, discoverFormSlugs, splitDesignHtml } =
+      require("./pageDesignTemplate");
+    assert.equal(
+      renderDesignTemplate("<div>{{form:contact}}</div><p>{{page.title}}</p>", model),
+      "<div>{{form:contact}}</div><p>Kevin &amp; &lt;Friends&gt;</p>",
+    );
+    assert.deepEqual(discoverFormSlugs("{{form:contact}} {{form:volunteer}}"), [
+      "contact",
+      "volunteer",
+    ]);
+    assert.deepEqual(splitDesignHtml("before{{form:contact}}after"), [
+      { type: "html", html: "before" },
+      { type: "form", slug: "contact" },
+      { type: "html", html: "after" },
+    ]);
+  });
+
+  it("preserves stacked-slider markers and splits islands", () => {
+    const {
+      renderDesignTemplate,
+      discoverStackedSliderSlugs,
+      splitDesignHtml,
+    } = require("./pageDesignTemplate");
+    assert.equal(
+      renderDesignTemplate(
+        "<aside>{{stacked-slider:history}}</aside><p>{{page.title}}</p>",
+        model,
+      ),
+      "<aside>{{stacked-slider:history}}</aside><p>Kevin &amp; &lt;Friends&gt;</p>",
+    );
+    assert.deepEqual(discoverStackedSliderSlugs("{{stacked-slider:history}}"), [
+      "history",
+    ]);
+    assert.deepEqual(
+      splitDesignHtml("a{{stacked-slider:history}}b{{form:contact}}c"),
+      [
+        { type: "html", html: "a" },
+        { type: "stacked-slider", slug: "history" },
+        { type: "html", html: "b" },
+        { type: "form", slug: "contact" },
+        { type: "html", html: "c" },
+      ],
+    );
+  });
 });

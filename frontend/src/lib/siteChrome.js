@@ -1,5 +1,13 @@
 const KPF_SITE_CHROME_QUERY = `
   kpfSiteChrome {
+    dateTime {
+      timezone
+      timezoneAbbr
+      dateFormat
+      timeFormat
+      locale
+      hour
+    }
     header {
       databaseId
       title

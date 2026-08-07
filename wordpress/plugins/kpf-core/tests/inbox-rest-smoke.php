@@ -156,6 +156,54 @@ $unsupported = kpf_inbox_rest_request(
 );
 kpf_inbox_rest_assert(400 === $unsupported->get_status(), 'Unknown payload fields are rejected');
 
+$builder_before = (int) wp_count_posts(Forms::POST_TYPE)->publish;
+$builder        = kpf_inbox_rest_request(
+	array(
+		'form_name' => 'Builder contact',
+		'form_slug' => 'contact-builder-smoke',
+		'name'      => 'Builder Visitor',
+		'email'     => 'builder@example.org',
+		'message'   => 'Hello from the builder.',
+		'fields'    => array(
+			'Interest' => 'Volunteer',
+			'City'     => 'Chicago, IL',
+		),
+		'context'   => array(
+			'path' => '/contact',
+			'utm'  => array( 'utm_source' => 'newsletter' ),
+		),
+		'website'   => '',
+	)
+);
+kpf_inbox_rest_assert(201 === $builder->get_status(), 'Builder submissions with form_slug are accepted');
+kpf_inbox_rest_assert(
+	$builder_before + 1 === (int) wp_count_posts(Forms::POST_TYPE)->publish,
+	'Builder submissions create Inbox entries'
+);
+
+$builder_posts = get_posts(
+	array(
+		'post_type'      => Forms::POST_TYPE,
+		'post_status'    => 'publish',
+		'posts_per_page' => 1,
+		'orderby'        => 'ID',
+		'order'          => 'DESC',
+	)
+);
+$builder_id = (int) ( $builder_posts[0]->ID ?? 0 );
+if ($builder_id) {
+	$builder_meta = Forms::get_meta($builder_id);
+	kpf_inbox_rest_assert(
+		'contact-builder-smoke' === $builder_meta['form_slug'],
+		'Builder form_slug is persisted on Inbox entries'
+	);
+	kpf_inbox_rest_assert(
+		'/contact' === ( $builder_meta['context']['path'] ?? '' ),
+		'Builder context snapshot is persisted'
+	);
+	wp_delete_post($builder_id, true);
+}
+
 $write_request  = new WP_REST_Request('POST', '/test/write');
 $write_response = Headers::rest_headers(new WP_REST_Response(array(), 200), rest_get_server(), $write_request);
 kpf_inbox_rest_assert(

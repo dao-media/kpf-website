@@ -198,6 +198,9 @@
 	--kpf-leading-body-l: 1.58;
 	--kpf-tracking-body-l: -0.005em;
 
+	/* Matches Figma Body paragraphSpacing across all breakpoints */
+	--kpf-paragraph-spacing: 0.75rem; /* 12 */
+
 	--kpf-text-s: var(--kpf-text-body-s);
 	--kpf-text-m: var(--kpf-text-body-m);
 	--kpf-text-l: var(--kpf-text-body-l);
@@ -460,7 +463,7 @@ p,
 	font-weight: var(--kpf-weight-body-m);
 	letter-spacing: var(--kpf-tracking-body-m);
 	line-height: var(--kpf-leading-body-m);
-	margin: 0 0 var(--kpf-space-md);
+	margin: 0 0 var(--kpf-paragraph-spacing);
 }
 
 .kpf-body--s,
@@ -472,7 +475,7 @@ p,
 	font-weight: var(--kpf-weight-body-s);
 	letter-spacing: var(--kpf-tracking-body-s);
 	line-height: var(--kpf-leading-body-s);
-	margin: 0 0 var(--kpf-space-sm);
+	margin: 0 0 var(--kpf-paragraph-spacing);
 }
 
 .kpf-body--l,
@@ -484,7 +487,21 @@ p,
 	font-weight: var(--kpf-weight-body-l);
 	letter-spacing: var(--kpf-tracking-body-l);
 	line-height: var(--kpf-leading-body-l);
-	margin: 0 0 var(--kpf-space-md);
+	margin: 0 0 var(--kpf-paragraph-spacing);
+}
+
+.kpf-body:last-child,
+.kpf-body--m:last-child,
+.kpf-body--s:last-child,
+.kpf-body--l:last-child,
+p:last-child,
+.kpf-p:last-child,
+.kpf-p-s:last-child,
+.kpf-p-l:last-child,
+.kpf-text-m:last-child,
+.kpf-text-s:last-child,
+.kpf-text-l:last-child {
+	margin-bottom: 0;
 }
 
 /* —— Lead / intro paragraphs M / L —— */
@@ -1326,13 +1343,21 @@ details.kpf-accordion > summary::-webkit-details-marker {
 	width: 100%;
 }
 
-/* —— Content Block (Figma: Content Block DS) —— */
+/* —— Content Block (Figma: Text + Title protocol) —— */
 .kpf-content-block {
+	/* Text container: title group + body + actions */
 	display: flex;
 	flex-direction: column;
-	gap: var(--kpf-space-md);
+	gap: var(--kpf-space-xl); /* 32px */
 	max-width: 35rem;
 	min-width: 15rem;
+}
+
+.kpf-content-block__title-group {
+	/* Title container: eyebrow + title */
+	display: flex;
+	flex-direction: column;
+	gap: var(--kpf-space-md); /* 16px */
 }
 
 .kpf-content-block__eyebrow {

@@ -10,6 +10,9 @@ final class Forms {
 	public const POST_TYPE = 'kpf_form_entry';
 	public const META_READ = '_kpf_inbox_read';
 	public const META_FORM = '_kpf_form_name';
+	public const META_FORM_SLUG = '_kpf_form_slug';
+	public const META_FORM_DEFINITION_ID = '_kpf_form_definition_id';
+	public const META_CONTEXT = '_kpf_form_context';
 	public const META_NAME = '_kpf_submitter_name';
 	public const META_EMAIL = '_kpf_submitter_email';
 	public const META_PHONE = '_kpf_submitter_phone';
@@ -62,12 +65,15 @@ final class Forms {
 	/**
 	 * @param array{
 	 *   form_name?: string,
+	 *   form_slug?: string,
+	 *   form_definition_id?: int,
 	 *   name?: string,
 	 *   email?: string,
 	 *   phone?: string,
 	 *   subject?: string,
 	 *   message?: string,
 	 *   fields?: array<string, mixed>,
+	 *   context?: array<string, mixed>,
 	 *   ip?: string
 	 * } $data
 	 * @return int|WP_Error
@@ -77,12 +83,15 @@ final class Forms {
 		$form_name = sanitize_text_field(
 			(string) ( $data['form_name'] ?? $settings['forms']['default_form_name'] )
 		);
+		$form_slug = sanitize_title((string) ( $data['form_slug'] ?? '' ));
+		$form_id   = absint($data['form_definition_id'] ?? 0);
 		$name      = sanitize_text_field((string) ( $data['name'] ?? '' ));
 		$email     = sanitize_email((string) ( $data['email'] ?? '' ));
 		$phone     = sanitize_text_field((string) ( $data['phone'] ?? '' ));
 		$subject   = sanitize_text_field((string) ( $data['subject'] ?? '' ));
 		$message   = wp_kses_post((string) ( $data['message'] ?? '' ));
 		$fields    = is_array($data['fields'] ?? null) ? $data['fields'] : array();
+		$context   = is_array($data['context'] ?? null) ? $data['context'] : array();
 
 		if ('' === $subject) {
 			$subject = $name
@@ -115,6 +124,16 @@ final class Forms {
 		update_post_meta($post_id, self::META_PHONE, $phone);
 		update_post_meta($post_id, self::META_FIELDS, wp_json_encode(self::sanitize_fields($fields)));
 
+		if ('' !== $form_slug) {
+			update_post_meta($post_id, self::META_FORM_SLUG, $form_slug);
+		}
+		if ($form_id > 0) {
+			update_post_meta($post_id, self::META_FORM_DEFINITION_ID, $form_id);
+		}
+		if ($context !== array()) {
+			update_post_meta($post_id, self::META_CONTEXT, wp_json_encode(self::sanitize_context($context)));
+		}
+
 		if (! empty($settings['forms']['store_ip']) && ! empty($data['ip'])) {
 			update_post_meta($post_id, self::META_IP, sanitize_text_field((string) $data['ip']));
 		}
@@ -141,10 +160,13 @@ final class Forms {
 	/**
 	 * @return array{
 	 *   form_name: string,
+	 *   form_slug: string,
+	 *   form_definition_id: int,
 	 *   name: string,
 	 *   email: string,
 	 *   phone: string,
 	 *   fields: array<string, mixed>,
+	 *   context: array<string, mixed>,
 	 *   ip: string,
 	 *   is_read: bool
 	 * }
@@ -157,14 +179,24 @@ final class Forms {
 			$fields  = is_array($decoded) ? $decoded : array();
 		}
 
+		$raw_context = get_post_meta($post_id, self::META_CONTEXT, true);
+		$context     = array();
+		if (is_string($raw_context) && '' !== $raw_context) {
+			$decoded = json_decode($raw_context, true);
+			$context = is_array($decoded) ? $decoded : array();
+		}
+
 		return array(
-			'form_name' => (string) get_post_meta($post_id, self::META_FORM, true),
-			'name'      => (string) get_post_meta($post_id, self::META_NAME, true),
-			'email'     => (string) get_post_meta($post_id, self::META_EMAIL, true),
-			'phone'     => (string) get_post_meta($post_id, self::META_PHONE, true),
-			'fields'    => $fields,
-			'ip'        => (string) get_post_meta($post_id, self::META_IP, true),
-			'is_read'   => self::is_read($post_id),
+			'form_name'           => (string) get_post_meta($post_id, self::META_FORM, true),
+			'form_slug'           => (string) get_post_meta($post_id, self::META_FORM_SLUG, true),
+			'form_definition_id'  => (int) get_post_meta($post_id, self::META_FORM_DEFINITION_ID, true),
+			'name'                => (string) get_post_meta($post_id, self::META_NAME, true),
+			'email'               => (string) get_post_meta($post_id, self::META_EMAIL, true),
+			'phone'               => (string) get_post_meta($post_id, self::META_PHONE, true),
+			'fields'              => $fields,
+			'context'             => $context,
+			'ip'                  => (string) get_post_meta($post_id, self::META_IP, true),
+			'is_read'             => self::is_read($post_id),
 		);
 	}
 
@@ -184,6 +216,28 @@ final class Forms {
 				: wp_json_encode($value);
 		}
 
+		return $clean;
+	}
+
+	/**
+	 * @param array<string, mixed> $context
+	 * @return array<string, mixed>
+	 */
+	private static function sanitize_context(array $context): array {
+		$clean = array();
+		foreach ($context as $key => $value) {
+			$label = sanitize_key((string) $key);
+			if ('' === $label) {
+				continue;
+			}
+			if (is_array($value)) {
+				$clean[ $label ] = self::sanitize_context($value);
+				continue;
+			}
+			if (is_scalar($value)) {
+				$clean[ $label ] = sanitize_text_field((string) $value);
+			}
+		}
 		return $clean;
 	}
 }

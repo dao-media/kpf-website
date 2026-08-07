@@ -90,6 +90,12 @@ FrontPageTemplate.query = gql`
             enabled
           }
         }
+        forms {
+          databaseId
+          title
+          slug
+          definitionJson
+        }
       }
       kpfDesignFields {
         key

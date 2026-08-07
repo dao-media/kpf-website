@@ -14,6 +14,8 @@ import {
 	FilePlus2,
 	FileText,
 	Gauge,
+	HandCoins,
+	HardDrive,
 	ImageUp,
 	Images,
 	Inbox,
@@ -22,8 +24,10 @@ import {
 	SearchCheck,
 	SearchX,
 	SquarePen,
+	Users,
 } from 'lucide-react';
 import './admin.scss';
+import { siteHour } from '../shared/siteDateTime';
 
 const data = window.kpfDashboardAdmin || {};
 
@@ -36,6 +40,8 @@ const icons = {
 	FilePlus2,
 	FileText,
 	Gauge,
+	HandCoins,
+	HardDrive,
 	ImageUp,
 	Images,
 	Inbox,
@@ -44,6 +50,7 @@ const icons = {
 	SearchCheck,
 	SearchX,
 	SquarePen,
+	Users,
 };
 
 function Icon({ name, size = 18, strokeWidth = 1.8 }) {
@@ -52,7 +59,7 @@ function Icon({ name, size = 18, strokeWidth = 1.8 }) {
 }
 
 function greeting() {
-	const hour = new Date().getHours();
+	const hour = siteHour(data.dateTime);
 	if (hour < 12) return __('Good morning', 'kpf-core');
 	if (hour < 18) return __('Good afternoon', 'kpf-core');
 	return __('Good evening', 'kpf-core');
@@ -153,12 +160,7 @@ function ContentIcon({ item }) {
 	if (item.thumbnail) {
 		return <img alt="" src={item.thumbnail} />;
 	}
-	const icon = item.type?.toLowerCase().includes('scrapbook')
-		? 'BookHeart'
-		: item.type?.toLowerCase().includes('blog')
-			? 'Newspaper'
-			: 'FileText';
-	return <Icon name={icon} size={17} />;
+	return <Icon name={item.icon || 'FileText'} size={17} />;
 }
 
 function RecentContent() {
@@ -304,12 +306,16 @@ function SystemLinks() {
 				</span>
 				<div>
 					<strong>{__('Site operations', 'kpf-core')}</strong>
-					<p>{__('Performance, health, and maintenance tools.', 'kpf-core')}</p>
+					<p>{__('Performance, backups, health, and maintenance tools.', 'kpf-core')}</p>
 				</div>
 			</div>
 			<nav aria-label={__('Site operations', 'kpf-core')}>
 				<a href={data.links?.performance}>
 					{__('Performance', 'kpf-core')}
+					<ChevronRight aria-hidden="true" size={15} />
+				</a>
+				<a href={data.links?.backups}>
+					{__('Backups', 'kpf-core')}
 					<ChevronRight aria-hidden="true" size={15} />
 				</a>
 				<a href={data.links?.siteHealth}>

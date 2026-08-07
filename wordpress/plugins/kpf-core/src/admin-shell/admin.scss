@@ -146,29 +146,25 @@ body.kpf-admin-theme #adminmenu a.menu-top::before {
 body.kpf-admin-theme #adminmenu div.wp-menu-name {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	backface-visibility: hidden;
 	font-size: 13px;
 	font-weight: 500;
 	padding: 9px 7px 9px 1px;
 	position: relative;
 	text-rendering: optimizelegibility;
-	transition: transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
-	transform: translate3d(0, 0, 0);
-	will-change: transform;
 	z-index: 1;
 }
 
 body.kpf-admin-theme #adminmenu div.wp-menu-image {
 	align-items: center;
+	aspect-ratio: 1 / 1;
 	color: var(--kpf-admin-muted);
 	display: flex;
+	flex-shrink: 0;
 	height: 36px;
 	justify-content: center;
 	position: relative;
-	transition:
-		color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
-		transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
-	width: 35px;
+	transition: color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color);
+	width: 36px;
 	z-index: 1;
 }
 
@@ -181,7 +177,14 @@ body.kpf-admin-theme #adminmenu .kpf-lucide-menu-icon::before {
 }
 
 body.kpf-admin-theme #adminmenu .kpf-lucide-menu-icon svg {
+	aspect-ratio: 1 / 1;
 	display: block;
+	flex-shrink: 0;
+	height: 17px;
+	max-height: none;
+	max-width: none;
+	overflow: visible;
+	width: 17px;
 }
 
 /* Fixed-fill SVG menu icons (e.g. WPGraphQL elephant) → currentColor. */
@@ -194,8 +197,9 @@ body.kpf-admin-theme #adminmenu .kpf-svg-menu-icon {
 	mask-repeat: no-repeat;
 	-webkit-mask-position: center;
 	mask-position: center;
-	-webkit-mask-size: 18px auto;
-	mask-size: 18px auto;
+	-webkit-mask-size: 18px 18px;
+	mask-size: 18px 18px;
+	transition: color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color);
 }
 
 /* Admin bar Lucide icons (also applied on the frontend toolbar).
@@ -318,13 +322,6 @@ body.kpf-admin-theme #adminmenu li.menu-top:not(.current, .wp-has-current-submen
 body.kpf-admin-theme #adminmenu li.opensub:not(.current, .wp-has-current-submenu) > a.menu-top .wp-menu-image,
 body.kpf-admin-theme #adminmenu li:not(.current, .wp-has-current-submenu) > a.menu-top:focus .wp-menu-image {
 	color: var(--kpf-admin-navy) !important;
-	transform: scale(1.06);
-}
-
-body.kpf-admin-theme #adminmenu li.menu-top:not(.current, .wp-has-current-submenu):hover > a.menu-top .wp-menu-name,
-body.kpf-admin-theme #adminmenu li.opensub:not(.current, .wp-has-current-submenu) > a.menu-top .wp-menu-name,
-body.kpf-admin-theme #adminmenu li:not(.current, .wp-has-current-submenu) > a.menu-top:focus .wp-menu-name {
-	transform: translate3d(1px, 0, 0);
 }
 
 body.kpf-admin-theme #adminmenu li.wp-has-current-submenu::after,
@@ -444,9 +441,33 @@ body.kpf-admin-theme #adminmenu li.kpf-menu-section-label .separator {
 }
 
 body.kpf-admin-theme.folded #adminmenu a.menu-top {
+	align-items: center;
+	display: flex;
+	justify-content: center;
 	margin-left: 4px;
 	margin-right: 4px;
 	width: calc(100% - 8px);
+}
+
+body.kpf-admin-theme.folded #adminmenu div.wp-menu-image {
+	aspect-ratio: 1 / 1;
+	float: none;
+	height: 28px;
+	margin: 0;
+	min-height: 28px;
+	min-width: 28px;
+	width: 28px;
+}
+
+body.kpf-admin-theme.folded #adminmenu .kpf-lucide-menu-icon svg {
+	aspect-ratio: 1 / 1;
+	height: 17px;
+	width: 17px;
+}
+
+body.kpf-admin-theme.folded #adminmenu .kpf-svg-menu-icon {
+	-webkit-mask-size: 17px 17px;
+	mask-size: 17px 17px;
 }
 
 /* Toolbar uses the same light shell and glass dropdown language. */

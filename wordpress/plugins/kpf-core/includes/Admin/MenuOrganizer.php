@@ -14,6 +14,7 @@ final class MenuOrganizer {
 	private const PLUGINS_DIVIDER_SLUG     = 'kpf-plugins-divider';
 	private const MEDIA_DIVIDER_SLUG       = 'kpf-media-divider';
 	private const EVENTS_DIVIDER_SLUG      = 'kpf-events-divider';
+	private const GRANTS_DIVIDER_SLUG      = 'kpf-grants-divider';
 	private const CODE_DIVIDER_SLUG        = 'kpf-code-divider';
 	private const CODE_DIVIDER_AFTER_NEW   = 'kpf-code-divider-after-new';
 	private const FORMS_MENU_SLUG          = 'kpf-forms';
@@ -21,6 +22,7 @@ final class MenuOrganizer {
 	private const CODE_DYNAMIC_CONTENT     = 'kpf-dynamic-content';
 	private const CODE_QUERIES             = 'kpf-queries';
 	private const EVENTS_MENU_SLUG         = 'edit.php?post_type=kpf_event';
+	private const GRANTS_MENU_SLUG         = 'edit.php?post_type=kpf_grant';
 	private const CODE_MENU_SLUG           = 'edit.php?post_type=kpf_code';
 	private const SCF_MENU_SLUG            = 'edit.php?post_type=acf-field-group';
 	private const SCF_POST_TYPES           = array(
@@ -131,6 +133,7 @@ final class MenuOrganizer {
 
 		self::customize_media_submenu();
 		self::customize_events_submenu();
+		self::customize_grants_submenu();
 		self::customize_code_submenu();
 		self::customize_forms_submenu();
 		self::customize_pages_submenu();
@@ -253,7 +256,50 @@ final class MenuOrganizer {
 	}
 
 	/**
-	 * Events: All, Upcoming, Past, Recurring, divider, Add Event.
+	 * Grants: list + Add New + divider + Grantees.
+	 */
+	private static function customize_grants_submenu(): void {
+		global $submenu;
+
+		$parent = self::GRANTS_MENU_SLUG;
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		$capability = 'edit_posts';
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( is_array( $item ) && ! empty( $item[1] ) ) {
+				$capability = (string) $item[1];
+				break;
+			}
+		}
+
+		$submenu[ $parent ] = array(
+			array(
+				__( 'Grants', 'kpf-core' ),
+				$capability,
+				self::GRANTS_MENU_SLUG,
+			),
+			array(
+				__( 'Add New', 'kpf-core' ),
+				$capability,
+				'post-new.php?post_type=kpf_grant',
+			),
+			array(
+				'<span class="kpf-grants-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::GRANTS_DIVIDER_SLUG,
+			),
+			array(
+				__( 'Grantees', 'kpf-core' ),
+				$capability,
+				'edit.php?post_type=kpf_grantee',
+			),
+		);
+	}
+
+	/**
+	 * Events: list + Add New.
 	 */
 	private static function customize_events_submenu(): void {
 		global $submenu;
@@ -273,24 +319,14 @@ final class MenuOrganizer {
 
 		$submenu[ $parent ] = array(
 			array(
-				__( 'All Events', 'kpf-core' ),
+				__( 'Events', 'kpf-core' ),
 				$capability,
 				self::EVENTS_MENU_SLUG,
 			),
 			array(
-				__( 'Upcoming', 'kpf-core' ),
+				__( 'Add New', 'kpf-core' ),
 				$capability,
-				self::EVENTS_MENU_SLUG . '&kpf_event_view=upcoming',
-			),
-			array(
-				__( 'Past', 'kpf-core' ),
-				$capability,
-				self::EVENTS_MENU_SLUG . '&kpf_event_view=past',
-			),
-			array(
-				__( 'Recurring', 'kpf-core' ),
-				$capability,
-				self::EVENTS_MENU_SLUG . '&kpf_event_view=recurring',
+				'post-new.php?post_type=kpf_event',
 			),
 			array(
 				'<span class="kpf-events-menu-divider" aria-hidden="true"></span>',
@@ -298,9 +334,9 @@ final class MenuOrganizer {
 				self::EVENTS_DIVIDER_SLUG,
 			),
 			array(
-				__( 'Add Event', 'kpf-core' ),
+				__( 'Hosts', 'kpf-core' ),
 				$capability,
-				'post-new.php?post_type=kpf_event',
+				'edit-tags.php?taxonomy=kpf_event_host&post_type=kpf_event',
 			),
 		);
 	}
@@ -524,17 +560,19 @@ final class MenuOrganizer {
 			self::EVENTS_MENU_SLUG,
 			'edit.php?post_type=page',
 			'edit.php?post_type=kpf_scrapbook',
-			'kpf-components',
+			self::GRANTS_MENU_SLUG,
 			self::COMMUNICATIONS_LABEL_SLUG,
+			'kpf-forms',
 			'kpf-inbox',
 			self::UTILITIES_LABEL_SLUG,
 			'kpf-seo',
 			'kpf-performance',
-			'kpf-stylesheet',
+			'kpf-design',
 			'kpf-accessibility',
 			'kpf-interactions',
 			self::CODE_MENU_SLUG,
 			'plugins.php',
+			'kpf-backups',
 			'users.php',
 			'tools.php',
 			'options-general.php',
@@ -591,7 +629,7 @@ final class MenuOrganizer {
 	 * @param string $parent_file Current parent file.
 	 */
 	public static function parent_file( string $parent_file ): string {
-		global $plugin_page, $typenow;
+		global $plugin_page, $typenow, $pagenow;
 
 		if ( self::SCF_MENU_SLUG === $parent_file ) {
 			return 'tools.php';
@@ -615,6 +653,31 @@ final class MenuOrganizer {
 			return self::CODE_MENU_SLUG;
 		}
 
+		if ( 'kpf-components' === (string) $plugin_page ) {
+			return 'kpf-design';
+		}
+
+		$taxonomy = isset( $_GET['taxonomy'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_key( wp_unslash( (string) $_GET['taxonomy'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			: '';
+		if ( 'kpf_event_host' === $taxonomy ) {
+			return self::EVENTS_MENU_SLUG;
+		}
+
+		$post_type = isset( $_GET['post_type'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_key( wp_unslash( (string) $_GET['post_type'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			: ( is_string( $typenow ) ? $typenow : '' );
+		if ( 'kpf_grantee' === $post_type ) {
+			return self::GRANTS_MENU_SLUG;
+		}
+		if (
+			'post.php' === $pagenow
+			&& isset( $_GET['post'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			&& 'kpf_grantee' === get_post_type( absint( $_GET['post'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		) {
+			return self::GRANTS_MENU_SLUG;
+		}
+
 		return $parent_file;
 	}
 
@@ -634,6 +697,10 @@ final class MenuOrganizer {
 			return self::CODE_MENU_SLUG . '&page=' . self::CODE_QUERIES;
 		}
 
+		if ( 'kpf-components' === (string) $plugin_page ) {
+			return 'kpf-components';
+		}
+
 		if ( 'plugins.php' === $pagenow ) {
 			$status = isset( $_GET['plugin_status'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				? sanitize_key( wp_unslash( (string) $_GET['plugin_status'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -650,6 +717,22 @@ final class MenuOrganizer {
 			return 'media-new.php';
 		}
 
+		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_grant' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'post-new.php?post_type=kpf_grant';
+		}
+
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_grant' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return self::GRANTS_MENU_SLUG;
+		}
+
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_grantee' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'edit.php?post_type=kpf_grantee';
+		}
+
+		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_grantee' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'edit.php?post_type=kpf_grantee';
+		}
+
 		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return 'post-new.php?post_type=kpf_event';
 		}
@@ -659,15 +742,15 @@ final class MenuOrganizer {
 		}
 
 		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$view = isset( $_GET['kpf_event_view'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				? sanitize_key( wp_unslash( (string) $_GET['kpf_event_view'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				: '';
-
-			if ( in_array( $view, array( 'upcoming', 'past', 'recurring' ), true ) ) {
-				return self::EVENTS_MENU_SLUG . '&kpf_event_view=' . $view;
-			}
-
 			return self::EVENTS_MENU_SLUG;
+		}
+
+		if (
+			in_array( $pagenow, array( 'edit-tags.php', 'term.php' ), true )
+			&& isset( $_GET['taxonomy'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			&& 'kpf_event_host' === sanitize_key( wp_unslash( (string) $_GET['taxonomy'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		) {
+			return 'edit-tags.php?taxonomy=kpf_event_host&post_type=kpf_event';
 		}
 
 		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_code' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -801,6 +884,24 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu .kpf-events-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu a[href*="' . self::GRANTS_DIVIDER_SLUG . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu .kpf-grants-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

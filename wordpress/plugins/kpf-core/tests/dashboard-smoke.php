@@ -24,7 +24,13 @@ kpf_dashboard_assert(
 	count( array_filter( $data['actions'], static fn( array $action ): bool => ! empty( $action['icon'] ) ) ) === count( $data['actions'] ),
 	'Every quick action declares a Lucide icon'
 );
-kpf_dashboard_assert( 3 === count( $data['health'] ), 'Dashboard includes site readiness cards' );
+kpf_dashboard_assert( 4 === count( $data['health'] ), 'Dashboard includes site readiness cards' );
+kpf_dashboard_assert( isset( $data['links']['backups'] ), 'Dashboard includes a backups operations link' );
+kpf_dashboard_assert(
+	count( array_filter( $data['health'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === 'backups' ) ) === 1,
+	'Dashboard includes a backups readiness card'
+);
+kpf_dashboard_assert( isset( $data['dateTime']['timezone'] ), 'Dashboard includes site timezone config' );
 kpf_dashboard_assert( isset( $data['calendar']['days'], $data['calendar']['startsOn'], $data['calendar']['scheduled'] ), 'Dashboard includes publishing calendar data' );
 kpf_dashboard_assert( is_array( $data['recent'] ), 'Dashboard includes recent editorial activity' );
 kpf_dashboard_assert( is_array( $data['attention'] ), 'Dashboard includes an editorial review queue' );

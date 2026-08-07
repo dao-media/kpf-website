@@ -79,7 +79,11 @@ final class FormsAdmin {
 				}
 				break;
 			case 'kpf_form':
-				echo esc_html($meta['form_name'] ?: '—');
+				$label = $meta['form_name'] ?: '—';
+				echo esc_html($label);
+				if (! empty($meta['form_slug'])) {
+					echo '<br><code>' . esc_html($meta['form_slug']) . '</code>';
+				}
 				break;
 			case 'kpf_from':
 				$parts = array_filter(array( $meta['name'], $meta['email'] ));
@@ -121,6 +125,19 @@ final class FormsAdmin {
 		echo '<option value="read"' . selected($current, 'read', false) . '>' .
 			esc_html__('Read', 'kpf-core') . '</option>';
 		echo '</select>';
+
+		$slug = isset($_GET['kpf_form_slug']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_title(wp_unslash((string) $_GET['kpf_form_slug'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			: '';
+		$slugs = self::known_form_slugs();
+
+		echo '<select name="kpf_form_slug">';
+		echo '<option value="">' . esc_html__('All builder forms', 'kpf-core') . '</option>';
+		foreach ($slugs as $option) {
+			echo '<option value="' . esc_attr($option) . '"' . selected($slug, $option, false) . '>' .
+				esc_html($option) . '</option>';
+		}
+		echo '</select>';
 	}
 
 	public static function apply_filters(WP_Query $query): void {
@@ -134,33 +151,62 @@ final class FormsAdmin {
 		$status = isset($_GET['kpf_inbox_status']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			? sanitize_key(wp_unslash((string) $_GET['kpf_inbox_status'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			: '';
+		$slug = isset($_GET['kpf_form_slug']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_title(wp_unslash((string) $_GET['kpf_form_slug'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			: '';
+
+		$meta_query = array();
 
 		if ('unread' === $status) {
-			$query->set(
-				'meta_query',
+			$meta_query[] = array(
+				'relation' => 'OR',
 				array(
-					'relation' => 'OR',
-					array(
-						'key'     => Forms::META_READ,
-						'compare' => 'NOT EXISTS',
-					),
-					array(
-						'key'   => Forms::META_READ,
-						'value' => '0',
-					),
-				)
+					'key'     => Forms::META_READ,
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'   => Forms::META_READ,
+					'value' => '0',
+				),
 			);
 		} elseif ('read' === $status) {
-			$query->set(
-				'meta_query',
-				array(
-					array(
-						'key'   => Forms::META_READ,
-						'value' => '1',
-					),
-				)
+			$meta_query[] = array(
+				'key'   => Forms::META_READ,
+				'value' => '1',
 			);
 		}
+
+		if ('' !== $slug) {
+			$meta_query[] = array(
+				'key'   => Forms::META_FORM_SLUG,
+				'value' => $slug,
+			);
+		}
+
+		if ($meta_query !== array()) {
+			if (count($meta_query) > 1) {
+				$meta_query['relation'] = 'AND';
+			}
+			$query->set('meta_query', $meta_query);
+		}
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private static function known_form_slugs(): array {
+		global $wpdb;
+		$column = Forms::META_FORM_SLUG;
+		$rows   = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> '' ORDER BY meta_value ASC LIMIT 100",
+				$column
+			)
+		);
+		if (! is_array($rows)) {
+			return array();
+		}
+		return array_values(array_filter(array_map('sanitize_title', $rows)));
 	}
 
 	/**

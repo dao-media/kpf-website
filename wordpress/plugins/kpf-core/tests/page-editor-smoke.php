@@ -81,10 +81,11 @@ kpf_page_editor_assert(
 
 $save_request = new WP_REST_Request( 'POST', '/kpf-pages/v1/editor/' . $page_id );
 $save_request->set_url_params( array( 'id' => (int) $page_id ) );
+$unique_slug  = 'page-editor-smoke-' . strtolower( wp_generate_password( 8, false, false ) );
 $save_request->set_body_params(
 	array(
 		'title'           => 'Page Editor Smoke Updated',
-		'slug'            => 'page-editor-smoke-updated',
+		'slug'            => $unique_slug,
 		'status'          => 'publish',
 		'excerpt'         => 'Short summary',
 		'featuredImageId' => 0,
@@ -107,13 +108,63 @@ kpf_page_editor_assert(
 	'Editor SAVE updates title'
 );
 kpf_page_editor_assert(
-	'page-editor-smoke-updated' === ( $save_data['slug'] ?? '' ),
+	$unique_slug === ( $save_data['slug'] ?? '' ),
 	'Editor SAVE updates slug'
 );
 kpf_page_editor_assert(
 	'Hello hero' === ( $save_data['fieldValues']['hero_heading'] ?? '' ),
 	'Editor SAVE stores design field values'
 );
+
+// Add New creates auto-drafts; first save must promote them out of auto-draft
+// or they never show under Manage Pages.
+$auto_draft_post = get_default_post_to_edit( 'page', true );
+$auto_draft_id   = $auto_draft_post instanceof WP_Post ? (int) $auto_draft_post->ID : 0;
+kpf_page_editor_assert( $auto_draft_id > 0, 'Creates auto-draft page' );
+kpf_page_editor_assert(
+	$auto_draft_id > 0 && 'auto-draft' === get_post_status( $auto_draft_id ),
+	'New page starts as auto-draft'
+);
+
+if ( $auto_draft_id > 0 ) {
+	$auto_get = new WP_REST_Request( 'GET', '/kpf-pages/v1/editor/' . $auto_draft_id );
+	$auto_get->set_url_params( array( 'id' => $auto_draft_id ) );
+	$auto_get_data    = PagesRest::get_editor( $auto_get );
+	$auto_get_payload = $auto_get_data instanceof WP_REST_Response ? $auto_get_data->get_data() : array();
+	kpf_page_editor_assert(
+		'draft' === ( $auto_get_payload['status'] ?? '' ),
+		'Editor GET normalizes auto-draft status to draft for the UI'
+	);
+
+	$auto_save = new WP_REST_Request( 'POST', '/kpf-pages/v1/editor/' . $auto_draft_id );
+	$auto_save->set_url_params( array( 'id' => $auto_draft_id ) );
+	$auto_save->set_body_params(
+		array(
+			'title'           => 'New Page From Add New',
+			'slug'            => 'new-page-from-add-new-' . strtolower( wp_generate_password( 8, false, false ) ),
+			'status'          => 'auto-draft',
+			'excerpt'         => '',
+			'featuredImageId' => 0,
+			'designId'        => 0,
+			'seo'             => array(),
+			'fieldValues'     => array(),
+		)
+	);
+	$auto_save_response = PagesRest::save_editor( $auto_save );
+	$auto_save_data     = $auto_save_response instanceof WP_REST_Response ? $auto_save_response->get_data() : array();
+	kpf_page_editor_assert(
+		'draft' === ( $auto_save_data['status'] ?? '' ),
+		'Editor SAVE promotes auto-draft pages to draft'
+	);
+	kpf_page_editor_assert(
+		'New Page From Add New' === ( $auto_save_data['title'] ?? '' ),
+		'Editor SAVE persists title on former auto-draft'
+	);
+	kpf_page_editor_assert(
+		'draft' === get_post_status( $auto_draft_id ),
+		'Promoted page is draft in the database'
+	);
+}
 
 $seo = MetaRepository::get( (int) $page_id );
 kpf_page_editor_assert(
@@ -149,6 +200,9 @@ kpf_page_editor_assert(
 
 if ( $page_id ) {
 	wp_delete_post( (int) $page_id, true );
+}
+if ( ! empty( $auto_draft_id ) ) {
+	wp_delete_post( (int) $auto_draft_id, true );
 }
 if ( $design_id ) {
 	wp_delete_post( (int) $design_id, true );

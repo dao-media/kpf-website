@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 namespace KPF\Core\Admin;
 
+use KPF\Core\Backups\Admin as BackupsAdmin;
+use KPF\Core\Backups\Scheduler as BackupsScheduler;
+use KPF\Core\Backups\Storage as BackupsStorage;
 use KPF\Core\Designs\Meta as DesignsMeta;
+use KPF\Core\Events\ContentType as EventsContentType;
+use KPF\Core\Grantees\ContentType as GranteesContentType;
+use KPF\Core\Grants\ContentType as GrantsContentType;
 use KPF\Core\Inbox\Admin as InboxAdmin;
-use KPF\Core\Inbox\Forms;
 use KPF\Core\Inbox\Unread;
 use KPF\Core\Scrapbook\ContentType as ScrapbookContentType;
 use KPF\Core\Seo\Admin as SeoAdmin;
 use KPF\Core\Seo\Settings as SeoSettings;
+use KPF\Core\Support\SiteDateTime;
 use WP_Post;
 
 final class Dashboard {
@@ -95,6 +101,8 @@ final class Dashboard {
 		$seo_global    = is_array( $seo_settings['global'] ?? null ) ? $seo_settings['global'] : array();
 		$indexing      = ! empty( $seo_global['robots_index'] );
 		$display_name  = $user->first_name ?: $user->display_name;
+		$backup_health = self::backups_health();
+		$date_time     = SiteDateTime::config();
 
 		return array(
 			'site'      => array(
@@ -102,8 +110,9 @@ final class Dashboard {
 				'description' => get_bloginfo( 'description' ),
 				'url'         => home_url( '/' ),
 				'adminUrl'    => admin_url(),
-				'date'        => wp_date( get_option( 'date_format' ) ),
+				'date'        => SiteDateTime::format_date( time() ),
 			),
+			'dateTime'  => $date_time,
 			'user'      => array(
 				'name'      => $display_name,
 				'fullName'  => $user->display_name,
@@ -155,6 +164,7 @@ final class Dashboard {
 					'url'         => admin_url( 'edit.php?post_type=' . ScrapbookContentType::POST_TYPE ),
 					'icon'        => 'Images',
 				),
+				$backup_health,
 			),
 			'actions'   => self::actions(),
 			'recent'    => self::recent_content(),
@@ -166,12 +176,14 @@ final class Dashboard {
 				$designed,
 				$unread_forms,
 				$unread_notes,
-				$indexing
+				$indexing,
+				$backup_health
 			),
 			'links'     => array(
 				'allContent'  => admin_url( 'edit.php?post_type=page' ),
 				'siteHealth'  => admin_url( 'site-health.php' ),
 				'performance' => admin_url( 'admin.php?page=kpf-performance' ),
+				'backups'     => admin_url( 'admin.php?page=' . BackupsAdmin::MENU_SLUG ),
 			),
 		);
 	}
@@ -256,6 +268,7 @@ final class Dashboard {
 		}
 		if ( current_user_can( 'manage_options' ) ) {
 			$actions[] = self::action( 'stylesheet', __( 'Stylesheet', 'kpf-core' ), __( 'Edit global frontend styles', 'kpf-core' ), 'Braces', admin_url( 'admin.php?page=kpf-stylesheet' ) );
+			$actions[] = self::action( 'backups', __( 'Backups', 'kpf-core' ), __( 'Create, schedule, and restore', 'kpf-core' ), 'HardDrive', admin_url( 'admin.php?page=' . BackupsAdmin::MENU_SLUG ) );
 		}
 		return $actions;
 	}
@@ -275,12 +288,134 @@ final class Dashboard {
 	}
 
 	/**
+	 * Editorial post types shown in Recently updated / calendar.
+	 *
+	 * @return list<string>
+	 */
+	private static function editorial_post_types(): array {
+		$types = array( 'page', 'post' );
+		foreach ( array(
+			ScrapbookContentType::POST_TYPE,
+			GrantsContentType::POST_TYPE,
+			GranteesContentType::POST_TYPE,
+			EventsContentType::POST_TYPE,
+		) as $type ) {
+			if ( post_type_exists( $type ) ) {
+				$types[] = $type;
+			}
+		}
+		return $types;
+	}
+
+	private static function icon_for_post_type( string $post_type ): string {
+		return match ( $post_type ) {
+			'post'                            => 'Newspaper',
+			ScrapbookContentType::POST_TYPE   => 'BookHeart',
+			GrantsContentType::POST_TYPE      => 'HandCoins',
+			GranteesContentType::POST_TYPE    => 'Users',
+			EventsContentType::POST_TYPE      => 'CalendarDays',
+			default                           => 'FileText',
+		};
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function backups_health(): array {
+		$can_manage = current_user_can( 'manage_options' );
+		$url        = admin_url( 'admin.php?page=' . BackupsAdmin::MENU_SLUG );
+
+		if ( ! $can_manage ) {
+			return array(
+				'id'          => 'backups',
+				'label'       => __( 'Backups', 'kpf-core' ),
+				'value'       => __( 'Managed by administrators', 'kpf-core' ),
+				'progress'    => 0,
+				'status'      => 'neutral',
+				'description' => __( 'Site restore points', 'kpf-core' ),
+				'url'         => $url,
+				'icon'        => 'HardDrive',
+			);
+		}
+
+		$catalog  = BackupsStorage::catalog();
+		$count    = count( $catalog );
+		$schedule = BackupsScheduler::status();
+		$last_at  = (int) ( $catalog[0]['created_at'] ?? 0 );
+		$age_days = $last_at > 0 ? (int) floor( ( time() - $last_at ) / DAY_IN_SECONDS ) : null;
+
+		if ( 0 === $count ) {
+			return array(
+				'id'          => 'backups',
+				'label'       => __( 'Backups', 'kpf-core' ),
+				'value'       => __( 'No backups yet', 'kpf-core' ),
+				'progress'    => 12,
+				'status'      => 'attention',
+				'description' => __( 'Create a restore point for this site', 'kpf-core' ),
+				'url'         => $url,
+				'icon'        => 'HardDrive',
+			);
+		}
+
+		$last_label = $age_days === 0
+			? __( 'Last backup today', 'kpf-core' )
+			: sprintf(
+				/* translators: %d: days since last backup. */
+				_n( 'Last backup %d day ago', 'Last backup %d days ago', max( 1, (int) $age_days ), 'kpf-core' ),
+				max( 1, (int) $age_days )
+			);
+
+		$stale = null !== $age_days && $age_days >= 7;
+		if ( $stale ) {
+			$status   = 'attention';
+			$progress = 45;
+			$detail   = __( 'Backup is older than a week', 'kpf-core' );
+		} elseif ( ! empty( $schedule['enabled'] ) ) {
+			$status   = 'good';
+			$progress = 100;
+			$detail   = sprintf(
+				/* translators: %d: number of stored backups. */
+				_n( '%d stored · schedule on', '%d stored · schedule on', $count, 'kpf-core' ),
+				$count
+			);
+		} else {
+			$status   = 'attention';
+			$progress = 70;
+			$detail   = sprintf(
+				/* translators: %d: number of stored backups. */
+				_n( '%d stored · schedule off', '%d stored · schedule off', $count, 'kpf-core' ),
+				$count
+			);
+		}
+
+		return array(
+			'id'          => 'backups',
+			'label'       => __( 'Backups', 'kpf-core' ),
+			'value'       => $last_label,
+			'progress'    => $progress,
+			'status'      => $status,
+			'description' => $detail,
+			'url'         => $url,
+			'icon'        => 'HardDrive',
+		);
+	}
+
+	private static function plain_title( WP_Post $post ): string {
+		$title = get_the_title( $post );
+		if ( '' === $title ) {
+			return __( '(Untitled)', 'kpf-core' );
+		}
+
+		return html_entity_decode( $title, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	}
+
+	/**
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function recent_content(): array {
 		$posts = get_posts(
 			array(
-				'post_type'      => array( 'page', 'post', ScrapbookContentType::POST_TYPE ),
+				'post_type'      => self::editorial_post_types(),
 				'post_status'    => array( 'publish', 'draft', 'pending', 'future', 'private' ),
 				'posts_per_page' => 7,
 				'orderby'        => 'modified',
@@ -299,8 +434,10 @@ final class Dashboard {
 						$status = get_post_status_object( $post->post_status );
 						return array(
 							'id'        => $post->ID,
-							'title'     => get_the_title( $post ) ?: __( '(Untitled)', 'kpf-core' ),
+							'title'     => self::plain_title( $post ),
 							'type'      => $type ? $type->labels->singular_name : $post->post_type,
+							'postType'  => $post->post_type,
+							'icon'      => self::icon_for_post_type( $post->post_type ),
 							'status'    => $status ? $status->label : $post->post_status,
 							'statusKey' => $post->post_status,
 							'modified'  => sprintf(
@@ -325,9 +462,13 @@ final class Dashboard {
 		$timestamp = current_time( 'timestamp' );
 		$year      = (int) wp_date( 'Y', $timestamp );
 		$month     = (int) wp_date( 'n', $timestamp );
+		$month_start = new \DateTimeImmutable(
+			sprintf( '%04d-%02d-01 12:00:00', $year, $month ),
+			wp_timezone()
+		);
 		$scheduled = get_posts(
 			array(
-				'post_type'      => array( 'page', 'post', ScrapbookContentType::POST_TYPE ),
+				'post_type'      => self::editorial_post_types(),
 				'post_status'    => 'future',
 				'posts_per_page' => 6,
 				'orderby'        => 'date',
@@ -339,11 +480,11 @@ final class Dashboard {
 			'monthLabel' => wp_date( 'F Y', $timestamp ),
 			'today'      => (int) wp_date( 'j', $timestamp ),
 			'days'       => (int) wp_date( 't', $timestamp ),
-			'startsOn'   => (int) wp_date( 'w', mktime( 12, 0, 0, $month, 1, $year ) ),
+			'startsOn'   => (int) $month_start->format( 'w' ),
 			'scheduled'  => array_map(
 				static fn( WP_Post $post ): array => array(
 					'id'    => $post->ID,
-					'title' => get_the_title( $post ) ?: __( '(Untitled)', 'kpf-core' ),
+					'title' => self::plain_title( $post ),
 					'date'  => get_the_date( 'M j', $post ),
 					'time'  => get_the_date( get_option( 'time_format' ), $post ),
 					'day'   => (int) get_the_date( 'j', $post ),
@@ -355,8 +496,9 @@ final class Dashboard {
 	}
 
 	/**
-	 * @param array<string, int> $pages
-	 * @param array<string, int> $blogs
+	 * @param array<string, int>   $pages
+	 * @param array<string, int>   $blogs
+	 * @param array<string, mixed> $backup_health
 	 * @return array<int, array<string, string>>
 	 */
 	private static function attention_items(
@@ -366,7 +508,8 @@ final class Dashboard {
 		int $designed,
 		int $unread_forms,
 		int $unread_comments,
-		bool $indexing
+		bool $indexing,
+		array $backup_health = array()
 	): array {
 		$items = array();
 		if ( $unread_forms + $unread_comments > 0 ) {
@@ -419,7 +562,19 @@ final class Dashboard {
 				admin_url( 'admin.php?page=' . SeoAdmin::menu_slug_for_tab( 'global' ) )
 			);
 		}
-		return array_slice( $items, 0, 4 );
+		if (
+			current_user_can( 'manage_options' )
+			&& ( $backup_health['status'] ?? '' ) === 'attention'
+		) {
+			$items[] = self::attention(
+				'backups',
+				__( 'Backups need attention', 'kpf-core' ),
+				(string) ( $backup_health['description'] ?? __( 'Review backup status.', 'kpf-core' ) ),
+				'HardDrive',
+				admin_url( 'admin.php?page=' . BackupsAdmin::MENU_SLUG )
+			);
+		}
+		return array_slice( $items, 0, 5 );
 	}
 
 	/**

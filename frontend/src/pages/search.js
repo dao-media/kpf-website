@@ -4,6 +4,7 @@ import SearchPage from "@/components/SearchPage";
 
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
+const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
   /\/$/,
@@ -15,44 +16,7 @@ const SEARCH_SHELL_QUERY = `
     kpfStylesheet
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}
-    kpfSiteChrome {
-      header {
-        databaseId
-        title
-        role
-        html
-        behavior {
-          version
-          mode
-          retractDelayMs
-          scrollThresholdPx
-          transitionMs
-          revealAtTop
-          overlayHero
-          transparentAtTop
-          zIndex
-          fullWidth
-        }
-      }
-      footer {
-        databaseId
-        title
-        role
-        html
-        behavior {
-          version
-          mode
-          retractDelayMs
-          scrollThresholdPx
-          transitionMs
-          revealAtTop
-          overlayHero
-          transparentAtTop
-          zIndex
-          fullWidth
-        }
-      }
-    }
+    ${KPF_SITE_CHROME_QUERY}
   }
 `;
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KPF\Core\Admin;
 
+use KPF\Core\Support\SiteDateTime;
+
 final class Theme {
 	public static function register(): void {
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ), 5 );
@@ -56,6 +58,25 @@ final class Theme {
 			$asset['version'],
 			true
 		);
+
+		$date_time = SiteDateTime::config();
+		wp_add_inline_script(
+			'kpf-admin-shell',
+			'window.kpfSiteDateTime = ' . wp_json_encode( $date_time ) . ';',
+			'before'
+		);
+
+		$shell = array(
+			'dateTime' => $date_time,
+		);
+		if ( current_user_can( 'manage_options' ) ) {
+			$shell['backups'] = array(
+				'restUrl' => esc_url_raw( rest_url( 'kpf-backups/v1' ) ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+				'pageUrl' => admin_url( 'admin.php?page=kpf-backups' ),
+			);
+		}
+		wp_localize_script( 'kpf-admin-shell', 'kpfAdminShell', $shell );
 	}
 
 	/**

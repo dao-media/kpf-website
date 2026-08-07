@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
+import { SiteDateTimeProvider } from "@/components/SiteDateTimeProvider";
 
 const {
   footerClassNames,
@@ -163,12 +164,14 @@ export default function SiteChrome({ chrome, children }) {
       : "kpf-site-chrome";
 
   return (
-    <div className={shellClass}>
-      {header ? <ChromeHeader component={header} /> : <SiteHeader />}
-      <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
-        {children}
+    <SiteDateTimeProvider value={chrome?.dateTime || null}>
+      <div className={shellClass}>
+        {header ? <ChromeHeader component={header} /> : <SiteHeader />}
+        <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
+          {children}
+        </div>
+        {footer ? <ChromeFooter component={footer} /> : null}
       </div>
-      {footer ? <ChromeFooter component={footer} /> : null}
-    </div>
+    </SiteDateTimeProvider>
   );
 }

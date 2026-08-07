@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpRight, FileText, Newspaper, Search, X } from "lucide-react";
 import MiniSearch from "minisearch";
+import { useSiteDateTime } from "@/components/SiteDateTimeProvider";
+import { formatSiteDate } from "@/lib/siteDateTime";
 
 const INDEX_OPTIONS = {
   fields: ["title", "excerpt", "body", "terms"],
@@ -18,23 +20,13 @@ const INDEX_OPTIONS = {
 
 const RESULT_LIMIT = 20;
 
-function formatDate(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
-
 function ResultIcon({ type }) {
   const Component = type === "post" ? Newspaper : FileText;
   return <Component aria-hidden="true" size={18} strokeWidth={1.8} />;
 }
 
 export default function SearchPage({ initialQuery = "", onQueryChange }) {
+  const dateTime = useSiteDateTime();
   const inputRef = useRef(null);
   const [query, setQuery] = useState(initialQuery);
   const [syncedQuery, setSyncedQuery] = useState(initialQuery);
@@ -46,6 +38,10 @@ export default function SearchPage({ initialQuery = "", onQueryChange }) {
   if (initialQuery !== syncedQuery) {
     setSyncedQuery(initialQuery);
     setQuery(initialQuery);
+  }
+
+  function formatDate(value) {
+    return formatSiteDate(value, { config: dateTime || undefined });
   }
 
   useEffect(() => {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KPF\Core\Inbox;
 
+use KPF\Core\Forms\Captcha as FormCaptcha;
+use KPF\Core\Forms\Definition as FormDefinition;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -12,7 +14,7 @@ final class Rest {
 	public const NAMESPACE = 'kpf-inbox/v1';
 	public const ROUTE     = '/public/forms/submit';
 	private const MAX_BODY_BYTES = 65536;
-	private const MAX_FIELDS     = 20;
+	private const MAX_FIELDS     = 40;
 
 	public static function register(): void {
 		add_action('rest_api_init', array( self::class, 'routes' ));
@@ -59,7 +61,23 @@ final class Rest {
 			);
 		}
 
-		$allowed = array( 'form_name', 'name', 'email', 'phone', 'subject', 'message', 'fields', 'website' );
+		$allowed = array(
+			'form_name',
+			'form_id',
+			'form_slug',
+			'name',
+			'email',
+			'phone',
+			'subject',
+			'message',
+			'fields',
+			'website',
+			'context',
+			'captcha_token',
+			'turnstile_token',
+			'recaptcha_token',
+			'g-recaptcha-response',
+		);
 		$unknown = array_diff(array_keys($params), $allowed);
 		if ($unknown !== array()) {
 			return self::error(
@@ -90,8 +108,26 @@ final class Rest {
 			return $validated;
 		}
 
+		$client_ip = self::client_ip($request);
 		if (! empty(Settings::all()['forms']['store_ip'])) {
-			$validated['ip'] = self::client_ip($request);
+			$validated['ip'] = $client_ip;
+		}
+
+		if (! empty($validated['form_definition_id']) || ! empty($validated['form_slug'])) {
+			$builder = self::resolve_builder_form(
+				(string) ( $validated['form_slug'] ?? '' ),
+				(int) ( $validated['form_definition_id'] ?? 0 )
+			);
+			if ($builder) {
+				$captcha = FormCaptcha::verify_submission(
+					array_merge($params, array( 'ip' => $client_ip )),
+					$builder['definition'],
+					$client_ip
+				);
+				if (is_wp_error($captcha)) {
+					return $captcha;
+				}
+			}
 		}
 
 		$submission = Forms::create_submission($validated);
@@ -103,10 +139,24 @@ final class Rest {
 			);
 		}
 
+		self::dispatch_webhooks((int) $submission, $validated);
+
+		if ($builder) {
+			\KPF\Core\Forms\Mailer::after_submit(
+				(int) $submission,
+				$validated,
+				is_array($builder['definition'] ?? null) ? $builder['definition'] : array()
+			);
+		}
+
+		$success_message = ! empty($validated['success_message'])
+			? (string) $validated['success_message']
+			: __('Thank you. Your message has been received.', 'kpf-core');
+
 		return self::response(
 			array(
 				'success' => true,
-				'message' => __('Thank you. Your message has been received.', 'kpf-core'),
+				'message' => $success_message,
 			),
 			201
 		);
@@ -117,8 +167,26 @@ final class Rest {
 	 * @return array<string, mixed>|WP_Error
 	 */
 	private static function validate(array $params) {
+		$form_slug = sanitize_title((string) ( $params['form_slug'] ?? '' ));
+		$form_id   = absint($params['form_id'] ?? 0);
+		$builder   = self::resolve_builder_form($form_slug, $form_id);
+		$is_builder = null !== $builder;
+
 		$email = sanitize_email((string) ( $params['email'] ?? '' ));
-		if ('' === $email || ! is_email($email)) {
+		if ('' === $email && $is_builder) {
+			$email = self::email_from_fields($params['fields'] ?? array());
+		}
+
+		if (! $is_builder && ( '' === $email || ! is_email($email) )) {
+			return self::error(
+				'kpf_form_invalid_email',
+				__('Enter a valid email address.', 'kpf-core'),
+				400,
+				'email'
+			);
+		}
+
+		if ($is_builder && '' !== $email && ! is_email($email)) {
 			return self::error(
 				'kpf_form_invalid_email',
 				__('Enter a valid email address.', 'kpf-core'),
@@ -135,6 +203,36 @@ final class Rest {
 			'subject'   => sanitize_text_field((string) ( $params['subject'] ?? '' )),
 			'message'   => sanitize_textarea_field((string) ( $params['message'] ?? '' )),
 		);
+
+		if ('' !== $form_slug) {
+			$values['form_slug'] = $form_slug;
+		}
+		if ($form_id > 0) {
+			$values['form_definition_id'] = $form_id;
+		}
+
+		if ($is_builder) {
+			$settings = is_array($builder['definition']['settings'] ?? null)
+				? $builder['definition']['settings']
+				: array();
+			if ('' === $values['form_name']) {
+				$values['form_name'] = sanitize_text_field(
+					(string) ( $settings['inboxFormName'] ?? $builder['title'] )
+				);
+			}
+			$values['form_slug']          = $builder['slug'];
+			$values['form_definition_id'] = $builder['databaseId'];
+			$values['success_message']    = sanitize_text_field(
+				(string) ( $settings['successMessage'] ?? '' )
+			);
+			$values['webhooks'] = is_array($settings['webhooks'] ?? null)
+				? array_values(
+					array_filter(
+						array_map('esc_url_raw', $settings['webhooks'])
+					)
+				)
+				: array();
+		}
 
 		$limits = array(
 			'form_name' => 120,
@@ -201,7 +299,121 @@ final class Rest {
 		}
 
 		$values['fields'] = $fields;
+
+		$raw_context = $params['context'] ?? array();
+		if (! is_array($raw_context)) {
+			return self::error(
+				'kpf_form_invalid_context',
+				__('The form context payload is invalid.', 'kpf-core'),
+				400,
+				'context'
+			);
+		}
+		$values['context'] = self::sanitize_context($raw_context);
+
 		return $values;
+	}
+
+	/**
+	 * @return array{databaseId:int,title:string,slug:string,definition:array<string,mixed>}|null
+	 */
+	private static function resolve_builder_form(string $slug, int $form_id): ?array {
+		if ($form_id > 0) {
+			$payload = FormDefinition::internal_payload($form_id);
+			if ($payload) {
+				return $payload;
+			}
+		}
+
+		if ('' !== $slug) {
+			$id = FormDefinition::find_by_slug($slug);
+			return $id ? FormDefinition::internal_payload($id) : null;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param mixed $fields
+	 */
+	private static function email_from_fields($fields): string {
+		if (! is_array($fields)) {
+			return '';
+		}
+		foreach ($fields as $key => $value) {
+			$label = strtolower((string) $key);
+			if (false !== strpos($label, 'email') && is_scalar($value)) {
+				$email = sanitize_email((string) $value);
+				if (is_email($email)) {
+					return $email;
+				}
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * @param array<string, mixed> $context
+	 * @return array<string, mixed>
+	 */
+	private static function sanitize_context(array $context): array {
+		$clean = array();
+		$count = 0;
+		foreach ($context as $key => $value) {
+			if ($count >= 40) {
+				break;
+			}
+			$label = sanitize_key((string) $key);
+			if ('' === $label) {
+				continue;
+			}
+			if (is_array($value)) {
+				$clean[ $label ] = self::sanitize_context($value);
+			} elseif (is_scalar($value)) {
+				$clean[ $label ] = sanitize_text_field(substr((string) $value, 0, 500));
+			}
+			++$count;
+		}
+		return $clean;
+	}
+
+	/**
+	 * @param array<string, mixed> $validated
+	 */
+	private static function dispatch_webhooks(int $post_id, array $validated): void {
+		$urls = is_array($validated['webhooks'] ?? null) ? $validated['webhooks'] : array();
+		if ($urls === array()) {
+			return;
+		}
+
+		$payload = wp_json_encode(
+			array(
+				'id'        => $post_id,
+				'form_name' => $validated['form_name'] ?? '',
+				'form_slug' => $validated['form_slug'] ?? '',
+				'name'      => $validated['name'] ?? '',
+				'email'     => $validated['email'] ?? '',
+				'phone'     => $validated['phone'] ?? '',
+				'message'   => $validated['message'] ?? '',
+				'fields'    => $validated['fields'] ?? array(),
+				'context'   => $validated['context'] ?? array(),
+			)
+		);
+
+		foreach (array_slice($urls, 0, 5) as $url) {
+			if (! is_string($url) || '' === $url) {
+				continue;
+			}
+			wp_remote_post(
+				$url,
+				array(
+					'timeout'  => 5,
+					'blocking' => false,
+					'headers'  => array( 'Content-Type' => 'application/json' ),
+					'body'     => $payload ?: '{}',
+				)
+			);
+		}
 	}
 
 	/**

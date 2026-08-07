@@ -66,12 +66,28 @@ final class GraphQL {
 		);
 
 		register_graphql_object_type(
+			'KpfDateTimeSettings',
+			array(
+				'description' => 'WordPress site timezone and date/time display settings.',
+				'fields'      => array(
+					'timezone'     => array( 'type' => 'String' ),
+					'timezoneAbbr' => array( 'type' => 'String' ),
+					'dateFormat'   => array( 'type' => 'String' ),
+					'timeFormat'   => array( 'type' => 'String' ),
+					'locale'       => array( 'type' => 'String' ),
+					'hour'         => array( 'type' => 'Int' ),
+				),
+			)
+		);
+
+		register_graphql_object_type(
 			'KpfSiteChrome',
 			array(
 				'description' => 'Published global header and footer components for the headless site shell.',
 				'fields'      => array(
-					'header' => array( 'type' => 'KpfSiteChromeComponent' ),
-					'footer' => array( 'type' => 'KpfSiteChromeComponent' ),
+					'header'   => array( 'type' => 'KpfSiteChromeComponent' ),
+					'footer'   => array( 'type' => 'KpfSiteChromeComponent' ),
+					'dateTime' => array( 'type' => 'KpfDateTimeSettings' ),
 				),
 			)
 		);
@@ -86,9 +102,22 @@ final class GraphQL {
 					$chrome = Globals::site_chrome();
 
 					return array(
-						'header' => self::shape_component( $chrome['header'] ?? null ),
-						'footer' => self::shape_component( $chrome['footer'] ?? null ),
+						'header'   => self::shape_component( $chrome['header'] ?? null ),
+						'footer'   => self::shape_component( $chrome['footer'] ?? null ),
+						'dateTime' => \KPF\Core\Support\SiteDateTime::config(),
 					);
+				},
+			)
+		);
+
+		register_graphql_field(
+			'RootQuery',
+			'kpfDateTime',
+			array(
+				'type'        => 'KpfDateTimeSettings',
+				'description' => 'Current WordPress site timezone used for displaying dates and times.',
+				'resolve'     => static function (): array {
+					return \KPF\Core\Support\SiteDateTime::config();
 				},
 			)
 		);

@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace KPF\Core\Blocks;
 
+use KPF\Core\Design\Admin as DesignAdmin;
 use WP_Post;
 use WP_Term;
 
 final class Admin {
+	public const MENU_SLUG = 'kpf-components';
+
 	public static function register(): void {
-		add_action( 'admin_menu', array( self::class, 'menu' ) );
+		add_action( 'admin_menu', array( self::class, 'menu' ), 28 );
 	}
 
 	public static function menu(): void {
-		add_menu_page(
+		add_submenu_page(
+			DesignAdmin::MENU_SLUG,
 			__( 'Reusable Component Library', 'kpf-core' ),
 			__( 'Components', 'kpf-core' ),
 			'edit_posts',
-			'kpf-components',
-			array( self::class, 'render' ),
-			'dashicons-layout',
-			22
+			self::MENU_SLUG,
+			array( self::class, 'render' )
 		);
 	}
 
@@ -78,7 +80,7 @@ final class Admin {
 			esc_html__( 'Manage group hierarchy', 'kpf-core' ) . '</a></p>';
 
 		echo '<form method="get" style="display:flex;gap:8px;align-items:flex-end;margin:20px 0;flex-wrap:wrap;">';
-		echo '<input type="hidden" name="page" value="kpf-components" />';
+		echo '<input type="hidden" name="page" value="' . esc_attr( self::MENU_SLUG ) . '" />';
 		echo '<label><span class="screen-reader-text">' .
 			esc_html__( 'Search components', 'kpf-core' ) .
 			'</span><input type="search" name="s" value="' .

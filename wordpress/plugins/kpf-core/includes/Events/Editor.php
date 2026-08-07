@@ -6,28 +6,29 @@ namespace KPF\Core\Events;
 
 final class Editor {
 	public static function register(): void {
-		add_action('enqueue_block_editor_assets', array( self::class, 'enqueue' ));
+		add_action( 'enqueue_block_editor_assets', array( self::class, 'enqueue' ) );
 	}
 
 	public static function enqueue(): void {
-		$screen = function_exists('get_current_screen') ? get_current_screen() : null;
-		if (! $screen || ContentType::POST_TYPE !== $screen->post_type) {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || ContentType::POST_TYPE !== $screen->post_type ) {
 			return;
 		}
 
 		$asset_file = KPF_CORE_PATH . 'build/events-editor.asset.php';
-		$asset      = is_readable($asset_file)
+		$asset      = is_readable( $asset_file )
 			? require $asset_file
 			: array(
 				'dependencies' => array(
 					'wp-api-fetch',
+					'wp-block-editor',
 					'wp-components',
 					'wp-core-data',
 					'wp-data',
 					'wp-element',
 					'wp-i18n',
 					'wp-plugins',
-					'wp-url',
+					'wp-editor',
 				),
 				'version'      => KPF_CORE_VERSION,
 			);
@@ -41,53 +42,13 @@ final class Editor {
 			true
 		);
 
-		$timezones = array();
-		foreach (self::preferred_timezones() as $tz) {
-			$timezones[] = array(
-				'label' => $tz,
-				'value' => $tz,
-			);
-		}
-
 		wp_localize_script(
 			'kpf-events-editor',
 			'kpfEventsEditor',
 			array(
-				'metaKey'         => Meta::META_KEY,
-				'liveTaxonomy'    => ContentType::LIVE_TAXONOMY,
-				'partnerTaxonomy' => ContentType::PARTNER_TAXONOMY,
-				'partnerLogoMeta' => ContentType::PARTNER_LOGO_META,
-				'timezones'       => $timezones,
+				'metaKey'      => Meta::META_KEY,
+				'hostTaxonomy' => ContentType::HOST_TAXONOMY,
 			)
 		);
-	}
-
-	/**
-	 * @return array<int, string>
-	 */
-	private static function preferred_timezones(): array {
-		$preferred = array(
-			'America/New_York',
-			'America/Chicago',
-			'America/Denver',
-			'America/Los_Angeles',
-			'America/Phoenix',
-			'America/Anchorage',
-			'Pacific/Honolulu',
-			'UTC',
-			'America/Toronto',
-			'America/Vancouver',
-			'Europe/London',
-		);
-
-		$available = timezone_identifiers_list();
-		$out       = array();
-		foreach ($preferred as $tz) {
-			if (in_array($tz, $available, true)) {
-				$out[] = $tz;
-			}
-		}
-
-		return $out ?: array( 'UTC' );
 	}
 }

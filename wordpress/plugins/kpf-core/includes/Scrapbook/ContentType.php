@@ -19,8 +19,8 @@ final class ContentType {
 				'labels'             => array(
 					'name'                  => __('Scrapbook', 'kpf-core'),
 					'singular_name'         => __('Scrapbook item', 'kpf-core'),
-					'add_new'               => __('Add scrapbook item', 'kpf-core'),
-					'add_new_item'          => __('Add a scrapbook photo or story', 'kpf-core'),
+					'add_new'               => __('Add Media', 'kpf-core'),
+					'add_new_item'          => __('Add Media', 'kpf-core'),
 					'edit_item'             => __('Edit scrapbook item', 'kpf-core'),
 					'new_item'              => __('New scrapbook item', 'kpf-core'),
 					'view_item'             => __('View scrapbook item', 'kpf-core'),

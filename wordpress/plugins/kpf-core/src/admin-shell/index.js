@@ -2,14 +2,16 @@ import { createRoot } from '@wordpress/element';
 import {
 	Accessibility,
 	ArrowDownToLine,
-	Blocks,
 	CalendarDays,
+	ClipboardList,
 	Code2,
 	CornerDownRight,
 	Eye,
 	FileText,
 	Gauge,
 	Globe,
+	HandCoins,
+	HardDrive,
 	House,
 	Images,
 	Inbox,
@@ -28,6 +30,7 @@ import {
 	Wrench,
 	Workflow,
 } from 'lucide-react';
+import { initBackupRunner } from './backupRunner';
 import './admin.scss';
 
 const menuIcons = {
@@ -37,15 +40,17 @@ const menuIcons = {
 	'#menu-posts-kpf_event': CalendarDays,
 	'#menu-pages': FileText,
 	'#menu-posts-kpf_scrapbook': Images,
-	'#toplevel_page_kpf-components': Blocks,
+	'#menu-posts-kpf_grant': HandCoins,
+	'#toplevel_page_kpf-forms': ClipboardList,
 	'#toplevel_page_kpf-inbox': Inbox,
 	'#toplevel_page_kpf-seo': SearchCheck,
 	'#toplevel_page_kpf-performance': Gauge,
-	'#toplevel_page_kpf-stylesheet': Palette,
+	'#toplevel_page_kpf-design': Palette,
 	'#toplevel_page_kpf-accessibility': Accessibility,
 	'#toplevel_page_kpf-interactions': Workflow,
 	'#menu-posts-kpf_code': Code2,
 	'#menu-plugins': Plug,
+	'#toplevel_page_kpf-backups': HardDrive,
 	'#menu-users': Users,
 	'#menu-tools': Wrench,
 	'#menu-settings': Settings,
@@ -187,6 +192,9 @@ function decorateAdminBar() {
 		const item = document.getElementById(id);
 		if (!item) return;
 
+		// Backup progress owns its own Lucide icon lifecycle.
+		if (item.classList.contains('kpf-backups-ab')) return;
+
 		// Respect existing brand/site artwork (blavatar, custom images).
 		if (item.querySelector('.blavatar, img')) return;
 
@@ -252,6 +260,7 @@ decorateAdminBar();
 decorateScfSubmenu();
 ensureExpandedActiveSubmenus();
 addGlassTracking();
+initBackupRunner();
 
 const menu = document.getElementById('adminmenu');
 if (menu) {

@@ -175,8 +175,39 @@ function renderSections(template, model) {
   return source;
 }
 
+const ISLAND_MARKER_RE =
+  /\{\{\s*(form|stacked-slider):([a-z0-9_-]+)\s*\}\}/gi;
+
+function preserveIslandMarkers(template) {
+  const markers = [];
+  const source = String(template || "").replace(
+    ISLAND_MARKER_RE,
+    (_match, kind, slug) => {
+      const index =
+        markers.push({
+          kind: String(kind).toLowerCase(),
+          slug: String(slug).toLowerCase(),
+        }) - 1;
+      return `KPF_ISLAND_MARKER_${index}_END`;
+    },
+  );
+  return { source, markers };
+}
+
+function restoreIslandMarkers(html, markers) {
+  return markers.reduce(
+    (output, marker, index) =>
+      output.replaceAll(
+        `KPF_ISLAND_MARKER_${index}_END`,
+        `{{${marker.kind}:${marker.slug}}}`,
+      ),
+    html,
+  );
+}
+
 function renderDesignTemplate(template, model) {
-  const withSections = renderSections(template, model);
+  const { source: protectedTemplate, markers } = preserveIslandMarkers(template);
+  const withSections = renderSections(protectedTemplate, model);
   const rawValues = [];
 
   const withRawContent = withSections.replace(
@@ -202,7 +233,7 @@ function renderDesignTemplate(template, model) {
     rendered,
   );
 
-  return sanitizeUrlAttributes(withContent);
+  return restoreIslandMarkers(sanitizeUrlAttributes(withContent), markers);
 }
 
 function discoverQuerySlugs(template) {
@@ -213,9 +244,51 @@ function discoverQuerySlugs(template) {
   return [...new Set(matches.map((match) => match[1].toLowerCase()))];
 }
 
+function discoverFormSlugs(template) {
+  const source = String(template || "");
+  const matches = [...source.matchAll(/\{\{\s*form:([a-z0-9_-]+)\s*\}\}/gi)];
+  return [...new Set(matches.map((match) => match[1].toLowerCase()))];
+}
+
+function discoverStackedSliderSlugs(template) {
+  const source = String(template || "");
+  const matches = [
+    ...source.matchAll(/\{\{\s*stacked-slider:([a-z0-9_-]+)\s*\}\}/gi),
+  ];
+  return [...new Set(matches.map((match) => match[1].toLowerCase()))];
+}
+
+function splitDesignHtml(html) {
+  const source = String(html || "");
+  const parts = [];
+  const re = /\{\{\s*(form|stacked-slider):([a-z0-9_-]+)\s*\}\}/gi;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = re.exec(source)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "html", html: source.slice(lastIndex, match.index) });
+    }
+    parts.push({
+      type: String(match[1]).toLowerCase(),
+      slug: String(match[2]).toLowerCase(),
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < source.length) {
+    parts.push({ type: "html", html: source.slice(lastIndex) });
+  }
+
+  return parts;
+}
+
 module.exports = {
   decodeHtmlEntities,
   escapeTemplateValue,
   renderDesignTemplate,
   discoverQuerySlugs,
+  discoverFormSlugs,
+  discoverStackedSliderSlugs,
+  splitDesignHtml,
 };

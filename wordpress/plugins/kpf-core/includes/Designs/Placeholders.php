@@ -32,6 +32,8 @@ final class Placeholders {
 			self::item( '{{page.seo.description}}', __( 'SEO description', 'kpf-core' ), __( 'Resolved search description.', 'kpf-core' ), 'seo' ),
 			self::item( '{{page.seo.canonical}}', __( 'Canonical URL', 'kpf-core' ), __( 'Resolved canonical page URL.', 'kpf-core' ), 'seo' ),
 			self::item( '{{fields.key}}', __( 'Custom design field', 'kpf-core' ), __( 'Replace “key” with a custom field key from the Page editor.', 'kpf-core' ), 'fields' ),
+			self::item( '{{form:slug}}', __( 'Form island', 'kpf-core' ), __( 'Embed a Forms CPT by slug as a React island.', 'kpf-core' ), 'islands' ),
+			self::item( '{{stacked-slider:slug}}', __( 'Stacked image slider', 'kpf-core' ), __( 'Bottom-aligned photo stack driven by a design query slug. Front exits up/right on scroll and recycles to the back (−12% per layer, 4 visible). On tablet/mobile the media card owns the tartan wash; on desktop the section owns it and the media card is unstyled.', 'kpf-core' ), 'islands' ),
 		);
 
 		foreach ( self::seo_pattern_items() as $item ) {

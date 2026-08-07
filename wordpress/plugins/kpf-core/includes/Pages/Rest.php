@@ -94,7 +94,12 @@ final class Rest {
 
 		$allowed_statuses = array( 'publish', 'draft', 'pending', 'private', 'future' );
 		if ( ! in_array( $status, $allowed_statuses, true ) ) {
-			$status = $post->post_status;
+			// Add New creates an auto-draft; keep that status and the page never
+			// appears under Manage Pages even though save returns success.
+			$status = ( 'auto-draft' === $post->post_status ) ? 'draft' : $post->post_status;
+			if ( ! in_array( $status, $allowed_statuses, true ) ) {
+				$status = 'draft';
+			}
 		}
 
 		$update = array(
@@ -227,7 +232,7 @@ final class Rest {
 			'id'               => $post_id,
 			'title'            => $post->post_title,
 			'slug'             => $post->post_name,
-			'status'           => $post->post_status,
+			'status'           => ( 'auto-draft' === $post->post_status ) ? 'draft' : $post->post_status,
 			'date'             => $post->post_date,
 			'excerpt'          => $post->post_excerpt,
 			'link'             => (string) get_permalink( $post_id ),

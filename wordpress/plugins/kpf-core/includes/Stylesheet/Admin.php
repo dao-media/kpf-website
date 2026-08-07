@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KPF\Core\Stylesheet;
 
+use KPF\Core\Design\Admin as DesignAdmin;
+
 final class Admin {
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'menu' ), 25 );
@@ -11,19 +13,22 @@ final class Admin {
 	}
 
 	public static function menu(): void {
-		add_menu_page(
+		add_submenu_page(
+			DesignAdmin::MENU_SLUG,
 			__( 'Stylesheet', 'kpf-core' ),
 			__( 'Stylesheet', 'kpf-core' ),
 			'edit_theme_options',
 			ContentType::MENU_SLUG,
-			array( self::class, 'render' ),
-			'dashicons-editor-code',
-			58
+			array( self::class, 'render' )
 		);
 	}
 
 	public static function enqueue( string $hook ): void {
-		if ( 'toplevel_page_' . ContentType::MENU_SLUG !== $hook ) {
+		unset( $hook );
+		$page = isset( $_GET['page'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			: '';
+		if ( ContentType::MENU_SLUG !== $page ) {
 			return;
 		}
 

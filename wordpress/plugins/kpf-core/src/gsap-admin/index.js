@@ -12,16 +12,85 @@ import {
 import { createRoot, useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { gsap } from 'gsap';
+import { CSSRulePlugin } from 'gsap/CSSRulePlugin';
+import { CustomBounce } from 'gsap/CustomBounce';
 import { CustomEase } from 'gsap/CustomEase';
+import { CustomWiggle } from 'gsap/CustomWiggle';
+import { Draggable } from 'gsap/Draggable';
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+import { EasePack, ExpoScaleEase, RoughEase, SlowMo } from 'gsap/EasePack';
+import { Flip } from 'gsap/Flip';
+import { GSDevTools } from 'gsap/GSDevTools';
+import { InertiaPlugin } from 'gsap/InertiaPlugin';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
+import { MotionPathHelper } from 'gsap/MotionPathHelper';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+import { Observer } from 'gsap/Observer';
+import { Physics2DPlugin } from 'gsap/Physics2DPlugin';
+import { PhysicsPropsPlugin } from 'gsap/PhysicsPropsPlugin';
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
+import { ScrollSmoother } from 'gsap/ScrollSmoother';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import { TextPlugin } from 'gsap/TextPlugin';
 import './admin.scss';
 
-gsap.registerPlugin(CustomEase, DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+gsap.registerPlugin(
+	CSSRulePlugin,
+	CustomBounce,
+	CustomEase,
+	CustomWiggle,
+	Draggable,
+	DrawSVGPlugin,
+	EasePack,
+	ExpoScaleEase,
+	Flip,
+	GSDevTools,
+	InertiaPlugin,
+	MorphSVGPlugin,
+	MotionPathHelper,
+	MotionPathPlugin,
+	Observer,
+	Physics2DPlugin,
+	PhysicsPropsPlugin,
+	RoughEase,
+	ScrambleTextPlugin,
+	ScrollSmoother,
+	ScrollToPlugin,
+	ScrollTrigger,
+	SlowMo,
+	SplitText,
+	TextPlugin
+);
 apiFetch.use(apiFetch.createNonceMiddleware(window.kpfGsapAdmin?.nonce || ''));
 
 const REST_BASE = (window.kpfGsapAdmin?.restBase || '/wp-json/kpf-interactions/v1').replace(/\/$/, '');
+
+const PREMIUM_PLUGINS = [
+	'CSSRulePlugin',
+	'CustomBounce',
+	'CustomEase',
+	'CustomWiggle',
+	'Draggable',
+	'DrawSVGPlugin',
+	'EasePack',
+	'Flip',
+	'GSDevTools',
+	'InertiaPlugin',
+	'MorphSVGPlugin',
+	'MotionPathHelper',
+	'MotionPathPlugin',
+	'Observer',
+	'Physics2DPlugin',
+	'PhysicsPropsPlugin',
+	'ScrambleTextPlugin',
+	'ScrollSmoother',
+	'ScrollToPlugin',
+	'ScrollTrigger',
+	'SplitText',
+	'TextPlugin',
+];
 
 /** GSAP values stay as-is; labels are motion-friendly names for editors. */
 const EASE_OPTIONS = [
@@ -35,7 +104,12 @@ const EASE_OPTIONS = [
 	{ value: 'elastic.out(1, 0.3)', label: __('Spring', 'kpf-core') },
 	{ value: 'circ.inOut', label: __('Circular arc', 'kpf-core') },
 	{ value: 'expo.out', label: __('Explosive start', 'kpf-core') },
+	{ value: 'slow(0.7, 0.7, false)', label: __('SlowMo (EasePack)', 'kpf-core') },
+	{ value: 'rough({strength:1,points:20,taper:none,randomize:true})', label: __('Rough (EasePack)', 'kpf-core') },
+	{ value: 'expoScale(0.5, 2)', label: __('Expo scale (EasePack)', 'kpf-core') },
 	{ value: 'none', label: __('Constant speed', 'kpf-core') },
+	{ value: 'wiggle', label: __('Wiggle (CustomWiggle)', 'kpf-core') },
+	{ value: 'customBounce', label: __('Custom bounce', 'kpf-core') },
 	{ value: 'custom', label: __('Custom curve', 'kpf-core') },
 ];
 
@@ -52,6 +126,9 @@ const PROPERTY_FIELDS = [
 	{ key: 'opacity', label: __('Opacity', 'kpf-core'), step: 0.05 },
 ];
 
+const SVG_EFFECTS = new Set(['draw', 'morph', 'motionPath']);
+const TEXT_EFFECTS = new Set(['splitText', 'scrambleText', 'text']);
+
 function defaults() {
 	return {
 		version: 1,
@@ -63,6 +140,10 @@ function defaults() {
 		delay: 0,
 		ease: 'power2.out',
 		customBezier: '0.25,0.1,0.25,1',
+		wiggleCount: 10,
+		wiggleType: 'easeOut',
+		bounceStrength: 0.7,
+		bounceSquash: 1.5,
 		stagger: 0,
 		repeat: 0,
 		yoyo: false,
@@ -77,6 +158,21 @@ function defaults() {
 			pathSelector: '',
 			autoRotate: false,
 			transformOrigin: '50% 50%',
+			splitType: 'chars,words,lines',
+			splitAnimate: 'chars',
+			scrambleText: '',
+			scrambleChars: 'upperCase',
+			scrambleSpeed: 0.3,
+			textValue: '',
+			textDelimiter: '',
+			physicsVelocity: 200,
+			physicsAngle: -90,
+			physicsGravity: 500,
+			physicsFriction: 0.1,
+			physicsProps: {
+				x: { acceleration: 0, friction: 0.1, velocity: 0 },
+				y: { acceleration: 500, friction: 0.1, velocity: -200 },
+			},
 		},
 		scroll: { start: 'top 85%', end: 'bottom 20%', scrub: 0, once: true },
 	};
@@ -380,7 +476,7 @@ function KeyframeEditor({ frames, onChange }) {
 	);
 }
 
-function SvgEditor({ value, onChange }) {
+function EffectsEditor({ value, onChange }) {
 	const svg = { ...defaults().svg, ...(value || {}) };
 	const update = (patch) => onChange({ ...svg, ...patch });
 
@@ -388,32 +484,39 @@ function SvgEditor({ value, onChange }) {
 		<div className="kpf-svg-editor">
 			<div className="kpf-section-heading">
 				<div>
-					<h3>{__('Animate SVG artwork', 'kpf-core')}</h3>
+					<h3>{__('Premium effects', 'kpf-core')}</h3>
 					<p>
 						{__(
-							'Target paths and shapes inside an uploaded SVG design. Core transforms work automatically; these effects add drawing, morphing, and motion paths.',
+							'SVG, text, and physics plugins from the full GSAP suite. Core transforms still work when effect is set to none.',
 							'kpf-core'
 						)}
 					</p>
 				</div>
 			</div>
 			<SelectControl
-				label={__('SVG effect', 'kpf-core')}
+				label={__('Effect', 'kpf-core')}
 				value={svg.effect}
 				options={[
 					{ label: __('Core transforms only', 'kpf-core'), value: 'none' },
-					{ label: __('Draw a stroke', 'kpf-core'), value: 'draw' },
-					{ label: __('Morph into another shape', 'kpf-core'), value: 'morph' },
-					{ label: __('Follow a motion path', 'kpf-core'), value: 'motionPath' },
+					{ label: __('DrawSVG — draw a stroke', 'kpf-core'), value: 'draw' },
+					{ label: __('MorphSVG — morph into another shape', 'kpf-core'), value: 'morph' },
+					{ label: __('MotionPath — follow a path', 'kpf-core'), value: 'motionPath' },
+					{ label: __('SplitText — animate characters / words / lines', 'kpf-core'), value: 'splitText' },
+					{ label: __('ScrambleText — decode into text', 'kpf-core'), value: 'scrambleText' },
+					{ label: __('TextPlugin — type or replace text', 'kpf-core'), value: 'text' },
+					{ label: __('Physics2D — velocity + gravity', 'kpf-core'), value: 'physics2D' },
+					{ label: __('PhysicsProps — per-property physics', 'kpf-core'), value: 'physicsProps' },
 				]}
 				onChange={(effect) => update({ effect })}
 			/>
-			<TextControl
-				label={__('Transform origin', 'kpf-core')}
-				help={__('Examples: 50% 50%, left center, or 120 80 for SVG coordinates.', 'kpf-core')}
-				value={svg.transformOrigin}
-				onChange={(transformOrigin) => update({ transformOrigin })}
-			/>
+			{SVG_EFFECTS.has(svg.effect) ? (
+				<TextControl
+					label={__('Transform origin', 'kpf-core')}
+					help={__('Examples: 50% 50%, left center, or 120 80 for SVG coordinates.', 'kpf-core')}
+					value={svg.transformOrigin}
+					onChange={(transformOrigin) => update({ transformOrigin })}
+				/>
+			) : null}
 			{svg.effect === 'draw' ? (
 				<div className="kpf-svg-effect-fields">
 					<TextControl
@@ -452,11 +555,114 @@ function SvgEditor({ value, onChange }) {
 					/>
 				</>
 			) : null}
+			{svg.effect === 'splitText' ? (
+				<div className="kpf-svg-effect-fields">
+					<TextControl
+						label={__('Split types', 'kpf-core')}
+						help={__('Comma-separated: chars, words, lines', 'kpf-core')}
+						value={svg.splitType}
+						onChange={(splitType) => update({ splitType })}
+					/>
+					<SelectControl
+						label={__('Animate which pieces', 'kpf-core')}
+						value={svg.splitAnimate}
+						options={[
+							{ label: __('Characters', 'kpf-core'), value: 'chars' },
+							{ label: __('Words', 'kpf-core'), value: 'words' },
+							{ label: __('Lines', 'kpf-core'), value: 'lines' },
+						]}
+						onChange={(splitAnimate) => update({ splitAnimate })}
+					/>
+				</div>
+			) : null}
+			{svg.effect === 'scrambleText' ? (
+				<div className="kpf-svg-effect-fields">
+					<TextControl
+						label={__('Final text (optional)', 'kpf-core')}
+						help={__('Leave blank to scramble the element’s existing text.', 'kpf-core')}
+						value={svg.scrambleText}
+						onChange={(scrambleText) => update({ scrambleText })}
+					/>
+					<SelectControl
+						label={__('Character set', 'kpf-core')}
+						value={svg.scrambleChars}
+						options={[
+							{ label: __('Uppercase', 'kpf-core'), value: 'upperCase' },
+							{ label: __('Lowercase', 'kpf-core'), value: 'lowerCase' },
+							{ label: __('Upper & lower', 'kpf-core'), value: 'upperAndLowerCase' },
+							{ label: __('Numbers', 'kpf-core'), value: 'numbers' },
+						]}
+						onChange={(scrambleChars) => update({ scrambleChars })}
+					/>
+					<RangeControl
+						label={__('Scramble speed', 'kpf-core')}
+						min={0.05}
+						max={2}
+						step={0.05}
+						value={Number(svg.scrambleSpeed) || 0.3}
+						onChange={(scrambleSpeed) => update({ scrambleSpeed })}
+					/>
+				</div>
+			) : null}
+			{svg.effect === 'text' ? (
+				<div className="kpf-svg-effect-fields">
+					<TextControl
+						label={__('Replacement text', 'kpf-core')}
+						value={svg.textValue}
+						onChange={(textValue) => update({ textValue })}
+					/>
+					<TextControl
+						label={__('Delimiter', 'kpf-core')}
+						help={__('Empty for character-by-character; use a space for word typing.', 'kpf-core')}
+						value={svg.textDelimiter}
+						onChange={(textDelimiter) => update({ textDelimiter })}
+					/>
+				</div>
+			) : null}
+			{svg.effect === 'physics2D' ? (
+				<div className="kpf-svg-effect-fields">
+					<TextControl
+						label={__('Velocity', 'kpf-core')}
+						type="number"
+						value={svg.physicsVelocity}
+						onChange={(physicsVelocity) => update({ physicsVelocity: Number(physicsVelocity) })}
+					/>
+					<TextControl
+						label={__('Angle (degrees)', 'kpf-core')}
+						type="number"
+						value={svg.physicsAngle}
+						onChange={(physicsAngle) => update({ physicsAngle: Number(physicsAngle) })}
+					/>
+					<TextControl
+						label={__('Gravity', 'kpf-core')}
+						type="number"
+						value={svg.physicsGravity}
+						onChange={(physicsGravity) => update({ physicsGravity: Number(physicsGravity) })}
+					/>
+					<RangeControl
+						label={__('Friction', 'kpf-core')}
+						min={0}
+						max={1}
+						step={0.05}
+						value={Number(svg.physicsFriction) || 0}
+						onChange={(physicsFriction) => update({ physicsFriction })}
+					/>
+				</div>
+			) : null}
+			{svg.effect === 'physicsProps' ? (
+				<p className="description">
+					{__(
+						'Uses per-axis acceleration / velocity / friction from the saved physicsProps map (defaults launch upward then fall).',
+						'kpf-core'
+					)}
+				</p>
+			) : null}
 			<div className="kpf-svg-guidance">
-				<strong>{__('How to target SVG elements', 'kpf-core')}</strong>
+				<strong>{__('Registered GSAP premium suite', 'kpf-core')}</strong>
+				<p>{PREMIUM_PLUGINS.join(', ')}</p>
 				<p>
 					{__(
-						'Give a path or group an ID/class in the SVG source, then use that selector in Target & trigger. Keep a visible stroke on paths that use DrawSVG.',
+						'Builder effects cover DrawSVG, MorphSVG, MotionPath, SplitText, ScrambleText, TextPlugin, Physics2D, and PhysicsProps. CustomWiggle, CustomBounce, CustomEase, and EasePack (SlowMo / Rough / ExpoScale) are under Timing & easing. Flip, Draggable, Observer, ScrollSmoother, Inertia, ScrollTo, CSSRule, GSDevTools, and MotionPathHelper are registered for advanced / preview use. Prefer ScrollTrigger via “Element enters the viewport”.',
 						'kpf-core'
 					)}
 				</p>
@@ -572,15 +778,30 @@ function Builder({ animation, onSaved, onDeleted }) {
 	}
 
 	function preview() {
-		const svgEffect = config.svg?.effect || 'none';
-		const target = svgEffect === 'none' ? previewRef.current : previewSvgRef.current;
+		const effect = config.svg?.effect || 'none';
+		const isSvg = SVG_EFFECTS.has(effect);
+		const target = isSvg ? previewSvgRef.current : previewRef.current;
 		if (!target) return;
 		tweenRef.current?.kill();
 		gsap.set(target, { clearProps: 'all' });
-		const ease =
-			config.ease === 'custom'
-				? CustomEase.create(`kpf-preview-${Date.now()}`, config.customBezier)
-				: config.ease;
+		if (target.dataset?.kpfSplitHtml) {
+			target.innerHTML = target.dataset.kpfSplitHtml;
+			delete target.dataset.kpfSplitHtml;
+		}
+		let ease = config.ease;
+		if (config.ease === 'custom') {
+			ease = CustomEase.create(`kpf-preview-${Date.now()}`, config.customBezier);
+		} else if (config.ease === 'wiggle') {
+			ease = CustomWiggle.create(`kpf-preview-wiggle-${Date.now()}`, {
+				wiggles: Number(config.wiggleCount) || 10,
+				type: config.wiggleType || 'easeOut',
+			});
+		} else if (config.ease === 'customBounce') {
+			ease = CustomBounce.create(`kpf-preview-bounce-${Date.now()}`, {
+				strength: Number(config.bounceStrength) || 0.7,
+				squash: Number(config.bounceSquash) || 1.5,
+			});
+		}
 		const common = {
 			duration: config.duration,
 			delay: 0,
@@ -588,7 +809,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 			repeat: config.repeat,
 			yoyo: config.yoyo,
 		};
-		if (svgEffect === 'draw') {
+		if (effect === 'draw') {
 			tweenRef.current = gsap.fromTo(
 				target,
 				{ drawSVG: config.svg.drawFrom },
@@ -596,7 +817,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 			);
 			return;
 		}
-		if (svgEffect === 'morph') {
+		if (effect === 'morph') {
 			tweenRef.current = gsap.to(target, {
 				morphSVG: { shape: previewMorphRef.current, type: 'rotational' },
 				transformOrigin: config.svg.transformOrigin,
@@ -604,7 +825,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 			});
 			return;
 		}
-		if (svgEffect === 'motionPath') {
+		if (effect === 'motionPath') {
 			tweenRef.current = gsap.to(target, {
 				motionPath: {
 					path: previewPathRef.current,
@@ -612,6 +833,57 @@ function Builder({ animation, onSaved, onDeleted }) {
 					alignOrigin: [0.5, 0.5],
 					autoRotate: config.svg.autoRotate,
 				},
+				...common,
+			});
+			return;
+		}
+		if (effect === 'splitText') {
+			target.dataset.kpfSplitHtml = target.innerHTML;
+			const split = new SplitText(target, { type: config.svg.splitType || 'chars,words,lines' });
+			const key = config.svg.splitAnimate || 'chars';
+			tweenRef.current = gsap.from(split[key] || split.chars, {
+				...(config.from || { y: 20, autoAlpha: 0 }),
+				...common,
+				stagger: config.stagger || 0.03,
+			});
+			return;
+		}
+		if (effect === 'scrambleText') {
+			tweenRef.current = gsap.to(target, {
+				scrambleText: {
+					text: config.svg.scrambleText || target.textContent,
+					chars: config.svg.scrambleChars || 'upperCase',
+					speed: Number(config.svg.scrambleSpeed) || 0.3,
+				},
+				...common,
+			});
+			return;
+		}
+		if (effect === 'text') {
+			tweenRef.current = gsap.to(target, {
+				text: {
+					value: config.svg.textValue || __('Hello GSAP', 'kpf-core'),
+					delimiter: config.svg.textDelimiter || '',
+				},
+				...common,
+			});
+			return;
+		}
+		if (effect === 'physics2D') {
+			tweenRef.current = gsap.to(target, {
+				physics2D: {
+					velocity: Number(config.svg.physicsVelocity) || 200,
+					angle: Number(config.svg.physicsAngle) || -90,
+					gravity: Number(config.svg.physicsGravity) || 500,
+					friction: Number(config.svg.physicsFriction) || 0.1,
+				},
+				...common,
+			});
+			return;
+		}
+		if (effect === 'physicsProps') {
+			tweenRef.current = gsap.to(target, {
+				physicsProps: config.svg.physicsProps,
 				...common,
 			});
 			return;
@@ -693,7 +965,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 		['motion', __('Motion', 'kpf-core')],
 		['timing', __('Timing & easing', 'kpf-core')],
 		['keyframes', __('Keyframes', 'kpf-core')],
-		['svg', __('SVG', 'kpf-core')],
+		['svg', __('Effects', 'kpf-core')],
 	];
 
 	return (
@@ -907,6 +1179,48 @@ function Builder({ animation, onSaved, onDeleted }) {
 										onChange={(customBezier) => updateConfig({ customBezier })}
 									/>
 								) : null}
+								{config.ease === 'wiggle' ? (
+									<div className="kpf-svg-effect-fields">
+										<RangeControl
+											label={__('Wiggle count', 'kpf-core')}
+											min={1}
+											max={40}
+											value={Number(config.wiggleCount) || 10}
+											onChange={(wiggleCount) => updateConfig({ wiggleCount })}
+										/>
+										<SelectControl
+											label={__('Wiggle type', 'kpf-core')}
+											value={config.wiggleType || 'easeOut'}
+											options={[
+												{ label: 'easeOut', value: 'easeOut' },
+												{ label: 'easeInOut', value: 'easeInOut' },
+												{ label: 'anticipate', value: 'anticipate' },
+												{ label: 'uniform', value: 'uniform' },
+											]}
+											onChange={(wiggleType) => updateConfig({ wiggleType })}
+										/>
+									</div>
+								) : null}
+								{config.ease === 'customBounce' ? (
+									<div className="kpf-svg-effect-fields">
+										<RangeControl
+											label={__('Bounce strength', 'kpf-core')}
+											min={0.1}
+											max={2}
+											step={0.05}
+											value={Number(config.bounceStrength) || 0.7}
+											onChange={(bounceStrength) => updateConfig({ bounceStrength })}
+										/>
+										<RangeControl
+											label={__('Squash', 'kpf-core')}
+											min={0}
+											max={4}
+											step={0.05}
+											value={Number(config.bounceSquash) || 1.5}
+											onChange={(bounceSquash) => updateConfig({ bounceSquash })}
+										/>
+									</div>
+								) : null}
 							</>
 						) : null}
 
@@ -918,7 +1232,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 						) : null}
 
 						{tab === 'svg' ? (
-							<SvgEditor value={config.svg} onChange={(svg) => updateConfig({ svg })} />
+							<EffectsEditor value={config.svg} onChange={(svg) => updateConfig({ svg })} />
 						) : null}
 					</div>
 				</section>
@@ -936,15 +1250,19 @@ function Builder({ animation, onSaved, onDeleted }) {
 						<div
 							className="kpf-preview-target"
 							ref={previewRef}
-							hidden={config.svg?.effect !== 'none'}
+							hidden={SVG_EFFECTS.has(config.svg?.effect)}
 						>
-							<span>{__('Preview target', 'kpf-core')}</span>
+							<span>
+								{TEXT_EFFECTS.has(config.svg?.effect)
+									? __('Preview text target', 'kpf-core')
+									: __('Preview target', 'kpf-core')}
+							</span>
 							<code>{config.selector || '.animate-me'}</code>
 						</div>
 						<svg
 							className="kpf-preview-svg"
 							viewBox="0 0 260 180"
-							hidden={config.svg?.effect === 'none'}
+							hidden={!SVG_EFFECTS.has(config.svg?.effect)}
 							aria-label={__('SVG animation preview', 'kpf-core')}
 						>
 							<path

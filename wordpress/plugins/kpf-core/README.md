@@ -143,6 +143,31 @@ batch embeds.
 
 Pages → Designs remains the place to edit full design markup.
 
+### WPGraphQL (stylesheet)
+
+Faust injects the managed CSS via `kpfStylesheet`. Layered foundation / pages
+payloads and cache-bust metadata live on `kpfStylesheetInfo`:
+
+```graphql
+query GlobalStyles {
+  kpfStylesheet
+  kpfStylesheetInfo {
+    css
+    foundation
+    pages
+    revision
+    hasPagesLayer
+    byteLength
+    updatedAt
+  }
+}
+```
+
+- `kpfStylesheet` / `kpfStylesheetInfo.css` — combined sanitized CSS (CMS base
+  with the current shipped `pages.css` layer overlaid).
+- `foundation` / `pages` — shipped `foundation.css` and `pages.css` files.
+- `revision` — SHA-256 of the combined CSS (used for `<style>` cache hints).
+
 ## Inbox
 
 The default **Comments** menu is replaced with **Inbox**, which has three sections:

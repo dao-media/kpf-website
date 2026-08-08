@@ -32,12 +32,23 @@ $original_revisions = array_map( 'intval', array_keys( wp_get_post_revisions( $p
 $assert( $post_id > 0, 'Global stylesheet singleton exists' );
 $assert( ContentType::POST_TYPE === get_post_type( $post_id ), 'Stylesheet uses the hidden content type' );
 
-$foundation = Defaults::css();
-$assert( str_contains( $foundation, '--kpf-parchment: #f8f4ec' ), 'Foundation CSS ships Option 3 parchment' );
-$assert( str_contains( $foundation, '--kpf-ember: #8b1515' ), 'Foundation CSS ships Option 3 ember' );
+$foundation = Defaults::foundation_css();
+$assert( str_contains( $foundation, '--kpf-parchment: #f4efea' ), 'Foundation CSS ships Option 3 parchment' );
+$assert( str_contains( $foundation, '--kpf-ember: #bb0d0d' ), 'Foundation CSS ships Option 3 ember' );
 $assert( str_contains( $foundation, '.kpf-h0' ), 'Foundation CSS defines H0 display style' );
 $assert( str_contains( $foundation, '.kpf-btn--primary' ), 'Foundation CSS defines primary button states' );
 $assert( str_contains( $foundation, 'rem' ), 'Foundation CSS uses rem units' );
+
+$pages = Defaults::pages_css();
+$assert( str_contains( $pages, Defaults::PAGES_MARKER ), 'Pages CSS includes layer marker' );
+$assert( str_contains( $pages, '.kpf-header' ), 'Pages CSS defines site header contract' );
+$assert( str_contains( $pages, '.kpf-mobile-nav' ), 'Pages CSS defines mobile nav contract' );
+$assert( str_contains( $pages, '.kpf-hero' ), 'Pages CSS defines hero section contract' );
+$assert( str_contains( $pages, '.kpf-u-container' ), 'Pages CSS defines layout utilities' );
+
+$shipped = Defaults::css();
+$assert( str_contains( $shipped, '.kpf-btn--primary' ), 'Shipped CSS includes foundation components' );
+$assert( str_contains( $shipped, Defaults::PAGES_MARKER ), 'Shipped CSS includes pages layer' );
 
 $sanitized = Meta::sanitize_css(
 	'@import "https://bad.example/x.css"; .hero { color: red; behavior: url(test.htc); }'
@@ -66,6 +77,20 @@ $second_response = Rest::save( $second );
 $second_data     = $second_response instanceof WP_REST_Response ? $second_response->get_data() : array();
 $assert( str_contains( (string) ( $second_data['css'] ?? '' ), '#654321' ), 'A later stylesheet version can be saved' );
 $assert( str_contains( GraphQL::resolve_css(), '#654321' ), 'GraphQL exposes the current stylesheet' );
+
+$info = GraphQL::resolve_info();
+$assert( is_array( $info ), 'GraphQL stylesheet info resolves to an array' );
+$assert( isset( $info['css'], $info['foundation'], $info['pages'], $info['revision'], $info['hasPagesLayer'], $info['byteLength'] ), 'GraphQL stylesheet info includes layer fields' );
+$assert( str_contains( (string) $info['foundation'], '.kpf-btn--primary' ), 'GraphQL foundation layer ships component classes' );
+$assert( str_contains( (string) $info['pages'], Defaults::PAGES_MARKER ), 'GraphQL pages layer includes pages marker' );
+$assert( str_contains( (string) $info['pages'], '.kpf-header' ), 'GraphQL pages layer includes header contract' );
+$assert( str_contains( (string) $info['css'], Defaults::PAGES_MARKER ), 'GraphQL combined css includes pages layer' );
+$assert( true === (bool) $info['hasPagesLayer'], 'GraphQL reports hasPagesLayer' );
+$assert( is_string( $info['revision'] ) && 64 === strlen( $info['revision'] ), 'GraphQL stylesheet revision is a SHA-256 hash' );
+
+$without_pages = GraphQL::with_pages_layer( '.kpf-custom { color: red; }', Defaults::pages_css() );
+$assert( str_contains( $without_pages, '.kpf-custom' ), 'with_pages_layer preserves custom CSS' );
+$assert( str_contains( $without_pages, Defaults::PAGES_MARKER ), 'with_pages_layer appends pages marker' );
 
 $history      = Rest::revisions()->get_data();
 $revision_ids = array_map(

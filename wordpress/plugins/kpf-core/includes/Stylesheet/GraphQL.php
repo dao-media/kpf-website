@@ -4,28 +4,159 @@ declare(strict_types=1);
 
 namespace KPF\Core\Stylesheet;
 
+/**
+ * WPGraphQL exposure for the managed global stylesheet.
+ *
+ * Faust injects `kpfStylesheet` (String). `kpfStylesheetInfo` adds layered
+ * foundation / pages CSS plus revision metadata for cache busting.
+ */
 final class GraphQL {
 	public static function register(): void {
 		add_action( 'graphql_register_types', array( self::class, 'register_types' ) );
 	}
 
 	public static function register_types(): void {
-		if ( ! function_exists( 'register_graphql_field' ) ) {
+		if ( ! function_exists( 'register_graphql_object_type' ) || ! function_exists( 'register_graphql_field' ) ) {
 			return;
 		}
 
+		register_graphql_object_type(
+			'KpfStylesheetInfo',
+			array(
+				'description' => 'Layered KPF global stylesheet for the headless frontend (foundation tokens/components + pages layout/chrome).',
+				'fields'      => array(
+					'css'           => array(
+						'type'        => 'String',
+						'description' => 'Combined sanitized CSS ready for <style> injection (managed CMS CSS with current pages layer).',
+					),
+					'foundation'    => array(
+						'type'        => 'String',
+						'description' => 'Shipped foundation.css (tokens + component primitives).',
+					),
+					'pages'         => array(
+						'type'        => 'String',
+						'description' => 'Shipped pages.css (layout utilities, chrome, page section contracts).',
+					),
+					'revision'      => array(
+						'type'        => 'String',
+						'description' => 'SHA-256 of the combined css payload.',
+					),
+					'hasPagesLayer' => array(
+						'type'        => 'Boolean',
+						'description' => 'True when the combined css includes the KPF pages layer marker.',
+					),
+					'byteLength'    => array(
+						'type'        => 'Int',
+						'description' => 'Byte length of the combined css payload.',
+					),
+					'updatedAt'     => array(
+						'type'        => 'String',
+						'description' => 'GMT modified datetime of the stylesheet CPT, when available.',
+					),
+				),
+			)
+		);
+
+		// Backward-compatible raw string used by GlobalStylesheet / Faust templates.
 		register_graphql_field(
 			'RootQuery',
 			'kpfStylesheet',
 			array(
 				'type'        => 'String',
-				'description' => 'The sanitized global stylesheet managed in WordPress (Stylesheet admin).',
+				'description' => 'Sanitized global CSS for the Faust frontend (CMS stylesheet with the current pages layout layer).',
 				'resolve'     => static fn(): string => self::resolve_css(),
+			)
+		);
+
+		register_graphql_field(
+			'RootQuery',
+			'kpfStylesheetInfo',
+			array(
+				'type'        => 'KpfStylesheetInfo',
+				'description' => 'Foundation + pages stylesheet layers and revision metadata.',
+				'resolve'     => static fn(): array => self::resolve_info(),
 			)
 		);
 	}
 
+	/**
+	 * Combined CSS for injection. Always overlays the shipped pages layer so
+	 * Faust receives responsive page contracts even if the CMS copy is stale.
+	 */
 	public static function resolve_css(): string {
+		$managed    = self::managed_css();
+		$foundation = Defaults::foundation_css();
+		$pages      = Defaults::pages_css();
+		$base       = '' !== $managed ? $managed : $foundation;
+
+		return self::with_pages_layer( $base, $pages );
+	}
+
+	/**
+	 * @return array{
+	 *   css: string,
+	 *   foundation: string,
+	 *   pages: string,
+	 *   revision: string,
+	 *   hasPagesLayer: bool,
+	 *   byteLength: int,
+	 *   updatedAt: string|null
+	 * }
+	 */
+	public static function resolve_info(): array {
+		$foundation = Defaults::foundation_css();
+		$pages      = Defaults::pages_css();
+		$css        = self::resolve_css();
+
+		return array(
+			'css'           => $css,
+			'foundation'    => $foundation,
+			'pages'         => $pages,
+			'revision'      => Meta::revision( $css ),
+			'hasPagesLayer' => '' !== $pages && str_contains( $css, Defaults::PAGES_MARKER ),
+			'byteLength'    => strlen( $css ),
+			'updatedAt'     => self::updated_at(),
+		);
+	}
+
+	/**
+	 * Ensure the pages layer is present and matches the shipped pages.css file.
+	 */
+	public static function with_pages_layer( string $css, string $pages ): string {
+		$pages = trim( $pages );
+		if ( '' === $pages ) {
+			return Meta::sanitize_css( $css );
+		}
+
+		if ( str_contains( $css, Defaults::PAGES_MARKER ) ) {
+			$merged = Defaults::replace_pages_layer( $css, $pages );
+		} else {
+			$merged = '' === trim( $css ) ? $pages : rtrim( $css ) . "\n\n" . $pages;
+		}
+
+		return Meta::sanitize_css( $merged );
+	}
+
+	private static function managed_css(): string {
+		$post_id = self::stylesheet_id();
+		return $post_id ? Meta::get_css( $post_id ) : '';
+	}
+
+	private static function updated_at(): ?string {
+		$post_id = self::stylesheet_id();
+		if ( $post_id < 1 ) {
+			return null;
+		}
+
+		$gmt = get_post_field( 'post_modified_gmt', $post_id );
+		if ( ! is_string( $gmt ) || '' === $gmt || '0000-00-00 00:00:00' === $gmt ) {
+			return null;
+		}
+
+		return $gmt;
+	}
+
+	private static function stylesheet_id(): int {
 		$posts = get_posts(
 			array(
 				'post_type'      => ContentType::POST_TYPE,
@@ -36,6 +167,7 @@ final class GraphQL {
 				'fields'         => 'ids',
 			)
 		);
-		return $posts ? Meta::get_css( (int) $posts[0] ) : '';
+
+		return $posts ? (int) $posts[0] : 0;
 	}
 }

@@ -113,6 +113,7 @@ use KPF\Core\Seo\Sitemaps;
 use KPF\Core\Seo\Slugs;
 use KPF\Core\Seo\Tags\Registry as TagRegistry;
 use KPF\Core\Stylesheet\Admin as StylesheetAdmin;
+use KPF\Core\Stylesheet\Assets as StylesheetAssets;
 use KPF\Core\Stylesheet\ContentType as StylesheetContentType;
 use KPF\Core\Stylesheet\Defaults as StylesheetDefaults;
 use KPF\Core\Stylesheet\GraphQL as StylesheetGraphQL;
@@ -146,6 +147,7 @@ final class Plugin {
 		StylesheetMeta::register_meta();
 		StylesheetMeta::ensure_stylesheet();
 		StylesheetDefaults::seed_if_empty();
+		StylesheetDefaults::ensure_pages_layer();
 		InboxForms::register_content();
 		RedirectsTable::install();
 		Settings::ensure_defaults();
@@ -218,6 +220,7 @@ final class Plugin {
 		StylesheetContentType::register();
 		StylesheetMeta::register();
 		StylesheetDefaults::register();
+		StylesheetAssets::register();
 		DesignAdmin::register();
 		StylesheetAdmin::register();
 		StylesheetRest::register();

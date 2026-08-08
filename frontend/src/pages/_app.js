@@ -6,6 +6,7 @@ import GlobalStylesheet from "@/components/GlobalStylesheet";
 import SiteChrome from "@/components/SiteChrome";
 import "../../faust.config";
 import "@/styles/components.css";
+import "@/styles/pages.css";
 
 function chromeFromPageProps(pageProps) {
   return (
@@ -20,6 +21,14 @@ function stylesheetFromPageProps(pageProps) {
     pageProps?.__TEMPLATE_QUERY_DATA__?.kpfStylesheet ||
     pageProps?.kpfStylesheet ||
     ""
+  );
+}
+
+function stylesheetInfoFromPageProps(pageProps) {
+  return (
+    pageProps?.__TEMPLATE_QUERY_DATA__?.kpfStylesheetInfo ||
+    pageProps?.kpfStylesheetInfo ||
+    null
   );
 }
 
@@ -43,6 +52,7 @@ export default function App({ Component, pageProps }) {
   const router = useRouter();
   const chrome = chromeFromPageProps(pageProps);
   const css = stylesheetFromPageProps(pageProps);
+  const stylesheetInfo = stylesheetInfoFromPageProps(pageProps);
   const accessibility = accessibilityFromPageProps(pageProps);
   const codeSnippets = codeSnippetsFromPageProps(pageProps);
   const isMaintenanceRoute =
@@ -52,7 +62,7 @@ export default function App({ Component, pageProps }) {
   return (
     <FaustProvider pageProps={pageProps}>
       <AccessibilityRuntime config={accessibility} />
-      <GlobalStylesheet css={css} />
+      <GlobalStylesheet css={css} revision={stylesheetInfo?.revision} />
       {isMaintenanceRoute ? (
         <Component {...pageProps} key={router.asPath} />
       ) : (

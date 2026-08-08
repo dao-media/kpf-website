@@ -8,6 +8,8 @@ alwaysApply: false
 
 Source of visual truth for the Figma library: **Option 3 / Main** (`Homepage / Desktop — Option 3`, node `121:62` in file `Iz5XryrkvcSuW2wIIOFM0I`).
 Source of production CSS tokens: `wordpress/plugins/kpf-core/assets/stylesheet/foundation.css` (mirrored in `frontend/src/styles/components.css`).
+Page layout / chrome classes: `wordpress/plugins/kpf-core/assets/stylesheet/pages.css` (mirrored in `frontend/src/styles/pages.css`).
+Class/token contract for page builds: `docs/kpf-css-manifest.css`.
 
 When Figma Option 3 and CSS diverge, prefer Option 3 for new Figma work and note a code sync follow-up.
 
@@ -52,6 +54,7 @@ Three-layer model: **Primitive → Semantic → Component** (never hardcode hex 
 
 ### Code
 - Global foundation classes: `.kpf-btn`, `.kpf-btn--primary|secondary|brass|ghost`, `.kpf-input`, `.kpf-field*`, `.kpf-link`
+- Page layout / chrome: `.kpf-header`, `.kpf-mobile-nav`, `.kpf-section`, `.kpf-hero*`, `.kpf-u-*` (see `pages.css`)
 - React: Faust/Next pages under `frontend/src/`; forms via `FormRenderer.js`; page designs via `PageDesignRenderer.js`
 - No Storybook — WordPress admin + foundation stylesheet are the living specs
 

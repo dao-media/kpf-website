@@ -13,6 +13,15 @@ const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
 const MAINTENANCE_QUERY = `
   query MaintenancePage {
     kpfStylesheet
+    kpfStylesheetInfo {
+      css
+      foundation
+      pages
+      revision
+      hasPagesLayer
+      byteLength
+      updatedAt
+    }
     ${KPF_SITE_CHROME_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}
@@ -71,6 +80,7 @@ export async function getServerSideProps() {
         design: null,
         mode: { enabled: false, path: "/coming-soon/", ready: false },
         kpfStylesheet: "",
+        kpfStylesheetInfo: null,
         kpfSiteChrome: null,
         kpfAccessibility: null,
         kpfCodeSnippets: [],
@@ -94,6 +104,7 @@ export async function getServerSideProps() {
           design: null,
           mode: null,
           kpfStylesheet: "",
+          kpfStylesheetInfo: null,
           kpfSiteChrome: null,
           kpfAccessibility: null,
           kpfCodeSnippets: [],
@@ -107,6 +118,7 @@ export async function getServerSideProps() {
         design: payload?.data?.kpfMaintenanceDesign || null,
         mode: payload?.data?.kpfMaintenanceMode || null,
         kpfStylesheet: payload?.data?.kpfStylesheet || "",
+        kpfStylesheetInfo: payload?.data?.kpfStylesheetInfo || null,
         kpfSiteChrome: payload?.data?.kpfSiteChrome || null,
         kpfAccessibility: payload?.data?.kpfAccessibility || null,
         kpfCodeSnippets: payload?.data?.kpfCodeSnippets || [],
@@ -118,6 +130,7 @@ export async function getServerSideProps() {
         design: null,
         mode: null,
         kpfStylesheet: "",
+        kpfStylesheetInfo: null,
         kpfSiteChrome: null,
         kpfAccessibility: null,
         kpfCodeSnippets: [],

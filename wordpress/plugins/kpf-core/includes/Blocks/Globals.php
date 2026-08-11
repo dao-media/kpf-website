@@ -120,9 +120,9 @@ final class Globals {
 					'scrollThresholdPx'  => 12,
 					'transitionMs'       => 280,
 					'revealAtTop'        => true,
-					'overlayHero'        => false,
-					'transparentAtTop'   => false,
-					'zIndex'             => 50,
+					'overlayHero'        => true,
+					'transparentAtTop'   => true,
+					'zIndex'             => 100,
 				)
 			);
 		}

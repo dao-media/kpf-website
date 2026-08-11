@@ -2,21 +2,37 @@ import { gql } from "@apollo/client";
 import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
 import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
+import HomePageScaffold from "@/components/HomePageScaffold";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
 import SeoHead from "@/components/SeoHead";
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
+const { KPF_PARTNER_GRANTEES_QUERY } = require("@/lib/partnerGrantees");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
+const {
+  KPF_SCAFFOLD_MEDIA_QUERY,
+  scaffoldMediaMap,
+} = require("@/lib/scaffoldMedia");
 
 export default function FrontPageTemplate(props) {
   const seo = props?.data?.kpfSeoHome;
   const page = props?.data?.home;
+  const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
+  const partnerGrantees = props?.data?.kpfPartnerGrantees || [];
+  // Prefer the React scaffold (Figma 414:532) over CMS design HTML. Seeded
+  // design markup was fighting hydrate via dangerouslySetInnerHTML islands.
+  const useHomeScaffold = true;
+  const hasDesignHtml = Boolean(page?.kpfPageDesign?.html);
 
   return (
     <>
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={seo} />
-      <PageDesignRenderer page={page} />
+      {useHomeScaffold || !hasDesignHtml ? (
+        <HomePageScaffold media={media} partnerGrantees={partnerGrantees} />
+      ) : (
+        <PageDesignRenderer page={page} partnerGrantees={partnerGrantees} />
+      )}
     </>
   );
 }
@@ -24,6 +40,8 @@ export default function FrontPageTemplate(props) {
 FrontPageTemplate.query = gql`
   query GetHomeSeo {
     ${KPF_STYLESHEET_QUERY}
+    ${KPF_SCAFFOLD_MEDIA_QUERY}
+    ${KPF_PARTNER_GRANTEES_QUERY}
     ${KPF_SITE_CHROME_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}

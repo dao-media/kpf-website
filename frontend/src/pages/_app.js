@@ -1,12 +1,9 @@
 import { useRouter } from "next/router";
 import { FaustProvider } from "@faustwp/core";
-import AccessibilityRuntime from "@/components/AccessibilityRuntime";
-import CodeSnippetsRuntime from "@/components/CodeSnippetsRuntime";
 import GlobalStylesheet from "@/components/GlobalStylesheet";
 import SiteChrome from "@/components/SiteChrome";
 import "../../faust.config";
 import "@/styles/components.css";
-import "@/styles/pages.css";
 
 function chromeFromPageProps(pageProps) {
   return (
@@ -24,56 +21,20 @@ function stylesheetFromPageProps(pageProps) {
   );
 }
 
-function stylesheetInfoFromPageProps(pageProps) {
-  return (
-    pageProps?.__TEMPLATE_QUERY_DATA__?.kpfStylesheetInfo ||
-    pageProps?.kpfStylesheetInfo ||
-    null
-  );
-}
-
-function accessibilityFromPageProps(pageProps) {
-  return (
-    pageProps?.__TEMPLATE_QUERY_DATA__?.kpfAccessibility ||
-    pageProps?.kpfAccessibility ||
-    null
-  );
-}
-
-function codeSnippetsFromPageProps(pageProps) {
-  return (
-    pageProps?.__TEMPLATE_QUERY_DATA__?.kpfCodeSnippets ||
-    pageProps?.kpfCodeSnippets ||
-    []
-  );
-}
-
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const chrome = chromeFromPageProps(pageProps);
   const css = stylesheetFromPageProps(pageProps);
-  const stylesheetInfo = stylesheetInfoFromPageProps(pageProps);
-  const accessibility = accessibilityFromPageProps(pageProps);
-  const codeSnippets = codeSnippetsFromPageProps(pageProps);
-  const isMaintenanceRoute =
-    router.pathname === "/coming-soon" ||
-    router.asPath?.split("?")[0]?.replace(/\/$/, "") === "/coming-soon";
+  // Pathname only — asPath (query/hash) differs SSR vs client and remounts the
+  // page tree mid-hydrate when used as a React key.
+  const pageKey = router.pathname || router.asPath?.split(/[?#]/)[0] || "/";
 
   return (
     <FaustProvider pageProps={pageProps}>
-      <AccessibilityRuntime config={accessibility} />
-      <GlobalStylesheet css={css} revision={stylesheetInfo?.revision} />
-      {isMaintenanceRoute ? (
-        <Component {...pageProps} key={router.asPath} />
-      ) : (
-        <>
-          <CodeSnippetsRuntime snippets={codeSnippets} slot="header" />
-          <SiteChrome chrome={chrome}>
-            <Component {...pageProps} key={router.asPath} />
-          </SiteChrome>
-          <CodeSnippetsRuntime snippets={codeSnippets} slot="footer" />
-        </>
-      )}
+      <GlobalStylesheet css={css} />
+      <SiteChrome chrome={chrome}>
+        <Component {...pageProps} key={pageKey} />
+      </SiteChrome>
     </FaustProvider>
   );
 }

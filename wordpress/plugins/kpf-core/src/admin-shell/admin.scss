@@ -660,6 +660,38 @@ body.kpf-admin-theme .components-button.is-primary:focus {
 	color: #fff;
 }
 
+/*
+ * Block editor back-to-dashboard control: WP logo sits on a dark tile and
+ * must stay light. Generic .components-button theming above would force navy.
+ */
+body.kpf-admin-theme .edit-post-fullscreen-mode-close.components-button,
+body.kpf-admin-theme .edit-post-fullscreen-mode-close__view-mode-toggle .components-button {
+	background: transparent;
+	border-color: transparent;
+	border-radius: 0;
+	box-shadow: none;
+	color: #fff;
+}
+
+body.kpf-admin-theme .edit-post-fullscreen-mode-close.components-button:hover,
+body.kpf-admin-theme .edit-post-fullscreen-mode-close.components-button:focus,
+body.kpf-admin-theme .edit-post-fullscreen-mode-close__view-mode-toggle .components-button:hover,
+body.kpf-admin-theme .edit-post-fullscreen-mode-close__view-mode-toggle .components-button:focus {
+	background: transparent;
+	border-color: transparent;
+	color: #fff;
+}
+
+body.kpf-admin-theme .edit-post-fullscreen-mode-close-site-icon__icon {
+	color: #fff;
+	fill: currentColor;
+}
+
+body.kpf-admin-theme .edit-post-fullscreen-mode-close__view-mode-toggle-icon svg,
+body.kpf-admin-theme .edit-post-fullscreen-mode-close__view-mode-toggle-icon img {
+	background: #1e1e1e;
+}
+
 body.kpf-admin-theme .button-secondary,
 body.kpf-admin-theme .page-title-action {
 	background: #fff;

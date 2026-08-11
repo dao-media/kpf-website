@@ -121,6 +121,8 @@ const PROPERTY_FIELDS = [
 	{ key: 'x', label: __('Move X', 'kpf-core'), unit: 'px' },
 	{ key: 'y', label: __('Move Y', 'kpf-core'), unit: 'px' },
 	{ key: 'scale', label: __('Scale', 'kpf-core'), step: 0.05 },
+	{ key: 'scaleX', label: __('Scale X', 'kpf-core'), step: 0.05 },
+	{ key: 'scaleY', label: __('Scale Y', 'kpf-core'), step: 0.05 },
 	{ key: 'rotation', label: __('Rotate', 'kpf-core'), unit: '°' },
 	{ key: 'skewX', label: __('Skew X', 'kpf-core'), unit: '°' },
 	{ key: 'opacity', label: __('Opacity', 'kpf-core'), step: 0.05 },
@@ -134,6 +136,7 @@ function defaults() {
 		version: 1,
 		active: true,
 		selector: '.animate-me',
+		animateChild: '',
 		trigger: 'load',
 		method: 'from',
 		duration: 0.8,
@@ -1033,6 +1036,15 @@ function Builder({ animation, onSaved, onDeleted }) {
 									help={__('Examples: .hero-title, #donate-button, [data-animate=\"card\"]', 'kpf-core')}
 									value={config.selector}
 									onChange={(selector) => updateConfig({ selector })}
+								/>
+								<TextControl
+									label={__('Animate child (optional)', 'kpf-core')}
+									help={__(
+										'When set, the trigger stays on the selector above, but the tween runs on a matching descendant (e.g. .kpf-nav-link__line).',
+										'kpf-core'
+									)}
+									value={config.animateChild || ''}
+									onChange={(animateChild) => updateConfig({ animateChild })}
 								/>
 								<SelectControl
 									label={__('Starts when', 'kpf-core')}

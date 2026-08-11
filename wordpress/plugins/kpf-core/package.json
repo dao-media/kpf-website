@@ -1,17 +1,18 @@
 {
-  "name": "kpf-core",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "build": "wp-scripts build",
-    "start": "wp-scripts start",
-    "packages-update": "wp-scripts packages-update"
-  },
-  "devDependencies": {
-    "@wordpress/scripts": "^30.21.0"
-  },
-  "dependencies": {
-    "gsap": "^3.15.0",
-    "lucide-react": "^1.25.0"
-  }
+	"name": "kpf-core",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"build": "wp-scripts build",
+		"start": "wp-scripts start",
+		"packages-update": "wp-scripts packages-update",
+		"icons:catalog": "node scripts/build-lucide-catalog.cjs"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.21.0"
+	},
+	"dependencies": {
+		"gsap": "^3.15.0",
+		"lucide-react": "^1.31.0"
+	}
 }

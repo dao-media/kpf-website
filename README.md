@@ -16,11 +16,19 @@ Headless WordPress (Faust.js + Next.js) for the Kevin Popke Foundation site.
 
 ## Quick start
 
+Dedicated local ports (see `scripts/local-ports.env`):
+
+| Service | URL |
+|---|---|
+| Faust frontend | http://localhost:3010 |
+| WordPress / GraphQL | http://localhost:8888 |
+| WP Admin | http://localhost:8888/wp-admin |
+
 ```bash
 # Start WordPress (http://localhost:8888)
 npm run wp:start
 
-# In another terminal, start the Faust frontend (http://localhost:3000)
+# In another terminal, start the Faust frontend (http://localhost:3010)
 npm --prefix frontend run dev
 ```
 
@@ -74,8 +82,9 @@ Avoid `import * as Icons from 'lucide-react'` in hot paths.
 | URL | http://localhost:8888/wp-admin |
 | Username | `admin` |
 | Password | `1234` |
+| Public site | http://localhost:3010 |
 
-Credentials are applied automatically by `scripts/wp-bootstrap.sh` whenever `wp-env` starts.
+Credentials are applied automatically by `scripts/wp-bootstrap.sh` whenever `wp-env` starts. Bootstrap also pins Faust + SEO frontend URLs to port **3010** and writes `frontend/.env.local`.
 
 ## SEO suite
 
@@ -152,5 +161,5 @@ npm run test:inbox
 
 ## Notes
 
-- Frontend env lives in `frontend/.env.local` (not committed). Copy from `frontend/.env.local.example` if needed; bootstrap syncs the Faust secret from WordPress.
+- Frontend env lives in `frontend/.env.local` (not committed). Copy from `frontend/.env.local.example` if needed; `wp-bootstrap.sh` rewrites it with the Faust secret and the dedicated ports (**8888** WordPress, **3010** frontend).
 - Public pages now render WordPress content and reusable component styles; broader site content and layout remain intentionally minimal.

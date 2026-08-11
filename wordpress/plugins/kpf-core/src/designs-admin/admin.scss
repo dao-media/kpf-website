@@ -660,6 +660,120 @@ body.kpf-designs-editing #wpfooter {
 	flex: 1 1 auto;
 	flex-direction: column;
 	min-height: 0;
+	position: relative;
+}
+
+.kpf-source-editor__toolbar {
+	align-items: center;
+	background: #252526;
+	border-bottom: 1px solid #2b2b2b;
+	display: flex;
+	flex: 0 0 auto;
+	gap: 8px;
+	justify-content: flex-end;
+	min-height: 36px;
+	padding: 4px 10px;
+	position: relative;
+	z-index: 5;
+}
+
+.kpf-code-find-toggle {
+	background: transparent;
+	border: 1px solid #3c3c3c;
+	border-radius: 4px;
+	color: #cccccc;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 6px 10px;
+}
+
+.kpf-code-find-toggle:hover,
+.kpf-code-find-toggle:focus-visible {
+	background: #2a2d2e;
+	border-color: #6b6b6b;
+	color: #fff;
+}
+
+.kpf-code-find {
+	align-items: center;
+	display: flex;
+	flex: 1 1 auto;
+	gap: 6px;
+	justify-content: flex-end;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.kpf-code-find input[type='search'] {
+	background: #3c3c3c !important;
+	border: 1px solid #3c3c3c !important;
+	border-radius: 4px !important;
+	box-shadow: none !important;
+	color: #f3f3f3 !important;
+	flex: 1 1 220px;
+	font-size: 12px !important;
+	height: 28px !important;
+	line-height: 1.2 !important;
+	margin: 0 !important;
+	max-width: 320px;
+	min-width: 140px;
+	padding: 0 8px !important;
+}
+
+.kpf-code-find input[type='search']:focus {
+	border-color: #007fd4 !important;
+	outline: none !important;
+}
+
+.kpf-code-find-count {
+	color: #9d9d9d;
+	flex: 0 0 auto;
+	font-size: 11px;
+	min-width: 4.5rem;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.kpf-code-find-nav,
+.kpf-code-find-close {
+	align-items: center;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	color: #cccccc;
+	cursor: pointer;
+	display: inline-flex;
+	font-size: 14px;
+	height: 28px;
+	justify-content: center;
+	line-height: 1;
+	min-width: 28px;
+	padding: 0;
+}
+
+.kpf-code-find-nav:hover:not(:disabled),
+.kpf-code-find-close:hover,
+.kpf-code-find-nav:focus-visible,
+.kpf-code-find-close:focus-visible {
+	background: #2a2d2e;
+	border-color: #3c3c3c;
+	color: #fff;
+}
+
+.kpf-code-find-nav:disabled {
+	cursor: default;
+	opacity: 0.35;
+}
+
+.kpf-source-editor .cm-kpf-search-match {
+	background: rgb(234 179 8 / 28%);
+}
+
+.kpf-source-editor .cm-kpf-search-match-active {
+	background: rgb(234 179 8 / 55%);
+	outline: 1px solid rgb(250 204 21 / 80%);
 }
 
 .kpf-source-editor textarea {

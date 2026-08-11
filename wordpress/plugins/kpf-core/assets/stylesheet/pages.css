@@ -19,32 +19,39 @@
 	--kpf-bp-mobile-l: 30rem; /* 480 */
 	--kpf-bp-tablet: 48rem; /* 768 */
 	--kpf-bp-desktop: 64rem; /* 1024 */
-	--kpf-frame-desktop: 90rem; /* 1440 */
+	--kpf-frame-desktop: 90rem; /* 1440 — Figma Pages desktop */
 
-	/* Content measure */
+	/* Content measure — wide aligns to frame so header/sections share one column */
 	--kpf-measure-narrow: 35rem; /* content-block max */
 	--kpf-measure-reading: 42rem;
-	--kpf-measure-wide: 72rem;
-	--kpf-page-gutter: var(--kpf-space-md);
-	--kpf-page-gutter-lg: var(--kpf-space-xl);
+	--kpf-measure-wide: var(--kpf-frame-desktop);
+	--kpf-page-gutter: 1rem; /* 16 — mobile */
+	--kpf-page-gutter-lg: 2rem;
 	--kpf-section-y: clamp(2.5rem, 5.5vw, 5.5rem);
 	--kpf-hero-min: min(28rem, 78dvh);
-	--kpf-header-height: 4.5rem; /* ~72 */
+	--kpf-header-height: 3.75rem; /* 60 */
+	--kpf-header-radius: 0.75rem; /* 12 */
+	--kpf-header-float-gap: 1.5rem; /* top inset when floating */
 	--kpf-z-header: 100;
 	--kpf-z-menu: 200;
 	--kpf-z-toast: 1000;
 }
 
+/* Reserve scrollbar space so fixed/full-width chrome does not jump when overflow appears */
+html {
+	scrollbar-gutter: stable;
+}
+
 @media (min-width: 30rem) {
 	:root {
-		--kpf-page-gutter: var(--kpf-space-lg);
+		--kpf-page-gutter: 1.5rem;
 		--kpf-hero-min: min(30rem, 80dvh);
 	}
 }
 
 @media (min-width: 48rem) {
 	:root {
-		--kpf-page-gutter: var(--kpf-space-xl);
+		--kpf-page-gutter: 2rem;
 		--kpf-hero-min: min(32rem, 82dvh);
 		--kpf-section-y: clamp(3rem, 6vw, 5.5rem);
 	}
@@ -52,7 +59,7 @@
 
 @media (min-width: 64rem) {
 	:root {
-		--kpf-page-gutter: var(--kpf-space-2xl);
+		--kpf-page-gutter: 4rem; /* 64 — Figma desktop */
 		--kpf-hero-min: min(36rem, 85dvh);
 	}
 }
@@ -123,7 +130,8 @@
  *                   __well __content __title __body
  *   .kpf-icon-text-list
  *   .kpf-content-block  --inverse
- *                       __title-group __eyebrow __title(--h1…h4)
+ *                       __copy __title-group __body-group
+ *                       __eyebrow __title(--h1…h4)
  *                       __body __actions __notation
  *
  * FORMS
@@ -140,6 +148,7 @@
  *   .is-open | [open] | [aria-expanded="true"]
  *   .is-error | .kpf-field--error
  *   :hover :active :focus-visible :visited
+ *   .kpf-u-invert — remap text tokens for dark/brand surfaces (no fill)
  */
 
 /* =============================================================================
@@ -153,7 +162,7 @@
 .kpf-u-container {
 	box-sizing: border-box;
 	margin-inline: auto;
-	max-width: var(--kpf-measure-wide);
+	max-width: var(--kpf-frame-desktop);
 	padding-inline: var(--kpf-page-gutter);
 	width: 100%;
 }
@@ -306,13 +315,144 @@
 	width: 100vw;
 }
 
-/* =============================================================================
- * 4. GLOBAL CHROME [PLANNED]
- * ============================================================================= */
+/**
+ * Invert text for content sitting on a dark/brand surface.
+ * Remaps semantic color tokens so .kpf-content-block, headings, body, and links
+ * flip without the filled chrome of .kpf-content-block--inverse.
+ *
+ * Usage: <div class="kpf-content-block kpf-u-invert">…</div>
+ */
+.kpf-u-invert {
+	--kpf-color-text-primary: var(--kpf-parchment, #f4efea);
+	--kpf-color-text-secondary: color-mix(in srgb, var(--kpf-parchment, #f4efea) 82%, transparent);
+	--kpf-color-text-muted: color-mix(in srgb, var(--kpf-parchment, #f4efea) 62%, transparent);
+	--kpf-color-text-brand: var(--kpf-brass, #c9a15b);
+	--kpf-color-text-link: var(--kpf-brass, #c9a15b);
+	--kpf-color-text-link-hover: var(--kpf-parchment, #f4efea);
+	--kpf-color-text-link-pressed: var(--kpf-brass-soft, #e5cfa7);
+	--kpf-nav: var(--kpf-parchment, #f4efea);
+	--kpf-nav-hover: var(--kpf-brass, #c9a15b);
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn) {
+	color: var(--kpf-color-text-link);
+}
+
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):hover,
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):focus-visible {
+	color: var(--kpf-color-text-link-hover);
+}
+
+.kpf-u-invert .kpf-blockquote,
+.kpf-u-invert blockquote {
+	border-left-color: var(--kpf-brass, #c9a15b);
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-u-invert .kpf-btn--outline {
+	border-color: var(--kpf-parchment, #f4efea);
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-u-invert .kpf-btn--outline:hover,
+.kpf-u-invert .kpf-btn--outline:focus-visible {
+	background: var(--kpf-parchment, #f4efea);
+	color: var(--kpf-ink, #12090a);
+}
+
+/* On dark surfaces: secondary becomes inverted outline (border + text), not a fill */
+.kpf-u-invert .kpf-btn--secondary {
+	background: transparent;
+	border-color: var(--kpf-parchment, #f4efea);
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-u-invert .kpf-btn--secondary:hover,
+.kpf-u-invert .kpf-btn--secondary:focus-visible {
+	background: var(--kpf-parchment, #f4efea);
+	border-color: var(--kpf-parchment, #f4efea);
+	color: var(--kpf-ink, #12090a);
+}
+
+.kpf-u-invert .kpf-btn--secondary:visited {
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-u-invert .kpf-btn--secondary:hover:visited,
+.kpf-u-invert .kpf-btn--secondary:focus-visible:visited {
+	color: var(--kpf-ink, #12090a);
+}
 
 /* =============================================================================
  * 4. GLOBAL CHROME
  * ============================================================================= */
+/* React: KpfHeader / KpfMobileNav / KpfFooter. CMS HTML may inject the same BEM. */
+
+/* Site chrome shell — must ship in pages.css (WP GlobalStylesheet) so the floating
+ * bar is fixed on first paint. components.css alone arrives too late in Next dev. */
+.kpf-site-chrome__header {
+	--kpf-chrome-transition: 280ms;
+	--kpf-chrome-z: var(--kpf-z-header, 100);
+}
+
+.kpf-site-chrome__header-spacer {
+	pointer-events: none;
+	width: 100%;
+}
+
+.kpf-site-chrome__header-bar {
+	box-sizing: border-box;
+	left: 0;
+	margin-inline: auto;
+	max-width: var(--kpf-frame-desktop, 90rem);
+	overflow: visible; /* anniversary badge overhangs the nav bar */
+	padding-inline: var(--kpf-page-gutter, 1rem);
+	right: 0;
+	width: 100%;
+}
+
+.kpf-site-chrome__header--sticky .kpf-site-chrome__header-bar,
+.kpf-site-chrome__header--sticky-hide-reveal .kpf-site-chrome__header-bar,
+.kpf-site-chrome__header--overlay .kpf-site-chrome__header-bar {
+	position: fixed;
+	top: var(--kpf-header-float-gap, 1.5rem);
+	/* Center with inset + max-width — avoid left:50% + translateX (extra compositor shift) */
+	transform: translate3d(0, 0, 0);
+	transition: transform var(--kpf-chrome-transition) ease;
+	z-index: var(--kpf-chrome-z);
+}
+
+.kpf-site-chrome__header--overlay .kpf-site-chrome__header-spacer {
+	display: none;
+}
+
+.kpf-site-chrome__header--retracted .kpf-site-chrome__header-bar {
+	transform: translate3d(0, calc(-100% - var(--kpf-header-float-gap, 1.5rem)), 0);
+}
+
+.kpf-site-chrome__header--transparent-top .kpf-site-chrome__header-bar {
+	background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-site-chrome__header--sticky .kpf-site-chrome__header-bar,
+	.kpf-site-chrome__header--sticky-hide-reveal .kpf-site-chrome__header-bar {
+		transition: none;
+	}
+
+	.kpf-site-chrome__header--retracted .kpf-site-chrome__header-bar {
+		transform: none;
+	}
+}
+
+/* Inner pill — relative inside the fixed shell (do not sticky; that fights the shell). */
+.kpf-site-chrome__header-bar .kpf-header {
+	position: relative;
+	top: auto;
+	z-index: auto;
+	width: 100%;
+}
 
 /* Skip link — first focusable in document */
 .kpf-skip-link {
@@ -333,72 +473,187 @@
 	top: var(--kpf-space-md);
 }
 
-/* @spec Site header — desktop full nav; tablet/mobile Donate + hamburger */
+/* @spec [SHIPPED] Floating sticky header — Figma Nav 616:1061 */
 .kpf-header {
 	align-items: center;
-	background: color-mix(in srgb, var(--kpf-color-bg-page) 92%, transparent);
+	background: var(--kpf-color-bg-surface, #fff);
+	border-radius: var(--kpf-header-radius); /* 12 */
+	box-sizing: border-box;
+	box-shadow: 0 10px 28px color-mix(in srgb, var(--kpf-ink, #12090a) 12%, transparent);
 	display: flex;
-	gap: var(--kpf-space-sm);
-	justify-content: space-between;
+	gap: 1.5rem; /* 24 — Figma Nav gap */
+	height: var(--kpf-header-height); /* lock bar at 60px */
+	justify-content: flex-start;
+	max-height: var(--kpf-header-height);
 	min-height: var(--kpf-header-height);
-	padding-block: var(--kpf-space-sm);
-	padding-inline: var(--kpf-page-gutter);
-	position: sticky;
-	top: 0;
+	overflow: visible; /* badge overhangs top/bottom */
+	padding: 0.375rem; /* 6 — equal on all sides */
+	position: relative; /* float/sticky owned by .kpf-site-chrome__header-bar */
 	z-index: var(--kpf-z-header);
-	backdrop-filter: blur(10px);
 }
 
 .kpf-header__brand {
 	align-items: center;
+	align-self: center;
+	box-sizing: border-box;
 	display: inline-flex;
-	flex: 0 1 auto;
-	gap: var(--kpf-space-xs);
-	max-width: min(11.5rem, 46vw);
+	flex: 0 1 auto; /* can shrink so actions stay on the right edge */
+	gap: 0.625rem; /* 10 */
+	height: var(--kpf-header-height); /* 60 — match bar; badge overhangs */
+	max-height: var(--kpf-header-height);
+	max-width: none;
+	min-height: var(--kpf-header-height); /* beat flex min-height:auto from 177px badge */
 	min-width: 0;
-	overflow: hidden;
+	overflow: visible; /* don’t crop overhanging badge */
 	text-decoration: none;
 }
 
-.kpf-header__brand img,
-.kpf-header__brand svg {
+/* Badge slot — 86×177 with 48px top pad; image fills remaining height, overhangs bar */
+.kpf-header__badge {
+	align-self: center;
+	box-sizing: border-box;
+	display: block;
+	flex: 0 0 86px;
+	height: 177px;
+	isolation: isolate;
+	max-height: 177px;
+	max-width: 86px;
+	min-height: 177px;
+	min-width: 86px;
+	overflow: visible;
+	padding-top: 48px;
+	position: relative;
+	width: 86px;
+}
+
+.kpf-header__badge .kpf-header__mark,
+.kpf-header__mark {
 	display: block;
 	height: auto;
-	max-height: 2.5rem;
+	max-width: 100%;
+	object-fit: contain;
+	overflow: visible;
+	width: 100%;
+}
+
+.kpf-header__mark-ribbons {
+	transform-box: fill-box;
+	transform-origin: 50% 0%;
+}
+
+.kpf-header__brand > svg:not(.kpf-header__mark) {
+	display: block;
+	height: auto;
+	max-height: 2.75rem;
 	max-width: 100%;
 	width: auto;
 }
 
-@media (min-width: 48rem) {
-	.kpf-header {
-		gap: var(--kpf-space-md);
-	}
+.kpf-header__brand-text {
+	color: var(--kpf-ink, #12090a);
+	font-family: var(--kpf-font-display);
+	font-size: 0.875rem; /* 14 — Figma size/body-sm */
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	line-height: normal;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 
-	.kpf-header__brand {
-		max-width: none;
-	}
+.kpf-header__spacer {
+	display: block; /* push brand left / actions+menu right on all breakpoints */
+	flex: 1 1 auto;
+	min-width: 0.5rem;
 }
 
 .kpf-header__nav {
 	align-items: center;
 	display: none;
-	flex: 1 1 auto;
+	flex: 0 0 auto;
 	flex-wrap: nowrap;
-	gap: var(--kpf-space-md);
-	justify-content: center;
+	gap: 2rem; /* 32 — desktop nav links */
+	justify-content: flex-end;
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-@media (min-width: 64rem) {
-	.kpf-header__nav {
-		gap: var(--kpf-space-lg);
-	}
+.kpf-header__nav .kpf-nav-link {
+	color: var(--kpf-nav, #12090a);
+	display: inline-grid;
+	font-family: var(--kpf-font-ui);
+	font-size: 0.9375rem; /* 15 */
+	font-weight: 700;
+	justify-items: start;
+	line-height: 1.125rem; /* 18 */
+	padding-block: 0.25rem; /* 4 — NavLink */
+	position: relative;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+/* Invisible bold twin — reserves width so aria-current weight 800 does not reflow nav */
+.kpf-header__nav .kpf-nav-link::before {
+	content: attr(data-label);
+	font-weight: 800;
+	grid-area: 1 / 1;
+	pointer-events: none;
+	user-select: none;
+	visibility: hidden;
+	white-space: nowrap;
+}
+
+.kpf-header__nav .kpf-nav-link__label {
+	grid-area: 1 / 1;
+}
+
+.kpf-header__nav .kpf-nav-link:hover,
+.kpf-header__nav .kpf-nav-link:focus-visible {
+	/* Hover: underline only — keep default ink (active keeps ember below). */
+	color: var(--kpf-ink, #12090a);
+	text-decoration: none;
 }
 
 .kpf-header__nav .kpf-nav-link[aria-current="page"] {
-	color: var(--kpf-color-text-nav-hover);
+	color: var(--kpf-ember, #bb0d0d);
+	font-weight: 800; /* base 700 + 100 — width reserved via ::before */
+	text-decoration: none;
+}
+
+.kpf-header__nav .kpf-nav-link[aria-current="page"]:hover,
+.kpf-header__nav .kpf-nav-link[aria-current="page"]:focus-visible {
+	color: var(--kpf-ember, #bb0d0d); /* active stays red; no color shift on hover */
+}
+
+.kpf-header__nav .kpf-nav-link[aria-current="page"] .kpf-nav-link__label {
+	font-weight: 800;
+}
+
+/* Red underline — default/active off; GSAP scales from center on hover */
+.kpf-header__nav .kpf-nav-link__line {
+	background: var(--kpf-ember, #bb0d0d);
+	border-radius: 2px;
+	bottom: 0;
+	height: 4px;
+	left: -0.22em;
+	pointer-events: none;
+	position: absolute;
+	right: -0.22em;
+	transform: scaleX(0);
+	transform-origin: 50% 50%;
+}
+
+/* Active: no underline (text weight/color carry the state) */
+.kpf-header__nav .kpf-nav-link[aria-current="page"] .kpf-nav-link__line {
+	transform: scaleX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-header__nav .kpf-nav-link:hover .kpf-nav-link__line,
+	.kpf-header__nav .kpf-nav-link:focus-visible .kpf-nav-link__line {
+		transform: scaleX(1);
+	}
 }
 
 .kpf-header__actions {
@@ -409,28 +664,22 @@
 	gap: var(--kpf-space-xs);
 }
 
-@media (min-width: 48rem) {
-	.kpf-header__actions {
-		gap: var(--kpf-space-sm);
-	}
-}
-
 .kpf-header__actions .kpf-btn {
 	white-space: nowrap;
 }
 
 .kpf-header__menu-slot {
-	/* 44×44 hit target; hosts mobile menu toggle */
 	flex: 0 0 auto;
-	height: var(--kpf-control-height);
+	height: 2.75rem; /* 44 — Menu button */
 	position: relative;
-	width: var(--kpf-control-height);
+	width: 2.75rem;
 }
 
 @media (min-width: 64rem) {
 	.kpf-header__nav {
 		display: flex;
 	}
+
 	.kpf-header__menu-slot {
 		display: none;
 	}
@@ -438,38 +687,66 @@
 
 /* @spec Mobile Nav Menu — Figma 950:566 State=Closed|Open */
 .kpf-mobile-nav {
-	/* Absolute to page (not clipped by hero). Closed = icon only. */
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
 	position: absolute;
+	right: 0;
+	top: 0;
 	z-index: var(--kpf-z-menu);
+}
+
+.kpf-mobile-nav.is-open,
+.kpf-mobile-nav[data-state="open"] {
+	gap: 0.5rem; /* 8 — open stack */
 }
 
 .kpf-mobile-nav__toggle {
 	align-items: center;
 	background: transparent;
 	border: 0;
-	color: var(--kpf-color-icon-primary);
+	border-radius: var(--kpf-radius-md); /* 8 */
+	color: var(--kpf-ink, #12090a);
 	cursor: pointer;
 	display: inline-flex;
-	height: var(--kpf-control-height);
+	height: 2.75rem; /* 44 */
 	justify-content: center;
+	padding: 0.6875rem; /* 11 */
 	touch-action: manipulation;
-	width: var(--kpf-control-height);
+	width: 2.75rem;
+}
+
+.kpf-mobile-nav__icon--close {
+	display: none;
+}
+
+.kpf-mobile-nav.is-open .kpf-mobile-nav__icon--menu,
+.kpf-mobile-nav[data-state="open"] .kpf-mobile-nav__icon--menu {
+	display: none;
+}
+
+.kpf-mobile-nav.is-open .kpf-mobile-nav__icon--close,
+.kpf-mobile-nav[data-state="open"] .kpf-mobile-nav__icon--close {
+	display: block;
 }
 
 .kpf-mobile-nav__panel {
-	background: var(--kpf-color-bg-surface);
-	border: var(--kpf-stroke) solid var(--kpf-color-border-default);
-	border-radius: var(--kpf-radius-lg);
-	box-shadow: var(--kpf-shadow-card);
+	background: var(--kpf-color-bg-surface, #fff);
+	border: 0;
+	border-radius: 1rem; /* 16 */
+	box-shadow:
+		-4px 12px 4px -14px rgba(0, 0, 0, 0.1),
+		0 4px 16px 0 rgba(0, 0, 0, 0.25),
+		0 8px 24px 0 rgba(26, 26, 46, 0.12);
 	display: none;
 	max-height: min(70dvh, 28rem);
-	max-width: min(18rem, calc(100vw - (2 * var(--kpf-page-gutter))));
-	min-width: min(16rem, calc(100vw - (2 * var(--kpf-page-gutter))));
 	overflow: auto;
-	padding: var(--kpf-space-sm);
-	position: absolute;
+	padding: 0.5rem; /* 8 */
+	position: relative;
 	right: 0;
-	top: calc(100% + var(--kpf-space-xs));
+	top: 0;
+	width: 15rem; /* 240 */
 	-webkit-overflow-scrolling: touch;
 }
 
@@ -478,56 +755,165 @@
 	display: block;
 }
 
+.kpf-mobile-nav__links {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem; /* 8 */
+	padding: 0.5rem;
+}
+
 .kpf-mobile-nav__item {
-	/* Sidebar DS: Parent / Inactive / Hover */
-	border-radius: var(--kpf-radius-md);
-	color: var(--kpf-color-text-nav);
-	display: block;
+	/* Sidebar DS: Parent / Inactive · arrow + label */
+	align-items: flex-start;
+	color: var(--kpf-ink-soft, #3d2c2d);
+	display: flex;
 	font-family: var(--kpf-font-ui);
-	font-size: var(--kpf-text-nav);
-	font-weight: var(--kpf-weight-nav);
-	min-height: var(--kpf-control-height);
-	padding: var(--kpf-space-sm) var(--kpf-space-md);
+	font-size: 1rem; /* 16 */
+	font-weight: 600;
+	gap: 0.5rem; /* 8 */
+	letter-spacing: 0.005em;
+	line-height: 1.63;
+	min-height: 1.625rem; /* 26 */
+	padding-right: 1.5rem; /* 24 */
 	text-decoration: none;
+}
+
+.kpf-mobile-nav__arrow {
+	color: currentColor;
+	flex: 0 0 auto;
+	margin-top: 0.25rem; /* 4 — Figma arrow column pt */
+}
+
+.kpf-mobile-nav__label {
+	flex: 0 1 auto;
 }
 
 .kpf-mobile-nav__item:hover,
 .kpf-mobile-nav__item:focus-visible {
-	background: var(--kpf-color-bg-brand-soft);
-	color: var(--kpf-color-text-nav-hover);
+	color: var(--kpf-ember, #bb0d0d);
 }
 
 .kpf-mobile-nav__item[aria-current="page"] {
-	background: var(--kpf-color-bg-brand-soft);
-	color: var(--kpf-color-text-brand);
+	color: var(--kpf-ember, #bb0d0d);
 }
 
-/* @spec Footer */
+/* @spec Footer — Figma 416:100 */
 .kpf-footer {
-	background: var(--kpf-color-bg-inverse);
+	background: var(--kpf-ink, #12090a);
 	color: color-mix(in srgb, var(--kpf-parchment) 88%, transparent);
-	padding-block: var(--kpf-section-y);
-	padding-inline: var(--kpf-page-gutter);
+	padding-block: 0;
+	padding-inline: 0;
+}
+
+.kpf-footer__rule {
+	background: var(--kpf-ember, #bb0d0d);
+	height: 2px;
+	width: 100%;
+}
+
+.kpf-footer__body {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding-block: 2.5rem 2rem;
+}
+
+.kpf-footer__tagline {
+	background: transparent;
+	border-left: 0.1875rem solid var(--kpf-brass, #c9a15b); /* gold rule */
+	color: var(--kpf-parchment, #f4efea);
+	font-family: var(--kpf-font-display);
+	font-size: var(--kpf-text-blockquote, 1.25rem);
+	font-style: italic;
+	font-weight: var(--kpf-weight-blockquote, 500);
+	letter-spacing: var(--kpf-tracking-blockquote, -0.005em);
+	line-height: var(--kpf-leading-blockquote, 1.55);
+	margin: 0;
+	max-width: 36rem;
+	padding: var(--kpf-space-xs, 0.25rem) 0 var(--kpf-space-xs, 0.25rem)
+		var(--kpf-space-lg, 1.5rem);
 }
 
 .kpf-footer__grid {
+	align-items: start;
 	display: grid;
 	gap: var(--kpf-space-xl);
 	grid-template-columns: 1fr;
-	margin-inline: auto;
-	max-width: var(--kpf-measure-wide);
+	margin-inline: 0;
+	max-width: none;
+	width: 100%;
 }
 
 @media (min-width: 48rem) {
 	.kpf-footer__grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
 	}
 }
 
 @media (min-width: 64rem) {
 	.kpf-footer__grid {
-		grid-template-columns: 1.4fr 1fr 1fr;
+		grid-template-columns: minmax(0, 22.5rem) auto minmax(0, 16.25rem);
+		justify-content: space-between;
 	}
+}
+
+.kpf-footer__brand-name {
+	color: var(--kpf-parchment, #f4efea);
+	font-family: var(--kpf-font-display);
+	font-size: 1.125rem;
+	font-weight: 700;
+	margin: 0 0 0.625rem;
+}
+
+.kpf-footer__brand-note {
+	margin: 0;
+	max-width: 22rem;
+}
+
+.kpf-footer__columns {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3.5rem;
+}
+
+.kpf-footer__heading {
+	color: var(--kpf-brass, #c9a15b);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	margin: 0 0 0.75rem;
+	text-transform: uppercase;
+}
+
+.kpf-footer__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.kpf-footer__list li {
+	margin-bottom: 0.5rem;
+}
+
+.kpf-footer__cta-card {
+	background: var(--kpf-color-bg-surface, #fff);
+	border-radius: var(--kpf-radius-md);
+	color: var(--kpf-ink, #12090a);
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1rem;
+}
+
+.kpf-footer__cta-title {
+	font-family: var(--kpf-font-display);
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 0;
+}
+
+.kpf-footer__cta-body {
+	margin: 0;
 }
 
 .kpf-footer a {
@@ -620,7 +1006,7 @@
  *   .kpf-story                   His Story split (media + content-block)
  *   .kpf-values                  icon-text list / grid
  *   .kpf-programs                cream section; dunes on dedicated media layer
- *   .kpf-archive                 desktop-only archive strip (hide <64rem)
+ *   .kpf-archive                 blog teaser strip (all breakpoints)
  *   .kpf-donate                  accordion group (donation FAQ / ways to give)
  *   .kpf-footer
  *
@@ -649,7 +1035,7 @@
  * BLOG ARCHIVE  Desktop 939:2123 · Tablet 939:2396 · Mobile 939:2612
  * --------------------------------------------------------------------------
  *   .kpf-hero--blog
- *   .kpf-blog-featured           mobile-first featured story (show <48rem)
+ *   .kpf-blog-featured           mobile-first featured story (show below 48rem)
  *   .kpf-blog-archive            row (desktop/tablet) / card (mobile)
  *   .kpf-cta-closing
  *   .kpf-footer
@@ -729,36 +1115,737 @@
 	}
 }
 
+/* Hero CTAs inherit .kpf-content-block__actions protocol (row wrap · 16px · pad-top). */
 .kpf-hero__actions {
+	align-items: center;
 	display: flex;
-	flex-direction: column;
 	flex-wrap: wrap;
-	gap: var(--kpf-space-sm);
+	gap: var(--kpf-content-actions-gap, var(--kpf-space-md));
+	max-width: 100%;
 	width: 100%;
 }
 
 .kpf-hero__actions .kpf-btn {
-	justify-content: center;
+	width: auto;
+}
+
+/* Home: dark stage + floating header clearance — Figma 616:1060 */
+.kpf-hero--home {
+	align-items: center;
+	background: var(--kpf-ink, #12090a);
+	color: var(--kpf-parchment, #f4efea);
+	min-height: 40rem;
+	padding-block: calc(var(--kpf-header-float-gap) + var(--kpf-header-height) + 1.5rem) 3rem;
+	padding-inline: 0;
+}
+
+.kpf-hero--home .kpf-hero__media {
+	display: none;
+}
+
+.kpf-hero--home .kpf-hero__scrim {
+	background: transparent;
+}
+
+.kpf-hero--home .kpf-hero__layout {
+	display: grid;
+	gap: var(--kpf-space-xl);
+	position: relative;
+	z-index: 1;
+}
+
+@media (min-width: 64rem) {
+	.kpf-hero--home .kpf-hero__layout {
+		grid-template-columns: minmax(0, 1fr) minmax(16rem, 26.25rem);
+		justify-items: end;
+	}
+
+	.kpf-hero--home .kpf-hero__content {
+		grid-column: 2;
+		max-width: 26.25rem;
+	}
+}
+
+.kpf-hero--home .kpf-hero__content {
+	max-width: 26.25rem;
+}
+
+.kpf-hero--home .kpf-content-block--inverse .kpf-content-block__eyebrow {
+	color: var(--kpf-brass, #c9a15b);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.kpf-hero--home .kpf-hero__actions {
+	align-items: center;
+}
+
+.kpf-hero--home .kpf-hero__text-link {
+	color: var(--kpf-parchment, #f4efea);
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.kpf-hero__stage {
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	position: absolute;
+	z-index: 0;
+}
+
+.kpf-hero__cutout {
+	display: none;
+	height: auto;
+	object-fit: cover;
+	position: absolute;
+	width: auto;
+}
+
+@media (min-width: 64rem) {
+	.kpf-hero__cutout {
+		display: block;
+		opacity: 1;
+	}
+
+	/* Figma 616:1060 — positions relative to 1440×640 desktop frame */
+	.kpf-hero__cutout--dad {
+		height: 89.84%;
+		left: -5.35%;
+		top: 19.06%;
+		width: 44.72%;
+		z-index: 1;
+	}
+
+	.kpf-hero__cutout--alumni {
+		height: 65.63%;
+		left: 36.74%;
+		top: 34.38%;
+		width: 35.35%;
+		z-index: 2;
+	}
+
+	.kpf-hero__cutout--runner {
+		height: 124.22%;
+		left: 21.32%;
+		top: 5.47%;
+		width: 37.5%;
+		z-index: 3;
+	}
+}
+
+/* Partners chips — Figma 426:477
+ * Visible slots: 4 desktop · 3 tablet · 1 mobile (edge peeks).
+ * Chip width is measured in PartnersSlider (--kpf-partners-chip-width).
+ */
+.kpf-partners {
+	--kpf-partners-gap: 1rem; /* 16 */
+	background: var(--kpf-parchment, #f4efea);
+	overflow: hidden;
+	padding-block: 2rem 1.75rem; /* 32 / 28 */
+	padding-inline: 0;
+}
+
+.kpf-partners__inner {
+	align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem; /* 16 */
+}
+
+.kpf-partners__label {
+	color: var(--kpf-mute, #6b5c5c);
+	font-family: var(--kpf-font-ui);
+	font-size: 0.75rem; /* 12 */
+	font-weight: 500;
+	line-height: normal;
+	margin: 0;
+	text-align: center;
+}
+
+.kpf-partners__viewport {
+	overflow: hidden;
 	width: 100%;
 }
 
-@media (min-width: 30rem) {
-	.kpf-hero__actions {
-		align-items: stretch;
-		flex-direction: row;
-	}
+.kpf-partners__track {
+	align-items: center;
+	display: flex;
+	flex-wrap: nowrap;
+	gap: var(--kpf-partners-gap);
+	justify-content: flex-start;
+	transition-property: transform;
+	transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+	width: max-content;
+	will-change: transform;
+}
 
-	.kpf-hero__actions .kpf-btn {
+.kpf-partners__chip {
+	--kpf-partners-chip-height: 3.5rem; /* 56 */
+	--kpf-partners-chip-pad-block: 0.5rem; /* 8 */
+	--kpf-partners-chip-pad-inline: 0.625rem; /* 10 */
+	align-items: center;
+	background: var(--kpf-color-bg-surface, #fff);
+	border-radius: var(--kpf-radius-md); /* 8 */
+	box-sizing: border-box;
+	color: inherit;
+	display: inline-flex;
+	flex: 0 0 var(--kpf-partners-chip-width, auto);
+	gap: 0.375rem; /* 6 */
+	height: var(--kpf-partners-chip-height);
+	justify-content: center;
+	max-height: var(--kpf-partners-chip-height);
+	min-width: 0;
+	overflow: hidden;
+	padding: var(--kpf-partners-chip-pad-block) var(--kpf-partners-chip-pad-inline);
+	text-decoration: none;
+	width: var(--kpf-partners-chip-width, auto);
+}
+
+a.kpf-partners__chip:hover .kpf-partners__name,
+a.kpf-partners__chip:focus-visible .kpf-partners__name {
+	color: var(--kpf-ember, #bb0d0d);
+}
+
+.kpf-partners__logo {
+	/* Fill the content box only — chip height minus block padding. */
+	aspect-ratio: 1 / 1;
+	border-radius: 0.25rem; /* 4 */
+	box-sizing: border-box;
+	display: block;
+	flex: 0 0 auto;
+	height: calc(
+		var(--kpf-partners-chip-height) - 2 * var(--kpf-partners-chip-pad-block)
+	);
+	max-height: calc(
+		var(--kpf-partners-chip-height) - 2 * var(--kpf-partners-chip-pad-block)
+	);
+	object-fit: contain;
+	width: auto;
+}
+
+.kpf-partners__name {
+	color: var(--kpf-ink, #12090a);
+	flex: 0 1 auto; /* shrink for ellipsis; don’t grow so logo+name stay centered */
+	font-family: var(--kpf-font-ui);
+	font-size: 0.9375rem; /* 15 */
+	font-weight: 700;
+	line-height: 1.125rem; /* 18 */
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.kpf-partners__dots {
+	align-items: center;
+	display: flex;
+	gap: 0.375rem;
+	justify-content: center;
+	min-height: 0.75rem;
+}
+
+.kpf-partners__dots button {
+	appearance: none;
+	background: color-mix(in srgb, var(--kpf-ink) 28%, transparent);
+	border: 0;
+	border-radius: 999px;
+	cursor: pointer;
+	display: block;
+	height: 0.5rem;
+	padding: 0;
+	transition:
+		background-color 0.2s ease,
+		transform 0.2s ease,
+		width 0.2s ease,
+		height 0.2s ease;
+	width: 0.5rem;
+}
+
+.kpf-partners__dots button.is-active {
+	background: var(--kpf-ember, #bb0d0d);
+	height: 0.75rem;
+	width: 0.75rem;
+}
+
+.kpf-partners__dots button:focus-visible {
+	outline: 0.125rem solid var(--kpf-brass, #c4a35a);
+	outline-offset: 0.15rem;
+}
+
+/* Mobile: full-bleed rail so neighbor chips overhang the screen edge. */
+@media (max-width: 47.99rem) {
+	.kpf-partners__viewport {
+		margin-inline: calc(50% - 50vw);
+		max-width: 100vw;
+		width: 100vw;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-partners__track {
+		transition: none !important;
+	}
+}
+
+/* His Story — Figma 414:658 */
+.kpf-story {
+	background: var(--kpf-color-bg-surface, #fff); /* contrast vs partners parchment above */
+	/* Horizontal inset for copy comes from .kpf-u-container. */
+	overflow: visible;
+	padding-block: var(--kpf-section-y);
+	padding-inline: 0;
+	position: relative; /* sole positioning context for __media */
+}
+
+.kpf-story__inner {
+	align-items: center;
+	display: grid;
+	gap: var(--kpf-space-2xl);
+	grid-template-columns: 1fr;
+	min-width: 0;
+}
+
+@media (min-width: 64rem) {
+	.kpf-story__inner {
+		min-height: calc(40rem + 120px); /* room for 760px bottom-right portrait */
+	}
+}
+
+.kpf-story__copy {
+	max-width: 46.25rem;
+}
+
+.kpf-story__actions {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+/* Direct child of section — bottom/right relative to .kpf-story only */
+.kpf-story__media {
+	bottom: 0;
+	line-height: 0;
+	pointer-events: none;
+	position: absolute;
+	right: 0;
+	z-index: 0;
+}
+
+.kpf-story__media img {
+	border-radius: 0;
+	display: block;
+	height: auto;
+	/* Mobile portrait: full viewport width */
+	max-height: none;
+	max-width: 100vw;
+	pointer-events: auto;
+	width: 100vw;
+}
+
+@media (min-width: 30rem) {
+	.kpf-story__media img {
+		max-height: min(70vw, 28rem);
+		max-width: min(70vw, 28rem);
 		width: auto;
 	}
 }
 
-/* Home: brand-forward, cutouts — not a dark scrim manifesto */
-.kpf-hero--home {
-	align-items: end;
-	background: var(--kpf-color-bg-page);
-	color: var(--kpf-color-text-primary);
+@media (min-width: 48rem) {
+	.kpf-story__media img {
+		max-height: min(55vw, 36rem);
+		max-width: min(55vw, 36rem);
+		width: auto;
+	}
 }
+
+@media (min-width: 64rem) {
+	.kpf-story__media img {
+		max-height: 760px; /* 640 + 120 */
+		max-width: 640px;
+		width: auto;
+	}
+}
+
+/* Values action cards — Figma 426:492 */
+.kpf-values--cards {
+	background: var(--kpf-ink, #12090a);
+	color: var(--kpf-parchment, #f4efea);
+	padding-block: 4rem;
+}
+
+.kpf-values__intro {
+	margin-inline: auto;
+	max-width: 37.5rem;
+	text-align: center;
+}
+
+.kpf-values__intro .kpf-h2 {
+	color: var(--kpf-parchment, #f4efea);
+	margin: 0 0 1rem;
+}
+
+.kpf-values__intro .kpf-content-block__body {
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-values__cards {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: 1fr;
+	margin-top: 2.5rem;
+}
+
+@media (min-width: 48rem) {
+	.kpf-values__cards {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 64rem) {
+	.kpf-values__cards {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+}
+
+.kpf-values__card {
+	background: var(--kpf-color-bg-surface, #fff);
+	border-radius: var(--kpf-radius-lg, 1rem);
+	box-shadow: 0 18px 24px color-mix(in srgb, var(--kpf-ink) 12%, transparent);
+	color: var(--kpf-ink, #12090a);
+	overflow: clip;
+}
+
+.kpf-values__card .kpf-card__media {
+	aspect-ratio: 16 / 10;
+	overflow: clip;
+}
+
+.kpf-values__card .kpf-card__media img {
+	display: block;
+	height: 100%;
+	object-fit: cover;
+	width: 100%;
+}
+
+.kpf-values__card .kpf-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.625rem;
+	padding: 1.25rem;
+}
+
+.kpf-values__card .kpf-card__eyebrow {
+	color: var(--kpf-ember, #bb0d0d);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	margin: 0;
+}
+
+.kpf-values__card .kpf-card__title {
+	font-family: var(--kpf-font-display);
+	font-size: 1.375rem;
+	font-weight: 700;
+	margin: 0;
+}
+
+.kpf-values__card .kpf-card__description {
+	color: var(--kpf-ink-soft, #3d2c2d);
+	font-size: 0.875rem;
+	margin: 0;
+}
+
+/* Programs checklist — Figma 426:997 */
+.kpf-programs {
+	background: var(--kpf-parchment, #f4efea);
+	padding-block: 4.5rem;
+}
+
+.kpf-programs__inner {
+	align-items: center;
+	display: grid;
+	gap: var(--kpf-space-2xl);
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 64rem) {
+	.kpf-programs__inner {
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+	}
+}
+
+.kpf-programs__copy {
+	max-width: 28rem; /* 448 */
+}
+
+.kpf-programs__list {
+	display: grid;
+	gap: 1.25rem;
+	list-style: none;
+	margin: 1.75rem 0 0;
+	padding: 0;
+}
+
+.kpf-programs__item {
+	display: flex;
+	gap: 1.5rem;
+}
+
+.kpf-programs__check {
+	align-items: center;
+	background: var(--kpf-ember, #bb0d0d);
+	border-radius: var(--kpf-radius-md);
+	color: #fff;
+	display: inline-flex;
+	flex: 0 0 auto;
+	height: 3rem;
+	justify-content: center;
+	width: 3rem;
+}
+
+.kpf-programs__item-title {
+	font-family: var(--kpf-font-display);
+	font-size: 1.125rem;
+	font-weight: 700;
+	margin: 0 0 0.5rem;
+}
+
+.kpf-programs__item-body {
+	color: var(--kpf-ink-soft, #3d2c2d);
+	font-size: 0.875rem;
+	line-height: 1.4;
+	margin: 0;
+}
+
+.kpf-programs__media {
+	align-items: center;
+	display: grid;
+	gap: 0; /* overlap handled by dunes negative margin */
+	grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+	min-width: 0;
+	width: 100%;
+}
+
+.kpf-programs__dunes {
+	border-radius: 0; /* transparent cutout — not a rounded card */
+	display: block;
+	height: auto;
+	margin-right: -125px; /* overhang collage tiles ~125px */
+	max-width: none;
+	position: relative;
+	width: 100%;
+	z-index: 1;
+}
+
+.kpf-programs__collage {
+	display: grid;
+	gap: 0.75rem;
+	min-width: 0;
+	position: relative;
+	z-index: 0;
+}
+
+.kpf-programs__collage img {
+	border-radius: 0.75rem;
+	display: block;
+	height: 100%;
+	min-height: 8rem;
+	object-fit: cover;
+	width: 100%;
+}
+
+.kpf-programs__collage img:last-child {
+	/* Figma Frame8 crop — favor smoker / tent banner */
+	object-position: 42% 22%;
+}
+
+/* Blog teaser — Figma 947:6302 */
+.kpf-archive {
+	display: block;
+	padding-block: 5rem;
+}
+
+.kpf-archive__inner {
+	align-items: center;
+	display: grid;
+	gap: 2.5rem;
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 64rem) {
+	.kpf-archive__inner {
+		grid-template-columns: minmax(0, 28.75rem) minmax(0, 1fr);
+	}
+}
+
+.kpf-archive__card {
+	align-items: stretch;
+	background: var(--kpf-color-bg-surface, #fff);
+	border-radius: var(--kpf-radius-lg);
+	color: inherit;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 1.5rem;
+	text-decoration: none;
+}
+
+@media (min-width: 48rem) {
+	.kpf-archive__card {
+		flex-direction: row;
+		padding: 2.5rem;
+	}
+}
+
+.kpf-archive__thumb {
+	border-radius: var(--kpf-radius-md);
+	flex: 0 0 auto;
+	height: auto;
+	max-width: 100%;
+	object-fit: cover;
+	width: 100%;
+}
+
+@media (min-width: 48rem) {
+	.kpf-archive__thumb {
+		align-self: stretch;
+		width: 12.5rem;
+	}
+}
+
+.kpf-archive__category {
+	color: var(--kpf-ember, #bb0d0d);
+	font-size: 0.8125rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	margin: 0;
+	text-transform: uppercase;
+}
+
+.kpf-archive__date {
+	color: var(--kpf-mute, #6b5c5c);
+	font-size: 0.8125rem;
+	margin: 0.25rem 0 0;
+}
+
+.kpf-archive__title {
+	font-family: var(--kpf-font-display);
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin: 1rem 0;
+}
+
+/* Donate band — Figma 416:613 */
+.kpf-donate--band {
+	background: var(--kpf-deep, #640f0e);
+	color: var(--kpf-parchment, #f4efea);
+	padding-block: 4.5rem;
+}
+
+.kpf-donate__inner {
+	align-items: stretch;
+	display: grid;
+	gap: 4rem;
+	grid-template-columns: 1fr;
+}
+
+@media (min-width: 64rem) {
+	.kpf-donate__inner {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+}
+
+.kpf-donate--band .kpf-content-block__eyebrow,
+.kpf-donate--band .kpf-h2,
+.kpf-donate--band .kpf-content-block__body {
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-donate__emphasis {
+	text-decoration: underline;
+	text-underline-offset: 0.12em;
+}
+
+.kpf-donate__note {
+	color: var(--kpf-ember, #bb0d0d);
+	font-size: 0.75rem;
+	font-weight: 500;
+	letter-spacing: 0.02em;
+	margin-top: 1rem;
+}
+
+.kpf-donate__impact {
+	background: var(--kpf-ink, #12090a);
+	border-radius: var(--kpf-radius-md);
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 2rem;
+}
+
+.kpf-donate__impact .kpf-h4 {
+	color: var(--kpf-parchment, #f4efea);
+	margin: 0 0 0.5rem;
+}
+
+.kpf-donate--band .kpf-accordion {
+	background: var(--kpf-color-bg-surface, #fff);
+	border: 1px solid var(--kpf-parchment-deep, #dfd6cc);
+	border-radius: var(--kpf-radius-md);
+	overflow: clip;
+}
+
+.kpf-donate--band .kpf-accordion__header {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	color: var(--kpf-ink, #12090a);
+	cursor: pointer;
+	display: flex;
+	font-family: var(--kpf-font-display);
+	font-size: 1rem;
+	font-weight: 700;
+	justify-content: space-between;
+	padding: 1rem;
+	text-align: left;
+	width: 100%;
+}
+
+.kpf-donate--band .kpf-accordion.is-open .kpf-accordion__header {
+	background: var(--kpf-ember-soft, #ebd1d1);
+}
+
+.kpf-donate--band .kpf-accordion__body {
+	color: var(--kpf-ink-soft, #3d2c2d);
+	padding: 0 1rem 1rem;
+}
+
+.kpf-donate--band .kpf-btn--secondary {
+	background: transparent;
+	border-color: var(--kpf-parchment, #f4efea);
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-donate--band .kpf-btn--secondary:hover,
+.kpf-donate--band .kpf-btn--secondary:focus-visible {
+	background: var(--kpf-parchment, #f4efea);
+	border-color: var(--kpf-parchment, #f4efea);
+	color: var(--kpf-ink, #12090a);
+}
+
+.kpf-donate--band .kpf-btn--secondary:visited {
+	color: var(--kpf-parchment, #f4efea);
+}
+
+.kpf-donate--band .kpf-btn--secondary:hover:visited,
+.kpf-donate--band .kpf-btn--secondary:focus-visible:visited {
+	color: var(--kpf-ink, #12090a);
+}
+
+/* —— Desktop-only archive strip on Home (legacy; blog teaser now always on) —— */
+/* @deprecated display:none rule removed — .kpf-archive shows at all breakpoints */
 
 /* About: light split — framed photo + copy (desktop ~560px tall) */
 .kpf-hero--about {
@@ -828,7 +1915,6 @@
 }
 
 /* —— Shared split sections (Home story, Events context, etc.) —— */
-.kpf-story,
 .kpf-context,
 .kpf-mission,
 .kpf-programs__inner {
@@ -838,8 +1924,6 @@
 }
 
 @media (min-width: 64rem) {
-	.kpf-story,
-	.kpf-context,
 	.kpf-programs__inner {
 		align-items: center;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -867,66 +1951,6 @@
 	.kpf-values .kpf-icon-text-list {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
-}
-
-/* —— Partners —— */
-.kpf-partners {
-	/* Logo wall: logos only — no industry labels under marks */
-	overflow: hidden;
-	padding-block: var(--kpf-space-lg);
-	padding-inline: var(--kpf-page-gutter);
-}
-
-@media (min-width: 48rem) {
-	.kpf-partners {
-		padding-block: var(--kpf-space-xl);
-	}
-}
-
-.kpf-partners__track {
-	align-items: center;
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--kpf-space-lg) var(--kpf-space-xl);
-	justify-content: center;
-}
-
-@media (min-width: 64rem) {
-	.kpf-partners__track {
-		flex-wrap: nowrap;
-		gap: var(--kpf-space-2xl);
-		justify-content: space-between;
-	}
-}
-
-.kpf-partners__logo {
-	flex: 0 0 auto;
-	height: 2rem;
-	max-width: 7rem;
-	object-fit: contain;
-	opacity: 0.85;
-	width: auto;
-}
-
-@media (min-width: 48rem) {
-	.kpf-partners__logo {
-		height: 2.5rem;
-		max-width: 8rem;
-	}
-}
-
-.kpf-chip,
-.kpf-partner-chip {
-	/* Figma: Chip / Partner Chip */
-	align-items: center;
-	background: var(--kpf-color-bg-surface);
-	border: var(--kpf-stroke) solid var(--kpf-color-border-default);
-	border-radius: var(--kpf-radius-md);
-	display: inline-flex;
-	gap: var(--kpf-space-xs);
-	max-width: 100%;
-	min-height: 2.5rem;
-	padding: var(--kpf-space-xs) var(--kpf-space-sm);
 }
 
 /* —— History stacked slider (About) —— */
@@ -1047,16 +2071,12 @@
 /* —— Programs / Values / Grantees / Gallery —— */
 .kpf-programs {
 	background: var(--kpf-color-bg-page);
-	/* Dunes cutout lives on .kpf-programs__dunes — not section fill */
-	overflow: clip;
+	/* Dunes cutout + collage overlap must not be clipped */
+	overflow: visible;
 }
 
 .kpf-programs__dunes {
-	display: block;
-	height: auto;
-	max-width: 100%;
 	pointer-events: none;
-	width: 100%;
 }
 
 .kpf-grantees__grid {
@@ -1282,41 +2302,24 @@
 }
 
 .kpf-cta-closing .kpf-content-block__actions {
-	flex-direction: column;
+	justify-content: center;
+	max-width: 100%;
 	width: 100%;
 }
 
 .kpf-cta-closing .kpf-content-block__actions .kpf-btn {
-	justify-content: center;
-	width: 100%;
+	width: auto;
 }
 
-@media (min-width: 30rem) {
-	.kpf-cta-closing .kpf-content-block__actions {
-		flex-direction: row;
-		width: auto;
-	}
-
-	.kpf-cta-closing .kpf-content-block__actions .kpf-btn {
-		width: auto;
-	}
-}
-
-/* —— Desktop-only archive strip on Home —— */
+/* —— Blog teaser on Home (always visible; was desktop-only archive) —— */
 .kpf-archive {
-	display: none;
-}
-
-@media (min-width: 64rem) {
-	.kpf-archive {
-		display: block;
-	}
+	display: block;
 }
 
 /* =============================================================================
  * 8. RESPONSIVE HARDENING (all pages × breakpoints)
  * =============================================================================
- * Mobile P <30rem · Mobile L ≥30rem · Tablet ≥48rem · Desktop ≥64rem
+ * Mobile P below 30rem · Mobile L ≥30rem · Tablet ≥48rem · Desktop ≥64rem
  * Prevent horizontal scroll, keep media fluid, tighten stacks on small viewports.
  */
 
@@ -1334,10 +2337,9 @@
 	box-sizing: border-box;
 }
 
-.kpf-section img,
+/* Story / programs collage sizing is intentional — exclude from the fluid clamp. */
+.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img),
 .kpf-hero img,
-.kpf-story img,
-.kpf-programs img,
 .kpf-featured-event img,
 .kpf-card__media,
 .kpf-gallery__item {
@@ -1350,25 +2352,14 @@
 	min-width: 0;
 }
 
+/* Actions protocol lives in foundation/components; keep page hardening fluid only. */
 .kpf-content-block__actions {
-	flex-direction: column;
-	width: 100%;
+	max-width: 100%;
 }
 
 .kpf-content-block__actions .kpf-btn {
-	justify-content: center;
-	width: 100%;
-}
-
-@media (min-width: 30rem) {
-	.kpf-content-block__actions {
-		flex-direction: row;
-		width: auto;
-	}
-
-	.kpf-content-block__actions .kpf-btn {
-		width: auto;
-	}
+	max-width: 100%;
+	width: auto;
 }
 
 /* Avoid page-level horizontal scroll from full-bleed / transforms */
@@ -1380,8 +2371,10 @@
 }
 
 @media (max-width: 29.99rem) {
-	.kpf-header__actions .kpf-btn--sm {
+	.kpf-header__actions .kpf-btn {
 		font-size: var(--kpf-text-ui-s);
+		min-height: var(--kpf-control-height-sm);
+		padding-block: 0.55rem;
 		padding-inline: var(--kpf-space-md);
 	}
 
@@ -1398,8 +2391,7 @@
 	/* Tablet: keep single-column heroes/splits; tighten gaps */
 	.kpf-hero--about,
 	.kpf-history,
-	.kpf-story,
-	.kpf-context,
+	.kpf-story__inner,
 	.kpf-featured-event,
 	.kpf-programs__inner {
 		grid-template-columns: 1fr;

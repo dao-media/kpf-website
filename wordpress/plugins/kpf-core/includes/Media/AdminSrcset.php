@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace KPF\Core\Media;
 
+use KPF\Core\Support\FrontendUrl;
+
 /**
  * Keep attachment srcset on the WordPress domain in wp-admin.
  *
  * FaustWP rewrites srcset to the headless frontend URI when
  * "Use the WordPress domain for media URLs" is off. Admin previews then
- * request /wp-content/uploads from Next (e.g. :3000), which does not serve
- * those files — so featured images and list-table logos appear broken.
+ * request /wp-content/uploads from Next (e.g. :3010), which does not serve
+ * those files — so featured images and list-table logos appear broken
+ * (local Faust runs on :3010; see scripts/local-ports.env).
  */
 final class AdminSrcset {
 	public static function register(): void {
@@ -51,7 +54,7 @@ final class AdminSrcset {
 	 * @return array<int, array{url:string,descriptor:string,value:int}>
 	 */
 	public static function rewrite_frontend_urls( array $sources ): array {
-		$frontend = self::frontend_uri();
+		$frontend = FrontendUrl::faust_uri();
 		$site     = untrailingslashit( site_url() );
 		if ( '' === $frontend || $frontend === $site ) {
 			return $sources;
@@ -69,18 +72,5 @@ final class AdminSrcset {
 
 	private static function should_restore(): bool {
 		return is_admin();
-	}
-
-	private static function frontend_uri(): string {
-		if ( function_exists( 'WPE\\FaustWP\\Settings\\faustwp_get_setting' ) ) {
-			return untrailingslashit( (string) \WPE\FaustWP\Settings\faustwp_get_setting( 'frontend_uri', '' ) );
-		}
-
-		$settings = get_option( 'faustwp_settings', array() );
-		if ( ! is_array( $settings ) ) {
-			return '';
-		}
-
-		return untrailingslashit( (string) ( $settings['frontend_uri'] ?? '' ) );
 	}
 }

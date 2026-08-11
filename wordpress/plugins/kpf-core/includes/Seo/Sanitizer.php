@@ -29,7 +29,7 @@ final class Sanitizer {
 				'separator'            => sanitize_text_field((string) ($global['separator'] ?? '|')),
 				'site_title'           => sanitize_text_field((string) ($global['site_title'] ?? '')),
 				'site_description'     => sanitize_textarea_field((string) ($global['site_description'] ?? '')),
-				'frontend_url'         => esc_url_raw((string) ($global['frontend_url'] ?? 'http://localhost:3000')),
+				'frontend_url'         => esc_url_raw((string) ($global['frontend_url'] ?? 'http://localhost:3010')),
 				'robots_index'         => (bool) ($global['robots_index'] ?? true),
 				'robots_follow'        => (bool) ($global['robots_follow'] ?? true),
 				'robots_noarchive'     => (bool) ($global['robots_noarchive'] ?? false),

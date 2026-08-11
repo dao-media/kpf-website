@@ -54,6 +54,24 @@ $assert(
 	'Unsafe selector syntax is rejected'
 );
 
+$child = Meta::sanitize(
+	array(
+		'selector'     => '.kpf-header__nav .kpf-nav-link',
+		'animateChild' => '.kpf-nav-link__line',
+		'trigger'      => 'hover',
+		'method'       => 'fromTo',
+		'from'         => array( 'scaleX' => 0, 'transformOrigin' => '50% 50%' ),
+		'to'           => array( 'scaleX' => 1, 'transformOrigin' => '50% 50%' ),
+	)
+);
+$assert( '.kpf-nav-link__line' === $child['animateChild'], 'animateChild selector is preserved' );
+$assert( 0.0 === (float) $child['from']['scaleX'], 'scaleX from property is preserved' );
+$assert( 1.0 === (float) $child['to']['scaleX'], 'scaleX to property is preserved' );
+$assert(
+	'' === Meta::sanitize( array( 'animateChild' => '.bad { color:red; }' ) )['animateChild'],
+	'Unsafe animateChild selector is rejected'
+);
+
 $create = new WP_REST_Request( 'POST' );
 $create->set_param( 'name', 'Hero entrance' );
 $create->set_param( 'config', $clean );

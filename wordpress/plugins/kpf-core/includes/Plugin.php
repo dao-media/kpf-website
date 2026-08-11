@@ -29,6 +29,8 @@ use KPF\Core\Blocks\Patterns as BlockPatterns;
 use KPF\Core\Blocks\Registry as BlockRegistry;
 use KPF\Core\Compat\WpGraphqlTelemetry;
 use KPF\Core\Design\Admin as DesignAdmin;
+use KPF\Core\Design\Icons\Admin as DesignIconsAdmin;
+use KPF\Core\Design\Icons\Rest as DesignIconsRest;
 use KPF\Core\Design\Tokens\Admin as DesignTokensAdmin;
 use KPF\Core\Design\Tokens\Rest as DesignTokensRest;
 use KPF\Core\Designs\Admin as DesignsAdmin;
@@ -119,6 +121,8 @@ use KPF\Core\Stylesheet\Defaults as StylesheetDefaults;
 use KPF\Core\Stylesheet\GraphQL as StylesheetGraphQL;
 use KPF\Core\Stylesheet\Meta as StylesheetMeta;
 use KPF\Core\Stylesheet\Rest as StylesheetRest;
+use KPF\Core\Scaffold\GraphQL as ScaffoldGraphQL;
+use KPF\Core\Scaffold\Media as ScaffoldMedia;
 
 final class Plugin {
 	private static ?self $instance = null;
@@ -225,8 +229,12 @@ final class Plugin {
 		StylesheetAdmin::register();
 		StylesheetRest::register();
 		StylesheetGraphQL::register();
+		ScaffoldMedia::register();
+		ScaffoldGraphQL::register();
 		DesignTokensAdmin::register();
 		DesignTokensRest::register();
+		DesignIconsAdmin::register();
+		DesignIconsRest::register();
 
 		ScrapbookContentType::register();
 		ScrapbookMeta::register();

@@ -225,7 +225,7 @@ body {
 	gap: 0.75rem 1.5rem;
 	justify-content: space-between;
 	margin: 0 auto;
-	max-width: 74rem;
+	max-width: var(--kpf-frame-desktop, 90rem);
 	padding: 0.85rem clamp(1rem, 4vw, 2rem);
 }
 
@@ -366,55 +366,12 @@ body {
 	flex: 1 0 auto;
 }
 
-.kpf-site-chrome__header {
-	--kpf-chrome-transition: 280ms;
-	--kpf-chrome-z: 50;
-}
-
-.kpf-site-chrome__header-spacer {
-	pointer-events: none;
-	width: 100%;
-}
-
-.kpf-site-chrome__header-bar {
-	width: 100%;
-}
-
-.kpf-site-chrome__header--sticky .kpf-site-chrome__header-bar,
-.kpf-site-chrome__header--sticky-hide-reveal .kpf-site-chrome__header-bar {
-	left: 0;
-	position: fixed;
-	right: 0;
-	top: 0;
-	transform: translate3d(0, 0, 0);
-	transition: transform var(--kpf-chrome-transition) ease;
-	will-change: transform;
-	z-index: var(--kpf-chrome-z);
-}
-
-.kpf-site-chrome__header--overlay .kpf-site-chrome__header-spacer {
-	display: none;
-}
-
-.kpf-site-chrome__header--overlay .kpf-site-chrome__header-bar {
-	left: 0;
-	position: fixed;
-	right: 0;
-	top: 0;
-	z-index: var(--kpf-chrome-z);
-}
-
-.kpf-site-chrome__header--retracted .kpf-site-chrome__header-bar {
-	transform: translate3d(0, -100%, 0);
-}
-
-.kpf-site-chrome__header--transparent-top .kpf-site-chrome__header-bar {
-	background: transparent;
-}
+/* Header shell geometry lives in pages.css so WP GlobalStylesheet SSR matches
+ * the floating bar on first paint (avoids sticky→fixed jump when Next CSS loads). */
 
 .kpf-site-chrome__footer--contained {
 	margin: 0 auto;
-	max-width: 74rem;
+	max-width: var(--kpf-frame-desktop, 90rem);
 	width: 100%;
 }
 
@@ -426,24 +383,13 @@ body {
 	margin-top: auto;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.kpf-site-chrome__header--sticky .kpf-site-chrome__header-bar,
-	.kpf-site-chrome__header--sticky-hide-reveal .kpf-site-chrome__header-bar {
-		transition: none;
-	}
-
-	.kpf-site-chrome__header--retracted .kpf-site-chrome__header-bar {
-		transform: none;
-	}
-}
-
 .kpf-page {
 	padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 2rem);
 }
 
 .kpf-page__article {
 	margin: 0 auto;
-	max-width: 74rem;
+	max-width: var(--kpf-frame-desktop, 90rem);
 }
 
 .kpf-page__header,
@@ -1266,19 +1212,62 @@ body {
 	margin: 0;
 }
 
+/* Content Block — text stack + actions protocol (see foundation.css) */
 .kpf-content-block {
-	/* Text container: title group + body + actions */
+	--kpf-content-copy-gap: var(--kpf-space-xl); /* 32 */
+	--kpf-content-title-gap: var(--kpf-space-md); /* 16 */
+	--kpf-content-body-gap: var(--kpf-space-md);
+	--kpf-content-actions-gap: var(--kpf-space-md); /* 16 */
+	--kpf-content-actions-pad: var(--kpf-space-xl); /* 32 */
+
 	display: flex;
 	flex-direction: column;
-	gap: var(--kpf-space-xl); /* 32px */
+	gap: 0;
 	max-width: 35rem;
+	min-width: 15rem;
+	width: 100%;
+}
+
+@media (max-width: 63.99rem) {
+	.kpf-content-block {
+		--kpf-content-copy-gap: var(--kpf-space-lg);
+		--kpf-content-title-gap: var(--kpf-space-sm);
+		--kpf-content-body-gap: var(--kpf-space-sm);
+		--kpf-content-actions-gap: var(--kpf-space-sm);
+		--kpf-content-actions-pad: var(--kpf-space-lg);
+	}
+}
+
+@media (max-width: 29.99rem) {
+	.kpf-content-block {
+		--kpf-content-copy-gap: var(--kpf-space-inset);
+		--kpf-content-title-gap: var(--kpf-space-field);
+		--kpf-content-body-gap: var(--kpf-space-field);
+		--kpf-content-actions-gap: var(--kpf-space-field);
+		--kpf-content-actions-pad: var(--kpf-space-inset);
+	}
+}
+
+.kpf-content-block__copy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kpf-content-copy-gap);
+	min-width: 0;
+	width: 100%;
 }
 
 .kpf-content-block__title-group {
-	/* Title container: eyebrow + title */
 	display: flex;
 	flex-direction: column;
-	gap: var(--kpf-space-md); /* 16px */
+	gap: var(--kpf-content-title-gap);
+	min-width: 0;
+}
+
+.kpf-content-block__body-group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kpf-content-body-gap);
+	min-width: 0;
 }
 
 .kpf-content-block__eyebrow {
@@ -1322,9 +1311,13 @@ body {
 }
 
 .kpf-content-block__actions {
+	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--kpf-space-sm);
+	gap: var(--kpf-content-actions-gap);
+	max-width: 100%;
+	padding-top: var(--kpf-content-actions-pad);
+	width: 100%;
 }
 
 .kpf-content-block__notation {

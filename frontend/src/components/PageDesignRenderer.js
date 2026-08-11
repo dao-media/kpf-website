@@ -1,4 +1,5 @@
 import FormRenderer from "@/components/FormRenderer";
+import PartnersSlider from "@/components/PartnersSlider";
 import StackedImageSlider from "@/components/StackedImageSlider";
 import WordPressContent from "@/components/WordPressContent";
 
@@ -6,6 +7,8 @@ const {
   renderDesignTemplate,
   splitDesignHtml,
 } = require("./pageDesignTemplate");
+const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
+const { HOME } = require("@/lib/pageCopy");
 
 function textOnly(value) {
   return String(value || "").replace(/<[^>]*>/g, "").trim();
@@ -88,7 +91,7 @@ export function buildDesignModel(page) {
   };
 }
 
-function renderDesignPart(part, index, { forms, queries }) {
+function renderDesignPart(part, index, { forms, queries, partnerGrantees }) {
   if (part.type === "html") {
     return (
       <div
@@ -125,10 +128,22 @@ function renderDesignPart(part, index, { forms, queries }) {
     );
   }
 
+  if (part.type === "partners-slider") {
+    const items = normalizePartnerGrantees(partnerGrantees);
+    if (!items.length) return null;
+    return (
+      <PartnersSlider
+        key={`partners-slider-${index}`}
+        items={items}
+        label={HOME?.partners?.label || "Kevin Popke Foundation Grantees"}
+      />
+    );
+  }
+
   return null;
 }
 
-export default function PageDesignRenderer({ page }) {
+export default function PageDesignRenderer({ page, partnerGrantees = [] }) {
   const design = page?.kpfPageDesign;
 
   if (!design || !design.html) {
@@ -146,7 +161,10 @@ export default function PageDesignRenderer({ page }) {
   const forms = formsFromDesign(design);
   const parts = splitDesignHtml(html);
   const hasIslands = parts.some(
-    (part) => part.type === "form" || part.type === "stacked-slider",
+    (part) =>
+      part.type === "form" ||
+      part.type === "stacked-slider" ||
+      part.type === "partners-slider",
   );
 
   return (
@@ -163,6 +181,7 @@ export default function PageDesignRenderer({ page }) {
             renderDesignPart(part, index, {
               forms,
               queries: model.queries,
+              partnerGrantees,
             }),
           )}
         </div>

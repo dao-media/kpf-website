@@ -73,12 +73,8 @@ final class Purge {
 				}
 			}
 
-			if ( class_exists( '\KPF\Core\Seo\Settings' ) ) {
-				$seo           = \KPF\Core\Seo\Settings::get();
-				$seo_frontend  = (string) ( $seo['global']['frontend_url'] ?? '' );
-				if ( '' !== $seo_frontend ) {
-					return trailingslashit( $seo_frontend );
-				}
+			if ( class_exists( '\KPF\Core\Support\FrontendUrl' ) ) {
+				return \KPF\Core\Support\FrontendUrl::base();
 			}
 
 			return home_url( '/' );

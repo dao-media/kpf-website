@@ -69,6 +69,7 @@ final class Meta {
 			'version'         => self::VERSION,
 			'active'          => true,
 			'selector'        => '',
+			'animateChild'    => '',
 			'trigger'         => 'load',
 			'method'          => 'from',
 			'duration'        => 0.8,
@@ -136,6 +137,7 @@ final class Meta {
 		if ( preg_match( '/[{};<>\x00-\x1F]/', $selector ) ) {
 			$selector = '';
 		}
+		$animate_child = self::selector( $value['animateChild'] ?? '' );
 
 		$trigger = (string) ( $value['trigger'] ?? 'load' );
 		if ( ! in_array( $trigger, array( 'load', 'in-view', 'hover', 'click' ), true ) ) {
@@ -198,6 +200,7 @@ final class Meta {
 			'version'        => self::VERSION,
 			'active'         => (bool) ( $value['active'] ?? true ),
 			'selector'       => $selector,
+			'animateChild'   => $animate_child,
 			'trigger'        => $trigger,
 			'method'         => $method,
 			'duration'       => self::number( $value['duration'] ?? 0.8, 0.01, 60 ),

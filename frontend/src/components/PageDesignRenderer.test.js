@@ -198,4 +198,22 @@ describe("page design templates", () => {
       ],
     );
   });
+
+  it("preserves partners-slider markers and splits islands", () => {
+    const { renderDesignTemplate, splitDesignHtml } = require("./pageDesignTemplate");
+    assert.equal(
+      renderDesignTemplate(
+        "<div>{{partners-slider}}</div><p>{{page.title}}</p>",
+        model,
+      ),
+      "<div>{{partners-slider}}</div><p>Kevin &amp; &lt;Friends&gt;</p>",
+    );
+    assert.deepEqual(splitDesignHtml("a{{partners-slider}}b{{form:contact}}c"), [
+      { type: "html", html: "a" },
+      { type: "partners-slider" },
+      { type: "html", html: "b" },
+      { type: "form", slug: "contact" },
+      { type: "html", html: "c" },
+    ]);
+  });
 });

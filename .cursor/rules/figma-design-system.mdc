@@ -71,6 +71,7 @@ Three-layer model: **Primitive → Semantic → Component** (never hardcode hex 
 | Button / Outline | `.kpf-btn.kpf-btn--secondary` (outline) |
 | Text Link | `.kpf-link` / `.kpf-btn--ghost` |
 | Text Field | `.kpf-field` + `.kpf-input` |
+| Content Block | `.kpf-content-block` → `__copy` / `__title-group` / `__body-group` / `__actions` |
 | Card / Accordion | design-system only until coded |
 
 ## 3. Frameworks & Libraries

@@ -53,33 +53,38 @@ function clampInt(value, min, max, fallback) {
   return Math.max(min, Math.min(max, Math.round(next)));
 }
 
-function normalizeHeaderBehavior(raw = {}) {
-  const mode = ["inline", "sticky", "sticky-hide-reveal"].includes(raw.mode)
-    ? raw.mode
+function normalizeHeaderBehavior(raw) {
+  const src = raw && typeof raw === "object" ? raw : {};
+  const mode = ["inline", "sticky", "sticky-hide-reveal"].includes(src.mode)
+    ? src.mode
     : "sticky";
+
+  // Scaffold / default chrome: floating pill over content (Figma 414:532 Nav).
+  const floatDefaults = !raw || typeof raw !== "object" || Object.keys(src).length === 0;
 
   return {
     version: 1,
     mode,
-    retractDelayMs: clampInt(raw.retractDelayMs, 0, 2000, 180),
-    scrollThresholdPx: clampInt(raw.scrollThresholdPx, 0, 200, 12),
-    transitionMs: clampInt(raw.transitionMs, 0, 2000, 280),
-    revealAtTop: raw.revealAtTop !== false,
-    overlayHero: Boolean(raw.overlayHero),
-    transparentAtTop: Boolean(raw.transparentAtTop),
-    zIndex: clampInt(raw.zIndex, 1, 9999, 50),
+    retractDelayMs: clampInt(src.retractDelayMs, 0, 2000, 180),
+    scrollThresholdPx: clampInt(src.scrollThresholdPx, 0, 200, 12),
+    transitionMs: clampInt(src.transitionMs, 0, 2000, 280),
+    revealAtTop: src.revealAtTop !== false,
+    overlayHero: floatDefaults ? true : Boolean(src.overlayHero),
+    transparentAtTop: floatDefaults ? true : Boolean(src.transparentAtTop),
+    zIndex: clampInt(src.zIndex, 1, 9999, 100),
   };
 }
 
-function normalizeFooterBehavior(raw = {}) {
-  const mode = ["inline", "sticky-bottom"].includes(raw.mode)
-    ? raw.mode
+function normalizeFooterBehavior(raw) {
+  const src = raw && typeof raw === "object" ? raw : {};
+  const mode = ["inline", "sticky-bottom"].includes(src.mode)
+    ? src.mode
     : "inline";
 
   return {
     version: 1,
     mode,
-    fullWidth: raw.fullWidth !== false,
+    fullWidth: src.fullWidth !== false,
   };
 }
 

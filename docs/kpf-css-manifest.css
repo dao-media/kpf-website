@@ -11,9 +11,11 @@
  *
  * Figma:
  *   File  Iz5XryrkvcSuW2wIIOFM0I  (Kevin Popke Foundation)
- *   Truth Option 3 / Main · Homepage Desktop 414:532
+ *   Truth Pages Homepage Desktop 414:532 (tablet 416:672 · mobile 418:202)
+ *   Nav   616:1061 — white floating sticky pill
  *   Collections: KPF / Primitives · KPF / Color · KPF / Spacing
  * Companion docs:
+ *   docs/kpf-layout-manifest.json
  *   docs/figma-pages-prototype-report.md
  *   .cursor/rules/figma-design-system.mdc
  *
@@ -53,7 +55,7 @@
  * 0. MANIFEST META TOKENS
  * ============================================================================= */
 :root {
-	--kpf-manifest-version: "2026-08-08";
+	--kpf-manifest-version: "2026-08-10";
 	--kpf-manifest-figma: "Iz5XryrkvcSuW2wIIOFM0I";
 	--kpf-manifest-option: "3-documentary-ember";
 
@@ -64,14 +66,16 @@
 	--kpf-bp-desktop: 64rem; /* 1024 */
 	--kpf-frame-desktop: 90rem; /* 1440 */
 
-	/* Content measure */
+	/* Content measure — wide = frame so header/sections share one column */
 	--kpf-measure-narrow: 35rem; /* content-block max */
 	--kpf-measure-reading: 42rem;
-	--kpf-measure-wide: 72rem;
-	--kpf-page-gutter: var(--kpf-space-md);
-	--kpf-page-gutter-lg: var(--kpf-space-xl);
+	--kpf-measure-wide: var(--kpf-frame-desktop);
+	--kpf-page-gutter: 1rem;
+	--kpf-page-gutter-lg: 2rem;
 	--kpf-section-y: clamp(3rem, 6vw, 5.5rem);
-	--kpf-header-height: 4.5rem; /* ~72 */
+	--kpf-header-height: 3.5rem; /* 56 — Figma Nav */
+	--kpf-header-radius: 0.75rem; /* 12 */
+	--kpf-header-float-gap: 1.5rem;
 	--kpf-z-header: 100;
 	--kpf-z-menu: 200;
 	--kpf-z-toast: 1000;
@@ -79,13 +83,13 @@
 
 @media (min-width: 48rem) {
 	:root {
-		--kpf-page-gutter: var(--kpf-space-xl);
+		--kpf-page-gutter: 2rem;
 	}
 }
 
 @media (min-width: 64rem) {
 	:root {
-		--kpf-page-gutter: var(--kpf-space-2xl);
+		--kpf-page-gutter: 4rem; /* 64 — Figma desktop */
 	}
 }
 
@@ -155,8 +159,17 @@
  *                   __well __content __title __body
  *   .kpf-icon-text-list
  *   .kpf-content-block  --inverse
- *                       __title-group __eyebrow __title(--h1…h4)
+ *                       __copy              text stack (vertical · 32→20 gap)
+ *                       __title-group       eyebrow + headline (vertical · 16→10)
+ *                       __body-group        paragraph(s) (+ notation)
+ *                       __eyebrow __title(--h1…h4)
  *                       __body __actions __notation
+ *
+ *   Content-block spacing protocol (scales by breakpoint):
+ *     Desktop ≥64rem   copy 32 / title 16 / actions gap 16 + pad-top 32
+ *     Tablet  <64rem   copy 24 / title 12 / actions gap 12 + pad-top 24
+ *     Mobile  <30rem   copy 20 / title 10 / actions gap 10 + pad-top 20
+ *   __actions = horizontal flex, wrap, max-width 100%
  *
  * FORMS
  *   .kpf-form  __rows __row(--cols-2) __cols __col(--half|--full)
@@ -183,11 +196,11 @@
  * Implemented in assets/stylesheet/pages.css (do not duplicate here long-term).
  */
 
-/* @spec [PLANNED] Layout atoms */
+/* @spec [SHIPPED] Layout atoms */
 .kpf-u-container {
 	box-sizing: border-box;
 	margin-inline: auto;
-	max-width: var(--kpf-measure-wide);
+	max-width: var(--kpf-frame-desktop);
 	padding-inline: var(--kpf-page-gutter);
 	width: 100%;
 }
@@ -362,67 +375,251 @@
 	top: var(--kpf-space-md);
 }
 
-/* @spec [PLANNED] Site header — desktop full nav; tablet/mobile Donate + hamburger */
+/* @spec [SHIPPED] Floating sticky header — Figma Nav 616:1061 */
 .kpf-header {
 	align-items: center;
-	background: color-mix(in srgb, var(--kpf-color-bg-page) 92%, transparent);
+	background: var(--kpf-color-bg-surface, #fff);
+	border-radius: var(--kpf-header-radius); /* 12 */
+	box-shadow: 0 10px 28px color-mix(in srgb, var(--kpf-ink, #12090a) 12%, transparent);
 	display: flex;
-	gap: var(--kpf-space-md);
-	justify-content: space-between;
+	gap: 1.5rem; /* 24 — Figma Nav gap */
+	justify-content: flex-start;
 	min-height: var(--kpf-header-height);
-	padding-block: var(--kpf-space-sm);
-	padding-inline: var(--kpf-page-gutter);
+	padding-block: 0.375rem; /* 6 */
+	padding-inline: 1.75rem 0.75rem; /* 28 / 12 */
 	position: sticky;
-	top: 0;
+	top: var(--kpf-header-float-gap);
 	z-index: var(--kpf-z-header);
-	backdrop-filter: blur(10px);
 }
 
 .kpf-header__brand {
 	align-items: center;
 	display: inline-flex;
-	flex: 0 0 auto;
-	gap: var(--kpf-space-xs);
+	flex: 0 1 auto;
+	gap: 0.625rem; /* 10 */
+	max-width: min(14rem, 52vw);
+	min-width: 0;
+	overflow: hidden;
 	text-decoration: none;
+}
+
+.kpf-header__mark {
+	display: block;
+	flex: 0 0 auto;
+	height: 2.5rem; /* 40 */
+	width: 2.5rem;
+}
+
+.kpf-header__brand img,
+.kpf-header__brand svg:not(.kpf-header__mark) {
+	display: block;
+	height: auto;
+	max-height: 2.5rem;
+	max-width: 100%;
+	width: auto;
+}
+
+.kpf-header__brand-text {
+	color: var(--kpf-ink, #12090a);
+	font-family: var(--kpf-font-display);
+	font-size: 0.875rem; /* 14 — Figma size/body-sm */
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	line-height: normal;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.kpf-header__spacer {
+	display: none;
+	flex: 1 1 auto;
+	min-width: 0.5rem;
+}
+
+@media (min-width: 48rem) {
+	.kpf-header__brand {
+		max-width: none;
+	}
 }
 
 .kpf-header__nav {
 	align-items: center;
 	display: none;
-	flex: 1 1 auto;
-	gap: var(--kpf-space-lg);
-	justify-content: center;
+	flex: 0 0 auto;
+	flex-wrap: nowrap;
+	gap: 2rem; /* 32 — desktop nav links */
+	justify-content: flex-end;
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
+.kpf-header__nav .kpf-nav-link {
+	color: var(--kpf-nav, #12090a);
+	font-family: var(--kpf-font-ui);
+	font-size: 0.9375rem; /* 15 */
+	font-weight: 700;
+	line-height: 1.125rem; /* 18 */
+	padding-block: 0.25rem; /* 4 — NavLink */
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.kpf-header__nav .kpf-nav-link:hover,
+.kpf-header__nav .kpf-nav-link:focus-visible {
+	color: var(--kpf-ember, #bb0d0d);
+}
+
 .kpf-header__nav .kpf-nav-link[aria-current="page"] {
-	color: var(--kpf-color-text-nav-hover);
+	color: var(--kpf-ember, #bb0d0d);
 }
 
 .kpf-header__actions {
 	align-items: center;
 	display: flex;
 	flex: 0 0 auto;
-	gap: var(--kpf-space-sm);
+	flex-wrap: nowrap;
+	gap: var(--kpf-space-xs);
+}
+
+.kpf-header__actions .kpf-btn {
+	white-space: nowrap;
 }
 
 .kpf-header__menu-slot {
-	/* 44×44 hit target; hosts mobile menu toggle */
-	height: var(--kpf-control-height);
+	flex: 0 0 auto;
+	height: 2.75rem; /* 44 — Menu button */
 	position: relative;
-	width: var(--kpf-control-height);
+	width: 2.75rem;
 }
 
 @media (min-width: 64rem) {
+	.kpf-header__spacer {
+		display: block;
+	}
+
 	.kpf-header__nav {
 		display: flex;
 	}
+
 	.kpf-header__menu-slot {
 		display: none;
 	}
 }
+
+/* @spec Mobile Nav Menu — Figma 950:566 State=Closed|Open */
+.kpf-mobile-nav {
+	align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	z-index: var(--kpf-z-menu);
+}
+
+.kpf-mobile-nav.is-open,
+.kpf-mobile-nav[data-state="open"] {
+	gap: 0.5rem; /* 8 — open stack */
+}
+
+.kpf-mobile-nav__toggle {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	border-radius: var(--kpf-radius-md); /* 8 */
+	color: var(--kpf-ink, #12090a);
+	cursor: pointer;
+	display: inline-flex;
+	height: 2.75rem; /* 44 */
+	justify-content: center;
+	padding: 0.6875rem; /* 11 */
+	touch-action: manipulation;
+	width: 2.75rem;
+}
+
+.kpf-mobile-nav__icon--close {
+	display: none;
+}
+
+.kpf-mobile-nav.is-open .kpf-mobile-nav__icon--menu,
+.kpf-mobile-nav[data-state="open"] .kpf-mobile-nav__icon--menu {
+	display: none;
+}
+
+.kpf-mobile-nav.is-open .kpf-mobile-nav__icon--close,
+.kpf-mobile-nav[data-state="open"] .kpf-mobile-nav__icon--close {
+	display: block;
+}
+
+.kpf-mobile-nav__panel {
+	background: var(--kpf-color-bg-surface, #fff);
+	border: 0;
+	border-radius: 1rem; /* 16 */
+	box-shadow:
+		-4px 12px 4px -14px rgba(0, 0, 0, 0.1),
+		0 4px 16px 0 rgba(0, 0, 0, 0.25),
+		0 8px 24px 0 rgba(26, 26, 46, 0.12);
+	display: none;
+	max-height: min(70dvh, 28rem);
+	overflow: auto;
+	padding: 0.5rem; /* 8 */
+	position: relative;
+	right: 0;
+	top: 0;
+	width: 15rem; /* 240 */
+	-webkit-overflow-scrolling: touch;
+}
+
+.kpf-mobile-nav.is-open .kpf-mobile-nav__panel,
+.kpf-mobile-nav[data-state="open"] .kpf-mobile-nav__panel {
+	display: block;
+}
+
+.kpf-mobile-nav__links {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem; /* 8 */
+	padding: 0.5rem;
+}
+
+.kpf-mobile-nav__item {
+	/* Sidebar DS: Parent / Inactive · arrow + label */
+	align-items: flex-start;
+	color: var(--kpf-ink-soft, #3d2c2d);
+	display: flex;
+	font-family: var(--kpf-font-ui);
+	font-size: 1rem; /* 16 */
+	font-weight: 600;
+	gap: 0.5rem; /* 8 */
+	letter-spacing: 0.005em;
+	line-height: 1.63;
+	min-height: 1.625rem; /* 26 */
+	padding-right: 1.5rem; /* 24 */
+	text-decoration: none;
+}
+
+.kpf-mobile-nav__arrow {
+	color: currentColor;
+	flex: 0 0 auto;
+	margin-top: 0.25rem; /* 4 — Figma arrow column pt */
+}
+
+.kpf-mobile-nav__label {
+	flex: 0 1 auto;
+}
+
+.kpf-mobile-nav__item:hover,
+.kpf-mobile-nav__item:focus-visible {
+	color: var(--kpf-ember, #bb0d0d);
+}
+
+.kpf-mobile-nav__item[aria-current="page"] {
+	color: var(--kpf-ember, #bb0d0d);
+}
+
 
 /* @spec [PLANNED] Mobile Nav Menu — Figma 950:566 State=Closed|Open */
 .kpf-mobile-nav {
@@ -679,9 +876,13 @@
 }
 
 .kpf-hero__actions {
+	/* Same protocol as .kpf-content-block__actions (row wrap · scaled gap). */
+	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--kpf-space-sm);
+	gap: var(--kpf-content-actions-gap, var(--kpf-space-md));
+	max-width: 100%;
+	width: 100%;
 }
 
 /* Home: brand-forward, cutouts — not a dark scrim manifesto */
@@ -1072,6 +1273,8 @@
  * Accordion                       .kpf-accordion
  * Icon Text Block                 .kpf-icon-text
  * Content Block                   .kpf-content-block
+ *   text stack                    .__copy > .__title-group + .__body-group
+ *   actions                       .__actions (row wrap · pad-top)
  * Chip / Partner Chip             .kpf-chip | .kpf-partner-chip
  * Blog post row                   .kpf-blog-row
  * Sidebar (in Mobile Nav)         .kpf-mobile-nav__item
@@ -1080,14 +1283,71 @@
  */
 
 /* =============================================================================
+ * 8b. CONTENT BLOCK PROTOCOL [SHIPPED in foundation.css]
+ * =============================================================================
+ *
+ * Markup:
+ *   <div class="kpf-content-block">
+ *     <div class="kpf-content-block__copy">
+ *       <div class="kpf-content-block__title-group">…eyebrow + headline…</div>
+ *       <div class="kpf-content-block__body-group">…paragraph(s)…</div>
+ *     </div>
+ *     <div class="kpf-content-block__actions">…buttons…</div>
+ *   </div>
+ *
+ * Tokens (scoped on .kpf-content-block):
+ *   --kpf-content-copy-gap | --kpf-content-title-gap | --kpf-content-body-gap
+ *   --kpf-content-actions-gap | --kpf-content-actions-pad
+ */
+
+.kpf-content-block {
+	/* Desktop defaults; tablet/mobile override via media queries in foundation. */
+	--kpf-content-copy-gap: var(--kpf-space-xl);
+	--kpf-content-title-gap: var(--kpf-space-md);
+	--kpf-content-body-gap: var(--kpf-space-md);
+	--kpf-content-actions-gap: var(--kpf-space-md);
+	--kpf-content-actions-pad: var(--kpf-space-xl);
+}
+
+.kpf-content-block__copy {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kpf-content-copy-gap);
+}
+
+.kpf-content-block__title-group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kpf-content-title-gap);
+}
+
+.kpf-content-block__body-group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--kpf-content-body-gap);
+}
+
+.kpf-content-block__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--kpf-content-actions-gap);
+	max-width: 100%;
+	padding-top: var(--kpf-content-actions-pad);
+}
+
+/* =============================================================================
  * 9. INTERACTIVE ELEMENTS TO EARMARK (build checklist)
  * =============================================================================
  *
  * GLOBAL
- *   [ ] .kpf-skip-link
- *   [ ] .kpf-header sticky + Donate always visible on mobile
- *   [ ] .kpf-mobile-nav open/close (aria-expanded, aria-controls, focus trap)
- *   [ ] .kpf-nav-link aria-current="page"
+ *   [x] .kpf-skip-link (AccessibilityRuntime)
+ *   [x] .kpf-header floating sticky pill + Donate always visible on mobile (KpfHeader)
+ *   [x] .kpf-mobile-nav open/close (aria-expanded, aria-controls, Escape / outside click)
+ *   [x] .kpf-nav-link aria-current="page"
+ *   [x] .kpf-footer grid + bar (KpfFooter)
+ *   [x] Home section scaffold when no CMS design HTML (HomePageScaffold)
+ *   [x] About / Events scaffolds (AboutPageScaffold, EventsPageScaffold)
+ *   [x] Docs-grounded copy in frontend/src/lib/pageCopy.js + /media/* assets
  *   [ ] Button hover/press/focus (already in foundation)
  *   [ ] prefers-reduced-motion (foundation + GSAP Runtime)
  *

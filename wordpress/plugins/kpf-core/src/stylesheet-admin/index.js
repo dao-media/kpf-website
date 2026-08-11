@@ -2,6 +2,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { Button, Notice, Spinner } from '@wordpress/components';
 import { createRoot, useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import CodeMirrorFindBar from '../shared/CodeMirrorFindBar';
 import './admin.scss';
 
 apiFetch.use(apiFetch.createNonceMiddleware(window.kpfStylesheetAdmin?.nonce || ''));
@@ -23,6 +24,7 @@ function CssEditor({ value, onChange }) {
 	const textareaRef = useRef(null);
 	const editorRef = useRef(null);
 	const onChangeRef = useRef(onChange);
+	const [ready, setReady] = useState(false);
 
 	useEffect(() => {
 		onChangeRef.current = onChange;
@@ -50,12 +52,14 @@ function CssEditor({ value, onChange }) {
 		const editor = instance?.codemirror;
 		if (!editor) return undefined;
 		editorRef.current = editor;
+		setReady(true);
 		editor.on('change', (changedEditor, change) => {
 			if (change.origin !== 'setValue') onChangeRef.current(changedEditor.getValue());
 		});
 		return () => {
 			editor.toTextArea();
 			editorRef.current = null;
+			setReady(false);
 		};
 	}, []);
 
@@ -68,6 +72,9 @@ function CssEditor({ value, onChange }) {
 
 	return (
 		<div className="kpf-stylesheet-code">
+			<div className="kpf-stylesheet-code__toolbar">
+				<CodeMirrorFindBar editorRef={editorRef} ready={ready} />
+			</div>
 			<label className="screen-reader-text" htmlFor="kpf-global-stylesheet">
 				{__('Global stylesheet source', 'kpf-core')}
 			</label>

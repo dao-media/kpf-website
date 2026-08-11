@@ -23,6 +23,7 @@ module.exports = {
 		'accessibility-admin': path.resolve(__dirname, 'src/accessibility-admin/index.js'),
 		'stylesheet-admin': path.resolve(__dirname, 'src/stylesheet-admin/index.js'),
 		'tokens-admin': path.resolve(__dirname, 'src/tokens-admin/index.js'),
+		'icons-admin': path.resolve(__dirname, 'src/icons-admin/index.js'),
 		'backups-admin': path.resolve(__dirname, 'src/backups-admin/index.js'),
 	},
 };

@@ -1,4 +1,5 @@
 import { createPortal, useEffect, useRef, useState } from '@wordpress/element';
+import CodeMirrorFindBar from '../shared/CodeMirrorFindBar';
 import useTagAutocomplete from './TagAutocomplete';
 
 const baseSettings = window.kpfDesignsAdmin?.codeEditor || {};
@@ -99,6 +100,9 @@ export default function CodeEditor({
 
 	return (
 		<div className="kpf-source-editor kpf-source-editor--vscode-dark">
+			<div className="kpf-source-editor__toolbar">
+				<CodeMirrorFindBar editorRef={editorRef} ready={ready} />
+			</div>
 			<label className="screen-reader-text" htmlFor={id}>
 				{label}
 			</label>

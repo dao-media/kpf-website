@@ -4,12 +4,13 @@
 	"private": true,
 	"scripts": {
 		"predev": "npm run search:generate",
-		"dev": "faust dev",
+		"dev": "PORT=3010 faust dev --webpack",
 		"prebuild": "npm run search:generate",
 		"build": "faust build",
 		"generate": "faust generatePossibleTypes",
 		"search:generate": "node scripts/generate-search-index.mjs",
-		"start": "faust start",
+		"postinstall": "node scripts/patch-next-hmr.mjs",
+		"start": "PORT=3010 faust start",
 		"lint": "eslint .",
 		"test": "node --test src/components/*.test.js src/lib/*.test.js"
 	},

@@ -16,6 +16,7 @@ use KPF\Core\Inbox\Unread;
 use KPF\Core\Scrapbook\ContentType as ScrapbookContentType;
 use KPF\Core\Seo\Admin as SeoAdmin;
 use KPF\Core\Seo\Settings as SeoSettings;
+use KPF\Core\Support\FrontendUrl;
 use KPF\Core\Support\SiteDateTime;
 use WP_Post;
 
@@ -108,7 +109,7 @@ final class Dashboard {
 			'site'      => array(
 				'name'        => get_bloginfo( 'name' ),
 				'description' => get_bloginfo( 'description' ),
-				'url'         => home_url( '/' ),
+				'url'         => FrontendUrl::base(),
 				'adminUrl'    => admin_url(),
 				'date'        => SiteDateTime::format_date( time() ),
 			),

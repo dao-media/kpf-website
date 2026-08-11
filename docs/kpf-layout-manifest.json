@@ -1,0 +1,125 @@
+{
+  "version": "2026-08-10",
+  "figma": {
+    "fileKey": "Iz5XryrkvcSuW2wIIOFM0I",
+    "option": "3-documentary-ember",
+    "truth": "Pages Homepage Desktop",
+    "home": {
+      "desktop": "414:532",
+      "tablet": "416:672",
+      "mobile": "418:202",
+      "nav": "616:1061"
+    }
+  },
+  "layout": {
+    "frameDesktopRem": 90,
+    "frameDesktopPx": 1440,
+    "gutterDesktopRem": 4,
+    "gutterDesktopPx": 64,
+    "measureWide": "var(--kpf-frame-desktop)",
+    "containerRule": "max-width: var(--kpf-frame-desktop); margin-inline: auto; padding-inline: var(--kpf-page-gutter)"
+  },
+  "contentBlock": {
+    "className": "kpf-content-block",
+    "structure": [
+      ".__copy",
+      ".__copy > .__title-group (eyebrow + title)",
+      ".__copy > .__body-group (paragraphs + notation)",
+      ".__actions"
+    ],
+    "spacing": {
+      "desktop": {
+        "minWidthRem": 64,
+        "copyGapPx": 32,
+        "titleGapPx": 16,
+        "bodyGapPx": 16,
+        "actionsGapPx": 16,
+        "actionsPadTopPx": 32
+      },
+      "tablet": {
+        "maxWidthRem": 63.99,
+        "copyGapPx": 24,
+        "titleGapPx": 12,
+        "bodyGapPx": 12,
+        "actionsGapPx": 12,
+        "actionsPadTopPx": 24
+      },
+      "mobile": {
+        "maxWidthRem": 29.99,
+        "copyGapPx": 20,
+        "titleGapPx": 10,
+        "bodyGapPx": 10,
+        "actionsGapPx": 10,
+        "actionsPadTopPx": 20
+      }
+    },
+    "actions": {
+      "display": "flex",
+      "direction": "row",
+      "wrap": true,
+      "maxWidth": "100%"
+    },
+    "tokens": {
+      "copyGap": "--kpf-content-copy-gap",
+      "titleGap": "--kpf-content-title-gap",
+      "bodyGap": "--kpf-content-body-gap",
+      "actionsGap": "--kpf-content-actions-gap",
+      "actionsPad": "--kpf-content-actions-pad"
+    }
+  },
+  "header": {
+    "component": "KpfHeader",
+    "wordpressComponent": "kpf-site-header",
+    "className": "kpf-header",
+    "figmaNode": "616:1061",
+    "mobileMenuFigmaNode": "950:566",
+    "behavior": "sticky-float",
+    "heightRem": 3.5,
+    "radiusRem": 0.75,
+    "floatGapRem": 1.5,
+    "gapPx": 24,
+    "paddingInline": [28, 6],
+    "paddingBlock": 6,
+    "brandTextPx": 14,
+    "navLinkPx": 15,
+    "navLinkWeight": 700,
+    "navGapPx": 32,
+    "surface": "white",
+    "zIndex": 100,
+    "nav": ["Home", "About", "Events", "Blog", "Contact"],
+    "cta": "Donate",
+    "mobile": {
+      "togglePx": 44,
+      "panelWidthPx": 240,
+      "panelRadiusPx": 16,
+      "itemStyle": "sidebar-parent"
+    }
+  },
+  "footer": {
+    "component": "KpfFooter",
+    "wordpressComponent": "kpf-site-footer",
+    "className": "kpf-footer",
+    "figmaNode": "416:100"
+  },
+  "homeSections": [
+    { "order": 1, "className": "kpf-hero--home", "figmaNode": "616:1060", "status": "shipped" },
+    { "order": 2, "className": "kpf-partners", "figmaNode": "426:477", "status": "shipped" },
+    { "order": 3, "className": "kpf-story", "figmaNode": "414:658", "status": "shipped" },
+    { "order": 4, "className": "kpf-values--cards", "figmaNode": "426:492", "status": "shipped" },
+    { "order": 5, "className": "kpf-programs", "figmaNode": "426:997", "status": "shipped" },
+    { "order": 6, "className": "kpf-archive", "figmaNode": "947:6302", "status": "shipped" },
+    { "order": 7, "className": "kpf-donate--band", "figmaNode": "416:613", "status": "shipped" },
+    { "order": 8, "className": "kpf-footer", "figmaNode": "416:100", "status": "shipped" }
+  ],
+  "css": {
+    "contract": "docs/kpf-css-manifest.css",
+    "runtime": [
+      "wordpress/plugins/kpf-core/assets/stylesheet/pages.css",
+      "frontend/src/styles/pages.css"
+    ],
+    "foundation": [
+      "wordpress/plugins/kpf-core/assets/stylesheet/foundation.css",
+      "frontend/src/styles/components.css"
+    ]
+  }
+}

@@ -26,6 +26,13 @@ describe("normalizeHeaderBehavior", () => {
     assert.equal(behavior.revealAtTop, true);
   });
 
+  it("defaults empty behavior to floating overlay", () => {
+    const behavior = normalizeHeaderBehavior(null);
+    assert.equal(behavior.overlayHero, true);
+    assert.equal(behavior.transparentAtTop, true);
+    assert.equal(behavior.zIndex, 100);
+  });
+
   it("keeps sticky-hide-reveal mode", () => {
     assert.equal(
       normalizeHeaderBehavior({ mode: "sticky-hide-reveal" }).mode,
@@ -39,6 +46,12 @@ describe("normalizeFooterBehavior", () => {
     const behavior = normalizeFooterBehavior({});
     assert.equal(behavior.mode, "inline");
     assert.equal(behavior.fullWidth, true);
+  });
+
+  it("treats null/undefined like empty behavior", () => {
+    assert.equal(normalizeFooterBehavior(null).mode, "inline");
+    assert.equal(normalizeFooterBehavior(undefined).mode, "inline");
+    assert.equal(normalizeHeaderBehavior(null).mode, "sticky");
   });
 });
 

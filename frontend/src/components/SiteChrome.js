@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import SiteHeader from "@/components/SiteHeader";
+import KpfChromeRuntime from "@/components/KpfChromeRuntime";
+import KpfFooter from "@/components/KpfFooter";
+import KpfHeader from "@/components/KpfHeader";
 import { SiteDateTimeProvider } from "@/components/SiteDateTimeProvider";
 
 const {
@@ -10,13 +12,22 @@ const {
   normalizeHeaderBehavior,
   shouldRevealSmartHeader,
 } = require("@/lib/siteChrome");
+const { htmlIncludesChromeClass } = require("@/lib/navigation");
 
 function prefersReducedMotion() {
   if (typeof window === "undefined" || !window.matchMedia) return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function ChromeHeader({ component }) {
+function defaultHeaderComponent(component) {
+  return {
+    databaseId: component?.databaseId || 0,
+    html: component?.html || "",
+    behavior: component?.behavior || null,
+  };
+}
+
+function ChromeHeader({ component, useScaffold }) {
   const behavior = normalizeHeaderBehavior(component?.behavior);
   const shellRef = useRef(null);
   const barRef = useRef(null);
@@ -39,7 +50,7 @@ function ChromeHeader({ component }) {
     observer.observe(node);
     setHeight(node.offsetHeight || 0);
     return () => observer.disconnect();
-  }, [component?.html]);
+  }, [component?.html, useScaffold]);
 
   useEffect(() => {
     if (behavior.mode !== "sticky-hide-reveal" && !behavior.transparentAtTop) {
@@ -47,6 +58,7 @@ function ChromeHeader({ component }) {
     }
 
     lastScrollY.current = window.scrollY || 0;
+    setAtTop(lastScrollY.current <= behavior.scrollThresholdPx);
 
     function clearRetract() {
       if (retractTimer.current) {
@@ -94,8 +106,7 @@ function ChromeHeader({ component }) {
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    // Initialize from current scroll position after subscribe.
-    window.requestAnimationFrame(onScroll);
+    onScroll();
     return () => {
       clearRetract();
       window.removeEventListener("scroll", onScroll);
@@ -121,7 +132,8 @@ function ChromeHeader({ component }) {
       })}
       style={headerStyleVars(behavior)}
       data-kpf-chrome-role="header"
-      data-kpf-chrome-id={component.databaseId}
+      data-kpf-chrome-id={component.databaseId || undefined}
+      data-kpf-chrome-source={useScaffold ? "scaffold" : "cms"}
     >
       {reserveSpace ? (
         <div
@@ -130,31 +142,71 @@ function ChromeHeader({ component }) {
           aria-hidden="true"
         />
       ) : null}
-      <header
-        ref={barRef}
-        className="kpf-site-chrome__header-bar"
-        dangerouslySetInnerHTML={{ __html: component.html || "" }}
-      />
+      <div ref={barRef} className="kpf-site-chrome__header-bar">
+        {useScaffold ? (
+          <KpfHeader />
+        ) : (
+          <div dangerouslySetInnerHTML={{ __html: component.html || "" }} />
+        )}
+      </div>
     </div>
   );
 }
 
-function ChromeFooter({ component }) {
+function ChromeFooter({ component, useScaffold }) {
   const behavior = normalizeFooterBehavior(component?.behavior);
+  const className = footerClassNames(behavior);
 
+  if (useScaffold) {
+    return (
+      <div
+        className={className}
+        data-kpf-chrome-role="footer"
+        data-kpf-chrome-id={component?.databaseId || undefined}
+        data-kpf-chrome-source="scaffold"
+      >
+        <KpfFooter />
+      </div>
+    );
+  }
+
+  // CMS HTML already includes <footer class="kpf-footer"> — wrap in a div.
   return (
-    <footer
-      className={footerClassNames(behavior)}
+    <div
+      className={className}
       data-kpf-chrome-role="footer"
       data-kpf-chrome-id={component.databaseId}
+      data-kpf-chrome-source="cms"
       dangerouslySetInnerHTML={{ __html: component.html || "" }}
     />
   );
 }
 
 export default function SiteChrome({ chrome, children }) {
-  const header = chrome?.header?.html ? chrome.header : null;
-  const footer = chrome?.footer?.html ? chrome.footer : null;
+  const cmsHeader = chrome?.header || null;
+  const cmsFooter = chrome?.footer || null;
+  // Prefer React header so the Figma Nav (desktop + mobile) always ships; CMS header stays seeded for Components.
+  const useHeaderScaffold = true;
+  const useFooterScaffold = !htmlIncludesChromeClass(cmsFooter?.html, "kpf-footer");
+
+  const header = {
+    databaseId: cmsHeader?.databaseId || 0,
+    html: "",
+    behavior: {
+      mode: "sticky",
+      ...(cmsHeader?.behavior || {}),
+      overlayHero: true,
+      transparentAtTop: true,
+      zIndex: 100,
+    },
+  };
+  const footer = cmsFooter
+    ? useFooterScaffold
+      ? { databaseId: cmsFooter.databaseId || 0, html: "", behavior: cmsFooter.behavior || null }
+      : cmsFooter
+    : useFooterScaffold
+      ? { databaseId: 0, html: "", behavior: null }
+      : null;
   const footerBehavior = footer
     ? normalizeFooterBehavior(footer.behavior)
     : null;
@@ -166,11 +218,14 @@ export default function SiteChrome({ chrome, children }) {
   return (
     <SiteDateTimeProvider value={chrome?.dateTime || null}>
       <div className={shellClass}>
-        {header ? <ChromeHeader component={header} /> : <SiteHeader />}
+        <ChromeHeader component={header} useScaffold={useHeaderScaffold} />
+        <KpfChromeRuntime enabled={!useHeaderScaffold} />
         <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
           {children}
         </div>
-        {footer ? <ChromeFooter component={footer} /> : null}
+        {footer ? (
+          <ChromeFooter component={footer} useScaffold={useFooterScaffold} />
+        ) : null}
       </div>
     </SiteDateTimeProvider>
   );

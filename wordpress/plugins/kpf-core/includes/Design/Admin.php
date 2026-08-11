@@ -7,7 +7,7 @@ namespace KPF\Core\Design;
 use KPF\Core\Stylesheet\ContentType as StylesheetContentType;
 
 /**
- * Utilities → Design parent menu (Stylesheet, Tokens, Components).
+ * Utilities → Design parent menu (Stylesheet, Tokens, Icons, Components).
  */
 final class Admin {
 	public const MENU_SLUG = 'kpf-design';

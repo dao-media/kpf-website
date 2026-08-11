@@ -50,7 +50,7 @@ final class Settings {
 				'separator'            => '|',
 				'site_title'           => '',
 				'site_description'     => '',
-				'frontend_url'         => 'http://localhost:3000',
+				'frontend_url'         => 'http://localhost:3010',
 				'robots_index'         => true,
 				'robots_follow'        => true,
 				'robots_noarchive'     => false,

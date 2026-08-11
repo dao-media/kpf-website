@@ -68,6 +68,7 @@ final class Groups {
 			self::ensure_term(__('Actions', 'kpf-core'), $root, 'actions');
 			self::ensure_term(__('Content', 'kpf-core'), $root, 'content');
 			self::ensure_term(__('Information', 'kpf-core'), $root, 'information');
+			self::ensure_term(__('Chrome', 'kpf-core'), $root, 'chrome');
 		}
 
 		update_option('kpf_component_groups_seeded', '1', false);

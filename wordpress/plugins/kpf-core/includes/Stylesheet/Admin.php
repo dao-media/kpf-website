@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KPF\Core\Stylesheet;
 
 use KPF\Core\Design\Admin as DesignAdmin;
+use KPF\Core\Support\FrontendUrl;
 
 final class Admin {
 	public static function register(): void {
@@ -64,7 +65,7 @@ final class Admin {
 				'restBase'       => esc_url_raw( rest_url( Rest::NAMESPACE ) ),
 				'maxBytes'       => Meta::MAX_BYTES,
 				'codeEditor'     => is_array( $code_editor_settings ) ? $code_editor_settings : array(),
-				'frontendUrl'    => esc_url_raw( home_url( '/' ) ),
+				'frontendUrl'    => esc_url_raw( FrontendUrl::base() ),
 				'stylesheetName' => __( 'Global stylesheet', 'kpf-core' ),
 			)
 		);

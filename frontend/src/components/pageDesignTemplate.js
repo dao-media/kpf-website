@@ -176,18 +176,22 @@ function renderSections(template, model) {
 }
 
 const ISLAND_MARKER_RE =
-  /\{\{\s*(form|stacked-slider):([a-z0-9_-]+)\s*\}\}/gi;
+  /\{\{\s*(?:(form|stacked-slider):([a-z0-9_-]+)|(partners-slider))\s*\}\}/gi;
 
 function preserveIslandMarkers(template) {
   const markers = [];
   const source = String(template || "").replace(
     ISLAND_MARKER_RE,
-    (_match, kind, slug) => {
+    (_match, kind, slug, partnersSlider) => {
       const index =
-        markers.push({
-          kind: String(kind).toLowerCase(),
-          slug: String(slug).toLowerCase(),
-        }) - 1;
+        markers.push(
+          partnersSlider
+            ? { kind: "partners-slider", slug: "" }
+            : {
+                kind: String(kind).toLowerCase(),
+                slug: String(slug).toLowerCase(),
+              },
+        ) - 1;
       return `KPF_ISLAND_MARKER_${index}_END`;
     },
   );
@@ -195,14 +199,13 @@ function preserveIslandMarkers(template) {
 }
 
 function restoreIslandMarkers(html, markers) {
-  return markers.reduce(
-    (output, marker, index) =>
-      output.replaceAll(
-        `KPF_ISLAND_MARKER_${index}_END`,
-        `{{${marker.kind}:${marker.slug}}}`,
-      ),
-    html,
-  );
+  return markers.reduce((output, marker, index) => {
+    const token =
+      marker.kind === "partners-slider"
+        ? "{{partners-slider}}"
+        : `{{${marker.kind}:${marker.slug}}}`;
+    return output.replaceAll(`KPF_ISLAND_MARKER_${index}_END`, token);
+  }, html);
 }
 
 function renderDesignTemplate(template, model) {
@@ -261,7 +264,8 @@ function discoverStackedSliderSlugs(template) {
 function splitDesignHtml(html) {
   const source = String(html || "");
   const parts = [];
-  const re = /\{\{\s*(form|stacked-slider):([a-z0-9_-]+)\s*\}\}/gi;
+  const re =
+    /\{\{\s*(?:(form|stacked-slider):([a-z0-9_-]+)|(partners-slider))\s*\}\}/gi;
   let lastIndex = 0;
   let match;
 
@@ -269,10 +273,14 @@ function splitDesignHtml(html) {
     if (match.index > lastIndex) {
       parts.push({ type: "html", html: source.slice(lastIndex, match.index) });
     }
-    parts.push({
-      type: String(match[1]).toLowerCase(),
-      slug: String(match[2]).toLowerCase(),
-    });
+    if (match[3]) {
+      parts.push({ type: "partners-slider" });
+    } else {
+      parts.push({
+        type: String(match[1]).toLowerCase(),
+        slug: String(match[2]).toLowerCase(),
+      });
+    }
     lastIndex = match.index + match[0].length;
   }
 

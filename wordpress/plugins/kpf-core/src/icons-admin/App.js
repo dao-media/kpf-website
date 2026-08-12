@@ -10,16 +10,16 @@ import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import * as Lucide from 'lucide-react';
 import { saveStylesheetClass } from './api';
-import {
+	import {
 	buildCopyFormats,
-	canvasInlineStyle,
 	defaultClassName,
-	glyphInlineStyle,
+	isZeroBox,
 	normalizeClassName,
+	normalizeCssBox,
 	readViewBoxRatio,
 	toKebabCase,
 } from './copyFormats';
-import { downloadIconPng } from './exportPng';
+import { downloadIconPng, downloadIconSvg } from './exportPng';
 import lucideCatalog from './lucideCatalog.json';
 import './admin.scss';
 
@@ -135,7 +135,7 @@ export default function App() {
 	const [iconRatio, setIconRatio] = useState('24 / 24');
 	const [notice, setNotice] = useState(null);
 	const [saving, setSaving] = useState(false);
-	const [exporting, setExporting] = useState(false);
+	const [exporting, setExporting] = useState(null); // null | 'png' | 'svg'
 	const [copyFormat, setCopyFormat] = useState('svg');
 	const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -291,6 +291,8 @@ export default function App() {
 				icon: toKebabCase(selected),
 				config: {
 					...config,
+					strokeLinecap: 'round',
+					strokeLinejoin: 'round',
 					ratio: formats.ratio || iconRatio,
 				},
 			});
@@ -312,18 +314,45 @@ export default function App() {
 		}
 	}
 
-	async function handleExportPng() {
+	function prepareExportMarkup() {
+		if (!formats?.svg) return '';
+		let markup = formats.svg;
+		const resolved = resolvePreviewColor(
+			mode === 'configured' ? config.color || 'currentColor' : 'currentColor',
+			previewRef.current
+		);
+		return markup
+			.replace(/stroke="currentColor"/g, `stroke="${resolved}"`)
+			.replace(/color:\s*currentColor/g, `color: ${resolved}`)
+			.replace(/color:\s*var\([^)]+\)/g, `color: ${resolved}`);
+	}
+
+	async function handleExportSvg() {
 		if (!formats?.svg) return;
-		setExporting(true);
+		setExporting('svg');
 		setNotice(null);
 		try {
-			let markup = formats.svg;
-			const resolved = resolvePreviewColor(config.color || 'currentColor', previewRef.current);
-			markup = markup
-				.replace(/stroke="currentColor"/g, `stroke="${resolved}"`)
-				.replace(/color:\s*currentColor/g, `color: ${resolved}`)
-				.replace(/color:\s*var\([^)]+\)/g, `color: ${resolved}`);
-			await downloadIconPng(markup, `kpf-icon-${toKebabCase(selected)}.png`, 3);
+			downloadIconSvg(prepareExportMarkup(), `kpf-icon-${toKebabCase(selected)}.svg`);
+			setNotice({
+				status: 'success',
+				message: __('SVG downloaded.', 'kpf-core'),
+			});
+		} catch (err) {
+			setNotice({
+				status: 'error',
+				message: err?.message || __('SVG export failed.', 'kpf-core'),
+			});
+		} finally {
+			setExporting(null);
+		}
+	}
+
+	async function handleExportPng() {
+		if (!formats?.svg) return;
+		setExporting('png');
+		setNotice(null);
+		try {
+			await downloadIconPng(prepareExportMarkup(), `kpf-icon-${toKebabCase(selected)}.png`, 3);
 			setNotice({
 				status: 'success',
 				message: __('PNG downloaded.', 'kpf-core'),
@@ -334,60 +363,80 @@ export default function App() {
 				message: err?.message || __('PNG export failed.', 'kpf-core'),
 			});
 		} finally {
-			setExporting(false);
+			setExporting(null);
 		}
 	}
 
 	const previewSize = mode === 'configured' ? Number(config.size) || 20 : 48;
 	const previewStroke = mode === 'configured' ? Number(config.strokeWidth) || 1.75 : 1.75;
 	const previewColor = mode === 'configured' ? config.color || 'currentColor' : 'currentColor';
-	const previewLinecap = mode === 'configured' ? config.strokeLinecap || 'round' : 'round';
-	const previewLinejoin = mode === 'configured' ? config.strokeLinejoin || 'round' : 'round';
-	const previewPadding = mode === 'configured' ? config.padding || '0' : '0';
-	const previewMargin = mode === 'configured' ? config.margin || '0' : '0';
+	// Lucide paths are designed for round caps/joins; other values jag arrow tips.
+	const previewLinecap = 'round';
+	const previewLinejoin = 'round';
+	const previewPadding = mode === 'configured' ? normalizeCssBox(config.padding, '0') : '0';
+	const previewMargin = mode === 'configured' ? normalizeCssBox(config.margin, '0') : '0';
 	const previewClass = mode === 'configured'
 		? normalizeClassName(config.className, selected).replace(/^\./, '')
 		: 'kpf-icon';
+	const hasPreviewMargin = mode === 'configured' && !isZeroBox(previewMargin);
 
+	// Preview uses a framed wrapper for padding so Lucide’s width/height attrs
+	// still fill the inset content box (SVG CSS padding is inconsistent across hosts).
 	const previewCanvasStyle =
 		mode === 'configured'
-			? canvasInlineStyle({
-					size: previewSize,
+			? {
+					width: `${previewSize}px`,
+					height: `${previewSize}px`,
 					padding: previewPadding,
-					margin: previewMargin,
+					boxSizing: 'border-box',
+					display: 'block',
+					lineHeight: 0,
+					overflow: 'hidden',
 					color: previewColor,
-				})
+				}
 			: {
 					width: `${previewSize}px`,
 					height: `${previewSize}px`,
 					boxSizing: 'border-box',
-					display: 'inline-grid',
-					placeItems: 'center',
+					display: 'block',
 					lineHeight: 0,
 					color: previewColor,
 				};
 
-	const previewGlyphStyle =
-		mode === 'configured'
-			? glyphInlineStyle(iconRatio)
-			: {
-					width: `${previewSize}px`,
-					height: `${previewSize}px`,
-					aspectRatio: iconRatio,
-					display: 'block',
-				};
+	const previewSlotStyle = hasPreviewMargin ? { padding: previewMargin } : undefined;
 
-	const previewProps = {
-		width: '100%',
-		height: '100%',
-		strokeWidth: previewStroke,
-		// Inherit via CSS `color` on the canvas so var(--token) resolves.
-		color: 'currentColor',
-		strokeLinecap: previewLinecap,
-		strokeLinejoin: previewLinejoin,
-		style: previewGlyphStyle,
-		'aria-hidden': true,
-	};
+	const previewProps =
+		mode === 'configured'
+			? {
+					width: '100%',
+					height: '100%',
+					strokeWidth: previewStroke,
+					color: 'currentColor',
+					strokeLinecap: previewLinecap,
+					strokeLinejoin: previewLinejoin,
+					style: {
+						width: '100%',
+						height: '100%',
+						display: 'block',
+						overflow: 'visible',
+					},
+					'aria-hidden': true,
+				}
+			: {
+					width: previewSize,
+					height: previewSize,
+					strokeWidth: previewStroke,
+					color: 'currentColor',
+					strokeLinecap: previewLinecap,
+					strokeLinejoin: previewLinejoin,
+					style: {
+						width: `${previewSize}px`,
+						height: `${previewSize}px`,
+						display: 'block',
+						color: previewColor,
+					},
+					'aria-hidden': true,
+				};
 
 	const previewTone =
 		mode === 'configured' && isLightIconColor(previewColor) ? 'kpf-icons-preview--inverse' : '';
@@ -411,7 +460,7 @@ export default function App() {
 					<h1>{__('Icons', 'kpf-core')}</h1>
 					<span>
 						{__(
-							'Browse the Lucide icon set, copy embed code, save a stylesheet class, or export PNG.',
+							'Browse the Lucide icon set, copy embed code, save a stylesheet class, or download SVG/PNG.',
 							'kpf-core'
 						)}
 					</span>
@@ -555,12 +604,17 @@ export default function App() {
 						<p className="kpf-icons-preview-label">{__('Live preview', 'kpf-core')}</p>
 						<div className={`kpf-icons-preview ${previewTone}`.trim()} ref={previewRef}>
 							<span
-								className={`kpf-icons-preview__canvas${
-									mode === 'configured' ? ` ${previewClass}` : ''
-								}`}
-								style={previewCanvasStyle}
+								className={`kpf-icons-preview__slot${hasPreviewMargin ? ' has-margin' : ''}`}
+								style={previewSlotStyle}
 							>
-								{SelectedIcon ? <SelectedIcon {...previewProps} /> : null}
+								<span
+									className={`kpf-icons-preview__canvas${
+										mode === 'configured' ? ` ${previewClass}` : ''
+									}`}
+									style={previewCanvasStyle}
+								>
+									{SelectedIcon ? <SelectedIcon {...previewProps} /> : null}
+								</span>
 							</span>
 						</div>
 						<ul className="kpf-icons-preview-props" aria-label={__('Applied properties', 'kpf-core')}>
@@ -586,7 +640,7 @@ export default function App() {
 							</li>
 							<li>
 								<span>{__('Caps / join', 'kpf-core')}</span>
-								<strong>{`${previewLinecap} / ${previewLinejoin}`}</strong>
+								<strong>{__('round (Lucide)', 'kpf-core')}</strong>
 							</li>
 							<li>
 								<span>{__('Color', 'kpf-core')}</span>
@@ -645,6 +699,10 @@ export default function App() {
 						<div className="kpf-icons-config">
 							<TextControl
 								label={__('Stroke weight', 'kpf-core')}
+								help={__(
+									'Lucide icons are drawn for round caps and joins — those stay locked so arrow tips stay smooth.',
+									'kpf-core'
+								)}
 								type="number"
 								step="0.05"
 								min="0.5"
@@ -653,26 +711,6 @@ export default function App() {
 								onChange={(v) =>
 									setConfig((c) => ({ ...c, strokeWidth: Number(v) || c.strokeWidth }))
 								}
-							/>
-							<SelectControl
-								label={__('End caps', 'kpf-core')}
-								value={config.strokeLinecap}
-								options={[
-									{ label: 'round', value: 'round' },
-									{ label: 'butt', value: 'butt' },
-									{ label: 'square', value: 'square' },
-								]}
-								onChange={(strokeLinecap) => setConfig((c) => ({ ...c, strokeLinecap }))}
-							/>
-							<SelectControl
-								label={__('Join / miter', 'kpf-core')}
-								value={config.strokeLinejoin}
-								options={[
-									{ label: 'round', value: 'round' },
-									{ label: 'miter', value: 'miter' },
-									{ label: 'bevel', value: 'bevel' },
-								]}
-								onChange={(strokeLinejoin) => setConfig((c) => ({ ...c, strokeLinejoin }))}
 							/>
 							<SelectControl
 								label={__('Color', 'kpf-core')}
@@ -716,7 +754,7 @@ export default function App() {
 							<TextControl
 								label={__('Padding', 'kpf-core')}
 								help={__(
-									'Insets the icon within the canvas (border-box). Try 0.25rem or 4px.',
+									'Insets the glyph inside the canvas. Use units (8px, 0.25rem) or a bare number (becomes px).',
 									'kpf-core'
 								)}
 								value={config.padding}
@@ -724,6 +762,10 @@ export default function App() {
 							/>
 							<TextControl
 								label={__('Margin', 'kpf-core')}
+								help={__(
+									'Space outside the canvas. Shown as the soft ring around the dashed box.',
+									'kpf-core'
+								)}
 								value={config.margin}
 								onChange={(margin) => setConfig((c) => ({ ...c, margin }))}
 							/>
@@ -776,8 +818,16 @@ export default function App() {
 							</Button>
 							<Button
 								variant="tertiary"
-								isBusy={exporting}
-								disabled={!formats || exporting}
+								isBusy={exporting === 'svg'}
+								disabled={!formats || Boolean(exporting)}
+								onClick={handleExportSvg}
+							>
+								{__('Download SVG', 'kpf-core')}
+							</Button>
+							<Button
+								variant="tertiary"
+								isBusy={exporting === 'png'}
+								disabled={!formats || Boolean(exporting)}
 								onClick={handleExportPng}
 							>
 								{__('Download PNG', 'kpf-core')}

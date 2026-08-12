@@ -93,6 +93,28 @@ final class Meta {
 				'scrub' => 0,
 				'once'  => true,
 			),
+			'swing'           => self::swing_defaults(),
+		);
+	}
+
+	/**
+	 * Momentum-based pendulum settings for the scroll-swing trigger.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private static function swing_defaults(): array {
+		return array(
+			'transformOrigin'   => '50% 0%',
+			'scrollMax'         => 0.6,
+			'settleMax'         => 6,
+			'settleSwings'      => 5,
+			'settleDuration'    => 1.7,
+			'velocityScale'     => 0.55,
+			'stopDelay'         => 0.12,
+			'decay'             => 0.55,
+			'scrollRadiusRatio' => 0.1,
+			'distanceMin'        => 400,
+			'distanceFull'      => 1000,
 		);
 	}
 
@@ -140,7 +162,7 @@ final class Meta {
 		$animate_child = self::selector( $value['animateChild'] ?? '' );
 
 		$trigger = (string) ( $value['trigger'] ?? 'load' );
-		if ( ! in_array( $trigger, array( 'load', 'in-view', 'hover', 'click' ), true ) ) {
+		if ( ! in_array( $trigger, array( 'load', 'in-view', 'hover', 'click', 'scroll-swing' ), true ) ) {
 			$trigger = 'load';
 		}
 
@@ -177,10 +199,20 @@ final class Meta {
 		}
 
 		$scroll = is_array( $value['scroll'] ?? null ) ? $value['scroll'] : array();
+		$swing  = is_array( $value['swing'] ?? null ) ? $value['swing'] : array();
 		$svg    = is_array( $value['svg'] ?? null ) ? $value['svg'] : array();
 		$effect = (string) ( $svg['effect'] ?? 'none' );
 		if ( ! in_array( $effect, self::EFFECTS, true ) ) {
 			$effect = 'none';
+		}
+		$swing_defaults = self::swing_defaults();
+		$origin         = substr(
+			sanitize_text_field( (string) ( $swing['transformOrigin'] ?? $swing_defaults['transformOrigin'] ) ),
+			0,
+			40
+		);
+		if ( ! preg_match( '/^[0-9.%\s\-a-zA-Z]+$/', $origin ) ) {
+			$origin = (string) $swing_defaults['transformOrigin'];
 		}
 
 		$split_animate = sanitize_key( (string) ( $svg['splitAnimate'] ?? 'chars' ) );
@@ -243,6 +275,19 @@ final class Meta {
 				'end'   => substr( sanitize_text_field( (string) ( $scroll['end'] ?? 'bottom 20%' ) ), 0, 80 ),
 				'scrub' => self::number( $scroll['scrub'] ?? 0, 0, 10 ),
 				'once'  => (bool) ( $scroll['once'] ?? true ),
+			),
+			'swing'          => array(
+				'transformOrigin'   => $origin,
+				'scrollMax'         => self::number( $swing['scrollMax'] ?? $swing_defaults['scrollMax'], 0.1, 15 ),
+				'settleMax'         => self::number( $swing['settleMax'] ?? $swing_defaults['settleMax'], 0.5, 45 ),
+				'settleSwings'      => max( 2, min( 12, (int) ( $swing['settleSwings'] ?? $swing_defaults['settleSwings'] ) ) ),
+				'settleDuration'    => self::number( $swing['settleDuration'] ?? $swing_defaults['settleDuration'], 0.4, 8 ),
+				'velocityScale'     => self::number( $swing['velocityScale'] ?? $swing_defaults['velocityScale'], 0.05, 5 ),
+				'stopDelay'         => self::number( $swing['stopDelay'] ?? $swing_defaults['stopDelay'], 0.04, 1 ),
+				'decay'             => self::number( $swing['decay'] ?? $swing_defaults['decay'], 0.2, 0.9 ),
+				'scrollRadiusRatio' => self::number( $swing['scrollRadiusRatio'] ?? $swing_defaults['scrollRadiusRatio'], 0.02, 0.5 ),
+				'distanceMin'       => self::number( $swing['distanceMin'] ?? $swing_defaults['distanceMin'], 0, 4000 ),
+				'distanceFull'      => self::number( $swing['distanceFull'] ?? $swing_defaults['distanceFull'], 80, 4000 ),
 			),
 		);
 	}

@@ -145,7 +145,7 @@ const HOME = {
     primaryCta: { href: "/#donate", label: "Donate via PayPal" },
     secondaryCta: { href: "/about/", label: "Learn about our work" },
     note: "A 501(c)(3) nonprofit organization",
-    impactTitle: "Where the money goes",
+    impactTitle: "How your donations are used",
     accordions: [
       {
         id: "housing",

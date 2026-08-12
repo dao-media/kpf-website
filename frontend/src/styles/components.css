@@ -80,7 +80,7 @@
 	--kpf-shadow-card: 0 1.125rem 3rem color-mix(in srgb, var(--kpf-ink) 12%, transparent);
 	--kpf-shadow: var(--kpf-shadow-card);
 	--kpf-focus-ring: 0 0 0 0.1875rem var(--kpf-color-action-focus-ring);
-	--kpf-transition: 160ms ease;
+	--kpf-transition: 200ms ease-in-out;
 	--kpf-font-display: "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
 	--kpf-font-body: "Roboto", "Helvetica Neue", Arial, sans-serif;
 	--kpf-font-ui: "Roboto", "Helvetica Neue", Arial, sans-serif;
@@ -202,10 +202,21 @@
 	box-sizing: border-box;
 }
 
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
 body {
 	background: var(--kpf-parchment);
 	color: var(--kpf-ink);
+	font-kerning: normal;
+	font-optical-sizing: auto;
 	margin: 0;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 .kpf-site-header {
@@ -253,8 +264,8 @@ body {
 	min-height: 2.6rem;
 	padding: 0 0.4rem 0 0.9rem;
 	transition:
-		border-color 160ms ease,
-		box-shadow 160ms ease;
+		border-color var(--kpf-transition),
+		box-shadow var(--kpf-transition);
 }
 
 .kpf-site-header__search:focus-within {
@@ -306,7 +317,7 @@ body {
 	font-size: 0.85rem;
 	font-weight: 700;
 	padding: 0.45rem 0.95rem;
-	transition: background-color 160ms ease;
+	transition: background-color var(--kpf-transition);
 }
 
 .kpf-site-header__search button:hover {
@@ -454,10 +465,10 @@ body {
 	line-height: 1.1;
 	text-decoration: none;
 	transition:
-		background-color 160ms ease,
-		border-color 160ms ease,
-		color 160ms ease,
-		transform 160ms ease;
+		background-color var(--kpf-transition),
+		border-color var(--kpf-transition),
+		color var(--kpf-transition),
+		transform var(--kpf-transition);
 }
 
 .kpf-button__link:hover {
@@ -880,8 +891,8 @@ body {
 	min-height: 3.6rem;
 	padding: 0 0.8rem 0 1rem;
 	transition:
-		border-color 160ms ease,
-		box-shadow 160ms ease;
+		border-color var(--kpf-transition),
+		box-shadow var(--kpf-transition);
 }
 
 .kpf-search__input-wrap:focus-within {
@@ -964,9 +975,9 @@ body {
 	padding: clamp(1rem, 3vw, 1.35rem);
 	text-decoration: none;
 	transition:
-		border-color 180ms ease,
-		box-shadow 180ms ease,
-		transform 180ms ease;
+		border-color var(--kpf-transition),
+		box-shadow var(--kpf-transition),
+		transform var(--kpf-transition);
 }
 
 .kpf-search-result:hover {
@@ -1021,7 +1032,7 @@ body {
 .kpf-search-result__arrow {
 	color: var(--kpf-heritage);
 	margin-top: 0.2rem;
-	transition: transform 180ms ease;
+	transition: transform var(--kpf-transition);
 }
 
 .kpf-search-result:hover .kpf-search-result__arrow {
@@ -1128,6 +1139,8 @@ body {
 	border: var(--kpf-stroke) solid var(--kpf-color-border-default);
 	border-radius: var(--kpf-radius-md);
 	overflow: clip;
+	transition: border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+	width: 100%;
 }
 
 .kpf-accordion__header {
@@ -1142,30 +1155,106 @@ body {
 	font-weight: 700;
 	gap: var(--kpf-space-sm);
 	justify-content: space-between;
+	line-height: 1.3;
 	min-height: 3.5rem;
 	padding: var(--kpf-space-md);
 	text-align: left;
+	transition:
+		background-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease),
+		color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
 	width: 100%;
 }
 
+.kpf-accordion__header:hover,
 .kpf-accordion.is-open .kpf-accordion__header,
 .kpf-accordion[open] .kpf-accordion__header,
 .kpf-accordion__header[aria-expanded="true"] {
 	background: var(--kpf-color-bg-brand-soft);
 }
 
+.kpf-accordion__header:focus-visible {
+	box-shadow: inset var(--kpf-focus-ring);
+	outline: none;
+}
+
+.kpf-accordion__title {
+	align-self: center;
+	flex: 1 1 auto;
+	margin: 0;
+}
+
+.kpf-accordion__icon {
+	align-self: center;
+	color: var(--kpf-color-icon-primary);
+	display: grid;
+	flex: 0 0 auto;
+	height: 1.5rem; /* 24px */
+	place-items: center;
+	width: 1.5rem;
+}
+
+.kpf-accordion__icon svg {
+	display: block;
+	height: 100%;
+	overflow: visible;
+	transform-box: view-box;
+	transform-origin: 50% 50%;
+	transition: transform var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+	width: 100%;
+}
+
+.kpf-accordion.is-open .kpf-accordion__icon svg,
+.kpf-accordion[open] .kpf-accordion__icon svg,
+.kpf-accordion__header[aria-expanded="true"] .kpf-accordion__icon svg {
+	transform: rotate(225deg);
+}
+
 .kpf-accordion__body {
+	border-top: var(--kpf-stroke) solid transparent;
 	color: var(--kpf-color-text-secondary);
-	display: none;
+	display: grid;
+	font-family: var(--kpf-font-body);
 	font-size: var(--kpf-text-s);
+	grid-template-rows: 0fr;
 	line-height: 1.55;
-	padding: var(--kpf-space-md);
+	transition:
+		grid-template-rows var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease),
+		border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+}
+
+.kpf-accordion__content {
+	min-height: 0;
+	overflow: hidden;
+	opacity: 0;
+	padding: 0 var(--kpf-space-md);
+	transition:
+		opacity calc(var(--kpf-accordion-duration, 280ms) * 0.85) var(--kpf-accordion-ease, ease),
+		padding var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
 }
 
 .kpf-accordion.is-open .kpf-accordion__body,
 .kpf-accordion[open] .kpf-accordion__body,
 .kpf-accordion__header[aria-expanded="true"] + .kpf-accordion__body {
-	display: block;
+	border-top-color: var(--kpf-color-border-default);
+	grid-template-rows: 1fr;
+}
+
+.kpf-accordion.is-open .kpf-accordion__content,
+.kpf-accordion[open] .kpf-accordion__content,
+.kpf-accordion__header[aria-expanded="true"] + .kpf-accordion__body .kpf-accordion__content {
+	opacity: 1;
+	padding-bottom: var(--kpf-space-md);
+	padding-top: var(--kpf-space-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-accordion,
+	.kpf-accordion__header,
+	.kpf-accordion__icon svg,
+	.kpf-accordion__body,
+	.kpf-accordion__content {
+		transition: none;
+	}
 }
 
 .kpf-icon-text {
@@ -1210,6 +1299,98 @@ body {
 	font-size: var(--kpf-text-s);
 	line-height: 1.55;
 	margin: 0;
+}
+
+/* Text-link hover arrow — mirror foundation.css (Lucide arrow-right) */
+.kpf-link {
+	align-items: center;
+	display: inline-flex;
+	gap: 0;
+	position: relative;
+}
+
+.kpf-link::after {
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+	background-color: currentColor;
+	content: "";
+	height: 1.25rem;
+	left: calc(100% + 0.35rem);
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='m12 5 7 7-7 7'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	top: 50%;
+	transform: translate(-0.4rem, -50%);
+	width: 1.25rem;
+}
+
+.kpf-link:not([data-kpf-arrow])::after {
+	transition:
+		opacity 200ms ease-out,
+		transform 200ms ease-out;
+}
+
+.kpf-link:not([data-kpf-arrow]):hover::after,
+.kpf-link:not([data-kpf-arrow]):focus-visible::after {
+	opacity: 1;
+	transform: translate(0, -50%);
+	transition-timing-function: ease-in;
+}
+
+.kpf-link[data-kpf-arrow]::after {
+	transition: none;
+}
+
+.kpf-link.is-arrow-in::after {
+	animation: kpf-link-arrow-in 200ms ease-in forwards;
+}
+
+.kpf-link.is-arrow-out::after {
+	animation: kpf-link-arrow-out 200ms ease-out forwards;
+}
+
+@keyframes kpf-link-arrow-in {
+	from {
+		opacity: 0;
+		transform: translate(-0.4rem, -50%);
+	}
+
+	to {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
+}
+
+@keyframes kpf-link-arrow-out {
+	from {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
+
+	to {
+		opacity: 0;
+		transform: translate(0.45rem, -50%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-link::after,
+	.kpf-link:hover::after,
+	.kpf-link:focus-visible::after,
+	.kpf-link.is-arrow-in::after,
+	.kpf-link.is-arrow-out::after {
+		animation: none !important;
+		transition: opacity 0.01ms linear !important;
+	}
+
+	.kpf-link:hover::after,
+	.kpf-link:focus-visible::after,
+	.kpf-link.is-arrow-in::after {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
 }
 
 /* Content Block — text stack + actions protocol (see foundation.css) */

@@ -135,6 +135,14 @@ function createTween(targets, animation, extra = {}) {
   if (!gsap.utils.toArray(tweenTargets).length) return null;
   const ease = resolveEase(config, animation.databaseId);
   const method = animation.method || config.method || "from";
+  const origin =
+    config.from?.transformOrigin ||
+    config.to?.transformOrigin ||
+    config.keyframes?.find((frame) => frame?.props?.transformOrigin)?.props
+      ?.transformOrigin;
+  if (origin) {
+    gsap.set(tweenTargets, { transformOrigin: origin });
+  }
   const common = {
     duration: config.duration,
     delay: config.delay,
@@ -262,6 +270,7 @@ function createTween(targets, animation, extra = {}) {
   return gsap.from(tweenTargets, { ...(config.from || {}), ...common });
 }
 
+
 export default function GsapRuntime({ animations = [] }) {
   const router = useRouter();
 
@@ -272,6 +281,7 @@ export default function GsapRuntime({ animations = [] }) {
     }
 
     const listeners = [];
+    const cleanups = [];
     const context = gsap.context(() => {
       animations
         .map(parseAnimation)
@@ -312,14 +322,73 @@ export default function GsapRuntime({ animations = [] }) {
                 immediateRender: false,
               });
               if (!tween) return;
-              // Nav underline: active uses red + weight only — never leave scaleX(1) parked.
               if (animation.trigger === "hover") {
-                const enter = () => {
+                const usesRotation = Boolean(
+                  animation.config?.to?.rotation != null ||
+                    animation.config?.from?.rotation != null ||
+                    (animation.config?.keyframes || []).some(
+                      (frame) => frame?.props?.rotation != null,
+                    ),
+                );
+                /** Soft edge: delay leave so the hit-boundary doesn’t stutter. */
+                const LEAVE_GRACE_MS = 160;
+                let leaveTimer = null;
+
+                const clearLeaveTimer = () => {
+                  if (leaveTimer) {
+                    clearTimeout(leaveTimer);
+                    leaveTimer = null;
+                  }
+                };
+
+                const enter = (event) => {
+                  // Still inside the trigger (moving between brand + badge).
+                  if (
+                    event?.type === "focusin" &&
+                    event.relatedTarget &&
+                    target.contains(event.relatedTarget)
+                  ) {
+                    return;
+                  }
+                  clearLeaveTimer();
+                  if (usesRotation) {
+                    // Already mid-swing — don’t restart (avoids edge flicker).
+                    if (tween.isActive()) return;
+                    tween.restart();
+                    return;
+                  }
                   tween.restart();
                 };
-                const leave = () => {
+
+                const leave = (event) => {
+                  if (
+                    event?.relatedTarget &&
+                    target.contains(event.relatedTarget)
+                  ) {
+                    return;
+                  }
+                  if (usesRotation) {
+                    clearLeaveTimer();
+                    leaveTimer = setTimeout(() => {
+                      leaveTimer = null;
+                      // Re-check: cursor may have returned during the grace window.
+                      if (target.matches(":hover") || target.contains(document.activeElement)) {
+                        return;
+                      }
+                      tween.pause();
+                      gsap.to(resolveTweenTargets(target, animation.config), {
+                        rotation: 0,
+                        duration: 0.4,
+                        ease: "sine.out",
+                        overwrite: "auto",
+                      });
+                    }, LEAVE_GRACE_MS);
+                    return;
+                  }
+                  // Nav underline etc. — reverse the hover tween.
                   tween.reverse();
                 };
+
                 target.addEventListener("mouseenter", enter);
                 target.addEventListener("mouseleave", leave);
                 target.addEventListener("focusin", enter);
@@ -330,6 +399,7 @@ export default function GsapRuntime({ animations = [] }) {
                   [target, "focusin", enter],
                   [target, "focusout", leave],
                 );
+                cleanups.push(clearLeaveTimer);
               } else {
                 const click = () => tween.restart();
                 target.addEventListener("click", click);
@@ -349,6 +419,7 @@ export default function GsapRuntime({ animations = [] }) {
       listeners.forEach(([target, event, handler]) =>
         target.removeEventListener(event, handler),
       );
+      cleanups.forEach((cleanup) => cleanup());
       context.revert();
     };
   }, [animations, router.asPath]);

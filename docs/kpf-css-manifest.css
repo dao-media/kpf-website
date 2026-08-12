@@ -784,8 +784,10 @@
  *   .kpf-story                   His Story split (media + content-block)
  *   .kpf-values                  icon-text list / grid
  *   .kpf-programs                cream section; dunes on dedicated media layer
- *   .kpf-archive                 desktop-only archive strip (hide <64rem)
+ *   .kpf-archive                 blog teaser strip (all breakpoints; muted band)
  *   .kpf-donate                  accordion group (donation FAQ / ways to give)
+ *   .kpf-header__badge           anniversary mark (sitewide chrome; hover swing via GSAP)
+ *   .kpf-smooth-wrapper          ScrollSmoother shell (header fixed outside)
  *   .kpf-footer
  *
  * --------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import PageDesignRenderer from "@/components/PageDesignRenderer";
 import SeoHead from "@/components/SeoHead";
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
+const { KPF_LATEST_BLOG_POST_QUERY } = require("@/lib/latestBlogPost");
 const { KPF_PARTNER_GRANTEES_QUERY } = require("@/lib/partnerGrantees");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 const {
@@ -19,6 +20,7 @@ export default function FrontPageTemplate(props) {
   const page = props?.data?.home;
   const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
   const partnerGrantees = props?.data?.kpfPartnerGrantees || [];
+  const latestBlogPost = props?.data?.kpfLatestBlogPost || null;
   // Prefer the React scaffold (Figma 414:532) over CMS design HTML. Seeded
   // design markup was fighting hydrate via dangerouslySetInnerHTML islands.
   const useHomeScaffold = true;
@@ -29,7 +31,11 @@ export default function FrontPageTemplate(props) {
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={seo} />
       {useHomeScaffold || !hasDesignHtml ? (
-        <HomePageScaffold media={media} partnerGrantees={partnerGrantees} />
+        <HomePageScaffold
+          media={media}
+          partnerGrantees={partnerGrantees}
+          latestBlogPost={latestBlogPost}
+        />
       ) : (
         <PageDesignRenderer page={page} partnerGrantees={partnerGrantees} />
       )}
@@ -42,6 +48,7 @@ FrontPageTemplate.query = gql`
     ${KPF_STYLESHEET_QUERY}
     ${KPF_SCAFFOLD_MEDIA_QUERY}
     ${KPF_PARTNER_GRANTEES_QUERY}
+    ${KPF_LATEST_BLOG_POST_QUERY}
     ${KPF_SITE_CHROME_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}

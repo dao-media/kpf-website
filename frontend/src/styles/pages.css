@@ -396,6 +396,17 @@ html {
 	--kpf-chrome-z: var(--kpf-z-header, 100);
 }
 
+/* GSAP ScrollSmoother — fixed header stays outside; page + footer scroll inside. */
+.kpf-smooth-wrapper {
+	overflow: hidden;
+	width: 100%;
+}
+
+.kpf-smooth-content {
+	overflow: visible;
+	width: 100%;
+}
+
 .kpf-site-chrome__header-spacer {
 	pointer-events: none;
 	width: 100%;
@@ -500,11 +511,14 @@ html {
 	flex: 0 1 auto; /* can shrink so actions stay on the right edge */
 	gap: 0.625rem; /* 10 */
 	height: var(--kpf-header-height); /* 60 — match bar; badge overhangs */
+	/* Expand hit area slightly so the hover edge isn’t a hard 1px line */
+	margin: -0.5rem -0.625rem -0.5rem -0.75rem;
 	max-height: var(--kpf-header-height);
 	max-width: none;
 	min-height: var(--kpf-header-height); /* beat flex min-height:auto from 177px badge */
 	min-width: 0;
 	overflow: visible; /* don’t crop overhanging badge */
+	padding: 0.5rem 0.625rem 0.5rem 0.75rem;
 	text-decoration: none;
 }
 
@@ -520,10 +534,24 @@ html {
 	max-width: 86px;
 	min-height: 177px;
 	min-width: 86px;
+	opacity: 1;
 	overflow: visible;
 	padding-top: 48px;
 	position: relative;
+	transform-origin: 50% 0%;
+	visibility: visible;
 	width: 86px;
+}
+
+/* Soft hit pad around the badge — bridges the visual edge ↔ trigger boundary */
+.kpf-header__badge::after {
+	bottom: -0.75rem;
+	content: "";
+	left: -0.875rem;
+	position: absolute;
+	right: -0.875rem;
+	top: -0.75rem;
+	z-index: 0;
 }
 
 .kpf-header__badge .kpf-header__mark,
@@ -1006,8 +1034,10 @@ html {
  *   .kpf-story                   His Story split (media + content-block)
  *   .kpf-values                  icon-text list / grid
  *   .kpf-programs                cream section; dunes on dedicated media layer
- *   .kpf-archive                 blog teaser strip (all breakpoints)
+ *   .kpf-archive                 blog teaser strip (all breakpoints; muted band)
  *   .kpf-donate                  accordion group (donation FAQ / ways to give)
+ *   .kpf-header__badge           anniversary mark (sitewide chrome; hover swing via GSAP)
+ *   .kpf-smooth-wrapper          ScrollSmoother shell (header fixed outside)
  *   .kpf-footer
  *
  * --------------------------------------------------------------------------
@@ -1170,7 +1200,7 @@ html {
 	max-width: 26.25rem;
 }
 
-.kpf-hero--home .kpf-content-block--inverse .kpf-content-block__eyebrow {
+.kpf-hero--home .kpf-content-block__eyebrow {
 	color: var(--kpf-brass, #c9a15b);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -1389,32 +1419,31 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	}
 }
 
-/* His Story — Figma 414:658 */
+/* His Story — Figma 414:658 (tablet 416:727 · mobile 418:253) */
 .kpf-story {
+	--kpf-story-media-size: min(105vw, 26rem);
+
 	background: var(--kpf-color-bg-surface, #fff); /* contrast vs partners parchment above */
 	/* Horizontal inset for copy comes from .kpf-u-container. */
-	overflow: visible;
+	overflow: clip;
 	padding-block: var(--kpf-section-y);
 	padding-inline: 0;
-	position: relative; /* sole positioning context for __media */
+	position: relative; /* positioning context for __media */
+	z-index: 0;
 }
 
 .kpf-story__inner {
-	align-items: center;
-	display: grid;
-	gap: var(--kpf-space-2xl);
-	grid-template-columns: 1fr;
 	min-width: 0;
-}
-
-@media (min-width: 64rem) {
-	.kpf-story__inner {
-		min-height: calc(40rem + 120px); /* room for 760px bottom-right portrait */
-	}
+	/* Reserve a portrait-tall band under copy/actions (Figma 418:253) */
+	padding-bottom: var(--kpf-story-media-size);
+	position: relative;
+	width: 100%;
+	z-index: 1;
 }
 
 .kpf-story__copy {
-	max-width: 46.25rem;
+	max-width: 100%;
+	width: 100%;
 }
 
 .kpf-story__actions {
@@ -1424,13 +1453,17 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	gap: 1rem;
 }
 
-/* Direct child of section — bottom/right relative to .kpf-story only */
+/*
+ * Portrait always bottom-right of the section (out of flow).
+ * Section height comes from copy + reserved padding on mobile.
+ */
 .kpf-story__media {
 	bottom: 0;
 	line-height: 0;
 	pointer-events: none;
 	position: absolute;
 	right: 0;
+	top: auto;
 	z-index: 0;
 }
 
@@ -1438,38 +1471,50 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	border-radius: 0;
 	display: block;
 	height: auto;
-	/* Mobile portrait: full viewport width */
-	max-height: none;
-	max-width: 100vw;
+	/* Mobile — Figma 418:253 ≈ 409² on 390 frame */
+	max-height: var(--kpf-story-media-size);
+	max-width: var(--kpf-story-media-size);
 	pointer-events: auto;
-	width: 100vw;
+	width: auto;
 }
 
 @media (min-width: 30rem) {
-	.kpf-story__media img {
-		max-height: min(70vw, 28rem);
-		max-width: min(70vw, 28rem);
-		width: auto;
+	.kpf-story {
+		--kpf-story-media-size: min(70vw, 28rem);
 	}
 }
 
+/* Tablet: copy capped at 60%; portrait sits beside copy (no bottom reserve) */
 @media (min-width: 48rem) {
-	.kpf-story__media img {
-		max-height: min(55vw, 36rem);
-		max-width: min(55vw, 36rem);
-		width: auto;
+	.kpf-story {
+		--kpf-story-media-size: min(55vw, 36rem);
+	}
+
+	.kpf-story__inner {
+		padding-bottom: 0;
+	}
+
+	.kpf-story__copy {
+		max-width: 60%;
 	}
 }
 
 @media (min-width: 64rem) {
+	.kpf-story {
+		--kpf-story-media-size: 640px;
+	}
+
+	.kpf-story__copy {
+		max-width: 46.25rem;
+	}
+
 	.kpf-story__media img {
-		max-height: 760px; /* 640 + 120 */
+		max-height: 760px; /* 640 + 120 — taller art than width cap */
 		max-width: 640px;
-		width: auto;
 	}
 }
 
-/* Values action cards — Figma 426:492 */
+/* Values action cards — Figma 426:492 (tablet 416:739 · mobile 419:225) */
 .kpf-values--cards {
 	background: var(--kpf-ink, #12090a);
 	color: var(--kpf-parchment, #f4efea);
@@ -1491,6 +1536,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	color: var(--kpf-parchment, #f4efea);
 }
 
+/* Mobile → 1×4 stack · Tablet → 2×2 · Desktop (wide) → 4 across */
 .kpf-values__cards {
 	display: grid;
 	gap: 1.25rem;
@@ -1504,7 +1550,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	}
 }
 
-@media (min-width: 64rem) {
+@media (min-width: 80rem) {
 	.kpf-values__cards {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
@@ -1567,9 +1613,17 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	align-items: center;
 	display: grid;
 	gap: var(--kpf-space-2xl);
-	grid-template-columns: 1fr;
+	grid-template-columns: 1fr; /* mobile / landscape: stack */
 }
 
+/* Tablet: copy + media 50/50 */
+@media (min-width: 48rem) {
+	.kpf-programs__inner {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+}
+
+/* Desktop: slightly media-weighted split — Figma 426:997 */
 @media (min-width: 64rem) {
 	.kpf-programs__inner {
 		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -1577,7 +1631,8 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 }
 
 .kpf-programs__copy {
-	max-width: 28rem; /* 448 */
+	max-width: 560px;
+	width: auto;
 }
 
 .kpf-programs__list {
@@ -1620,11 +1675,17 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 }
 
 .kpf-programs__media {
-	align-items: center;
+	/* Desktop Figma 426:997 — dunes 554 × collage 324 over 828 span → ~50px overlap */
+	--kpf-programs-dunes-span: 100%;
+	--kpf-programs-collage-span: 100%;
+	--kpf-programs-collage-gap: 1rem; /* 16 */
+
 	display: grid;
-	gap: 0; /* overlap handled by dunes negative margin */
-	grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+	gap: var(--kpf-space-md);
+	grid-template-columns: 1fr;
+	isolation: isolate;
 	min-width: 0;
+	position: relative;
 	width: 100%;
 }
 
@@ -1632,19 +1693,70 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	border-radius: 0; /* transparent cutout — not a rounded card */
 	display: block;
 	height: auto;
-	margin-right: -125px; /* overhang collage tiles ~125px */
+	justify-self: stretch;
 	max-width: none;
 	position: relative;
-	width: 100%;
+	width: var(--kpf-programs-dunes-span);
 	z-index: 1;
 }
 
 .kpf-programs__collage {
 	display: grid;
-	gap: 0.75rem;
+	gap: var(--kpf-programs-collage-gap);
+	justify-self: stretch;
 	min-width: 0;
 	position: relative;
+	width: var(--kpf-programs-collage-span);
 	z-index: 0;
+}
+
+/* Tablet: dunes full-bleed at bottom of media, overlapping stacked panels */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+	.kpf-programs__media {
+		gap: 0;
+	}
+
+	.kpf-programs__dunes,
+	.kpf-programs__collage {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.kpf-programs__dunes {
+		align-self: end;
+		width: 100%;
+	}
+
+	.kpf-programs__collage {
+		align-self: start;
+		width: 100%;
+	}
+}
+
+/* Desktop: side-by-side dunes + collage with ~6% overlap */
+@media (min-width: 64rem) {
+	.kpf-programs__media {
+		--kpf-programs-dunes-span: 66.9%;
+		--kpf-programs-collage-span: 39.1%;
+		--kpf-programs-collage-gap: 2.25rem; /* 36 — Figma panel gap */
+		gap: 0;
+	}
+
+	.kpf-programs__dunes,
+	.kpf-programs__collage {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.kpf-programs__dunes {
+		align-self: center;
+		justify-self: start;
+	}
+
+	.kpf-programs__collage {
+		align-self: center;
+		justify-self: end;
+	}
 }
 
 .kpf-programs__collage img {
@@ -1663,6 +1775,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 /* Blog teaser — Figma 947:6302 */
 .kpf-archive {
+	background: var(--kpf-color-bg-surface-muted, var(--kpf-parchment-600, #e9e1da));
 	display: block;
 	padding-block: 5rem;
 }
@@ -1686,16 +1799,17 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	border-radius: var(--kpf-radius-lg);
 	color: inherit;
 	display: flex;
-	flex-direction: column;
+	flex-direction: column; /* mobile portrait only */
 	gap: 1.5rem;
-	padding: 1.5rem;
+	min-width: 0;
+	padding: 1.5rem; /* 24px all sides, all breakpoints */
 	text-decoration: none;
 }
 
-@media (min-width: 48rem) {
+/* Side-by-side from mobile landscape up — stack only below 30rem */
+@media (min-width: 30rem) {
 	.kpf-archive__card {
 		flex-direction: row;
-		padding: 2.5rem;
 	}
 }
 
@@ -1703,16 +1817,34 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	border-radius: var(--kpf-radius-md);
 	flex: 0 0 auto;
 	height: auto;
+	max-height: 14rem;
 	max-width: 100%;
 	object-fit: cover;
 	width: 100%;
 }
 
-@media (min-width: 48rem) {
+@media (min-width: 30rem) {
 	.kpf-archive__thumb {
 		align-self: stretch;
+		max-height: none;
 		width: 12.5rem;
 	}
+}
+
+.kpf-archive__meta {
+	min-width: 0;
+	width: 100%;
+}
+
+.kpf-archive__category,
+.kpf-archive__date,
+.kpf-archive__title,
+.kpf-archive__meta .kpf-link,
+.kpf-archive__intro,
+.kpf-archive__intro .kpf-content-block__eyebrow,
+.kpf-archive__intro .kpf-content-block__title,
+.kpf-archive__intro .kpf-content-block__body {
+	max-width: 100%;
 }
 
 .kpf-archive__category {
@@ -1745,7 +1877,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 }
 
 .kpf-donate__inner {
-	align-items: stretch;
+	align-items: center;
 	display: grid;
 	gap: 4rem;
 	grid-template-columns: 1fr;
@@ -1795,6 +1927,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	border: 1px solid var(--kpf-parchment-deep, #dfd6cc);
 	border-radius: var(--kpf-radius-md);
 	overflow: clip;
+	transition: border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
 }
 
 .kpf-donate--band .kpf-accordion__header {
@@ -1807,9 +1940,12 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	font-family: var(--kpf-font-display);
 	font-size: 1rem;
 	font-weight: 700;
+	gap: var(--kpf-space-sm, 0.75rem);
 	justify-content: space-between;
+	line-height: 1.3;
 	padding: 1rem;
 	text-align: left;
+	transition: background-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
 	width: 100%;
 }
 
@@ -1819,7 +1955,11 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 .kpf-donate--band .kpf-accordion__body {
 	color: var(--kpf-ink-soft, #3d2c2d);
-	padding: 0 1rem 1rem;
+}
+
+.kpf-donate--band .kpf-accordion__content {
+	padding-left: 1rem;
+	padding-right: 1rem;
 }
 
 .kpf-donate--band .kpf-btn--secondary {
@@ -1916,18 +2056,10 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 /* —— Shared split sections (Home story, Events context, etc.) —— */
 .kpf-context,
-.kpf-mission,
-.kpf-programs__inner {
+.kpf-mission {
 	display: grid;
 	gap: var(--kpf-space-xl);
 	min-width: 0;
-}
-
-@media (min-width: 64rem) {
-	.kpf-programs__inner {
-		align-items: center;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-	}
 }
 
 .kpf-values__grid,
@@ -2139,6 +2271,10 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 }
 
 /* Reuse .kpf-accordion; group host for GSAP / a11y scripting */
+.kpf-donate .kpf-accordion {
+	transition: border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+}
+
 .kpf-donate .kpf-accordion.is-open {
 	border-color: var(--kpf-color-border-brand);
 }
@@ -2392,8 +2528,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	.kpf-hero--about,
 	.kpf-history,
 	.kpf-story__inner,
-	.kpf-featured-event,
-	.kpf-programs__inner {
+	.kpf-featured-event {
 		grid-template-columns: 1fr;
 	}
 

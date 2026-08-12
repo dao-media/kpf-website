@@ -299,6 +299,16 @@
 	box-shadow: none;
 }
 
+.kpf-icons-preview__slot {
+	display: inline-block;
+	line-height: 0;
+}
+
+.kpf-icons-preview__slot.has-margin {
+	background: color-mix(in srgb, var(--ico-ember) 10%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ico-ember) 35%, transparent);
+}
+
 .kpf-icons-preview__canvas {
 	background: color-mix(in srgb, #fff 78%, transparent);
 	border: 1px dashed color-mix(in srgb, var(--ico-navy) 28%, var(--ico-line));
@@ -307,9 +317,11 @@
 }
 
 .kpf-icons-preview__canvas svg {
-	/* Longest side capped by the padded content box; viewBox ratio stays locked. */
-	max-height: 100%;
-	max-width: 100%;
+	display: block;
+	height: 100% !important;
+	max-height: none;
+	max-width: none;
+	width: 100% !important;
 }
 
 .kpf-icons-preview-props {

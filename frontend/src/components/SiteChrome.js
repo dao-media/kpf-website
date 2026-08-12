@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import KpfChromeRuntime from "@/components/KpfChromeRuntime";
 import KpfFooter from "@/components/KpfFooter";
 import KpfHeader from "@/components/KpfHeader";
+import LinkArrowRuntime from "@/components/LinkArrowRuntime";
+import ScrollSmootherRuntime from "@/components/ScrollSmootherRuntime";
 import { SiteDateTimeProvider } from "@/components/SiteDateTimeProvider";
 
 const {
@@ -220,12 +222,18 @@ export default function SiteChrome({ chrome, children }) {
       <div className={shellClass}>
         <ChromeHeader component={header} useScaffold={useHeaderScaffold} />
         <KpfChromeRuntime enabled={!useHeaderScaffold} />
-        <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
-          {children}
+        <LinkArrowRuntime />
+        <ScrollSmootherRuntime />
+        <div id="smooth-wrapper" className="kpf-smooth-wrapper">
+          <div id="smooth-content" className="kpf-smooth-content">
+            <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
+              {children}
+            </div>
+            {footer ? (
+              <ChromeFooter component={footer} useScaffold={useFooterScaffold} />
+            ) : null}
+          </div>
         </div>
-        {footer ? (
-          <ChromeFooter component={footer} useScaffold={useFooterScaffold} />
-        ) : null}
       </div>
     </SiteDateTimeProvider>
   );

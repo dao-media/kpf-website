@@ -1,9 +1,19 @@
 /**
- * Client-side PNG export from configured Lucide SVG markup.
+ * Client-side icon file exports from Lucide SVG markup.
  */
 
+export function downloadIconSvg(svgMarkup, filename = 'kpf-icon.svg') {
+	const svg = prepareStandaloneSvg(svgMarkup);
+	if (!svg) {
+		throw new Error('Missing SVG markup');
+	}
+
+	const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+	triggerDownload(blob, filename);
+}
+
 export async function downloadIconPng(svgMarkup, filename = 'kpf-icon.png', scale = 2) {
-	const svg = String(svgMarkup || '').trim();
+	const svg = prepareStandaloneSvg(svgMarkup);
 	if (!svg) {
 		throw new Error('Missing SVG markup');
 	}
@@ -30,17 +40,40 @@ export async function downloadIconPng(svgMarkup, filename = 'kpf-icon.png', scal
 			);
 		});
 
-		const href = URL.createObjectURL(pngBlob);
-		const a = document.createElement('a');
-		a.href = href;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		a.remove();
-		URL.revokeObjectURL(href);
+		triggerDownload(pngBlob, filename);
 	} finally {
 		URL.revokeObjectURL(url);
 	}
+}
+
+/** Ensure a downloadable SVG root (xmlns + unwrap span wrappers). */
+function prepareStandaloneSvg(svgMarkup) {
+	let svg = String(svgMarkup || '').trim();
+	if (!svg) return '';
+
+	// If markup is a wrapper <span>…<svg>, prefer the inner SVG.
+	if (!svg.startsWith('<svg')) {
+		const match = svg.match(/<svg[\s\S]*<\/svg>/i);
+		svg = match ? match[0] : '';
+	}
+	if (!svg.startsWith('<svg')) return '';
+
+	if (!/\sxmlns=/.test(svg)) {
+		svg = svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+	}
+
+	return svg;
+}
+
+function triggerDownload(blob, filename) {
+	const href = URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.href = href;
+	a.download = filename;
+	document.body.appendChild(a);
+	a.click();
+	a.remove();
+	URL.revokeObjectURL(href);
 }
 
 function loadImage(url) {

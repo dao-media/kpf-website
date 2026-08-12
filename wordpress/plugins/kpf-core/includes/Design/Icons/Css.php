@@ -72,7 +72,6 @@ final class Css {
 		$color          = Registry::sanitize_css_value( $config['color'] ?? 'currentColor' );
 		$padding        = self::css_box( $config['padding'] ?? '0' );
 		$margin         = self::css_box( $config['margin'] ?? '0' );
-		$ratio          = self::css_ratio( $config['ratio'] ?? '24 / 24' );
 		$stroke_linecap = self::enum(
 			(string) ( $config['strokeLinecap'] ?? 'round' ),
 			array( 'butt', 'round', 'square' ),
@@ -85,8 +84,7 @@ final class Css {
 		);
 
 		$parts = array(
-			'display: inline-grid',
-			'place-items: center',
+			'display: block',
 			'width: ' . $size,
 			'height: ' . $size,
 			'box-sizing: border-box',
@@ -101,10 +99,9 @@ final class Css {
 			'stroke-linecap: ' . $stroke_linecap,
 			'stroke-linejoin: ' . $stroke_linejoin,
 			'fill: none',
-			'aspect-ratio: ' . $ratio,
 		);
 
-		if ( '0' !== $margin && '' !== $margin ) {
+		if ( '0' !== $margin && '' !== $margin && '0px' !== $margin ) {
 			$parts[] = 'margin: ' . $margin;
 		}
 
@@ -137,7 +134,15 @@ final class Css {
 	 * @param mixed $value
 	 */
 	private static function css_box( $value ): string {
-		$clean = Registry::sanitize_css_value( (string) $value );
+		$value = trim( (string) $value );
+		if ( '' === $value ) {
+			return '0';
+		}
+		// Bare numbers → px so "8" is valid CSS.
+		if ( is_numeric( $value ) ) {
+			return rtrim( rtrim( sprintf( '%.4F', (float) $value ), '0' ), '.' ) . 'px';
+		}
+		$clean = Registry::sanitize_css_value( $value );
 		return $clean !== '' ? $clean : '0';
 	}
 

@@ -305,8 +305,16 @@ export default function KpfHeader({
     ).matches;
 
     const settle = () => {
-      gsap.set(header, { clearProps: "opacity,visibility,transform" });
-      if (badge) gsap.set(badge, { clearProps: "opacity,visibility,transform" });
+      gsap.set(header, { autoAlpha: 1, clearProps: "transform" });
+      if (badge) {
+        // Never leave the badge invisible — only clear motion props.
+        gsap.set(badge, {
+          autoAlpha: 1,
+          opacity: 1,
+          visibility: "visible",
+          clearProps: "transform",
+        });
+      }
       navEntrancePlayed = true;
     };
 
@@ -347,7 +355,19 @@ export default function KpfHeader({
       }
     }, header);
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      // Strict-mode / remount safety: never park the badge at autoAlpha 0.
+      gsap.set(header, { autoAlpha: 1, clearProps: "transform" });
+      if (badge) {
+        gsap.set(badge, {
+          autoAlpha: 1,
+          opacity: 1,
+          visibility: "visible",
+          clearProps: "transform",
+        });
+      }
+    };
   }, []);
 
   return (

@@ -178,6 +178,17 @@ function defaults() {
 			},
 		},
 		scroll: { start: 'top 85%', end: 'bottom 20%', scrub: 0, once: true },
+		swing: {
+			transformOrigin: '50% 0%',
+			scrollMax: 0.6,
+			settleMax: 6,
+			settleSwings: 5,
+			settleDuration: 1.7,
+			velocityScale: 0.55,
+			stopDelay: 0.12,
+			decay: 0.55,
+			scrollRadiusRatio: 0.1,
+		},
 	};
 }
 
@@ -196,9 +207,25 @@ function normalize(animation) {
 			to: { ...base.to, ...(animation?.config?.to || {}) },
 			svg: { ...base.svg, ...(animation?.config?.svg || {}) },
 			scroll: { ...base.scroll, ...(animation?.config?.scroll || {}) },
+			swing: { ...base.swing, ...(animation?.config?.swing || {}) },
 			keyframes: Array.isArray(animation?.config?.keyframes) ? animation.config.keyframes : [],
 		},
 	};
+}
+
+function buildSwingSettleKeyframes({ amplitude, swings = 5, duration = 1.7, decay = 0.55 } = {}) {
+	const count = Math.max(2, Math.min(12, Math.round(Number(swings) || 5)));
+	const total = Math.max(0.4, Number(duration) || 1.7);
+	const damp = Math.min(0.9, Math.max(0.2, Number(decay) || 0.55));
+	const half = total / (count + 0.85);
+	const frames = [];
+	let amp = amplitude;
+	for (let i = 0; i < count; i += 1) {
+		frames.push({ rotation: amp, duration: half, ease: 'sine.inOut' });
+		amp *= -damp;
+	}
+	frames.push({ rotation: 0, duration: half * 0.85, ease: 'sine.out' });
+	return frames;
 }
 
 function PropertyGrid({ title, values, onChange }) {
@@ -812,6 +839,50 @@ function Builder({ animation, onSaved, onDeleted }) {
 			repeat: config.repeat,
 			yoyo: config.yoyo,
 		};
+		if (config.trigger === 'scroll-swing') {
+			const swing = config.swing || {};
+			gsap.set(target, {
+				transformOrigin: swing.transformOrigin || '50% 0%',
+				rotation: 0,
+			});
+			const amp = Number(swing.settleMax) || 6;
+			const ratio = Number(swing.scrollRadiusRatio) || 0.1;
+			const lean = amp * ratio;
+			// Preview layered interruptions: lean → settle → mid-settle nudge → re-settle.
+			tweenRef.current = gsap
+				.timeline()
+				.to(target, {
+					rotation: -lean,
+					duration: 0.22,
+					ease: 'power2.out',
+				})
+				.to(target, {
+					keyframes: buildSwingSettleKeyframes({
+						amplitude: amp,
+						swings: swing.settleSwings,
+						duration: swing.settleDuration,
+						decay: swing.decay,
+					}),
+				})
+				.to(
+					target,
+					{
+						rotation: `+=${lean * 1.6}`,
+						duration: 0.18,
+						ease: 'power2.out',
+					},
+					'-=0.55'
+				)
+				.to(target, {
+					keyframes: buildSwingSettleKeyframes({
+						amplitude: amp * 0.85,
+						swings: Math.max(2, (Number(swing.settleSwings) || 5) - 1),
+						duration: (Number(swing.settleDuration) || 1.7) * 0.85,
+						decay: swing.decay,
+					}),
+				});
+			return;
+		}
 		if (effect === 'draw') {
 			tweenRef.current = gsap.fromTo(
 				target,
@@ -1054,6 +1125,10 @@ function Builder({ animation, onSaved, onDeleted }) {
 										{ label: __('Element enters the viewport', 'kpf-core'), value: 'in-view' },
 										{ label: __('Pointer hovers over element', 'kpf-core'), value: 'hover' },
 										{ label: __('Element is clicked', 'kpf-core'), value: 'click' },
+										{
+											label: __('Scroll momentum swing (badge / hanging)', 'kpf-core'),
+											value: 'scroll-swing',
+										},
 									]}
 									onChange={(trigger) => updateConfig({ trigger })}
 								/>
@@ -1084,11 +1159,126 @@ function Builder({ animation, onSaved, onDeleted }) {
 										/>
 									</div>
 								) : null}
+								{config.trigger === 'scroll-swing' ? (
+									<div className="kpf-scroll-settings kpf-swing-settings">
+										<p className="kpf-swing-settings__help">
+											{__(
+												'Continuous pendulum: scroll impulses layer onto whatever energy is already in flight. While scrolling, swing radius is 10% of the settle radius; when scroll stops, the full decaying ring-out plays.',
+												'kpf-core'
+											)}
+										</p>
+										<TextControl
+											label={__('Pivot (transform origin)', 'kpf-core')}
+											help={__('Hang from the top with 50% 0%.', 'kpf-core')}
+											value={config.swing.transformOrigin}
+											onChange={(transformOrigin) =>
+												updateConfig({ swing: { ...config.swing, transformOrigin } })
+											}
+										/>
+										<RangeControl
+											label={__('While scrolling — radius (% of settle)', 'kpf-core')}
+											min={2}
+											max={40}
+											step={1}
+											value={Math.round((Number(config.swing.scrollRadiusRatio) || 0.1) * 100)}
+											onChange={(percent) => {
+												const scrollRadiusRatio = (Number(percent) || 10) / 100;
+												const settleMax = Number(config.swing.settleMax) || 6;
+												updateConfig({
+													swing: {
+														...config.swing,
+														scrollRadiusRatio,
+														scrollMax: settleMax * scrollRadiusRatio,
+													},
+												});
+											}}
+										/>
+										<RangeControl
+											label={__('After stop — max swing (°)', 'kpf-core')}
+											min={1}
+											max={20}
+											step={0.25}
+											value={config.swing.settleMax}
+											onChange={(settleMax) => {
+												const ratio = Number(config.swing.scrollRadiusRatio) || 0.1;
+												updateConfig({
+													swing: {
+														...config.swing,
+														settleMax,
+														scrollMax: settleMax * ratio,
+													},
+												});
+											}}
+										/>
+										<RangeControl
+											label={__('Settle swings (before rest)', 'kpf-core')}
+											min={2}
+											max={10}
+											step={1}
+											value={config.swing.settleSwings}
+											onChange={(settleSwings) =>
+												updateConfig({ swing: { ...config.swing, settleSwings } })
+											}
+										/>
+										<RangeControl
+											label={__('Settle duration (seconds)', 'kpf-core')}
+											min={0.6}
+											max={4}
+											step={0.1}
+											value={config.swing.settleDuration}
+											onChange={(settleDuration) =>
+												updateConfig({ swing: { ...config.swing, settleDuration } })
+											}
+										/>
+										<RangeControl
+											label={__('Scroll sensitivity', 'kpf-core')}
+											min={0.1}
+											max={2}
+											step={0.05}
+											value={config.swing.velocityScale}
+											onChange={(velocityScale) =>
+												updateConfig({ swing: { ...config.swing, velocityScale } })
+											}
+										/>
+										<RangeControl
+											label={__('Swing decay (lower = longer ring-out)', 'kpf-core')}
+											min={0.25}
+											max={0.85}
+											step={0.05}
+											value={config.swing.decay}
+											onChange={(decay) => updateConfig({ swing: { ...config.swing, decay } })}
+										/>
+										<RangeControl
+											label={__('Stop delay before settle (seconds)', 'kpf-core')}
+											min={0.05}
+											max={0.4}
+											step={0.01}
+											value={config.swing.stopDelay}
+											onChange={(stopDelay) =>
+												updateConfig({ swing: { ...config.swing, stopDelay } })
+											}
+										/>
+									</div>
+								) : null}
 							</>
 						) : null}
 
 						{tab === 'motion' ? (
 							<>
+								{config.trigger === 'scroll-swing' ? (
+									<div className="kpf-section-heading">
+										<div>
+											<h3>{__('Scroll swing owns rotation', 'kpf-core')}</h3>
+											<p>
+												{__(
+													'This trigger drives rotation from scroll velocity. Tune lean and settle under Target & trigger — Motion from/to states are unused.',
+													'kpf-core'
+												)}
+											</p>
+										</div>
+									</div>
+								) : (
+									<>
 								<div className="kpf-section-heading">
 									<div>
 										<h3>{__('Build the movement', 'kpf-core')}</h3>
@@ -1125,6 +1315,8 @@ function Builder({ animation, onSaved, onDeleted }) {
 										{__('Open keyframe editor', 'kpf-core')}
 									</Button>
 								) : null}
+									</>
+								)}
 							</>
 						) : null}
 

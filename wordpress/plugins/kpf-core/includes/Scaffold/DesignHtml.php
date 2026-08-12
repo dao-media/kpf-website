@@ -35,7 +35,7 @@ final class DesignHtml {
     <div class="kpf-hero__stage" aria-hidden="true">{$cutout_dad}{$cutout_alumni}{$cutout_runner}</div>
     <div class="kpf-u-container kpf-hero__layout">
       <div class="kpf-hero__content">
-        <div class="kpf-content-block kpf-content-block--inverse">
+        <div class="kpf-content-block kpf-u-invert">
           <div class="kpf-content-block__copy">
           <div class="kpf-content-block__title-group">
             <p class="kpf-content-block__eyebrow">Together, we can.</p>
@@ -169,19 +169,19 @@ final class DesignHtml {
         <p class="kpf-donate__note">A 501(c)(3) nonprofit organization</p>
       </div>
       <div class="kpf-donate__impact">
-        <h3 class="kpf-h4">Where the money goes</h3>
+        <h3 class="kpf-h4">How your donations are used</h3>
         <div class="kpf-donate__list">
           <details class="kpf-accordion">
-            <summary class="kpf-accordion__header"><span class="kpf-accordion__title">Housing</span></summary>
-            <div class="kpf-accordion__body"><p>Transitional and permanent housing for veterans who don’t currently have any.</p></div>
+            <summary class="kpf-accordion__header"><span class="kpf-accordion__title">Housing</span><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
+            <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Transitional and permanent housing for veterans who don’t currently have any.</p></div></div>
           </details>
           <details class="kpf-accordion">
-            <summary class="kpf-accordion__header"><span class="kpf-accordion__title">Work</span></summary>
-            <div class="kpf-accordion__body"><p>Job training and workforce programs that turn service experience into a career.</p></div>
+            <summary class="kpf-accordion__header"><span class="kpf-accordion__title">Work</span><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
+            <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Job training and workforce programs that turn service experience into a career.</p></div></div>
           </details>
           <details class="kpf-accordion">
-            <summary class="kpf-accordion__header"><span class="kpf-accordion__title">Family</span></summary>
-            <div class="kpf-accordion__body"><p>Emergency financial help and support for veterans’ families, including Special Operations families in crisis.</p></div>
+            <summary class="kpf-accordion__header"><span class="kpf-accordion__title">Family</span><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
+            <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Emergency financial help and support for veterans’ families, including Special Operations families in crisis.</p></div></div>
           </details>
         </div>
       </div>

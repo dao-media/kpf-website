@@ -511,6 +511,14 @@
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.kpf-swing-settings__help {
+	color: #5c6570;
+	font-size: 0.875rem;
+	grid-column: 1 / -1;
+	line-height: 1.45;
+	margin: 0 0 0.35rem;
+}
+
 .kpf-bezier-editor {
 	background: var(--soft);
 	border: 1px solid var(--line);

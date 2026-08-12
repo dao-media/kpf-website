@@ -1,9 +1,15 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import PartnersSlider from "@/components/PartnersSlider";
 import { HOME } from "@/lib/pageCopy";
+const { normalizeLatestBlogPost } = require("@/lib/latestBlogPost");
 const { resolveMedia } = require("@/lib/scaffoldMedia");
 const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
+
+/** Match --kpf-accordion-duration; hold the outgoing panel so section height doesn’t dip. */
+const ACCORDION_DURATION_MS = 280;
+const ACCORDION_SWAP_HOLD_MS = Math.round(ACCORDION_DURATION_MS * 0.65);
 
 function CheckIcon() {
   return (
@@ -23,18 +29,70 @@ function CheckIcon() {
 /**
  * Home scaffold — Figma Homepage Desktop hero `616:1060` (+ page `414:532`).
  */
-export default function HomePageScaffold({ media = {}, partnerGrantees = [] }) {
+export default function HomePageScaffold({
+  media = {},
+  partnerGrantees = [],
+  latestBlogPost = null,
+}) {
   const copy = HOME;
   const kevin = resolveMedia(media, copy.story.media.key, copy.story.media);
   const dunes = resolveMedia(media, copy.programs.media.key, copy.programs.media);
-  const blogMedia = resolveMedia(
+  const blogFallbackMedia = resolveMedia(
     media,
     copy.blog.featured.media.key,
     copy.blog.featured.media,
   );
+  const blog = normalizeLatestBlogPost(latestBlogPost, {
+    ...copy.blog.featured,
+    media: blogFallbackMedia,
+  });
   const [openAccordion, setOpenAccordion] = useState(
     () => copy.donate.accordions.find((item) => item.open)?.id ?? null,
   );
+  /** Outgoing panels kept open briefly while the next one expands (avoids height stutter). */
+  const [heldAccordionIds, setHeldAccordionIds] = useState([]);
+  const accordionHoldTimerRef = useRef(null);
+
+  useEffect(
+    () => () => {
+      if (accordionHoldTimerRef.current) {
+        clearTimeout(accordionHoldTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  function selectAccordion(nextId) {
+    if (accordionHoldTimerRef.current) {
+      clearTimeout(accordionHoldTimerRef.current);
+      accordionHoldTimerRef.current = null;
+    }
+
+    if (openAccordion === nextId) {
+      setOpenAccordion(null);
+      setHeldAccordionIds([]);
+      return;
+    }
+
+    if (openAccordion && openAccordion !== nextId) {
+      const previousId = openAccordion;
+      setHeldAccordionIds((held) => {
+        const next = new Set(held);
+        next.add(previousId);
+        next.delete(nextId);
+        return [...next];
+      });
+      setOpenAccordion(nextId);
+      accordionHoldTimerRef.current = setTimeout(() => {
+        setHeldAccordionIds([]);
+        accordionHoldTimerRef.current = null;
+      }, ACCORDION_SWAP_HOLD_MS);
+      return;
+    }
+
+    setHeldAccordionIds([]);
+    setOpenAccordion(nextId);
+  }
 
   const partners = normalizePartnerGrantees(partnerGrantees);
 
@@ -59,7 +117,7 @@ export default function HomePageScaffold({ media = {}, partnerGrantees = [] }) {
         </div>
         <div className="kpf-u-container kpf-hero__layout">
           <div className="kpf-hero__content">
-            <div className="kpf-content-block kpf-content-block--inverse">
+            <div className="kpf-content-block kpf-u-invert">
               <div className="kpf-content-block__copy">
                 <div className="kpf-content-block__title-group">
                   <p className="kpf-content-block__eyebrow">{copy.hero.eyebrow}</p>
@@ -257,27 +315,31 @@ export default function HomePageScaffold({ media = {}, partnerGrantees = [] }) {
               </div>
             </div>
           </div>
-          <Link href={copy.blog.featured.href} className="kpf-archive__card">
-            {blogMedia.src ? (
-              <img
-                className="kpf-archive__thumb"
-                src={blogMedia.src}
-                alt={blogMedia.alt || ""}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : null}
-            <div className="kpf-archive__meta">
-              <p className="kpf-archive__category">{copy.blog.featured.category}</p>
-              <p className="kpf-archive__date">
-                {copy.blog.featured.date}
-                <span aria-hidden="true"> · </span>
-                {copy.blog.featured.readTime}
-              </p>
-              <h3 className="kpf-archive__title">{copy.blog.featured.title}</h3>
-              <span className="kpf-link">{copy.blog.featured.cta}</span>
-            </div>
-          </Link>
+          {blog ? (
+            <Link href={blog.href} className="kpf-archive__card">
+              {blog.media?.src ? (
+                <img
+                  className="kpf-archive__thumb"
+                  src={blog.media.src}
+                  alt={blog.media.alt || ""}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : null}
+              <div className="kpf-archive__meta">
+                <p className="kpf-archive__category">{blog.category}</p>
+                <p className="kpf-archive__date">
+                  {blog.date}
+                  {blog.date && blog.readTime ? (
+                    <span aria-hidden="true"> · </span>
+                  ) : null}
+                  {blog.readTime}
+                </p>
+                <h3 className="kpf-archive__title">{blog.title}</h3>
+                <span className="kpf-link">{blog.cta}</span>
+              </div>
+            </Link>
+          ) : null}
         </div>
       </section>
 
@@ -320,7 +382,10 @@ export default function HomePageScaffold({ media = {}, partnerGrantees = [] }) {
             <h3 className="kpf-h4">{copy.donate.impactTitle}</h3>
             <div className="kpf-donate__list">
               {copy.donate.accordions.map((item) => {
-                const isOpen = openAccordion === item.id;
+                const isOpen =
+                  openAccordion === item.id ||
+                  heldAccordionIds.includes(item.id);
+                const isExpanded = openAccordion === item.id;
                 return (
                   <div
                     key={item.id}
@@ -329,23 +394,27 @@ export default function HomePageScaffold({ media = {}, partnerGrantees = [] }) {
                     <button
                       type="button"
                       className="kpf-accordion__header"
-                      aria-expanded={isOpen}
-                      onClick={() =>
-                        setOpenAccordion((current) =>
-                          current === item.id ? null : item.id,
-                        )
-                      }
+                      aria-expanded={isExpanded}
+                      onClick={() => selectAccordion(item.id)}
                     >
                       <span className="kpf-accordion__title">{item.title}</span>
                       <span className="kpf-accordion__icon" aria-hidden="true">
-                        {isOpen ? "−" : "+"}
+                        <Plus
+                          size={24}
+                          strokeWidth={1.75}
+                          absoluteStrokeWidth
+                          style={{ transformOrigin: "50% 50%" }}
+                        />
                       </span>
                     </button>
-                    {isOpen ? (
-                      <div className="kpf-accordion__body">
+                    <div
+                      className="kpf-accordion__body"
+                      aria-hidden={!isOpen}
+                    >
+                      <div className="kpf-accordion__content">
                         <p>{item.body}</p>
                       </div>
-                    ) : null}
+                    </div>
                   </div>
                 );
               })}

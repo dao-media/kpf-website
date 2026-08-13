@@ -4,13 +4,10 @@ import EventsPageScaffold from "@/components/EventsPageScaffold";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
 
 /**
- * Prefer CMS design HTML when Ready; otherwise slug-matched React scaffolds.
+ * Prefer slug-matched React scaffolds (interactive 1:1 builds);
+ * fall back to CMS design HTML when no scaffold exists.
  */
 export default function PageScaffold({ page, media = {}, contactForm = null }) {
-  if (page?.kpfPageDesign?.html) {
-    return <PageDesignRenderer page={page} />;
-  }
-
   const slug = String(page?.slug || "")
     .toLowerCase()
     .replace(/^\/+|\/+$/g, "");
@@ -25,6 +22,10 @@ export default function PageScaffold({ page, media = {}, contactForm = null }) {
 
   if (slug === "contact" || slug === "contact-2") {
     return <ContactPageScaffold form={contactForm} />;
+  }
+
+  if (page?.kpfPageDesign?.html) {
+    return <PageDesignRenderer page={page} />;
   }
 
   return <PageDesignRenderer page={page} />;

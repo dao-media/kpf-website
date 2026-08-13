@@ -1300,10 +1300,11 @@ a[aria-disabled="true"],
 /* —— Accordion (Figma: Accordion DS) —— */
 .kpf-accordion {
 	background: var(--kpf-color-bg-surface);
-	border: var(--kpf-stroke) solid var(--kpf-color-border-default);
+	border: 0;
 	border-radius: var(--kpf-radius-md);
+	box-shadow: inset 0 0 0 var(--kpf-stroke) var(--kpf-color-border-default);
 	overflow: clip;
-	transition: border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+	transition: box-shadow var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
 	width: 100%;
 }
 
@@ -1339,6 +1340,22 @@ a[aria-disabled="true"],
 .kpf-accordion__header:focus-visible {
 	box-shadow: inset var(--kpf-focus-ring);
 	outline: none;
+}
+
+.kpf-accordion__leading {
+	align-items: center;
+	color: var(--kpf-color-icon-primary);
+	display: inline-flex;
+	flex: 0 0 auto;
+	height: 1.25rem;
+	justify-content: center;
+	width: 1.25rem;
+}
+
+.kpf-accordion__leading svg {
+	display: block;
+	height: 100%;
+	width: 100%;
 }
 
 .kpf-accordion__title {

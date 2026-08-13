@@ -195,12 +195,17 @@ HTML;
 	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
 	 */
 	public static function about( array $media ): string {
-		$bg    = self::img( $media, 'about.tampaBay', '', 'kpf-hero__media' );
-		$frame = self::img( $media, 'about.heroFrame', 'Kevin Popke cutout portrait', '' );
-		$front = self::img( $media, 'about.historyFront', 'Donald “Kevin” Popke', '' );
-		$l1    = self::img( $media, 'about.history1', 'Donald “Kevin” Popke with his wife', '' );
-		$l2    = self::img( $media, 'about.history2', 'Donald “Kevin” Popke running', '' );
-		$back  = self::img( $media, 'about.historyBack', '', '' );
+		$bg       = self::img( $media, 'about.tampaBay', '', 'kpf-hero__media' );
+		$frame    = self::img( $media, 'about.heroFrame', 'Kevin Popke with his wife in a wooden frame', '' );
+		$front    = self::img( $media, 'about.historyFront', 'Donald “Kevin” Popke', '' );
+		$l1       = self::img( $media, 'about.history1', 'Donald “Kevin” Popke with his wife', '' );
+		$l2       = self::img( $media, 'about.history2', 'Donald “Kevin” Popke running', '' );
+		$back     = self::img( $media, 'about.historyBack', '', '' );
+		$featured = self::img( $media, 'about.galleryFeatured', 'Donald “Kevin” Popke', '' );
+		$g1       = self::img( $media, 'about.gallery1', 'Kevin Popke in flight gear', '' );
+		$g2       = self::img( $media, 'about.gallery2', 'Kevin Popke running', '' );
+		$g3       = self::img( $media, 'about.gallery3', 'Kevin Popke with family', '' );
+		$g4       = self::img( $media, 'about.gallery4', 'Foundation volunteers at a cookout', '' );
 
 		return <<<HTML
 <div class="kpf-page-about" data-kpf-scaffold="about">
@@ -220,67 +225,174 @@ HTML;
           </div>
         <div class="kpf-content-block__actions kpf-hero__actions">
           <a class="kpf-btn kpf-btn--primary" href="#mission">Our mission</a>
-          <a class="kpf-btn kpf-btn--secondary" href="/contact/">Get in touch</a>
+          <a class="kpf-btn kpf-btn--secondary" href="#history">Who Kevin was</a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="kpf-history kpf-section kpf-section--page" aria-labelledby="kpf-about-history-title">
-    <div class="kpf-history__stack">
-      <div class="kpf-history__layer kpf-history__layer--front">{$front}</div>
-      <div class="kpf-history__layer kpf-history__layer--1">{$l1}</div>
-      <div class="kpf-history__layer kpf-history__layer--2">{$l2}</div>
-      <div class="kpf-history__layer kpf-history__layer--back">{$back}</div>
-    </div>
-    <div class="kpf-history__card">
-      <div class="kpf-content-block">
+  <section id="history" class="kpf-history kpf-section kpf-section--page" aria-labelledby="kpf-about-history-title">
+    <div class="kpf-u-container">
+      <div class="kpf-history__intro kpf-content-block">
           <div class="kpf-content-block__copy">
         <div class="kpf-content-block__title-group">
-          <p class="kpf-content-block__eyebrow">Who Kevin was</p>
-          <h2 id="kpf-about-history-title" class="kpf-content-block__title kpf-content-block__title--h2">The Foundation carries his name</h2>
+          <p class="kpf-content-block__eyebrow">Our history</p>
+          <h2 id="kpf-about-history-title" class="kpf-content-block__title kpf-content-block__title--h2">Who Kevin was</h2>
         </div>
             <div class="kpf-content-block__body-group">
-        <p class="kpf-content-block__body">The Foundation carries the name of Donald “Kevin” Popke — “50” to his friends.</p>
-        <p class="kpf-content-block__body">Kevin served his entire adult life. He retired as a U.S. Army First Sergeant after more than twenty years, remembered by the soldiers who served under him as a leader and a mentor. He kept going afterward as a Department of Defense contractor, doing national security work with the same seriousness he brought to everything.</p>
-        <p class="kpf-content-block__body">A distracted driver killed him in 2016.</p>
-        <p class="kpf-content-block__body">The Foundation was established to continue what he did with his time: show up for other people, particularly the ones who had served. That’s the whole idea. Everything else — the grants, the vetting, the event, the volunteers — is machinery built around it.</p>
+        <p class="kpf-content-block__body kpf-content-block__body--lede">The Foundation carries a name — and a stack of moments that made it necessary.</p>
             </div>
           </div>
+      </div>
+      <div class="kpf-history__split">
+        <div class="kpf-history__stack">
+          <div class="kpf-history__layer kpf-history__layer--front">{$front}</div>
+          <div class="kpf-history__layer kpf-history__layer--1">{$l1}</div>
+          <div class="kpf-history__layer kpf-history__layer--2">{$l2}</div>
+          <div class="kpf-history__layer kpf-history__layer--back">{$back}</div>
+        </div>
+        <div class="kpf-history__aside">
+          <div class="kpf-history__card">
+            <div class="kpf-content-block">
+                <div class="kpf-content-block__copy">
+              <div class="kpf-content-block__title-group">
+                <p class="kpf-content-block__eyebrow">Donald “Kevin” Popke · “50”</p>
+                <h3 class="kpf-content-block__title kpf-content-block__title--h3">Show up for other people.</h3>
+              </div>
+                  <div class="kpf-content-block__body-group">
+              <p class="kpf-content-block__body">Kevin served his entire adult life. He retired as a U.S. Army First Sergeant after more than twenty years, remembered by the soldiers who served under him as a leader and a mentor.</p>
+              <p class="kpf-content-block__body">A distracted driver killed him in 2016.</p>
+              <p class="kpf-content-block__body">The Foundation was established to continue what he did with his time: show up for other people, particularly the ones who had served.</p>
+                  </div>
+                </div>
+            </div>
+          </div>
+          <div class="kpf-history__dots" role="tablist" aria-label="History slides">
+            <button type="button" class="kpf-history__dot is-active" aria-current="true" aria-label="Show history image 1 of 4"></button>
+            <button type="button" class="kpf-history__dot" aria-label="Show history image 2 of 4"></button>
+            <button type="button" class="kpf-history__dot" aria-label="Show history image 3 of 4"></button>
+            <button type="button" class="kpf-history__dot" aria-label="Show history image 4 of 4"></button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <section id="mission" class="kpf-mission kpf-section kpf-section--surface" aria-labelledby="kpf-about-mission-title">
-    <div class="kpf-u-container kpf-u-container--narrow">
+    <div class="kpf-u-container kpf-mission__inner">
       <div class="kpf-content-block">
           <div class="kpf-content-block__copy">
         <div class="kpf-content-block__title-group">
           <p class="kpf-content-block__eyebrow">Our mission</p>
-          <h2 id="kpf-about-mission-title" class="kpf-content-block__title kpf-content-block__title--h2">Our mission</h2>
+          <h2 id="kpf-about-mission-title" class="kpf-content-block__title kpf-content-block__title--h2">In tribute to Kevin Popke, we fund the work already underway</h2>
         </div>
             <div class="kpf-content-block__body-group">
         <p class="kpf-content-block__body">The Kevin Popke Foundation supports veteran-focused charities in the Tampa Bay area and other Florida communities through targeted grants.</p>
-        <p class="kpf-content-block__body">We don’t run programs ourselves. We look for organizations already doing the work — housing, job training, mental health care, family support, and the everyday business of keeping veterans connected to each other — and we give them money to keep doing it.</p>
-        <p class="kpf-content-block__body">The grants are targeted on purpose. A small organization with committed leadership and low overhead can do more with a well-timed grant than a large one can do with the same money. Our job is to find those organizations and fund them.</p>
+        <p class="kpf-content-block__body">We look for orgs already doing great work and give them money to keep doing it.</p>
+        <p class="kpf-content-block__body">Before a grant goes out, we do the homework. Leadership that lives the commitment. Dollars that reach veterans. Organizations that will still be here in 5 years.</p>
+        <p class="kpf-content-block__body">And when we can, we go see it.</p>
             </div>
           </div>
+      </div>
+      <div class="kpf-mission__criteria kpf-donate__list">
+        <div class="kpf-accordion is-open">
+          <button type="button" class="kpf-accordion__header" aria-expanded="true">
+            <span class="kpf-accordion__title">Leadership in the work</span>
+          </button>
+          <div class="kpf-accordion__body">
+            <div class="kpf-accordion__content">
+              <p>We look for organizations with leadership that lives the commitment rather than administering it — people who are personally in the work.</p>
+            </div>
+          </div>
+        </div>
+        <div class="kpf-accordion">
+          <button type="button" class="kpf-accordion__header" aria-expanded="false">
+            <span class="kpf-accordion__title">Dollar reach</span>
+          </button>
+          <div class="kpf-accordion__body" aria-hidden="true">
+            <div class="kpf-accordion__content">
+              <p>We look at how much of each dollar reaches a veteran — low overhead, high impact, money that shows up where it’s needed.</p>
+            </div>
+          </div>
+        </div>
+        <div class="kpf-accordion">
+          <button type="button" class="kpf-accordion__header" aria-expanded="false">
+            <span class="kpf-accordion__title">Longevity</span>
+          </button>
+          <div class="kpf-accordion__body" aria-hidden="true">
+            <div class="kpf-accordion__content">
+              <p>We look at whether the organization will still be here in five years — stability matters when veterans need ongoing support.</p>
+            </div>
+          </div>
+        </div>
+        <div class="kpf-accordion">
+          <button type="button" class="kpf-accordion__header" aria-expanded="false">
+            <span class="kpf-accordion__title">Local enough to visit</span>
+          </button>
+          <div class="kpf-accordion__body" aria-hidden="true">
+            <div class="kpf-accordion__content">
+              <p>That’s why we grant locally. Tampa Bay and Florida are close enough that we can meet the people running these programs, watch the work, and stay in touch afterward.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpf-grantees kpf-section kpf-section--page" aria-labelledby="kpf-about-grantees-title">
+    <div class="kpf-u-container">
+      <div class="kpf-content-block">
+          <div class="kpf-content-block__copy">
+        <div class="kpf-content-block__title-group">
+          <p class="kpf-content-block__eyebrow">Making an impact</p>
+          <h2 id="kpf-about-grantees-title" class="kpf-content-block__title kpf-content-block__title--h2">Meet our grantees</h2>
+        </div>
+            <div class="kpf-content-block__body-group">
+        <p class="kpf-content-block__body">Our grants have supported veterans facing very different situations: veterans without housing, veterans living with serious injuries, and Special Operations families hit with a sudden financial crisis.</p>
+            </div>
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
+    <div class="kpf-u-container">
+      <div class="kpf-content-block kpf-content-block--inverse">
+          <div class="kpf-content-block__copy">
+        <div class="kpf-content-block__title-group">
+          <p class="kpf-content-block__eyebrow">The work</p>
+          <h2 id="kpf-about-gallery-title" class="kpf-content-block__title kpf-content-block__title--h2">KPF volunteers enable our ongoing support for our nation’s protectors</h2>
+        </div>
+            <div class="kpf-content-block__body-group">
+        <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.</p>
+            </div>
+          </div>
+      </div>
+      <div class="kpf-gallery__layout">
+        <figure class="kpf-gallery__featured">{$featured}</figure>
+        <div class="kpf-gallery__grid">
+          <figure class="kpf-gallery__item">{$g1}</figure>
+          <figure class="kpf-gallery__item">{$g2}</figure>
+          <figure class="kpf-gallery__item">{$g3}</figure>
+          <figure class="kpf-gallery__item">{$g4}</figure>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-about-cta-title">
     <div class="kpf-u-container">
-      <div class="kpf-content-block kpf-content-block--inverse">
+      <div class="kpf-content-block kpf-content-block--inverse kpf-cta-closing__block">
           <div class="kpf-content-block__copy">
         <div class="kpf-content-block__title-group">
-          <p class="kpf-content-block__eyebrow">Together, we can.</p>
-          <h2 id="kpf-about-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">There’s more than one way to be part of this.</h2>
+          <h2 id="kpf-about-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">Together, we can.</h2>
         </div>
+            <div class="kpf-content-block__body-group">
+        <p class="kpf-content-block__body">There’s more than one way to be part of this.</p>
+            </div>
           </div>
         <div class="kpf-content-block__actions">
           <a class="kpf-btn kpf-btn--primary" href="/#donate">Donate</a>
-          <a class="kpf-btn kpf-btn--secondary" href="/events/">See upcoming events</a>
           <a class="kpf-btn kpf-btn--secondary" href="/contact/">Get in touch</a>
         </div>
       </div>

@@ -159,7 +159,38 @@ npm run test:inbox
 | `npm run test:blocks-graphql` | Verify Gutenberg blocks and nested relationships over WPGraphQL |
 | `npm run test:inbox` | Run Inbox menu, forms, and unread badge checks |
 
+## Page scaffolds (Faust)
+
+Marketing pages prefer React scaffolds over CMS HTML when interactivity is required (`PageScaffold.js`). The About page (`AboutPageScaffold.js`) mirrors Figma desktop / tablet / mobile and includes:
+
+- Mission criteria **accordions** (shared `.kpf-accordion` chrome)
+- **Grantee cards** carousel (`GranteeCard` + `GranteeCardsSlider`) with hover / focus photo pop-out
+- History split, gallery band, and closing CTA
+
+Copy and media paths live in `frontend/src/lib/pageCopy.js`. Grantee hover photos are under `frontend/public/media/grantees/`.
+
+### Stylesheets (keep twins in sync)
+
+Live CSS is served to Faust via WPGraphQL `kpfStylesheet` (foundation + pages layers from `kpf-core`).
+
+| Layer | Frontend twin | Plugin source |
+|---|---|---|
+| Foundation (tokens, accordion, buttons, chrome) | `frontend/src/styles/components.css` | `wordpress/plugins/kpf-core/assets/stylesheet/foundation.css` |
+| Pages (About, donate, events, …) | `frontend/src/styles/pages.css` | `wordpress/plugins/kpf-core/assets/stylesheet/pages.css` |
+
+Edit carefully — do **not** overwrite `foundation.css` wholesale with `components.css` (they can drift). After plugin stylesheet changes locally:
+
+```bash
+npx wp-env run cli wp eval 'var_export(\KPF\Core\Stylesheet\Defaults::apply_foundation());'
+```
+
+Then hard-refresh the Faust app (GraphQL stylesheet is cached).
+
+Accordion open/hover title fills use an inset `box-shadow` ring (no layout border) so the soft header background meets the rounded corners without a hairline gap.
+
+Grantee cards: default parchment-deep body; on hover / `:focus-within` / `.is-featured`, photo expands upward (~244px pad, ~264px media) per Figma `849:2104` → `849:2102`. Responsive widths: ~364px desktop, ~284px tablet, one + peek on mobile.
+
 ## Notes
 
 - Frontend env lives in `frontend/.env.local` (not committed). Copy from `frontend/.env.local.example` if needed; `wp-bootstrap.sh` rewrites it with the Faust secret and the dedicated ports (**8888** WordPress, **3010** frontend).
-- Public pages now render WordPress content and reusable component styles; broader site content and layout remain intentionally minimal.
+- Exclude local scratch under `.tmp/` from commits.

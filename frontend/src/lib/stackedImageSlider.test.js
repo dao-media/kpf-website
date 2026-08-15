@@ -37,6 +37,57 @@ test("layerOffset fans deeper slots to the LEFT on a shared baseline", () => {
 	assert.deepEqual(layerOffset(2), { x: -DEFAULT_STAGGER_X * 2, y: 0 });
 });
 
+test("layerOffsetPercent spaces slots evenly from 0% to rear -20%", () => {
+	const {
+		layerOffsetPercent,
+		DEFAULT_REAR_X_PERCENT,
+	} = require("./stackedImageSlider");
+	assert.equal(DEFAULT_REAR_X_PERCENT, -20);
+	assert.deepEqual(layerOffsetPercent(0, -20, 3), { xPercent: 0, y: 0 });
+	assert.ok(Math.abs(layerOffsetPercent(1, -20, 3).xPercent - -20 / 3) < 1e-9);
+	assert.ok(Math.abs(layerOffsetPercent(2, -20, 3).xPercent - (-40 / 3)) < 1e-9);
+	assert.deepEqual(layerOffsetPercent(3, -20, 3), { xPercent: -20, y: 0 });
+});
+
+test("stackLayout percent mode keeps front at 0% and rear at -20%", () => {
+	const slots = stackLayout({
+		queueLength: 4,
+		stepProgress: 0,
+		visibleCount: 4,
+		rearXPercent: -20,
+	});
+	assert.equal(slots[0].xPercent, 0);
+	assert.equal(slots[0].x, 0);
+	assert.ok(Math.abs(slots[1].xPercent - -20 / 3) < 1e-9);
+	assert.ok(Math.abs(slots[2].xPercent - (-40 / 3)) < 1e-9);
+	assert.equal(slots[3].xPercent, -20);
+});
+
+test("stackLayout slotLeftPercent fans left while keeping depth scale", () => {
+	const leftFor = (slot) => [24, 10, -5, -20][slot];
+	const rest = stackLayout({
+		queueLength: 5,
+		stepProgress: 0,
+		visibleCount: 4,
+		slotLeftPercent: leftFor,
+	});
+	assert.equal(rest[0].left, 24);
+	assert.equal(rest[0].scale, 1);
+	assert.equal(rest[3].left, -20);
+	assert.ok(rest[3].scale < rest[2].scale);
+
+	const mid = stackLayout({
+		queueLength: 5,
+		stepProgress: 0.5,
+		visibleCount: 4,
+		slotLeftPercent: leftFor,
+	});
+	assert.ok(mid[0].scale > 1);
+	assert.ok(mid[0].x > 0);
+	assert.ok(mid[0].opacity < 1);
+	assert.ok(Math.abs(mid[1].left - (10 + 24) / 2) < 1e-9);
+});
+
 test("layerOpacity falls off toward the back of the fan", () => {
 	assert.equal(layerOpacity(0), 1);
 	assert.equal(layerOpacity(3), DEFAULT_BACK_OPACITY);

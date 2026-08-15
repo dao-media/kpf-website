@@ -20,6 +20,11 @@ const DEFAULT_BACK_OPACITY = 0.28;
 /** Extra travel while the front exits (px). */
 const DEFAULT_EXIT_X = 40;
 const DEFAULT_EXIT_Y = 64;
+/**
+ * When using percent fan: deepest visible slot left offset (of card width).
+ * Front stays at 0%; middle slots are evenly spaced toward this rear.
+ */
+const DEFAULT_REAR_X_PERCENT = -20;
 
 function clamp01(value) {
 	if (Number.isNaN(value)) return 0;
@@ -58,6 +63,20 @@ function layerOffset(
 	};
 }
 
+/**
+ * Percentage fan: front at 0%, rear at rearXPercent (e.g. -20),
+ * intermediate slots evenly spaced between them.
+ */
+function layerOffsetPercent(slot, rearXPercent = DEFAULT_REAR_X_PERCENT, deepSlots = 3) {
+	const index = Math.max(0, Number(slot) || 0);
+	const deep = Math.max(1, Math.floor(Number(deepSlots) || 1));
+	const rear = Number(rearXPercent) || 0;
+	return {
+		xPercent: index === 0 || rear === 0 ? 0 : (rear * index) / deep,
+		y: 0,
+	};
+}
+
 /** Opacity falloff from front (1) to deepest visible (backOpacity). */
 function layerOpacity(
 	slot,
@@ -81,8 +100,11 @@ function visibleScales(
 }
 
 /**
- * Layout for one scroll step.
+ * Layout for one scroll/step.
  * @param {number} stepProgress 0 at rest → 1 when front has fully exited
+ * @param {((slotIndex: number) => number) | null} slotLeftPercent
+ *   When set, horizontal fan uses CSS `left` % (of the positioning container)
+ *   instead of GSAP x / xPercent. Front exit still uses px `x` for the rightward drift.
  */
 function stackLayout({
 	queueLength,
@@ -95,6 +117,10 @@ function stackLayout({
 	backOpacity = DEFAULT_BACK_OPACITY,
 	exitX = DEFAULT_EXIT_X,
 	exitY = DEFAULT_EXIT_Y,
+	/** When set (including 0), horizontal fan uses % of card width instead of px. */
+	rearXPercent = null,
+	/** Custom left-% fan (e.g. stack-relative rear -20% / front right-aligned). */
+	slotLeftPercent = null,
 } = {}) {
 	const total = Math.max(0, Math.floor(Number(queueLength) || 0));
 	const visible = Math.max(1, Math.floor(Number(visibleCount) || 1));
@@ -102,22 +128,47 @@ function stackLayout({
 	const exit = Math.max(1, Number(exitScale) || DEFAULT_EXIT_SCALE);
 	const leaveX = Number(exitX) || 0;
 	const leaveY = Number(exitY) || 0;
+	const useLeft = typeof slotLeftPercent === "function";
+	const usePercent =
+		!useLeft && rearXPercent != null && Number.isFinite(Number(rearXPercent));
+	const rearPercent = usePercent ? Number(rearXPercent) : DEFAULT_REAR_X_PERCENT;
+	const deepSlots = Math.max(1, visible - 1);
 
 	if (total < 1) {
 		return [];
+	}
+
+	function leftFor(slotIndex) {
+		if (!useLeft) return null;
+		const value = Number(slotLeftPercent(slotIndex));
+		return Number.isFinite(value) ? value : 0;
+	}
+
+	function offsetFor(slotIndex) {
+		if (useLeft) {
+			return { x: 0, y: 0, xPercent: 0, left: leftFor(slotIndex) };
+		}
+		if (usePercent) {
+			const at = layerOffsetPercent(slotIndex, rearPercent, deepSlots);
+			return { x: 0, y: at.y, xPercent: at.xPercent, left: null };
+		}
+		const at = layerOffset(slotIndex, staggerX, staggerY);
+		return { x: at.x, y: at.y, xPercent: 0, left: null };
 	}
 
 	const slots = [];
 
 	for (let queueIndex = 0; queueIndex < total; queueIndex += 1) {
 		if (queueIndex === 0) {
-			const rest = layerOffset(0, staggerX, staggerY);
+			const rest = offsetFor(0);
 			slots.push({
 				queueIndex,
 				slot: 0,
 				scale: lerp(1, exit, p),
 				x: lerp(rest.x, rest.x + leaveX, p),
 				y: lerp(rest.y, rest.y - leaveY, p),
+				xPercent: rest.xPercent,
+				left: rest.left,
 				opacity: 1 - p,
 				zIndex: visible + 2,
 				visible: true,
@@ -129,8 +180,8 @@ function stackLayout({
 		if (queueIndex < visible) {
 			const fromSlot = queueIndex;
 			const toSlot = queueIndex - 1;
-			const from = layerOffset(fromSlot, staggerX, staggerY);
-			const to = layerOffset(toSlot, staggerX, staggerY);
+			const from = offsetFor(fromSlot);
+			const to = offsetFor(toSlot);
 			const slot = lerp(fromSlot, toSlot, p);
 			slots.push({
 				queueIndex,
@@ -142,6 +193,11 @@ function stackLayout({
 				),
 				x: lerp(from.x, to.x, p),
 				y: lerp(from.y, to.y, p),
+				xPercent: lerp(from.xPercent, to.xPercent, p),
+				left:
+					from.left == null || to.left == null
+						? null
+						: lerp(from.left, to.left, p),
 				opacity: lerp(
 					layerOpacity(fromSlot, visible, backOpacity),
 					layerOpacity(toSlot, visible, backOpacity),
@@ -156,13 +212,15 @@ function stackLayout({
 
 		if (queueIndex === visible) {
 			const deep = visible - 1;
-			const at = layerOffset(deep, staggerX, staggerY);
+			const at = offsetFor(deep);
 			slots.push({
 				queueIndex,
 				slot: deep,
 				scale: layerScale(deep, scaleStep),
 				x: at.x,
 				y: at.y,
+				xPercent: at.xPercent,
+				left: at.left,
 				opacity: p * layerOpacity(deep, visible, backOpacity),
 				zIndex: 1,
 				visible: p > 0.001,
@@ -171,13 +229,15 @@ function stackLayout({
 			continue;
 		}
 
-		const waiting = layerOffset(visible, staggerX, staggerY);
+		const waiting = offsetFor(visible);
 		slots.push({
 			queueIndex,
 			slot: visible,
 			scale: layerScale(visible, scaleStep),
 			x: waiting.x,
 			y: waiting.y,
+			xPercent: waiting.xPercent,
+			left: waiting.left,
 			opacity: 0,
 			zIndex: 0,
 			visible: false,
@@ -213,10 +273,12 @@ module.exports = {
 	DEFAULT_BACK_OPACITY,
 	DEFAULT_EXIT_X,
 	DEFAULT_EXIT_Y,
+	DEFAULT_REAR_X_PERCENT,
 	clamp01,
 	lerp,
 	layerScale,
 	layerOffset,
+	layerOffsetPercent,
 	layerOpacity,
 	visibleScales,
 	stackLayout,

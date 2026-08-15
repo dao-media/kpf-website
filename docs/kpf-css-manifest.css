@@ -153,6 +153,7 @@
  * SURFACES
  *   .kpf-card  --outlined | --soft | --featured
  *              __media __body __eyebrow __title __description __actions
+ *   .kpf-cigar  __image __smoke
  *   .kpf-accordion  __header __title __icon __body
  *                   states: .is-open | [open] | aria-expanded
  *   .kpf-icon-text  --center | --soft
@@ -1272,6 +1273,7 @@
  * Nav Link                        .kpf-nav-link
  * Text Field                      .kpf-field + .kpf-input
  * Card                            .kpf-card
+ * Cigar                           .kpf-cigar
  * Accordion                       .kpf-accordion
  * Icon Text Block                 .kpf-icon-text
  * Content Block                   .kpf-content-block

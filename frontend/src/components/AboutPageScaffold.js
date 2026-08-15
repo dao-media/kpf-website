@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { Check, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
-import GranteeCardsSlider from "@/components/GranteeCardsSlider";
+import GranteeCardsGrid from "@/components/GranteeCardsGrid";
+import KevinHistoryCarousel from "@/components/KevinHistoryCarousel";
+import KpfButton from "@/components/KpfButton";
 const { resolveMedia } = require("@/lib/scaffoldMedia");
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
 
-export default function AboutPageScaffold({ media = {} }) {
+export default function AboutPageScaffold({ media = {}, kevinSlides = [] }) {
   const copy = ABOUT;
   const background = resolveMedia(media, copy.hero.background.key, copy.hero.background);
   const frame = resolveMedia(media, copy.hero.frame.key, copy.hero.frame);
@@ -19,7 +20,6 @@ export default function AboutPageScaffold({ media = {} }) {
   );
   const [heldAccordionIds, setHeldAccordionIds] = useState([]);
   const accordionHoldTimerRef = useRef(null);
-  const [historySlide, setHistorySlide] = useState(0);
 
   useEffect(() => {
     return () => {
@@ -55,7 +55,19 @@ export default function AboutPageScaffold({ media = {} }) {
     });
   }
 
-  const historyDotCount = copy.history.layers.length;
+  const carouselSlides =
+    Array.isArray(kevinSlides) && kevinSlides.length > 0
+      ? kevinSlides
+      : copy.history.layers.map((layer, index) => {
+          const resolved = resolveMedia(media, layer.key, layer);
+          return {
+            id: layer.key || `history-fallback-${index}`,
+            imageUrl: resolved.src,
+            imageAlt: resolved.alt,
+            header: copy.history.card.title,
+            body: copy.history.card.body.join("\n\n"),
+          };
+        });
 
   return (
     <div className="kpf-page-about" data-kpf-scaffold="about">
@@ -68,32 +80,34 @@ export default function AboutPageScaffold({ media = {} }) {
             decoding="async"
           />
         ) : null}
-        <div className="kpf-hero__frame">
-          {frame.src ? <img src={frame.src} alt={frame.alt} decoding="async" /> : null}
-        </div>
-        <div className="kpf-hero__content">
-          <div className="kpf-content-block">
-            <div className="kpf-content-block__copy">
-              <div className="kpf-content-block__title-group">
-                <p className="kpf-content-block__eyebrow">{copy.hero.eyebrow}</p>
-                <h1
-                  id="kpf-about-hero-title"
-                  className="kpf-content-block__title kpf-content-block__title--h1"
-                >
-                  {copy.hero.title}
-                </h1>
+        <div className="kpf-u-container kpf-hero__layout">
+          <div className="kpf-hero__frame">
+            {frame.src ? <img src={frame.src} alt={frame.alt} decoding="async" /> : null}
+          </div>
+          <div className="kpf-hero__content">
+            <div className="kpf-content-block">
+              <div className="kpf-content-block__copy">
+                <div className="kpf-content-block__title-group">
+                  <p className="kpf-content-block__eyebrow">{copy.hero.eyebrow}</p>
+                  <h1
+                    id="kpf-about-hero-title"
+                    className="kpf-content-block__title kpf-content-block__title--h1"
+                  >
+                    {copy.hero.title}
+                  </h1>
+                </div>
+                <div className="kpf-content-block__body-group">
+                  <p className="kpf-content-block__body">{copy.hero.body}</p>
+                </div>
               </div>
-              <div className="kpf-content-block__body-group">
-                <p className="kpf-content-block__body">{copy.hero.body}</p>
+              <div className="kpf-content-block__actions kpf-hero__actions">
+                <KpfButton href={copy.hero.primaryCta.href} className="kpf-btn kpf-btn--primary">
+                  {copy.hero.primaryCta.label}
+                </KpfButton>
+                <KpfButton href={copy.hero.secondaryCta.href} className="kpf-btn kpf-btn--secondary">
+                  {copy.hero.secondaryCta.label}
+                </KpfButton>
               </div>
-            </div>
-            <div className="kpf-content-block__actions kpf-hero__actions">
-              <Link href={copy.hero.primaryCta.href} className="kpf-btn kpf-btn--primary">
-                {copy.hero.primaryCta.label}
-              </Link>
-              <Link href={copy.hero.secondaryCta.href} className="kpf-btn kpf-btn--secondary">
-                {copy.hero.secondaryCta.label}
-              </Link>
             </div>
           </div>
         </div>
@@ -124,67 +138,11 @@ export default function AboutPageScaffold({ media = {} }) {
             </div>
           </div>
 
-          <div className="kpf-history__split">
-            <div className="kpf-history__stack">
-              <div className="kpf-history__stage">
-                {copy.history.layers.map((layer) => {
-                  const resolved = resolveMedia(media, layer.key, layer);
-                  if (!resolved.src) return null;
-                  return (
-                    <div
-                      key={layer.key || layer.src}
-                      className={`kpf-history__layer ${layer.className}`}
-                    >
-                      <img
-                        src={resolved.src}
-                        alt={resolved.alt}
-                        width={1120}
-                        height={1296}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="kpf-history__aside">
-              <div className="kpf-history__card">
-                <div className="kpf-content-block">
-                  <div className="kpf-content-block__copy">
-                    <div className="kpf-content-block__title-group">
-                      <p className="kpf-content-block__eyebrow">{copy.history.card.eyebrow}</p>
-                      <h3 className="kpf-content-block__title kpf-content-block__title--h3">
-                        {copy.history.card.title}
-                      </h3>
-                    </div>
-                    <div className="kpf-content-block__body-group">
-                      {copy.history.card.body.map((paragraph) => (
-                        <p key={paragraph.slice(0, 40)} className="kpf-content-block__body">
-                          {paragraph}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="kpf-history__dots" role="tablist" aria-label="History slides">
-                {Array.from({ length: historyDotCount }, (_, i) => (
-                  <button
-                    key={`history-dot-${i}`}
-                    type="button"
-                    role="tab"
-                    className={`kpf-history__dot${i === historySlide ? " is-active" : ""}`}
-                    aria-label={`Show history image ${i + 1} of ${historyDotCount}`}
-                    aria-selected={i === historySlide}
-                    aria-current={i === historySlide ? "true" : undefined}
-                    onClick={() => setHistorySlide(i)}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          <KevinHistoryCarousel
+            slides={carouselSlides}
+            cardEyebrow="Kevin's Story"
+            ariaLabel={copy.history.title}
+          />
         </div>
       </section>
 
@@ -220,6 +178,8 @@ export default function AboutPageScaffold({ media = {} }) {
               const isOpen =
                 openAccordion === item.id || heldAccordionIds.includes(item.id);
               const isExpanded = openAccordion === item.id;
+              const panelId = `kpf-mission-panel-${item.id}`;
+              const headerId = `kpf-mission-header-${item.id}`;
               return (
                 <div
                   key={item.id}
@@ -227,8 +187,10 @@ export default function AboutPageScaffold({ media = {} }) {
                 >
                   <button
                     type="button"
+                    id={headerId}
                     className="kpf-accordion__header"
                     aria-expanded={isExpanded}
+                    aria-controls={panelId}
                     onClick={() => selectAccordion(item.id)}
                   >
                     <span className="kpf-accordion__leading" aria-hidden="true">
@@ -244,7 +206,13 @@ export default function AboutPageScaffold({ media = {} }) {
                       />
                     </span>
                   </button>
-                  <div className="kpf-accordion__body" aria-hidden={!isOpen}>
+                  <div
+                    id={panelId}
+                    role="region"
+                    aria-labelledby={headerId}
+                    className="kpf-accordion__body"
+                    aria-hidden={!isOpen}
+                  >
                     <div className="kpf-accordion__content">
                       <p>{item.body}</p>
                     </div>
@@ -274,7 +242,7 @@ export default function AboutPageScaffold({ media = {} }) {
               </div>
             </div>
           </div>
-          <GranteeCardsSlider items={copy.grantees.items} label={copy.grantees.title} />
+          <GranteeCardsGrid items={copy.grantees.items} label={copy.grantees.title} />
         </div>
       </section>
 
@@ -346,13 +314,9 @@ export default function AboutPageScaffold({ media = {} }) {
             </div>
             <div className="kpf-content-block__actions">
               {copy.cta.actions.map((action) => (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  className={`kpf-btn kpf-btn--${action.variant}`}
-                >
+                <KpfButton key={action.href} href={action.href} className={`kpf-btn kpf-btn--${action.variant}`}>
                   {action.label}
-                </Link>
+                </KpfButton>
               ))}
             </div>
           </div>

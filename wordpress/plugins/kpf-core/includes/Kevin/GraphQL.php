@@ -90,13 +90,17 @@ final class GraphQL {
 	 * @return array<string, mixed>|null
 	 */
 	private static function slide_from_post( \WP_Post $post ): ?array {
-		$header = trim( (string) get_the_title( $post ) );
+		$header = html_entity_decode(
+			trim( (string) get_the_title( $post ) ),
+			ENT_QUOTES | ENT_HTML5,
+			'UTF-8'
+		);
 		if ( '' === $header ) {
 			return null;
 		}
 
 		$attachment_id = (int) get_post_thumbnail_id( $post );
-		$image_url     = $attachment_id > 0 ? (string) wp_get_attachment_image_url( $attachment_id, 'large' ) : '';
+		$image_url     = $attachment_id > 0 ? (string) wp_get_attachment_image_url( $attachment_id, 'full' ) : '';
 		if ( '' === $image_url ) {
 			return null;
 		}
@@ -108,7 +112,13 @@ final class GraphQL {
 			$image_alt = $header;
 		}
 
-		$body = trim( wp_strip_all_tags( (string) $post->post_content ) );
+		$body = trim(
+			html_entity_decode(
+				wp_strip_all_tags( (string) $post->post_content ),
+				ENT_QUOTES | ENT_HTML5,
+				'UTF-8'
+			)
+		);
 
 		return array(
 			'databaseId' => (int) $post->ID,

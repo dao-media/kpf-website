@@ -193,7 +193,7 @@ const ABOUT = {
     title: "Who Kevin was",
     intro: "The Foundation carries a name — and a stack of moments that made it necessary.",
     card: {
-      eyebrow: "Donald “Kevin” Popke · “50”",
+      eyebrow: "Kevin's Story",
       title: "Show up for other people.",
       body: [
         "Kevin served his entire adult life. He retired as a U.S. Army First Sergeant after more than twenty years, remembered by the soldiers who served under him as a leader and a mentor.",

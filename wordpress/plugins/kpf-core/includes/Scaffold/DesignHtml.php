@@ -12,9 +12,9 @@ final class DesignHtml {
 	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
 	 */
 	public static function home( array $media ): string {
-		$cutout_dad    = self::img( $media, 'home.kevinDad', '', 'kpf-hero__cutout kpf-hero__cutout--dad' );
-		$cutout_alumni = self::img( $media, 'home.kevinAlumni', '', 'kpf-hero__cutout kpf-hero__cutout--alumni' );
-		$cutout_runner = self::img( $media, 'home.kevinRunner', '', 'kpf-hero__cutout kpf-hero__cutout--runner' );
+		$cutout_dad    = self::cutout( $media, 'home.kevinDad', 'kpf-hero__cutout kpf-hero__cutout--dad' );
+		$cutout_alumni = self::cutout( $media, 'home.kevinAlumni', 'kpf-hero__cutout kpf-hero__cutout--alumni' );
+		$cutout_runner = self::cutout( $media, 'home.kevinRunner', 'kpf-hero__cutout kpf-hero__cutout--runner' );
 		$kevin    = self::img( $media, 'home.kevinDoubleExposure', 'Double-exposure portrait of Kevin Popke with a parachutist silhouette', '' );
 		if ( $kevin === '' ) {
 			$kevin = self::img( $media, 'home.kevin', 'Donald “Kevin” Popke in uniform', '' );
@@ -46,7 +46,7 @@ final class DesignHtml {
             </div>
           </div>
           <div class="kpf-content-block__actions kpf-hero__actions">
-            <a class="kpf-btn kpf-btn--primary" href="/#donate">Donate</a>
+            <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate</button>
             <a class="kpf-link kpf-hero__text-link" href="/#programs">Where your donations go</a>
           </div>
         </div>
@@ -72,8 +72,8 @@ final class DesignHtml {
             </div>
           </div>
           <div class="kpf-content-block__actions kpf-story__actions">
-            <a class="kpf-btn kpf-btn--primary" href="/#donate">Donate \$50 for ‘50’</a>
-            <a class="kpf-btn kpf-btn--secondary" href="/about/">Kevin’s story</a>
+            <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate \$50 for ‘50’</button>
+            <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/about/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Kevin’s story</button>
             <a class="kpf-link" href="/#programs">Where your donation goes</a>
           </div>
         </div>
@@ -88,10 +88,10 @@ final class DesignHtml {
         <p class="kpf-content-block__body">A nonprofit is only as strong as the community holding it up. There’s more than one way in — pick the one that fits.</p>
       </div>
       <div class="kpf-values__cards">
-        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card1}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">What You Can Do</p><h3 class="kpf-card__title">Donate to Kevin’s Cause</h3><p class="kpf-card__description">Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.</p><div class="kpf-card__actions"><a class="kpf-btn kpf-btn--primary kpf-btn--sm" href="/#donate">Donate</a></div></div></article>
-        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card2}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">What You Can Do</p><h3 class="kpf-card__title">Check out our events</h3><p class="kpf-card__description">Buy a ticket, bring people, have a good night out for a serious reason.</p><div class="kpf-card__actions"><a class="kpf-btn kpf-btn--primary kpf-btn--sm" href="/events/">See events</a></div></div></article>
-        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card3}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">Who We Work With</p><h3 class="kpf-card__title">Songwriters for Vets</h3><p class="kpf-card__description">Each year Nashville songwriters come to play the songs you know by heart.</p><div class="kpf-card__actions"><a class="kpf-btn kpf-btn--primary kpf-btn--sm" href="/events/">See events</a></div></div></article>
-        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card4}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">What You Can Do</p><h3 class="kpf-card__title">Get involved at KPF</h3><p class="kpf-card__description">Volunteer, sponsor an event, or bring the Foundation to your company or community.</p><div class="kpf-card__actions"><a class="kpf-btn kpf-btn--primary kpf-btn--sm" href="/contact/">Contact us</a></div></div></article>
+        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card1}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">What You Can Do</p><h3 class="kpf-card__title">Donate to Kevin’s Cause</h3><p class="kpf-card__description">Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.</p><div class="kpf-card__actions"><button type="button" class="kpf-btn kpf-btn--primary kpf-btn--sm" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate</button></div></div></article>
+        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card2}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">What You Can Do</p><h3 class="kpf-card__title">Check out our events</h3><p class="kpf-card__description">Buy a ticket, bring people, have a good night out for a serious reason.</p><div class="kpf-card__actions"><button type="button" class="kpf-btn kpf-btn--primary kpf-btn--sm" data-kpf-href="/events/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">See events</button></div></div></article>
+        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card3}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">Who We Work With</p><h3 class="kpf-card__title">Songwriters for Vets</h3><p class="kpf-card__description">Each year Nashville songwriters come to play the songs you know by heart.</p><div class="kpf-card__actions"><button type="button" class="kpf-btn kpf-btn--primary kpf-btn--sm" data-kpf-href="/events/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">See events</button></div></div></article>
+        <article class="kpf-card kpf-values__card"><div class="kpf-card__media">{$card4}</div><div class="kpf-card__body"><p class="kpf-card__eyebrow">What You Can Do</p><h3 class="kpf-card__title">Get involved at KPF</h3><p class="kpf-card__description">Volunteer, sponsor an event, or bring the Foundation to your company or community.</p><div class="kpf-card__actions"><button type="button" class="kpf-btn kpf-btn--primary kpf-btn--sm" data-kpf-href="/contact/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Contact us</button></div></div></article>
       </div>
     </div>
   </section>
@@ -141,7 +141,7 @@ final class DesignHtml {
         <div class="kpf-archive__meta">
           <p class="kpf-archive__category">Events</p>
           <p class="kpf-archive__date">July 18, 2026 · 6 min read</p>
-          <h3 class="kpf-archive__title">What Songwriters for Vets taught us about showing up</h3>
+          <h3 class="kpf-content-block__title kpf-content-block__title--h3">What Songwriters for Vets taught us about showing up</h3>
           <span class="kpf-link">Read the story</span>
         </div>
       </a>
@@ -162,8 +162,8 @@ final class DesignHtml {
             </div>
           </div>
           <div class="kpf-content-block__actions">
-            <a class="kpf-btn kpf-btn--primary" href="/#donate">Donate via PayPal</a>
-            <a class="kpf-btn kpf-btn--secondary" href="/about/">Learn about our work</a>
+            <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate via PayPal</button>
+            <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/about/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Learn about our work</button>
           </div>
         </div>
         <p class="kpf-donate__note">A 501(c)(3) nonprofit organization</p>
@@ -211,21 +211,23 @@ HTML;
 <div class="kpf-page-about" data-kpf-scaffold="about">
   <section class="kpf-hero kpf-hero--about" aria-labelledby="kpf-about-hero-title">
     {$bg}
-    <div class="kpf-hero__frame">{$frame}</div>
-    <div class="kpf-hero__content">
-      <div class="kpf-content-block">
-          <div class="kpf-content-block__copy">
-        <div class="kpf-content-block__title-group">
-          <p class="kpf-content-block__eyebrow">About</p>
-          <h1 id="kpf-about-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">About the Kevin Popke Foundation</h1>
-        </div>
-            <div class="kpf-content-block__body-group">
-        <p class="kpf-content-block__body">A Florida foundation that funds the organizations doing the hardest work for veterans — built to continue the way one man spent his life.</p>
-            </div>
+    <div class="kpf-u-container kpf-hero__layout">
+      <div class="kpf-hero__frame">{$frame}</div>
+      <div class="kpf-hero__content">
+        <div class="kpf-content-block">
+            <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">About</p>
+            <h1 id="kpf-about-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">About the Kevin Popke Foundation</h1>
           </div>
-        <div class="kpf-content-block__actions kpf-hero__actions">
-          <a class="kpf-btn kpf-btn--primary" href="#mission">Our mission</a>
-          <a class="kpf-btn kpf-btn--secondary" href="#history">Who Kevin was</a>
+              <div class="kpf-content-block__body-group">
+          <p class="kpf-content-block__body">A Florida foundation that funds the organizations doing the hardest work for veterans — built to continue the way one man spent his life.</p>
+              </div>
+            </div>
+          <div class="kpf-content-block__actions kpf-hero__actions">
+            <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="#mission" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Our mission</button>
+            <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="#history" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Who Kevin was</button>
+          </div>
         </div>
       </div>
     </div>
@@ -256,7 +258,7 @@ HTML;
             <div class="kpf-content-block">
                 <div class="kpf-content-block__copy">
               <div class="kpf-content-block__title-group">
-                <p class="kpf-content-block__eyebrow">Donald “Kevin” Popke · “50”</p>
+                <p class="kpf-content-block__eyebrow">Kevin's Story</p>
                 <h3 class="kpf-content-block__title kpf-content-block__title--h3">Show up for other people.</h3>
               </div>
                   <div class="kpf-content-block__body-group">
@@ -392,8 +394,8 @@ HTML;
             </div>
           </div>
         <div class="kpf-content-block__actions">
-          <a class="kpf-btn kpf-btn--primary" href="/#donate">Donate</a>
-          <a class="kpf-btn kpf-btn--secondary" href="/contact/">Get in touch</a>
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate</button>
+          <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get in touch</button>
         </div>
       </div>
     </div>
@@ -427,8 +429,8 @@ HTML;
             </div>
           </div>
         <div class="kpf-content-block__actions kpf-hero__actions">
-          <a class="kpf-btn kpf-btn--primary" href="#featured">Songwriters for Vets</a>
-          <a class="kpf-btn kpf-btn--secondary" href="/contact/?inquiry=partnership">Partner with us</a>
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="#featured" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Songwriters for Vets</button>
+          <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Partner with us</button>
         </div>
       </div>
     </div>
@@ -448,8 +450,8 @@ HTML;
             </div>
           </div>
       <div class="kpf-content-block__actions">
-        <a class="kpf-btn kpf-btn--primary" href="https://songwriters4vets.com" target="_blank" rel="noopener noreferrer">Get tickets</a>
-        <a class="kpf-btn kpf-btn--secondary" href="/contact/?inquiry=partnership">Become a sponsor</a>
+        <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="https://songwriters4vets.com" data-kpf-external="true" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get tickets</button>
+        <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Become a sponsor</button>
       </div>
     </div>
   </section>
@@ -467,7 +469,7 @@ HTML;
         <p class="kpf-content-block__body">We announce events a few months out. The best way to hear first is to follow along — or reach out if you’d like to help put one together.</p>
             </div>
           </div>
-        <div class="kpf-content-block__actions"><a class="kpf-btn kpf-btn--secondary" href="/contact/">Get in touch</a></div>
+        <div class="kpf-content-block__actions"><button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get in touch</button></div>
       </div>
       <div class="kpf-event-library__grid">{$library}</div>
     </div>
@@ -571,7 +573,7 @@ HTML;
               <strong>The Kevin Popke Foundation, Inc.</strong><br />
               A 501(c)(3) nonprofit organization
             </address>
-            <p class="kpf-content-block__body">Prefer to just give? <a class="kpf-btn kpf-btn--primary kpf-btn--sm" href="/#donate">Donate</a></p>
+            <p class="kpf-content-block__body">Prefer to just give? <button type="button" class="kpf-btn kpf-btn--primary kpf-btn--sm" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate</button></p>
           </div>
         </div>
       </aside>
@@ -617,6 +619,25 @@ HTML;
 			$class_attr,
 			esc_url( $url ),
 			esc_attr( $alt )
+		);
+	}
+
+	/**
+	 * Home hero cutout wrapper — hosts depth-graded mask-image on the img.
+	 *
+	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
+	 */
+	private static function cutout( array $media, string $key, string $class ): string {
+		$url = (string) ( $media[ $key ]['sourceUrl'] ?? '' );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		$safe_url = esc_url( $url );
+		return sprintf(
+			'<div class="%s"><img src="%s" alt="" decoding="async" /></div>',
+			esc_attr( $class ),
+			$safe_url
 		);
 	}
 

@@ -25,12 +25,18 @@ export default function PageTemplate(props) {
   const page = props?.data?.page;
   const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
   const contactForm = props?.data?.kpfForm || null;
+  const kevinSlides = props?.data?.kpfKevinSlides || [];
 
   return (
     <>
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={page?.kpfSeo} />
-      <PageScaffold page={page} media={media} contactForm={contactForm} />
+      <PageScaffold
+        page={page}
+        media={media}
+        contactForm={contactForm}
+        kevinSlides={kevinSlides}
+      />
     </>
   );
 }
@@ -44,6 +50,14 @@ PageTemplate.query = gql`
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}
     ${KPF_GSAP_QUERY}
+    kpfKevinSlides(first: 12) {
+      databaseId
+      header
+      body
+      imageUrl
+      imageAlt
+      menuOrder
+    }
     page(id: $uri, idType: URI) {
       id
       databaseId

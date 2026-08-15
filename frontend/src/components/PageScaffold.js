@@ -7,13 +7,18 @@ import PageDesignRenderer from "@/components/PageDesignRenderer";
  * Prefer slug-matched React scaffolds (interactive 1:1 builds);
  * fall back to CMS design HTML when no scaffold exists.
  */
-export default function PageScaffold({ page, media = {}, contactForm = null }) {
+export default function PageScaffold({
+  page,
+  media = {},
+  contactForm = null,
+  kevinSlides = [],
+}) {
   const slug = String(page?.slug || "")
     .toLowerCase()
     .replace(/^\/+|\/+$/g, "");
 
   if (slug === "about") {
-    return <AboutPageScaffold media={media} />;
+    return <AboutPageScaffold media={media} kevinSlides={kevinSlides} />;
   }
 
   if (slug === "events") {

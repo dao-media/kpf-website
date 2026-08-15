@@ -91,7 +91,7 @@ final class Admin {
 		$items[] = array(
 			'token'       => '{{#each queries.slug}}…{{/each}}',
 			'label'       => __( 'Query loop', 'kpf-core' ),
-			'description' => __( 'Replace “slug” with a saved query slug. Inside the loop use {{title}}, {{link}}, {{excerpt}}, {{featuredImage.url}}.', 'kpf-core' ),
+			'description' => __( 'Replace “slug” with a saved query slug (e.g. kevin). Inside the loop use {{title}}, {{link}}, {{excerpt}}, {{content}}, {{featuredImage.url}}.', 'kpf-core' ),
 			'group'       => 'queries',
 		);
 		$items[] = array(

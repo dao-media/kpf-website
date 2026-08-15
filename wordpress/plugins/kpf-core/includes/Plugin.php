@@ -48,6 +48,7 @@ use KPF\Core\Forms\Rest as FormsRest;
 use KPF\Core\Forms\Settings as FormsSettings;
 use KPF\Core\Queries\Admin as QueriesAdmin;
 use KPF\Core\Queries\ContentType as QueriesContentType;
+use KPF\Core\Queries\Defaults as QueriesDefaults;
 use KPF\Core\Queries\GraphQL as QueriesGraphQL;
 use KPF\Core\Queries\Meta as QueriesMeta;
 use KPF\Core\Queries\Rest as QueriesRest;
@@ -98,6 +99,9 @@ use KPF\Core\Grants\GraphQL as GrantsGraphQL;
 use KPF\Core\Grants\Meta as GrantsMeta;
 use KPF\Core\Grants\Rest as GrantsRest;
 use KPF\Core\Scrapbook\Admin as ScrapbookAdmin;
+use KPF\Core\Kevin\Admin as KevinAdmin;
+use KPF\Core\Kevin\ContentType as KevinContentType;
+use KPF\Core\Kevin\GraphQL as KevinGraphQL;
 use KPF\Core\Scrapbook\ContentType as ScrapbookContentType;
 use KPF\Core\Scrapbook\Editor as ScrapbookEditor;
 use KPF\Core\Scrapbook\GraphQL as ScrapbookGraphQL;
@@ -137,6 +141,7 @@ final class Plugin {
 
 	public function activate(): void {
 		ScrapbookContentType::register_content();
+		KevinContentType::register_content();
 		GrantsContentType::register_content();
 		GranteesContentType::register_content();
 		GrantsContentType::maybe_migrate_from_grantees();
@@ -152,6 +157,7 @@ final class Plugin {
 		StylesheetMeta::ensure_stylesheet();
 		StylesheetDefaults::seed_if_empty();
 		StylesheetDefaults::ensure_pages_layer();
+		QueriesDefaults::ensure_kevin_query();
 		InboxForms::register_content();
 		RedirectsTable::install();
 		Settings::ensure_defaults();
@@ -186,6 +192,7 @@ final class Plugin {
 
 		QueriesContentType::register();
 		QueriesMeta::register();
+		QueriesDefaults::register();
 		QueriesAdmin::register();
 		QueriesRest::register();
 		QueriesGraphQL::register();
@@ -242,6 +249,10 @@ final class Plugin {
 		ScrapbookEditor::register();
 		ScrapbookGraphQL::register();
 		ScrapbookRest::register();
+
+		KevinContentType::register();
+		KevinAdmin::register();
+		KevinGraphQL::register();
 
 		GrantsContentType::register();
 		GrantsMeta::register();

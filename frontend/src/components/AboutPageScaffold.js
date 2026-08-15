@@ -126,18 +126,27 @@ export default function AboutPageScaffold({ media = {} }) {
 
           <div className="kpf-history__split">
             <div className="kpf-history__stack">
-              {copy.history.layers.map((layer) => {
-                const resolved = resolveMedia(media, layer.key, layer);
-                if (!resolved.src) return null;
-                return (
-                  <div
-                    key={layer.key || layer.src}
-                    className={`kpf-history__layer ${layer.className}`}
-                  >
-                    <img src={resolved.src} alt={resolved.alt} loading="lazy" decoding="async" />
-                  </div>
-                );
-              })}
+              <div className="kpf-history__stage">
+                {copy.history.layers.map((layer) => {
+                  const resolved = resolveMedia(media, layer.key, layer);
+                  if (!resolved.src) return null;
+                  return (
+                    <div
+                      key={layer.key || layer.src}
+                      className={`kpf-history__layer ${layer.className}`}
+                    >
+                      <img
+                        src={resolved.src}
+                        alt={resolved.alt}
+                        width={1120}
+                        height={1296}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="kpf-history__aside">

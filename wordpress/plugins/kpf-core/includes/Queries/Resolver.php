@@ -174,10 +174,16 @@ final class Resolver {
 			$image['alt'] = (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true );
 		}
 
+		$content = trim( wp_strip_all_tags( (string) $post->post_content ) );
+		$excerpt = has_excerpt( $post )
+			? trim( wp_strip_all_tags( (string) $post->post_excerpt ) )
+			: $content;
+
 		return array(
 			'databaseId'    => (int) $post->ID,
 			'title'         => get_the_title( $post ),
-			'excerpt'       => wp_strip_all_tags( get_the_excerpt( $post ) ),
+			'excerpt'       => $excerpt,
+			'content'       => $content,
 			'link'          => (string) get_permalink( $post ),
 			'uri'           => (string) ( wp_parse_url( (string) get_permalink( $post ), PHP_URL_PATH ) ?: '/' ),
 			'slug'          => (string) $post->post_name,

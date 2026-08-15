@@ -156,7 +156,7 @@ final class Meta {
 	 * @return array<int, array{name: string, label: string}>
 	 */
 	public static function allowed_post_types(): array {
-		$names = array( 'post', 'page', 'kpf_event', 'kpf_scrapbook' );
+		$names = array( 'post', 'page', 'kpf_event', 'kpf_scrapbook', 'kpf_kevin' );
 		$rows  = array();
 		foreach ( $names as $name ) {
 			$object = get_post_type_object( $name );

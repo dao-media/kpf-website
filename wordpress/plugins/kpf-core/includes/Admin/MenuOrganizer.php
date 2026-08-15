@@ -15,6 +15,8 @@ final class MenuOrganizer {
 	private const MEDIA_DIVIDER_SLUG       = 'kpf-media-divider';
 	private const EVENTS_DIVIDER_SLUG      = 'kpf-events-divider';
 	private const GRANTS_DIVIDER_SLUG      = 'kpf-grants-divider';
+	private const SCRAPBOOK_MENU_SLUG      = 'edit.php?post_type=kpf_scrapbook';
+	private const SCRAPBOOK_DIVIDER_SLUG   = 'kpf-scrapbook-divider';
 	private const CODE_DIVIDER_SLUG        = 'kpf-code-divider';
 	private const CODE_DIVIDER_AFTER_NEW   = 'kpf-code-divider-after-new';
 	private const FORMS_MENU_SLUG          = 'kpf-forms';
@@ -134,6 +136,7 @@ final class MenuOrganizer {
 		self::customize_media_submenu();
 		self::customize_events_submenu();
 		self::customize_grants_submenu();
+		self::customize_scrapbook_submenu();
 		self::customize_code_submenu();
 		self::customize_forms_submenu();
 		self::customize_pages_submenu();
@@ -251,6 +254,49 @@ final class MenuOrganizer {
 				__( 'Queries', 'kpf-core' ),
 				$capability,
 				self::CODE_MENU_SLUG . '&page=' . self::CODE_QUERIES,
+			),
+		);
+	}
+
+	/**
+	 * Scrapbook: Manage + Add Media + divider + Kevin.
+	 */
+	private static function customize_scrapbook_submenu(): void {
+		global $submenu;
+
+		$parent = self::SCRAPBOOK_MENU_SLUG;
+		if ( ! is_array( $submenu[ $parent ] ?? null ) ) {
+			return;
+		}
+
+		$capability = 'edit_posts';
+		foreach ( $submenu[ $parent ] as $item ) {
+			if ( is_array( $item ) && ! empty( $item[1] ) ) {
+				$capability = (string) $item[1];
+				break;
+			}
+		}
+
+		$submenu[ $parent ] = array(
+			array(
+				__( 'Manage', 'kpf-core' ),
+				$capability,
+				self::SCRAPBOOK_MENU_SLUG,
+			),
+			array(
+				__( 'Add Media', 'kpf-core' ),
+				$capability,
+				'post-new.php?post_type=kpf_scrapbook',
+			),
+			array(
+				'<span class="kpf-scrapbook-menu-divider" aria-hidden="true"></span>',
+				$capability,
+				self::SCRAPBOOK_DIVIDER_SLUG,
+			),
+			array(
+				__( 'Kevin', 'kpf-core' ),
+				$capability,
+				'edit.php?post_type=kpf_kevin',
 			),
 		);
 	}
@@ -670,12 +716,22 @@ final class MenuOrganizer {
 		if ( 'kpf_grantee' === $post_type ) {
 			return self::GRANTS_MENU_SLUG;
 		}
+		if ( 'kpf_kevin' === $post_type ) {
+			return self::SCRAPBOOK_MENU_SLUG;
+		}
 		if (
 			'post.php' === $pagenow
 			&& isset( $_GET['post'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			&& 'kpf_grantee' === get_post_type( absint( $_GET['post'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		) {
 			return self::GRANTS_MENU_SLUG;
+		}
+		if (
+			'post.php' === $pagenow
+			&& isset( $_GET['post'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			&& 'kpf_kevin' === get_post_type( absint( $_GET['post'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		) {
+			return self::SCRAPBOOK_MENU_SLUG;
 		}
 
 		return $parent_file;
@@ -731,6 +787,22 @@ final class MenuOrganizer {
 
 		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_grantee' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return 'edit.php?post_type=kpf_grantee';
+		}
+
+		if ( 'edit.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_kevin' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'edit.php?post_type=kpf_kevin';
+		}
+
+		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_kevin' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'edit.php?post_type=kpf_kevin';
+		}
+
+		if (
+			'post.php' === $pagenow
+			&& isset( $_GET['post'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			&& 'kpf_kevin' === get_post_type( absint( $_GET['post'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		) {
+			return 'edit.php?post_type=kpf_kevin';
 		}
 
 		if ( 'post-new.php' === $pagenow && isset( $_GET['post_type'] ) && 'kpf_event' === $_GET['post_type'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -902,6 +974,24 @@ final class MenuOrganizer {
 				transform: none !important;
 			}
 			#adminmenu .kpf-grants-menu-divider {
+				background: #d7dde7;
+				display: block;
+				height: 1px;
+				width: 100%;
+			}
+			#adminmenu a[href*="' . self::SCRAPBOOK_DIVIDER_SLUG . '"] {
+				background: transparent !important;
+				box-shadow: none !important;
+				cursor: default;
+				height: 1px;
+				margin: 8px 12px 7px;
+				min-height: 0;
+				overflow: hidden;
+				padding: 0;
+				pointer-events: none;
+				transform: none !important;
+			}
+			#adminmenu .kpf-scrapbook-menu-divider {
 				background: #d7dde7;
 				display: block;
 				height: 1px;

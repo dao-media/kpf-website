@@ -120,6 +120,19 @@ kpf_query_assert( is_array( $resolved ) && 'latest-blogs' === $resolved['slug'],
 $slugs = Resolver::discover_slugs_in_html( '{{#each queries.latest-blogs}}{{title}}{{/each}}' );
 kpf_query_assert( in_array( 'latest-blogs', $slugs, true ), 'Design HTML query slug discovery works' );
 
+$allowed_names = array_column( Meta::allowed_post_types(), 'name' );
+kpf_query_assert( in_array( 'kpf_kevin', $allowed_names, true ), 'Kevin CPT is allowlisted for Queries' );
+
+$kevin_query_id = \KPF\Core\Queries\Defaults::ensure_kevin_query();
+kpf_query_assert( $kevin_query_id > 0, 'Built-in Kevin query can be ensured' );
+$kevin_def = Meta::get( $kevin_query_id );
+kpf_query_assert( 'kpf_kevin' === $kevin_def['postType'], 'Kevin query targets kpf_kevin' );
+kpf_query_assert( 'menu_order' === $kevin_def['orderby'], 'Kevin query orders by menu_order' );
+kpf_query_assert( 'kevin' === get_post_field( 'post_name', $kevin_query_id ), 'Kevin query slug is kevin' );
+
+$mapped = Resolver::map_item( get_post( (int) $sample ) );
+kpf_query_assert( isset( $mapped['content'] ), 'Query items expose stripped content' );
+
 wp_delete_post( (int) $sample, true );
 wp_delete_post( (int) $query_id, true );
 

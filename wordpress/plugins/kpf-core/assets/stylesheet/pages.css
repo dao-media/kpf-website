@@ -2142,7 +2142,24 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 /* —— History stacked slider (About) —— */
 .kpf-history {
+	/* All Kevin slider photos are 1120×1296 */
+	--kpf-history-photo-w: 1120;
+	--kpf-history-photo-h: 1296;
+	--kpf-history-photo-ratio: 1120 / 1296;
+	--kpf-history-photo-width: min(100%, 17.5rem);
 	min-width: 0;
+}
+
+@media (min-width: 48rem) {
+	.kpf-history {
+		--kpf-history-photo-width: min(100%, 20rem);
+	}
+}
+
+@media (min-width: 64rem) {
+	.kpf-history {
+		--kpf-history-photo-width: min(100%, 26rem);
+	}
 }
 
 .kpf-history__intro {
@@ -2184,81 +2201,80 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 .kpf-history__stack {
 	isolation: isolate;
-	min-height: clamp(16rem, 58vw, 22rem);
-	overflow: hidden;
+	min-width: 0;
+	overflow: visible;
 	position: relative;
 	width: 100%;
 }
 
-@media (min-width: 48rem) {
-	.kpf-history__stack {
-		min-height: clamp(18rem, 42vw, 26rem);
-	}
+/*
+ * Stage = front-card footprint (1120×1296). Layers fill it 1:1;
+ * scale/translate create the fan without fighting intrinsic image sizes.
+ * Align toward the trailing edge so leftward stagger has room.
+ */
+.kpf-history__stage {
+	aspect-ratio: var(--kpf-history-photo-ratio);
+	margin-inline-start: auto;
+	max-width: 100%;
+	position: relative;
+	width: var(--kpf-history-photo-width);
 }
 
-@media (min-width: 64rem) {
-	.kpf-history__stack {
-		min-height: 32.5rem; /* 520 */
-	}
+/* Legacy markup without a stage: stack itself is the photo frame */
+.kpf-history__stack:not(:has(.kpf-history__stage)) {
+	aspect-ratio: var(--kpf-history-photo-ratio);
+	margin-inline-start: auto;
+	width: var(--kpf-history-photo-width);
 }
 
 .kpf-history__layer {
-	/* Scales ~100% → 88% → 77% → 68%; shared bottom baseline */
+	aspect-ratio: var(--kpf-history-photo-ratio);
 	bottom: 0;
 	height: 100%;
 	left: 0;
+	margin: 0;
+	overflow: hidden;
 	position: absolute;
-	transform-origin: bottom left;
-	width: auto;
+	transform-origin: bottom center;
+	width: 100%;
 }
 
 .kpf-history__layer img {
 	display: block;
 	height: 100%;
-	max-width: none;
-	object-fit: contain;
-	object-position: bottom left;
-	width: auto;
+	object-fit: cover;
+	object-position: center;
+	width: 100%;
 }
 
 .kpf-history__layer--front {
-	left: 28%;
 	z-index: 4;
 }
 .kpf-history__layer--1 {
-	left: 18%;
 	opacity: 0.73;
-	transform: scale(0.88);
+	transform: translateX(-18%) scale(0.88);
 	z-index: 3;
 }
 .kpf-history__layer--2 {
-	left: 6%;
 	opacity: 0.5;
-	transform: scale(0.77);
+	transform: translateX(-34%) scale(0.77);
 	z-index: 2;
 }
 .kpf-history__layer--back {
-	left: 0;
 	opacity: 0.28;
-	transform: scale(0.68);
+	transform: translateX(-48%) scale(0.68);
 	z-index: 1;
 }
 
 @media (min-width: 48rem) {
-	.kpf-history__layer--front {
-		left: 32%;
-	}
 	.kpf-history__layer--1 {
-		left: 22%;
-		transform: scale(0.88);
+		transform: translateX(-16%) scale(0.88);
 	}
 	.kpf-history__layer--2 {
-		left: 8%;
-		transform: scale(0.77);
+		transform: translateX(-30%) scale(0.77);
 	}
 	.kpf-history__layer--back {
-		left: 0;
-		transform: scale(0.68);
+		transform: translateX(-42%) scale(0.68);
 	}
 }
 

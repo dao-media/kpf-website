@@ -33,6 +33,7 @@ final class GraphQL {
 					'databaseId'    => array( 'type' => 'Int' ),
 					'title'         => array( 'type' => 'String' ),
 					'excerpt'       => array( 'type' => 'String' ),
+					'content'       => array( 'type' => 'String' ),
 					'link'          => array( 'type' => 'String' ),
 					'uri'           => array( 'type' => 'String' ),
 					'slug'          => array( 'type' => 'String' ),

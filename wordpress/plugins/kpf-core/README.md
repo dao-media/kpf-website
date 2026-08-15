@@ -93,6 +93,12 @@ Queries are stored as allowlisted JSON (post type, count, order, exclusions,
 taxonomy filters, custom-field filters, related-post rules, pagination) — never
 raw PHP.
 
+Allowlisted post types include `post`, `page`, `kpf_event`, `kpf_scrapbook`, and
+`kpf_kevin`. A built-in **Kevin** query (`slug: kevin`) is seeded automatically
+for the About history stack (`menu_order` ASC, up to 12 slides). Use it as
+`{{#each queries.kevin}}` or GraphQL `kpfQuery(slug: "kevin")`. Item fields:
+`title` (header), `content` / `excerpt` (body), `featuredImage.url` (photo).
+
 ## Forms builder
 
 **Forms** (under Communications, before Inbox) is a visual builder for public

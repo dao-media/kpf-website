@@ -2499,6 +2499,54 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 		grid-template-rows: minmax(0, 1fr) auto;
 		padding-inline: 2rem;
 	}
+
+	.kpf-history__stack {
+		/* Photos stay bottom-aligned; aside/card fill the row above the dots. */
+		align-self: end;
+		grid-area: stack;
+	}
+
+	.kpf-history__aside {
+		align-self: stretch;
+		grid-area: aside;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.kpf-history__card-stack {
+		flex: 1 1 auto;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.kpf-history__card-stack > .kpf-history__card,
+	.kpf-history__card {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.kpf-history__card .kpf-content-block,
+	.kpf-history__card .kpf-content-block__copy {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.kpf-history__dots {
+		bottom: auto;
+		grid-area: dots;
+		justify-content: flex-start;
+		left: auto;
+		/* Match former split bottom padding under the story card. */
+		padding-bottom: var(--kpf-space-xl);
+		position: static;
+		transform: none;
+		width: auto;
+	}
 }
 
 .kpf-history__stack {
@@ -2512,12 +2560,6 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	position: relative;
 	touch-action: none;
 	width: 100%;
-}
-
-@media (min-width: 64rem) {
-	.kpf-history__stack {
-		grid-area: stack;
-	}
 }
 
 /* Invisible sizer: sets stack height to one photo frame (right-aligned). */
@@ -2604,13 +2646,6 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	width: 100%;
 }
 
-@media (min-width: 64rem) {
-	.kpf-history__aside {
-		align-self: end;
-		grid-area: aside;
-	}
-}
-
 /*
  * Stack every slide’s card in one grid cell so the aside stays as tall as
  * the longest body copy — no jump when switching slides.
@@ -2666,20 +2701,6 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	transform: translateX(-50%);
 	width: max-content;
 	z-index: 6;
-}
-
-@media (min-width: 64rem) {
-	.kpf-history__dots {
-		bottom: auto;
-		grid-area: dots;
-		justify-content: flex-start;
-		left: auto;
-		/* Match former split bottom padding under the story card. */
-		padding-bottom: var(--kpf-space-xl);
-		position: static;
-		transform: none;
-		width: auto;
-	}
 }
 
 /*

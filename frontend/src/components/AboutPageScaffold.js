@@ -9,11 +9,13 @@ const { resolveMedia } = require("@/lib/scaffoldMedia");
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
 
-export default function AboutPageScaffold({ media = {}, kevinSlides = [] }) {
+export default function AboutPageScaffold({ media = {}, kevinSlides = [], grants = [] }) {
   const copy = ABOUT;
   const background = resolveMedia(media, copy.hero.background.key, copy.hero.background);
   const frame = resolveMedia(media, copy.hero.frame.key, copy.hero.frame);
   const featured = resolveMedia(media, copy.gallery.featured.key, copy.gallery.featured);
+  const granteeItems =
+    Array.isArray(grants) && grants.length > 0 ? grants : copy.grantees.items;
 
   const [openAccordion, setOpenAccordion] = useState(
     () => copy.mission.criteria.find((item) => item.open)?.id ?? null,
@@ -81,8 +83,10 @@ export default function AboutPageScaffold({ media = {}, kevinSlides = [] }) {
           />
         ) : null}
         <div className="kpf-u-container kpf-hero__layout">
-          <div className="kpf-hero__frame">
-            {frame.src ? <img src={frame.src} alt={frame.alt} decoding="async" /> : null}
+          <div className="kpf-hero__frame-motion">
+            <div className="kpf-hero__frame">
+              {frame.src ? <img src={frame.src} alt={frame.alt} decoding="async" /> : null}
+            </div>
           </div>
           <div className="kpf-hero__content">
             <div className="kpf-content-block">
@@ -242,13 +246,13 @@ export default function AboutPageScaffold({ media = {}, kevinSlides = [] }) {
               </div>
             </div>
           </div>
-          <GranteeCardsGrid items={copy.grantees.items} label={copy.grantees.title} />
+          <GranteeCardsGrid items={granteeItems} label={copy.grantees.title} />
         </div>
       </section>
 
       <section className="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
         <div className="kpf-u-container">
-          <div className="kpf-content-block kpf-content-block--inverse">
+          <div className="kpf-content-block kpf-u-invert">
             <div className="kpf-content-block__copy">
               <div className="kpf-content-block__title-group">
                 <p className="kpf-content-block__eyebrow">{copy.gallery.eyebrow}</p>

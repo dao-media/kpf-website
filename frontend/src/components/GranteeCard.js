@@ -1,9 +1,16 @@
 import { useCallback, useState } from "react";
-import { BadgeDollarSign, Calendar } from "lucide-react";
+import { ArrowRight, CalendarHeart, Gift } from "lucide-react";
+
+function canHoverFlip() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
 
 /**
- * Grantee flip card — photo front; hover/focus rotates on Y to reveal `.kpf-card` info.
+ * Grantee flip card — photo front; hover (desktop) or tap (mobile) reveals `.kpf-card` info.
  * Previous photo-pop variant: `archive/GranteeCardPhotoPop.js`.
+ *
+ * When `flipped` + `onFlipChange` are provided (grid), flip is exclusive across cards.
  */
 export default function GranteeCard({
   name,
@@ -16,21 +23,34 @@ export default function GranteeCard({
   href,
   featured = false,
   className = "",
+  flipped: flippedProp,
+  onFlipChange,
 }) {
-  const [flipped, setFlipped] = useState(false);
+  const controlled = typeof flippedProp === "boolean";
+  const [internalFlipped, setInternalFlipped] = useState(false);
+  const flipped = controlled ? flippedProp : internalFlipped;
+
+  const setFlipped = useCallback(
+    (next) => {
+      if (controlled) {
+        onFlipChange?.(next);
+      } else {
+        setInternalFlipped(next);
+      }
+    },
+    [controlled, onFlipChange],
+  );
 
   const onPointerActivate = useCallback(
     (event) => {
-      if (typeof window === "undefined") return;
-      // Touch / no-hover: first tap flips; second tap can follow the CTA.
-      if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-        if (!flipped) {
-          event.preventDefault();
-          setFlipped(true);
-        }
-      }
+      // Desktop: CSS hover handles flip; don't fight it with click state.
+      if (canHoverFlip()) return;
+      // Website chip handles its own navigation.
+      if (event.target.closest?.("a[href]")) return;
+      event.preventDefault();
+      setFlipped(!flipped);
     },
-    [flipped],
+    [flipped, setFlipped],
   );
 
   if (!name) return null;
@@ -68,7 +88,7 @@ export default function GranteeCard({
           decoding="async"
         />
       ) : (
-        <h3 className="kpf-grantee-card__name">{name}</h3>
+        <h3 className="kpf-h3 kpf-grantee-card__name">{name}</h3>
       )}
     </div>
   );
@@ -77,52 +97,51 @@ export default function GranteeCard({
     <div className="kpf-grantee-card__face kpf-grantee-card__face--back">
       <article className="kpf-card kpf-grantee-card__info">
         <div className="kpf-card__body">
-          <div className="kpf-grantee-card__header">
-            <div className="kpf-grantee-card__title-group">
-              <h3 className="kpf-card__title kpf-grantee-card__name">{name}</h3>
-            </div>
+          <div className="kpf-grantee-card__copy">
             {logoUrl ? (
               <img
                 className="kpf-grantee-card__logo"
                 src={logoUrl}
                 alt=""
-                width={42}
-                height={42}
+                width={84}
+                height={84}
                 loading="lazy"
                 decoding="async"
               />
             ) : null}
+            <h3 className="kpf-h3 kpf-grantee-card__name">{name}</h3>
+            {body ? <p className="kpf-body--l kpf-grantee-card__description">{body}</p> : null}
           </div>
 
-          {body ? <p className="kpf-card__description kpf-body--l">{body}</p> : null}
-
-          <div className="kpf-card__actions kpf-grantee-card__meta">
+          <div className="kpf-grantee-card__meta">
             {amount ? (
               <span className="kpf-grantee-card__chip">
-                <BadgeDollarSign
-                  size={16}
-                  strokeWidth={1.75}
-                  absoluteStrokeWidth
-                  aria-hidden="true"
-                />
-                <span>{amount}</span>
+                <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
+                  <Gift size={20} strokeWidth={1.75} absoluteStrokeWidth />
+                </span>
+                <span className="kpf-grantee-card__chip-label">{amount}</span>
               </span>
             ) : null}
             {date ? (
               <span className="kpf-grantee-card__chip">
-                <Calendar size={16} strokeWidth={1.75} absoluteStrokeWidth aria-hidden="true" />
-                <span>{date}</span>
+                <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
+                  <CalendarHeart size={20} strokeWidth={1.75} absoluteStrokeWidth />
+                </span>
+                <span className="kpf-grantee-card__chip-label">{date}</span>
               </span>
             ) : null}
             {href ? (
               <a
-                className="kpf-link kpf-grantee-card__link"
+                className="kpf-grantee-card__chip kpf-grantee-card__chip--link"
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(event) => event.stopPropagation()}
               >
-                Visit site
+                <span className="kpf-grantee-card__chip-label">Website</span>
+                <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
+                  <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
+                </span>
               </a>
             ) : null}
           </div>
@@ -136,18 +155,15 @@ export default function GranteeCard({
       className={classes}
       tabIndex={0}
       role="group"
+      aria-expanded={flipped}
       aria-label={name}
       onClick={onPointerActivate}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          setFlipped((value) => !value);
-        } else if (event.key === "Escape") {
-          setFlipped(false);
-        }
-      }}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setFlipped(!flipped);
+        } else if (event.key === "Escape" && flipped) {
+          event.preventDefault();
           setFlipped(false);
         }
       }}

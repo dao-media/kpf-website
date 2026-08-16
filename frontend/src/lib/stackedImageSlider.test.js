@@ -88,6 +88,20 @@ test("stackLayout slotLeftPercent fans left while keeping depth scale", () => {
 	assert.ok(Math.abs(mid[1].left - (10 + 24) / 2) < 1e-9);
 });
 
+test("stackLayout trailOpacityScale dims layers behind the front by the given factor", () => {
+	const base = stackLayout({ queueLength: 4, stepProgress: 0, visibleCount: 4 });
+	const dimmed = stackLayout({
+		queueLength: 4,
+		stepProgress: 0,
+		visibleCount: 4,
+		trailOpacityScale: 0.8,
+	});
+	assert.equal(dimmed[0].opacity, 1);
+	assert.ok(Math.abs(dimmed[1].opacity - base[1].opacity * 0.8) < 1e-9);
+	assert.ok(Math.abs(dimmed[2].opacity - base[2].opacity * 0.8) < 1e-9);
+	assert.ok(Math.abs(dimmed[3].opacity - base[3].opacity * 0.8) < 1e-9);
+});
+
 test("layerOpacity falls off toward the back of the fan", () => {
 	assert.equal(layerOpacity(0), 1);
 	assert.equal(layerOpacity(3), DEFAULT_BACK_OPACITY);
@@ -117,6 +131,33 @@ test("stackLayout mid-step fades front upward/right and promotes layers", () => 
 	assert.ok(slots[1].scale > 0.88);
 	assert.ok(slots[1].scale < 1);
 	assert.ok(slots[4].opacity > 0);
+});
+
+test("stackLayout entering rear slides in from further left", () => {
+	const leftFor = (slot) => [24, 10, -5, -20, -35][slot] ?? -35;
+	const start = stackLayout({
+		queueLength: 5,
+		stepProgress: 0.001,
+		visibleCount: 4,
+		slotLeftPercent: leftFor,
+	});
+	const mid = stackLayout({
+		queueLength: 5,
+		stepProgress: 0.5,
+		visibleCount: 4,
+		slotLeftPercent: leftFor,
+	});
+	const end = stackLayout({
+		queueLength: 5,
+		stepProgress: 1,
+		visibleCount: 4,
+		slotLeftPercent: leftFor,
+	});
+	// Entering card is queueIndex === visible (4)
+	assert.ok(start[4].left < mid[4].left);
+	assert.ok(mid[4].left < end[4].left);
+	assert.ok(Math.abs(end[4].left - -20) < 1e-9);
+	assert.ok(start[4].opacity < mid[4].opacity);
 });
 
 test("stackLayout completes exit then advanceQueue recycles front", () => {

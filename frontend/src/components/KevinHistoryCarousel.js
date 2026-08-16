@@ -18,6 +18,8 @@ const STEP_EASE = "power2.inOut";
 const EXIT_X = Math.max(DEFAULT_EXIT_X, 64);
 const EXIT_Y = 0;
 const EXIT_SCALE = Math.max(DEFAULT_EXIT_SCALE, 1.1);
+/** Layers 2–4 (behind the front) are 20% dimmer than the base trail ramp. */
+const TRAIL_OPACITY_SCALE = 0.8;
 
 /**
  * Fan left offsets relative to the STACK container (not the photo box):
@@ -27,7 +29,8 @@ const EXIT_SCALE = Math.max(DEFAULT_EXIT_SCALE, 1.1);
  */
 function fanLeftPercent(slot, visibleCount, stackWidth, photoWidth) {
   const deep = Math.max(1, visibleCount - 1);
-  const index = Math.max(0, Math.min(deep, Number(slot) || 0));
+  // Allow indices past `deep` so a new rear card can slide in from further left.
+  const index = Math.max(0, Number(slot) || 0);
   if (!stackWidth || !photoWidth) {
     return (-20 * index) / deep;
   }
@@ -78,13 +81,20 @@ export default function KevinHistoryCarousel({
   cardEyebrow = "",
   ariaLabel = "Who Kevin was",
 }) {
+  const splitRef = useRef(null);
   const stackRef = useRef(null);
   const layerRefs = useRef([]);
   const animatingRef = useRef(false);
   const tweenRef = useRef(null);
   const activeIndexRef = useRef(0);
   const wheelAccRef = useRef(0);
-  const pointerRef = useRef({ active: false, x: 0, y: 0 });
+  const pointerRef = useRef({
+    active: false,
+    x: 0,
+    y: 0,
+    pointerId: null,
+    locked: null,
+  });
   const metricsRef = useRef({ stackWidth: 0, photoWidth: 0 });
   const visibleCountRef = useRef(4);
 
@@ -142,6 +152,7 @@ export default function KevinHistoryCarousel({
         scaleStep: DEFAULT_SCALE_STEP,
         exitScale: EXIT_SCALE,
         backOpacity: DEFAULT_BACK_OPACITY,
+        trailOpacityScale: TRAIL_OPACITY_SCALE,
         exitX: EXIT_X,
         exitY: EXIT_Y,
         slotLeftPercent: (slot) =>
@@ -192,8 +203,16 @@ export default function KevinHistoryCarousel({
     (nextIndex, { animate = true } = {}) => {
       if (count < 2) return;
       const target = ((nextIndex % count) + count) % count;
-      const current = activeIndexRef.current;
-      if (target === current || animatingRef.current) return;
+      let current = activeIndexRef.current;
+      if (target === current) return;
+
+      // Allow retargeting mid-flight (e.g. clicking another dot).
+      if (animatingRef.current) {
+        tweenRef.current?.kill();
+        tweenRef.current = null;
+        animatingRef.current = false;
+        paint(rotateQueue(baseQueue, current), 0);
+      }
 
       const reduce = prefersReducedMotion();
       const delta = (target - current + count) % count;
@@ -201,51 +220,66 @@ export default function KevinHistoryCarousel({
       const forward = delta <= deltaBack;
       const steps = forward ? delta : deltaBack;
 
-      // Multi-step jumps (dots): snap; single step: peel animation.
-      if (!animate || reduce || steps !== 1) {
-        tweenRef.current?.kill();
-        animatingRef.current = false;
+      if (!animate || reduce || steps < 1) {
         setActiveIndex(target);
         paint(rotateQueue(baseQueue, target), 0);
         return;
       }
 
-      animatingRef.current = true;
-      tweenRef.current?.kill();
-      const proxy = { p: forward ? 0 : 1 };
+      const stepDuration =
+        steps > 1 ? Math.max(0.45, STEP_DURATION * 0.85) : STEP_DURATION;
 
-      if (forward) {
-        const queue = rotateQueue(baseQueue, current);
-        tweenRef.current = gsap.to(proxy, {
-          p: 1,
-          duration: STEP_DURATION,
-          ease: STEP_EASE,
-          onUpdate: () => paint(queue, proxy.p),
-          onComplete: () => {
-            setActiveIndex(target);
-            paint(rotateQueue(baseQueue, target), 0);
-            animatingRef.current = false;
-            tweenRef.current = null;
-          },
-        });
-        return;
-      }
-
-      // Reverse: rewind the exit of the slide that will become front.
-      const prevQueue = rotateQueue(baseQueue, target);
-      paint(prevQueue, 1);
-      tweenRef.current = gsap.to(proxy, {
-        p: 0,
-        duration: STEP_DURATION,
-        ease: STEP_EASE,
-        onUpdate: () => paint(prevQueue, proxy.p),
-        onComplete: () => {
-          setActiveIndex(target);
-          paint(prevQueue, 0);
+      const runStep = (fromIndex) => {
+        if (fromIndex === target) {
           animatingRef.current = false;
           tweenRef.current = null;
-        },
-      });
+          return;
+        }
+
+        const next = forward
+          ? (fromIndex + 1) % count
+          : (fromIndex - 1 + count) % count;
+
+        animatingRef.current = true;
+        tweenRef.current?.kill();
+
+        if (forward) {
+          const queue = rotateQueue(baseQueue, fromIndex);
+          const proxy = { p: 0 };
+          tweenRef.current = gsap.to(proxy, {
+            p: 1,
+            duration: stepDuration,
+            ease: STEP_EASE,
+            onUpdate: () => paint(queue, proxy.p),
+            onComplete: () => {
+              activeIndexRef.current = next;
+              setActiveIndex(next);
+              paint(rotateQueue(baseQueue, next), 0);
+              runStep(next);
+            },
+          });
+          return;
+        }
+
+        // Reverse: rewind the forward exit that would go next → fromIndex.
+        const prevQueue = rotateQueue(baseQueue, next);
+        const proxy = { p: 1 };
+        paint(prevQueue, 1);
+        tweenRef.current = gsap.to(proxy, {
+          p: 0,
+          duration: stepDuration,
+          ease: STEP_EASE,
+          onUpdate: () => paint(prevQueue, proxy.p),
+          onComplete: () => {
+            activeIndexRef.current = next;
+            setActiveIndex(next);
+            paint(prevQueue, 0);
+            runStep(next);
+          },
+        });
+      };
+
+      runStep(current);
     },
     [baseQueue, count, paint],
   );
@@ -277,6 +311,16 @@ export default function KevinHistoryCarousel({
 
   useLayoutEffect(() => {
     if (count < 1) return undefined;
+    // Drop leftover GSAP autoAlpha/transform from sitewide section entrances
+    // so CSS `.is-active` can own card visibility again.
+    const root = splitRef.current;
+    if (root) {
+      gsap.utils.toArray(".kpf-history__card", root).forEach((card) => {
+        gsap.set(card, {
+          clearProps: "opacity,visibility,transform,translate,rotate,scale",
+        });
+      });
+    }
     paint(rotateQueue(baseQueue, activeIndexRef.current), 0);
     return () => {
       tweenRef.current?.kill();
@@ -286,10 +330,23 @@ export default function KevinHistoryCarousel({
   }, [baseQueue, count, paint]);
 
   useEffect(() => {
+    const split = splitRef.current;
     const stack = stackRef.current;
-    if (!stack || count < 2) return undefined;
+    if (!split || count < 2) return undefined;
+
+    function resetPointer() {
+      pointerRef.current = {
+        active: false,
+        x: 0,
+        y: 0,
+        pointerId: null,
+        locked: null,
+      };
+    }
 
     function onWheel(event) {
+      // Trackpad / mouse wheel over the photo stack only.
+      if (!stack || !stack.contains(event.target)) return;
       event.preventDefault();
       event.stopPropagation();
       const absX = Math.abs(event.deltaX);
@@ -302,97 +359,83 @@ export default function KevinHistoryCarousel({
       step(nextDir);
     }
 
-    function onTouchMove(event) {
-      if (event.cancelable) event.preventDefault();
-    }
-
     function onPointerDown(event) {
       if (event.button != null && event.button !== 0) return;
-      pointerRef.current = { active: true, x: event.clientX, y: event.clientY };
+      if (event.target?.closest?.("button, a, input, textarea, select")) return;
+      pointerRef.current = {
+        active: true,
+        x: event.clientX,
+        y: event.clientY,
+        pointerId: event.pointerId,
+        locked: null,
+      };
       try {
-        stack.setPointerCapture(event.pointerId);
+        split.setPointerCapture(event.pointerId);
       } catch {
         /* ignore */
+      }
+    }
+
+    function onPointerMove(event) {
+      const pointer = pointerRef.current;
+      if (!pointer.active || pointer.pointerId !== event.pointerId) return;
+      if (pointer.locked) return;
+      const dx = event.clientX - pointer.x;
+      const dy = event.clientY - pointer.y;
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      pointer.locked = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+    }
+
+    function onTouchMove(event) {
+      const pointer = pointerRef.current;
+      if (!pointer.active) return;
+      if (pointer.locked === "x" && event.cancelable) {
+        event.preventDefault();
       }
     }
 
     function onPointerUp(event) {
-      if (!pointerRef.current.active) return;
-      const { x, y } = pointerRef.current;
-      pointerRef.current = { active: false, x: 0, y: 0 };
+      const pointer = pointerRef.current;
+      if (!pointer.active || pointer.pointerId !== event.pointerId) return;
+      const { x, y, locked } = pointer;
       try {
-        stack.releasePointerCapture(event.pointerId);
+        split.releasePointerCapture(event.pointerId);
       } catch {
         /* ignore */
       }
+      resetPointer();
+      if (locked === "y") return;
       const dx = event.clientX - x;
       const dy = event.clientY - y;
       if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dx) < Math.abs(dy)) return;
       step(dx < 0 ? 1 : -1);
     }
 
-    stack.addEventListener("wheel", onWheel, { passive: false });
-    stack.addEventListener("touchmove", onTouchMove, { passive: false });
-    stack.addEventListener("pointerdown", onPointerDown);
-    stack.addEventListener("pointerup", onPointerUp);
-    stack.addEventListener("pointercancel", () => {
-      pointerRef.current = { active: false, x: 0, y: 0 };
-    });
+    split.addEventListener("wheel", onWheel, { passive: false });
+    split.addEventListener("touchmove", onTouchMove, { passive: false });
+    split.addEventListener("pointerdown", onPointerDown);
+    split.addEventListener("pointermove", onPointerMove);
+    split.addEventListener("pointerup", onPointerUp);
+    split.addEventListener("pointercancel", resetPointer);
 
     return () => {
-      stack.removeEventListener("wheel", onWheel);
-      stack.removeEventListener("touchmove", onTouchMove);
-      stack.removeEventListener("pointerdown", onPointerDown);
-      stack.removeEventListener("pointerup", onPointerUp);
+      split.removeEventListener("wheel", onWheel);
+      split.removeEventListener("touchmove", onTouchMove);
+      split.removeEventListener("pointerdown", onPointerDown);
+      split.removeEventListener("pointermove", onPointerMove);
+      split.removeEventListener("pointerup", onPointerUp);
+      split.removeEventListener("pointercancel", resetPointer);
     };
   }, [count, step]);
 
   if (count < 1 || !active) return null;
 
   return (
-    <div className="kpf-history__split" data-kpf-kevin-carousel="">
-      <div
-        ref={stackRef}
-        className="kpf-history__stack"
-        role="group"
-        aria-roledescription="carousel"
-        aria-label={ariaLabel}
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-            event.preventDefault();
-            step(1);
-          } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-            event.preventDefault();
-            step(-1);
-          }
-        }}
-      >
-        <div className="kpf-history__sizer" aria-hidden="true" />
-        {items.map((slide, imageIndex) => (
-          <figure
-            key={slide.id}
-            ref={(node) => {
-              layerRefs.current[imageIndex] = node;
-            }}
-            className="kpf-history__layer"
-            data-stack-index={imageIndex}
-            aria-hidden={imageIndex !== activeIndex}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={1120}
-              height={1296}
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-            />
-          </figure>
-        ))}
-      </div>
-
+    <div
+      ref={splitRef}
+      className="kpf-history__split"
+      data-kpf-kevin-carousel=""
+    >
       <div className="kpf-history__aside">
         <div className="kpf-history__card-stack">
           {items.map((slide, index) => {
@@ -437,19 +480,61 @@ export default function KevinHistoryCarousel({
             );
           })}
         </div>
+      </div>
 
-        <div className="kpf-history__dots" role="group" aria-label="History slides">
-          {items.map((slide, i) => (
-            <button
-              key={`history-dot-${slide.id}`}
-              type="button"
-              className={`kpf-history__dot${i === activeIndex ? " is-active" : ""}`}
-              aria-label={`Show slide ${i + 1} of ${count}: ${slide.header || slide.alt}`}
-              aria-current={i === activeIndex ? "true" : undefined}
-              onClick={() => goTo(i)}
+      <div
+        ref={stackRef}
+        className="kpf-history__stack"
+        role="group"
+        aria-roledescription="carousel"
+        aria-label={ariaLabel}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+            event.preventDefault();
+            step(1);
+          } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+            event.preventDefault();
+            step(-1);
+          }
+        }}
+      >
+        <div className="kpf-history__sizer" aria-hidden="true" />
+        {items.map((slide, imageIndex) => (
+          <figure
+            key={slide.id}
+            ref={(node) => {
+              layerRefs.current[imageIndex] = node;
+            }}
+            className="kpf-history__layer"
+            data-stack-index={imageIndex}
+            aria-hidden={imageIndex !== activeIndex}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={slide.src}
+              alt={slide.alt}
+              width={1120}
+              height={1296}
+              loading="lazy"
+              decoding="async"
+              draggable={false}
             />
-          ))}
-        </div>
+          </figure>
+        ))}
+      </div>
+
+      <div className="kpf-history__dots" role="group" aria-label="History slides">
+        {items.map((slide, i) => (
+          <button
+            key={`history-dot-${slide.id}`}
+            type="button"
+            className={`kpf-history__dot${i === activeIndex ? " is-active" : ""}`}
+            aria-label={`Show slide ${i + 1} of ${count}: ${slide.header || slide.alt}`}
+            aria-current={i === activeIndex ? "true" : undefined}
+            onClick={() => goTo(i)}
+          />
+        ))}
       </div>
     </div>
   );

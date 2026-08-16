@@ -212,7 +212,7 @@ HTML;
   <section class="kpf-hero kpf-hero--about" aria-labelledby="kpf-about-hero-title">
     {$bg}
     <div class="kpf-u-container kpf-hero__layout">
-      <div class="kpf-hero__frame">{$frame}</div>
+      <div class="kpf-hero__frame-motion"><div class="kpf-hero__frame">{$frame}</div></div>
       <div class="kpf-hero__content">
         <div class="kpf-content-block">
             <div class="kpf-content-block__copy">
@@ -247,12 +247,6 @@ HTML;
           </div>
       </div>
       <div class="kpf-history__split">
-        <div class="kpf-history__stack">
-          <div class="kpf-history__layer kpf-history__layer--front">{$front}</div>
-          <div class="kpf-history__layer kpf-history__layer--1">{$l1}</div>
-          <div class="kpf-history__layer kpf-history__layer--2">{$l2}</div>
-          <div class="kpf-history__layer kpf-history__layer--back">{$back}</div>
-        </div>
         <div class="kpf-history__aside">
           <div class="kpf-history__card">
             <div class="kpf-content-block">
@@ -269,12 +263,18 @@ HTML;
                 </div>
             </div>
           </div>
-          <div class="kpf-history__dots" role="tablist" aria-label="History slides">
-            <button type="button" class="kpf-history__dot is-active" aria-current="true" aria-label="Show history image 1 of 4"></button>
-            <button type="button" class="kpf-history__dot" aria-label="Show history image 2 of 4"></button>
-            <button type="button" class="kpf-history__dot" aria-label="Show history image 3 of 4"></button>
-            <button type="button" class="kpf-history__dot" aria-label="Show history image 4 of 4"></button>
-          </div>
+        </div>
+        <div class="kpf-history__stack">
+          <div class="kpf-history__layer kpf-history__layer--front">{$front}</div>
+          <div class="kpf-history__layer kpf-history__layer--1">{$l1}</div>
+          <div class="kpf-history__layer kpf-history__layer--2">{$l2}</div>
+          <div class="kpf-history__layer kpf-history__layer--back">{$back}</div>
+        </div>
+        <div class="kpf-history__dots" role="tablist" aria-label="History slides">
+          <button type="button" class="kpf-history__dot is-active" aria-current="true" aria-label="Show history image 1 of 4"></button>
+          <button type="button" class="kpf-history__dot" aria-label="Show history image 2 of 4"></button>
+          <button type="button" class="kpf-history__dot" aria-label="Show history image 3 of 4"></button>
+          <button type="button" class="kpf-history__dot" aria-label="Show history image 4 of 4"></button>
         </div>
       </div>
     </div>
@@ -359,7 +359,7 @@ HTML;
 
   <section class="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
     <div class="kpf-u-container">
-      <div class="kpf-content-block kpf-content-block--inverse">
+      <div class="kpf-content-block kpf-u-invert">
           <div class="kpf-content-block__copy">
         <div class="kpf-content-block__title-group">
           <p class="kpf-content-block__eyebrow">The work</p>

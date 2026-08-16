@@ -156,10 +156,12 @@ final class Meta {
 		$value    = is_array( $value ) ? $value : array();
 		$defaults = self::defaults();
 		$selector = substr( sanitize_text_field( (string) ( $value['selector'] ?? '' ) ), 0, 200 );
-		if ( preg_match( '/[{};<>\x00-\x1F]/', $selector ) ) {
+		// Host selector: allow combinators; block markup/control chars.
+		if ( $selector === '' || preg_match( '/[{};\x00-\x1F<]/', $selector ) ) {
 			$selector = '';
 		}
-		$animate_child = self::selector( $value['animateChild'] ?? '' );
+		// Child lists need more room than a single host selector (comma-separated BEM).
+		$animate_child = self::selector( $value['animateChild'] ?? '', 2000 );
 
 		$trigger = (string) ( $value['trigger'] ?? 'load' );
 		if ( ! in_array( $trigger, array( 'load', 'in-view', 'hover', 'click', 'scroll-swing' ), true ) ) {
@@ -331,9 +333,20 @@ final class Meta {
 		return max( $minimum, min( $maximum, (float) $value ) );
 	}
 
-	private static function selector( $value ): string {
-		$selector = substr( sanitize_text_field( (string) $value ), 0, 200 );
-		return preg_match( '/[{};<>\x00-\x1F]/', $selector ) ? '' : $selector;
+	/**
+	 * Sanitize a CSS selector string.
+	 *
+	 * @param mixed $value Raw selector.
+	 * @param int   $max   Max length (host selectors stay short; animateChild lists are longer).
+	 */
+	private static function selector( $value, int $max = 200 ): string {
+		$max      = max( 40, min( 4000, $max ) );
+		$selector = substr( sanitize_text_field( (string) $value ), 0, $max );
+		// Allow CSS combinators (>, +, ~, *) and attribute/pseudo syntax; block markup/control chars.
+		if ( $selector === '' || preg_match( '/[{};\x00-\x1F<]/', $selector ) ) {
+			return '';
+		}
+		return $selector;
 	}
 
 	private static function svg_value( $value ): string {

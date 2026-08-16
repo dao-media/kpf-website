@@ -115,6 +115,8 @@ function stackLayout({
 	staggerX = DEFAULT_STAGGER_X,
 	staggerY = DEFAULT_STAGGER_Y,
 	backOpacity = DEFAULT_BACK_OPACITY,
+	/** Multiplier for every non-front layer opacity (1 = unchanged). */
+	trailOpacityScale = 1,
 	exitX = DEFAULT_EXIT_X,
 	exitY = DEFAULT_EXIT_Y,
 	/** When set (including 0), horizontal fan uses % of card width instead of px. */
@@ -128,6 +130,8 @@ function stackLayout({
 	const exit = Math.max(1, Number(exitScale) || DEFAULT_EXIT_SCALE);
 	const leaveX = Number(exitX) || 0;
 	const leaveY = Number(exitY) || 0;
+	const trailScale = Math.max(0, Number(trailOpacityScale));
+	const trailMul = Number.isFinite(trailScale) ? trailScale : 1;
 	const useLeft = typeof slotLeftPercent === "function";
 	const usePercent =
 		!useLeft && rearXPercent != null && Number.isFinite(Number(rearXPercent));
@@ -154,6 +158,10 @@ function stackLayout({
 		}
 		const at = layerOffset(slotIndex, staggerX, staggerY);
 		return { x: at.x, y: at.y, xPercent: 0, left: null };
+	}
+
+	function trailOpacity(value) {
+		return clamp01((Number(value) || 0) * trailMul);
 	}
 
 	const slots = [];
@@ -183,6 +191,13 @@ function stackLayout({
 			const from = offsetFor(fromSlot);
 			const to = offsetFor(toSlot);
 			const slot = lerp(fromSlot, toSlot, p);
+			const fromOpacity = layerOpacity(fromSlot, visible, backOpacity);
+			const toOpacity = layerOpacity(toSlot, visible, backOpacity);
+			// Trail stays dimmed; when promoting into front, ease up to full opacity.
+			const finalOpacity =
+				toSlot === 0
+					? lerp(trailOpacity(fromOpacity), 1, p)
+					: trailOpacity(lerp(fromOpacity, toOpacity, p));
 			slots.push({
 				queueIndex,
 				slot,
@@ -198,11 +213,7 @@ function stackLayout({
 					from.left == null || to.left == null
 						? null
 						: lerp(from.left, to.left, p),
-				opacity: lerp(
-					layerOpacity(fromSlot, visible, backOpacity),
-					layerOpacity(toSlot, visible, backOpacity),
-					p,
-				),
+				opacity: finalOpacity,
 				zIndex: visible - toSlot,
 				visible: true,
 				exiting: false,
@@ -211,17 +222,26 @@ function stackLayout({
 		}
 
 		if (queueIndex === visible) {
+			// Enter from one fan step further left than the rear, then slide into place.
 			const deep = visible - 1;
-			const at = offsetFor(deep);
+			const from = offsetFor(visible);
+			const to = offsetFor(deep);
 			slots.push({
 				queueIndex,
-				slot: deep,
-				scale: layerScale(deep, scaleStep),
-				x: at.x,
-				y: at.y,
-				xPercent: at.xPercent,
-				left: at.left,
-				opacity: p * layerOpacity(deep, visible, backOpacity),
+				slot: lerp(visible, deep, p),
+				scale: lerp(
+					layerScale(visible, scaleStep),
+					layerScale(deep, scaleStep),
+					p,
+				),
+				x: lerp(from.x, to.x, p),
+				y: lerp(from.y, to.y, p),
+				xPercent: lerp(from.xPercent, to.xPercent, p),
+				left:
+					from.left == null || to.left == null
+						? null
+						: lerp(from.left, to.left, p),
+				opacity: trailOpacity(p * layerOpacity(deep, visible, backOpacity)),
 				zIndex: 1,
 				visible: p > 0.001,
 				exiting: false,

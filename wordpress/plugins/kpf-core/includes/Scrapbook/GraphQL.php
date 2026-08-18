@@ -137,17 +137,22 @@ final class GraphQL {
 			'kpfScrapbookTiles',
 			array(
 				'type'        => array( 'list_of' => 'KpfScrapbookTile' ),
-				'description' => 'Flattened scrapbook images for The Work gallery, ordered by display order then date.',
+				'description' => 'All images from published Scrapbook posts (kpf_scrapbook only — never Kevin slides). Flattened for The Work mosaic.',
 				'args'        => array(
-					'first' => array(
+					'first'  => array(
 						'type'        => 'Int',
-						'description' => 'Max tiles to return (default 48, max 120).',
+						'description' => 'Max tiles to return (default 48, max 200).',
+					),
+					'offset' => array(
+						'type'        => 'Int',
+						'description' => 'Number of tiles to skip (for infinite load).',
 					),
 				),
 				'resolve'     => static function ( $source, array $args ): array {
 					unset( $source );
-					$first = isset( $args['first'] ) ? (int) $args['first'] : 48;
-					return self::tile_list( $first );
+					$first  = isset( $args['first'] ) ? (int) $args['first'] : 48;
+					$offset = isset( $args['offset'] ) ? (int) $args['offset'] : 0;
+					return self::tile_list( $first, $offset );
 				},
 			)
 		);
@@ -248,18 +253,20 @@ final class GraphQL {
 	}
 
 	/**
-	 * Flattened scrapbook images for The Work section.
+	 * Flatten every image from every published Scrapbook CPT post.
+	 * Post type is always kpf_scrapbook — Kevin slides (kpf_kevin) are never included.
 	 *
 	 * @return list<array<string, mixed>>
 	 */
-	public static function tile_list( int $first = 48 ): array {
-		$first = max( 1, min( 120, $first > 0 ? $first : 48 ) );
+	public static function tile_list( int $first = 48, int $offset = 0 ): array {
+		$first  = max( 1, min( 200, $first > 0 ? $first : 48 ) );
+		$offset = max( 0, $offset );
 
 		$query = new \WP_Query(
 			array(
 				'post_type'              => ContentType::POST_TYPE,
 				'post_status'            => 'publish',
-				'posts_per_page'         => 100,
+				'posts_per_page'         => -1,
 				'orderby'                => array(
 					'date' => 'DESC',
 				),
@@ -284,6 +291,11 @@ final class GraphQL {
 
 		$tiles = array();
 		foreach ( $posts as $post ) {
+			// Defensive: never surface Kevin CPT rows if a filter is widened later.
+			if ( ContentType::POST_TYPE !== get_post_type( $post ) ) {
+				continue;
+			}
+
 			$details = self::details( (int) $post->ID );
 			$title   = html_entity_decode(
 				trim( (string) get_the_title( $post ) ),
@@ -312,14 +324,14 @@ final class GraphQL {
 					'datePrecision' => (string) ( $details['datePrecision'] ?? 'unknown' ),
 					'title'         => $title,
 				);
-
-				if ( count( $tiles ) >= $first ) {
-					return $tiles;
-				}
 			}
 		}
 
-		return $tiles;
+		if ( $offset >= count( $tiles ) ) {
+			return array();
+		}
+
+		return array_values( array_slice( $tiles, $offset, $first ) );
 	}
 
 	/**

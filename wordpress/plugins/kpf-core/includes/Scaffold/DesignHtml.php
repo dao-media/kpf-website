@@ -366,27 +366,23 @@ HTML;
 
   <section class="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
     <div class="kpf-u-container">
-      <div class="kpf-gallery__layout">
-        <div class="kpf-gallery__main">
-          <div class="kpf-content-block kpf-u-invert">
-            <div class="kpf-content-block__copy">
-              <div class="kpf-content-block__title-group">
-                <p class="kpf-content-block__eyebrow">The work</p>
-                <h2 id="kpf-about-gallery-title" class="kpf-content-block__title kpf-content-block__title--h2">KPF volunteers enable our ongoing support for our nation’s protectors</h2>
-              </div>
-              <div class="kpf-content-block__body-group">
-                <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.</p>
-              </div>
-            </div>
+      <div class="kpf-content-block kpf-u-invert kpf-gallery__intro">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">The work</p>
+            <h2 id="kpf-about-gallery-title" class="kpf-content-block__title kpf-content-block__title--h2">KPF volunteers enable our ongoing support for our nation’s protectors</h2>
           </div>
-          <div class="kpf-gallery__grid">
-            <figure class="kpf-gallery__item">{$g1}</figure>
-            <figure class="kpf-gallery__item">{$g2}</figure>
-            <figure class="kpf-gallery__item">{$g3}</figure>
-            <figure class="kpf-gallery__item">{$g4}</figure>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.</p>
           </div>
         </div>
-        <figure class="kpf-gallery__featured">{$featured}</figure>
+      </div>
+      <div class="kpf-gallery__mosaic">
+        <figure class="kpf-gallery__item">{$featured}</figure>
+        <figure class="kpf-gallery__item">{$g1}</figure>
+        <figure class="kpf-gallery__item">{$g2}</figure>
+        <figure class="kpf-gallery__item">{$g3}</figure>
+        <figure class="kpf-gallery__item">{$g4}</figure>
       </div>
     </div>
   </section>

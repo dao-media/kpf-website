@@ -56,14 +56,13 @@ function prefersReducedMotion() {
 }
 
 /**
- * Desktop: cursor-tracked tip with carrot. Mobile/tablet: auto tour when group enters view
- * (unless `desktopOnly` — then hover/focus tips are desktop fine-pointer only, no tour).
  * @param {{
  *   label: string,
  *   children: import("react").ReactNode,
  *   className?: string,
  *   style?: import("react").CSSProperties,
  *   desktopOnly?: boolean,
+ *   labelSoft?: string,
  * }} props
  */
 export default function ChipCursorTooltip({
@@ -72,6 +71,7 @@ export default function ChipCursorTooltip({
   className = "",
   style,
   desktopOnly = false,
+  labelSoft = "",
 }) {
   const hostRef = useRef(null);
   const tipRef = useRef(null);
@@ -216,7 +216,8 @@ export default function ChipCursorTooltip({
     tipRegistry.set(host, {
       showAt: (x, y) => show(x, y),
       hide: () => hide({ force: true }),
-      getLabel: () => label,
+      getLabel: () =>
+        labelSoft ? `${label} | ${labelSoft}` : label,
     });
 
     const trigger = host.querySelector("a,button") || host;
@@ -298,13 +299,15 @@ export default function ChipCursorTooltip({
       yToRef.current = null;
       visibleRef.current = false;
     };
-  }, [desktopOnly, label, mounted, tipId]);
+  }, [desktopOnly, label, labelSoft, mounted, tipId]);
+
+  const tipText = labelSoft ? `${label} | ${labelSoft}` : label;
 
   return (
     <span
       ref={hostRef}
       className={["kpf-chip-tip-host", className].filter(Boolean).join(" ")}
-      data-kpf-chip-tip={label}
+      data-kpf-chip-tip={tipText}
       data-kpf-chip-tip-desktop={desktopOnly ? "true" : undefined}
       style={style}
     >
@@ -317,7 +320,12 @@ export default function ChipCursorTooltip({
               className="kpf-chip-tip"
               role="tooltip"
             >
-              <span className="kpf-chip-tip__label">{label}</span>
+              <span className="kpf-chip-tip__label">
+                {label}
+                {labelSoft ? (
+                  <span className="kpf-chip-tip__soft">{` | ${labelSoft}`}</span>
+                ) : null}
+              </span>
               <span className="kpf-chip-tip__carrot" aria-hidden="true" />
             </span>,
             document.body,

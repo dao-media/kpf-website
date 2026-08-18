@@ -3,7 +3,6 @@ import {
 	Button,
 	Notice,
 	PanelBody,
-	SelectControl,
 	TextControl,
 	TextareaControl,
 	ToggleControl,
@@ -14,10 +13,7 @@ import { PluginDocumentSettingPanel } from '@wordpress/editor';
 import { createRoot, useMemo } from '@wordpress/element';
 import { __, sprintf as formatString } from '@wordpress/i18n';
 import { registerPlugin } from '@wordpress/plugins';
-import HistoricalDateFields, {
-	composeEventDate,
-	parseDateParts,
-} from './HistoricalDateFields';
+import HistoricalDateFields from './HistoricalDateFields';
 
 const META_KEY = window.kpfScrapbookEditor?.metaKey || '_kpf_scrapbook';
 
@@ -34,6 +30,10 @@ const DEFAULTS = {
 	display_order: 0,
 	images: [],
 };
+
+function entryTypeFromImages(images) {
+	return images.length > 1 ? 'story' : 'photo';
+}
 
 function useScrapbookMeta() {
 	const postType = useSelect(
@@ -171,7 +171,14 @@ function ImagePlacement({ placement, index, total, onChange, onMove, onRemove })
 
 function ScrapbookImagesApp() {
 	const { details, update } = useScrapbookMeta();
-	const isStory = details.entry_type === 'story';
+	const isStory = details.images.length > 1 || details.entry_type === 'story';
+
+	function syncImages(images) {
+		update({
+			images,
+			entry_type: entryTypeFromImages(images),
+		});
+	}
 
 	function addImages(selection) {
 		const selected = Array.isArray(selection) ? selection : [selection];
@@ -184,23 +191,17 @@ function ScrapbookImagesApp() {
 				caption: '',
 			}));
 
-		const images =
-			details.entry_type === 'photo'
-				? additions.length
-					? additions.slice(0, 1)
-					: details.images.slice(0, 1)
-				: [...details.images, ...additions];
-		update({ images });
+		syncImages([...details.images, ...additions]);
 	}
 
 	function changeImage(index, placement) {
 		const images = [...details.images];
 		images[index] = placement;
-		update({ images });
+		syncImages(images);
 	}
 
 	function removeImage(index) {
-		update({ images: details.images.filter((_, imageIndex) => imageIndex !== index) });
+		syncImages(details.images.filter((_, imageIndex) => imageIndex !== index));
 	}
 
 	function moveImage(from, to) {
@@ -208,21 +209,16 @@ function ScrapbookImagesApp() {
 		const images = [...details.images];
 		const [moved] = images.splice(from, 1);
 		images.splice(to, 0, moved);
-		update({ images });
+		syncImages(images);
 	}
 
 	return (
 		<div className="kpf-scrapbook-images-app">
 			<p className="kpf-scrapbook-images-app__intro">
-				{isStory
-					? __(
-							'Add the photos in the order you want them shown. You can move them after uploading. Set the title above and other details in the Scrapbook details sidebar.',
-							'kpf-core'
-						)
-					: __(
-							'Choose the photo for this scrapbook item. The first image also becomes its cover image. Set the title above and other details in the Scrapbook details sidebar.',
-							'kpf-core'
-						)}
+				{__(
+					'Add one photo or several in the order you want them shown. Set the description above and other details in the Scrapbook details sidebar.',
+					'kpf-core'
+				)}
 			</p>
 
 			{details.images.length === 0 ? (
@@ -246,19 +242,15 @@ function ScrapbookImagesApp() {
 			<MediaUploadCheck>
 				<MediaUpload
 					allowedTypes={['image']}
-					multiple={isStory}
+					multiple
 					gallery={isStory}
 					value={details.images.map((image) => image.attachment_id)}
 					onSelect={addImages}
 					render={({ open }) => (
 						<Button variant="secondary" onClick={open}>
 							{details.images.length
-								? isStory
-									? __('Add more images', 'kpf-core')
-									: __('Replace image', 'kpf-core')
-								: isStory
-									? __('Choose images', 'kpf-core')
-									: __('Choose an image', 'kpf-core')}
+								? __('Add more images', 'kpf-core')
+								: __('Choose images', 'kpf-core')}
 						</Button>
 					)}
 				/>
@@ -270,14 +262,6 @@ function ScrapbookImagesApp() {
 function ScrapbookPanel() {
 	const { details, update } = useScrapbookMeta();
 
-	function updateEntryType(entry_type) {
-		const images =
-			entry_type === 'photo' && details.images.length > 1
-				? details.images.slice(0, 1)
-				: details.images;
-		update({ entry_type, images });
-	}
-
 	return (
 		<PluginDocumentSettingPanel
 			name="kpf-scrapbook-details"
@@ -286,62 +270,30 @@ function ScrapbookPanel() {
 		>
 			<p>
 				{__(
-					'Choose whether this is one photo or a story made from several photos. Add images in the Images box below the title. Anything uncertain can be left blank.',
+					'Add images in the Images box below the description. Fill in When with as much detail as you know — year only, month and year, or a full date.',
 					'kpf-core'
 				)}
 			</p>
 
-			<SelectControl
-				label={__('What are you adding?', 'kpf-core')}
-				value={details.entry_type}
-				options={[
-					{
-						label: __('One photo', 'kpf-core'),
-						value: 'photo',
-					},
-					{
-						label: __('A story with several photos', 'kpf-core'),
-						value: 'story',
-					},
-				]}
-				onChange={updateEntryType}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-
 			<PanelBody title={__('When and where', 'kpf-core')} initialOpen>
-				<SelectControl
-					label={__('How exact is the date?', 'kpf-core')}
-					value={details.date_precision}
-					options={[
-						{ label: __('Exact day', 'kpf-core'), value: 'exact' },
-						{ label: __('Month and year', 'kpf-core'), value: 'month' },
-						{ label: __('Year (month optional)', 'kpf-core'), value: 'year' },
-						{ label: __('Date unknown', 'kpf-core'), value: 'unknown' },
-					]}
-					onChange={(date_precision) => {
-						const parts = parseDateParts(details.event_date);
-						update({
-							date_precision,
-							event_date:
-								date_precision === 'unknown'
-									? ''
-									: composeEventDate(parts, date_precision),
-						});
-					}}
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-				/>
 				<HistoricalDateFields
-					precision={details.date_precision}
 					eventDate={details.event_date}
 					onChange={(event_date, date_precision) =>
 						update({
 							event_date,
-							...(date_precision ? { date_precision } : {}),
+							date_precision: date_precision || 'unknown',
 						})
 					}
 				/>
+				{details.event_date || details.date_precision !== 'unknown' ? (
+					<p style={{ marginTop: 0, color: '#646970', fontSize: '12px' }}>
+						{formatString(
+							/* translators: %s: stored historical date string */
+							__('Saved as: %s', 'kpf-core'),
+							details.event_date || __('Unknown', 'kpf-core')
+						)}
+					</p>
+				) : null}
 				<TextControl
 					label={__('Place', 'kpf-core')}
 					help={__('For example: Troy, Michigan or Kevin’s family home.', 'kpf-core')}
@@ -393,21 +345,6 @@ function ScrapbookPanel() {
 					)}
 					checked={Boolean(details.featured)}
 					onChange={(featured) => update({ featured })}
-				/>
-				<TextControl
-					label={__('Manual order', 'kpf-core')}
-					type="number"
-					min={0}
-					help={__(
-						'Optional. Lower numbers come first. Leave this at 0 if you do not need a custom order.',
-						'kpf-core'
-					)}
-					value={String(details.display_order || 0)}
-					onChange={(value) =>
-						update({ display_order: Math.max(0, Number.parseInt(value || '0', 10) || 0) })
-					}
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
 				/>
 			</PanelBody>
 		</PluginDocumentSettingPanel>

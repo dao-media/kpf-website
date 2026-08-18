@@ -183,6 +183,31 @@ kpf_scrapbook_assert(
 	'Per-story image caption overrides the Media Library'
 );
 
+$tiles = GraphQL::tile_list( 50, 0 );
+kpf_scrapbook_assert( is_array( $tiles ), 'tile_list returns an array' );
+$tile_from_post = array_values(
+	array_filter(
+		$tiles,
+		static function ( array $tile ) use ( $post_id ): bool {
+			return (int) ( $tile['databaseId'] ?? 0 ) === (int) $post_id;
+		}
+	)
+);
+kpf_scrapbook_assert(
+	count( $tile_from_post ) >= 1,
+	'tile_list includes images from Scrapbook posts'
+);
+kpf_scrapbook_assert(
+	! array_filter(
+		$tiles,
+		static function ( array $tile ): bool {
+			$post_id = (int) ( $tile['databaseId'] ?? 0 );
+			return $post_id > 0 && get_post_type( $post_id ) === 'kpf_kevin';
+		}
+	),
+	'tile_list never includes Kevin CPT posts'
+);
+
 $request  = new WP_REST_Request('GET', '/wp/v2/' . ContentType::POST_TYPE . '/' . $post_id);
 $response = rest_do_request($request);
 $rest_data= $response->get_data();

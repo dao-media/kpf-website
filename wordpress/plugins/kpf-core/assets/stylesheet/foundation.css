@@ -348,6 +348,7 @@
 
 	/* Shadows (Figma: Shadow/Card · Shadow/Focus) */
 	--kpf-shadow-card: 0 1.125rem 3rem color-mix(in srgb, var(--kpf-ink) 12%, transparent);
+	--kpf-shadow-md: 0 0.75rem 2rem color-mix(in srgb, var(--kpf-ink) 18%, transparent);
 	--kpf-shadow: var(--kpf-shadow-card);
 	--kpf-focus-ring: 0 0 0 0.1875rem var(--kpf-color-action-focus-ring);
 	--kpf-shadow-focus: var(--kpf-focus-ring);
@@ -1306,6 +1307,7 @@ button.kpf-button__link {
 	display: flex;
 	flex-direction: column;
 	overflow: clip;
+	transition: box-shadow 200ms ease-out;
 	width: 100%;
 }
 
@@ -1322,6 +1324,12 @@ button.kpf-button__link {
 .kpf-card--featured {
 	border-color: var(--kpf-color-border-focus);
 	box-shadow: var(--kpf-shadow-card);
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.kpf-card:hover {
+		box-shadow: var(--kpf-shadow-md);
+	}
 }
 
 .kpf-card__body {

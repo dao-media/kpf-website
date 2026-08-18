@@ -30,7 +30,7 @@ final class Admin {
 			'enter_title_here',
 			static function (string $title, WP_Post $post): string {
 				return ContentType::POST_TYPE === $post->post_type
-					? __('Name this photo or story', 'kpf-core')
+					? __('Add a description', 'kpf-core')
 					: $title;
 			},
 			10,
@@ -45,16 +45,13 @@ final class Admin {
 	 */
 	public static function columns(array $columns): array {
 		return array(
-			'cb'               => $columns['cb'] ?? '<input type="checkbox" />',
-			'kpf_cover'        => __('Image', 'kpf-core'),
-			'title'            => __('Photo or story', 'kpf-core'),
-			'kpf_entry_type'   => __('Type', 'kpf-core'),
-			'kpf_event_date'   => __('When', 'kpf-core'),
-			'kpf_location'     => __('Where', 'kpf-core'),
-			ContentType::TAXONOMY => __('Decade', 'kpf-core'),
-			'kpf_featured'     => __('Featured', 'kpf-core'),
-			'kpf_display_order' => __('Order', 'kpf-core'),
-			'date'             => $columns['date'] ?? __('Published', 'kpf-core'),
+			'cb'             => $columns['cb'] ?? '<input type="checkbox" />',
+			'kpf_cover'      => __('Image', 'kpf-core'),
+			'title'          => __('Description', 'kpf-core'),
+			'kpf_image_count' => __('Images', 'kpf-core'),
+			'kpf_event_date' => __('When', 'kpf-core'),
+			'kpf_location'   => __('Where', 'kpf-core'),
+			'kpf_featured'   => __('Featured', 'kpf-core'),
 		);
 	}
 
@@ -77,12 +74,9 @@ final class Admin {
 					echo '<span aria-hidden="true">—</span>';
 				}
 				break;
-			case 'kpf_entry_type':
-				echo esc_html(
-					'story' === $meta['entry_type']
-						? __('Photo story', 'kpf-core')
-						: __('Single photo', 'kpf-core')
-				);
+			case 'kpf_image_count':
+				$count = self::image_count($meta);
+				echo esc_html( (string) $count );
 				break;
 			case 'kpf_event_date':
 				echo esc_html(self::friendly_date($meta));
@@ -96,9 +90,6 @@ final class Admin {
 						esc_attr__('Featured', 'kpf-core') . '"></span>'
 					: '<span aria-hidden="true">—</span>';
 				break;
-			case 'kpf_display_order':
-				echo esc_html((string) ((int) $meta['display_order']));
-				break;
 		}
 	}
 
@@ -107,9 +98,7 @@ final class Admin {
 	 * @return array<string, string>
 	 */
 	public static function sortable_columns(array $columns): array {
-		$columns['kpf_entry_type']    = 'kpf_entry_type';
-		$columns['kpf_featured']      = 'kpf_featured';
-		$columns['kpf_display_order'] = 'kpf_display_order';
+		$columns['kpf_featured'] = 'kpf_featured';
 		return $columns;
 	}
 
@@ -118,19 +107,9 @@ final class Admin {
 			return;
 		}
 
-		switch ($query->get('orderby')) {
-			case 'kpf_entry_type':
-				$query->set('meta_key', Meta::ENTRY_TYPE_META);
-				$query->set('orderby', 'meta_value');
-				break;
-			case 'kpf_featured':
-				$query->set('meta_key', Meta::FEATURED_META);
-				$query->set('orderby', 'meta_value');
-				break;
-			case 'kpf_display_order':
-				$query->set('meta_key', Meta::DISPLAY_ORDER_META);
-				$query->set('orderby', 'meta_value_num');
-				break;
+		if ('kpf_featured' === $query->get('orderby')) {
+			$query->set('meta_key', Meta::FEATURED_META);
+			$query->set('orderby', 'meta_value');
 		}
 	}
 
@@ -139,22 +118,9 @@ final class Admin {
 			return;
 		}
 
-		$selected_type = isset($_GET['kpf_entry_type']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			? sanitize_key(wp_unslash($_GET['kpf_entry_type'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			: '';
 		$selected_featured = isset($_GET['kpf_featured']) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			? sanitize_key(wp_unslash($_GET['kpf_featured'])) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			: '';
-
-		echo '<label class="screen-reader-text" for="kpf-entry-type-filter">' .
-			esc_html__('Filter by scrapbook item type', 'kpf-core') . '</label>';
-		echo '<select name="kpf_entry_type" id="kpf-entry-type-filter">';
-		echo '<option value="">' . esc_html__('All item types', 'kpf-core') . '</option>';
-		echo '<option value="photo"' . selected($selected_type, 'photo', false) . '>' .
-			esc_html__('Single photos', 'kpf-core') . '</option>';
-		echo '<option value="story"' . selected($selected_type, 'story', false) . '>' .
-			esc_html__('Photo stories', 'kpf-core') . '</option>';
-		echo '</select>';
 
 		echo '<label class="screen-reader-text" for="kpf-featured-filter">' .
 			esc_html__('Filter by featured status', 'kpf-core') . '</label>';
@@ -180,16 +146,6 @@ final class Admin {
 
 		$meta_query = is_array($query->get('meta_query')) ? $query->get('meta_query') : array();
 
-		if (! empty($_GET['kpf_entry_type'])) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$type = sanitize_key(wp_unslash($_GET['kpf_entry_type'])); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			if (in_array($type, array( 'photo', 'story' ), true)) {
-				$meta_query[] = array(
-					'key'   => Meta::ENTRY_TYPE_META,
-					'value' => $type,
-				);
-			}
-		}
-
 		if (isset($_GET['kpf_featured']) && '' !== $_GET['kpf_featured']) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$featured = '1' === sanitize_key(wp_unslash($_GET['kpf_featured'])) ? '1' : '0'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$meta_query[] = array(
@@ -211,10 +167,32 @@ final class Admin {
 		echo '<div class="notice notice-info inline" style="margin:12px 0 16px;">';
 		echo '<p><strong>' . esc_html__('How to build this scrapbook item', 'kpf-core') . '</strong><br />';
 		echo esc_html__(
-			'Set the title above, then add images in the Images box. Open Scrapbook details in the sidebar for date, place, and other notes.',
+			'Set the description above, then add images in the Images box. Open Scrapbook details in the sidebar for when, where, and other notes.',
 			'kpf-core'
 		);
 		echo '</p></div>';
+	}
+
+	/**
+	 * @param array<string, mixed> $meta
+	 */
+	private static function image_count(array $meta): int {
+		$images = $meta['images'] ?? array();
+		if (! is_array($images)) {
+			return 0;
+		}
+
+		$count = 0;
+		foreach ($images as $placement) {
+			if (! is_array($placement)) {
+				continue;
+			}
+			if ((int) ($placement['attachment_id'] ?? 0) > 0) {
+				++$count;
+			}
+		}
+
+		return $count;
 	}
 
 	/**
@@ -232,6 +210,42 @@ final class Admin {
 				return (string) $year;
 			}
 			return substr($date, 0, 3) . '0s';
+		}
+		if ('month' === $precision && preg_match('/^(\d{4})-(\d{2})$/', $date, $m)) {
+			$months = array(
+				'01' => 'January',
+				'02' => 'February',
+				'03' => 'March',
+				'04' => 'April',
+				'05' => 'May',
+				'06' => 'June',
+				'07' => 'July',
+				'08' => 'August',
+				'09' => 'September',
+				'10' => 'October',
+				'11' => 'November',
+				'12' => 'December',
+			);
+			$label = $months[ $m[2] ] ?? $m[2];
+			return $label . ' ' . $m[1];
+		}
+		if ('exact' === $precision && preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $m)) {
+			$months = array(
+				'01' => 'January',
+				'02' => 'February',
+				'03' => 'March',
+				'04' => 'April',
+				'05' => 'May',
+				'06' => 'June',
+				'07' => 'July',
+				'08' => 'August',
+				'09' => 'September',
+				'10' => 'October',
+				'11' => 'November',
+				'12' => 'December',
+			);
+			$label = $months[ $m[2] ] ?? $m[2];
+			return $label . ' ' . (int) $m[3] . ', ' . $m[1];
 		}
 		return $date;
 	}

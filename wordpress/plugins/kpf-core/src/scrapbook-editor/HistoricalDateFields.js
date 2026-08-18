@@ -29,52 +29,55 @@ export function parseDateParts(eventDate = '') {
 	};
 }
 
-export function composeEventDate(parts, precision) {
-	if (precision === 'unknown') {
-		return '';
+/**
+ * Infer precision from filled parts:
+ * year only → year (YYYY)
+ * year + month → month (YYYY-MM)
+ * year + month + day → exact (YYYY-MM-DD)
+ * none → unknown
+ */
+export function precisionFromParts(parts) {
+	if (!parts.year) {
+		return 'unknown';
 	}
+	if (!parts.month) {
+		return 'year';
+	}
+	if (!parts.day) {
+		return 'month';
+	}
+	return 'exact';
+}
 
-	let year = parts.year || '';
-	if (!year) {
+export function composeEventDate(parts, precision = precisionFromParts(parts)) {
+	if (precision === 'unknown' || !parts.year) {
 		return '';
 	}
 
 	if (precision === 'decade') {
-		const numeric = parseInt(year, 10);
+		const numeric = parseInt(parts.year, 10);
 		if (!numeric) {
 			return '';
 		}
 		return String(Math.floor(numeric / 10) * 10);
 	}
 
-	if (precision === 'year') {
-		return year;
+	if (precision === 'year' || !parts.month) {
+		return parts.year;
 	}
 
-	const month = parts.month || '';
-	if (!month) {
-		return '';
+	if (precision === 'month' || !parts.day) {
+		return `${parts.year}-${parts.month}`;
 	}
 
-	if (precision === 'month') {
-		return `${year}-${month}`;
-	}
-
-	const day = parts.day || '';
-	if (!day) {
-		return '';
-	}
-
-	const maxDay = daysInMonth(year, month);
-	const safeDay = Math.min(parseInt(day, 10), maxDay);
-	return `${year}-${month}-${pad2(safeDay)}`;
+	const maxDay = daysInMonth(parts.year, parts.month);
+	const safeDay = Math.min(parseInt(parts.day, 10), maxDay);
+	return `${parts.year}-${parts.month}-${pad2(safeDay)}`;
 }
 
 function yearOptions() {
 	const end = currentYear();
-	const options = [
-		{ label: __('Choose year…', 'kpf-core'), value: '' },
-	];
+	const options = [{ label: __('Year…', 'kpf-core'), value: '' }];
 	for (let year = end; year >= START_YEAR; year -= 1) {
 		options.push({ label: String(year), value: String(year) });
 	}
@@ -83,7 +86,7 @@ function yearOptions() {
 
 function monthOptions() {
 	return [
-		{ label: __('Choose month…', 'kpf-core'), value: '' },
+		{ label: __('Month…', 'kpf-core'), value: '' },
 		{ label: __('January', 'kpf-core'), value: '01' },
 		{ label: __('February', 'kpf-core'), value: '02' },
 		{ label: __('March', 'kpf-core'), value: '03' },
@@ -101,7 +104,7 @@ function monthOptions() {
 
 function dayOptions(year, month) {
 	const max = daysInMonth(year, month);
-	const options = [{ label: __('Choose day…', 'kpf-core'), value: '' }];
+	const options = [{ label: __('Day…', 'kpf-core'), value: '' }];
 	for (let day = 1; day <= max; day += 1) {
 		options.push({ label: String(day), value: pad2(day) });
 	}
@@ -109,118 +112,65 @@ function dayOptions(year, month) {
 }
 
 /**
- * Friendly date pickers for scrapbook historical dates.
- * Still stores event_date as YYYY / YYYY-MM / YYYY-MM-DD for the API.
+ * Flexible When picker: YYYY · Month YYYY · Month D, YYYY.
+ * Stores event_date as YYYY / YYYY-MM / YYYY-MM-DD and sets date_precision.
  */
-export default function HistoricalDateFields({
-	precision,
-	eventDate,
-	onChange,
-}) {
-	if (precision === 'unknown') {
-		return null;
-	}
-
+export default function HistoricalDateFields({ eventDate, onChange }) {
 	const parts = parseDateParts(eventDate);
-
-	function commit(nextParts) {
-		onChange(composeEventDate(nextParts, precision));
-	}
-
-	if (precision === 'year' || precision === 'decade') {
-		return (
-			<>
-				<SelectControl
-					label={__('Year', 'kpf-core')}
-					help={__('Choose the year. Month is optional.', 'kpf-core')}
-					value={parts.year}
-					options={yearOptions()}
-					onChange={(year) => {
-						const nextPrecision = parts.month ? 'month' : 'year';
-						onChange(
-							composeEventDate({ ...parts, year, day: '' }, nextPrecision),
-							nextPrecision
-						);
-					}}
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-				/>
-				<SelectControl
-					label={__('Month (optional)', 'kpf-core')}
-					value={parts.month}
-					options={monthOptions()}
-					onChange={(month) => {
-						if (!month) {
-							onChange(
-								composeEventDate({ ...parts, month: '', day: '' }, 'year'),
-								'year'
-							);
-							return;
-						}
-						onChange(
-							composeEventDate({ ...parts, month, day: '' }, 'month'),
-							'month'
-						);
-					}}
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-				/>
-			</>
-		);
-	}
-
-	const showDay = precision === 'exact';
 	let dayValue = parts.day;
-	if (showDay && parts.year && parts.month && dayValue) {
+	if (parts.year && parts.month && dayValue) {
 		const max = daysInMonth(parts.year, parts.month);
 		if (parseInt(dayValue, 10) > max) {
 			dayValue = pad2(max);
 		}
 	}
 
+	function commit(nextParts) {
+		const precision = precisionFromParts(nextParts);
+		onChange(composeEventDate(nextParts, precision), precision);
+	}
+
 	return (
 		<>
 			<SelectControl
-				label={__('Month', 'kpf-core')}
-				value={parts.month}
-				options={monthOptions()}
-				onChange={(month) => {
-					const next = { ...parts, month };
-					if (showDay && next.day && next.year && month) {
-						const max = daysInMonth(next.year, month);
-						if (parseInt(next.day, 10) > max) {
-							next.day = pad2(max);
-						}
+				label={__('When', 'kpf-core')}
+				help={__(
+					'As much as you know: year only, month and year, or full date.',
+					'kpf-core'
+				)}
+				value={parts.year}
+				options={yearOptions()}
+				onChange={(year) => {
+					if (!year) {
+						commit({ year: '', month: '', day: '' });
+						return;
 					}
-					commit(next);
+					commit({ ...parts, year });
 				}}
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 			/>
-			{showDay ? (
-				<SelectControl
-					label={__('Day', 'kpf-core')}
-					value={dayValue}
-					options={dayOptions(parts.year, parts.month)}
-					onChange={(day) => commit({ ...parts, day })}
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
-				/>
-			) : null}
 			<SelectControl
-				label={__('Year', 'kpf-core')}
-				value={parts.year}
-				options={yearOptions()}
-				onChange={(year) => {
-					const next = { ...parts, year };
-					if (showDay && next.day && next.month && year) {
-						const max = daysInMonth(year, next.month);
-						if (parseInt(next.day, 10) > max) {
-							next.day = pad2(max);
-						}
+				label={__('Month (optional)', 'kpf-core')}
+				value={parts.month}
+				options={monthOptions()}
+				disabled={!parts.year}
+				onChange={(month) => {
+					if (!month) {
+						commit({ ...parts, month: '', day: '' });
+						return;
 					}
-					commit(next);
+					commit({ ...parts, month });
 				}}
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+			/>
+			<SelectControl
+				label={__('Day (optional)', 'kpf-core')}
+				value={dayValue}
+				options={dayOptions(parts.year, parts.month)}
+				disabled={!parts.year || !parts.month}
+				onChange={(day) => commit({ ...parts, day })}
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 			/>

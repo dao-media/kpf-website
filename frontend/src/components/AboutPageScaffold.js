@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
+import ChipCursorTooltip from "@/components/ChipCursorTooltip";
 import CtaClosingBand from "@/components/CtaClosingBand";
 import GranteeCardsGrid from "@/components/GranteeCardsGrid";
 import KevinHistoryCarousel from "@/components/KevinHistoryCarousel";
@@ -10,13 +11,41 @@ const {
   resolveGrantsTotalLabel,
   formatGranteesTitle,
 } = require("@/lib/grantsQuery");
+const {
+  SCRAPBOOK_TILES_INITIAL,
+  SCRAPBOOK_TILES_PAGE,
+  fetchScrapbookTiles,
+  scrapbookTileTooltip,
+} = require("@/lib/scrapbookTiles");
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
-/** The Work grid: 2 columns → 2 tiles per row; initial 2 rows, then +2 rows per “see more”. */
-const GALLERY_TILES_PER_ROW = 2;
-const GALLERY_INITIAL_ROWS = 2;
-const GALLERY_ROWS_PER_PAGE = 2;
+/** Default visible photos before “See more”. */
+const GALLERY_INITIAL = 12;
+/** “See more” batch — desktop / tablet / mobile-L (≥30rem). */
+const GALLERY_BATCH_WIDE = 9;
+/** “See more” batch — mobile portrait (<30rem). */
+const GALLERY_BATCH_NARROW = 6;
+
+function shuffleTiles(items) {
+  const next = [...items];
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = next[i];
+    next[i] = next[j];
+    next[j] = tmp;
+  }
+  return next;
+}
+
+function galleryBatchForViewport() {
+  if (typeof window === "undefined") {
+    return GALLERY_BATCH_WIDE;
+  }
+  return window.matchMedia("(max-width: 29.99rem)").matches
+    ? GALLERY_BATCH_NARROW
+    : GALLERY_BATCH_WIDE;
+}
 
 export default function AboutPageScaffold({
   media = {},
@@ -36,31 +65,122 @@ export default function AboutPageScaffold({
     resolveGrantsTotalLabel({ label: grantsTotal }, granteeItems),
   );
 
-  const galleryTiles =
-    Array.isArray(scrapbookTiles) && scrapbookTiles.length > 0
-      ? scrapbookTiles
-      : copy.gallery.items
-          .map((item) => {
-            const resolved = resolveMedia(media, item.key, item);
-            if (!resolved.src) return null;
-            return {
-              id: item.key || resolved.src,
-              src: resolved.src,
-              alt: resolved.alt || item.alt || "",
-            };
-          })
-          .filter(Boolean);
+  const galleryTiles = useMemo(() => {
+    if (Array.isArray(scrapbookTiles) && scrapbookTiles.length > 0) {
+      return scrapbookTiles;
+    }
+    const fallback = [
+      featured.src
+        ? {
+            id: copy.gallery.featured.key || featured.src,
+            src: featured.src,
+            alt: featured.alt || "",
+          }
+        : null,
+      ...copy.gallery.items.map((item) => {
+        const resolved = resolveMedia(media, item.key, item);
+        if (!resolved.src) return null;
+        return {
+          id: item.key || resolved.src,
+          src: resolved.src,
+          alt: resolved.alt || item.alt || "",
+        };
+      }),
+    ].filter(Boolean);
+    return fallback;
+  }, [scrapbookTiles, featured.src, featured.alt, media, copy.gallery]);
 
-  const initialTileCount = GALLERY_TILES_PER_ROW * GALLERY_INITIAL_ROWS;
-  const tilesPerPage = GALLERY_TILES_PER_ROW * GALLERY_ROWS_PER_PAGE;
-  const [visibleTileCount, setVisibleTileCount] = useState(initialTileCount);
+  const usingScrapbookQuery = Array.isArray(scrapbookTiles) && scrapbookTiles.length > 0;
+  const gallerySignature = useMemo(
+    () => galleryTiles.map((tile) => tile.id || tile.src).join("|"),
+    [galleryTiles],
+  );
+
+  const [seeMoreBatch, setSeeMoreBatch] = useState(GALLERY_BATCH_WIDE);
+  const [shuffledTiles, setShuffledTiles] = useState(galleryTiles);
+  const [visibleTileCount, setVisibleTileCount] = useState(
+    Math.min(GALLERY_INITIAL, galleryTiles.length),
+  );
+  const [fetchOffset, setFetchOffset] = useState(galleryTiles.length);
+  const [remoteExhausted, setRemoteExhausted] = useState(
+    !usingScrapbookQuery || galleryTiles.length < SCRAPBOOK_TILES_INITIAL,
+  );
+  const [isFetchingTiles, setIsFetchingTiles] = useState(false);
+  const fetchLockRef = useRef(false);
 
   useEffect(() => {
-    setVisibleTileCount(initialTileCount);
-  }, [galleryTiles.length, initialTileCount]);
+    const syncBatch = () => setSeeMoreBatch(galleryBatchForViewport());
+    syncBatch();
+    const mq = window.matchMedia("(max-width: 29.99rem)");
+    mq.addEventListener("change", syncBatch);
+    return () => mq.removeEventListener("change", syncBatch);
+  }, []);
 
-  const visibleTiles = galleryTiles.slice(0, visibleTileCount);
-  const hasMoreTiles = visibleTileCount < galleryTiles.length;
+  useEffect(() => {
+    setShuffledTiles(shuffleTiles(galleryTiles));
+    setVisibleTileCount(Math.min(GALLERY_INITIAL, galleryTiles.length));
+    setFetchOffset(galleryTiles.length);
+    setRemoteExhausted(
+      !usingScrapbookQuery || galleryTiles.length < SCRAPBOOK_TILES_INITIAL,
+    );
+  }, [gallerySignature, galleryTiles, usingScrapbookQuery]);
+
+  const visibleTiles = shuffledTiles.slice(0, visibleTileCount);
+  const hasUnrevealed = visibleTileCount < shuffledTiles.length;
+  const hasMoreTiles = hasUnrevealed || (usingScrapbookQuery && !remoteExhausted);
+
+  const revealOrFetchMore = useCallback(async () => {
+    const batch = seeMoreBatch;
+
+    if (visibleTileCount < shuffledTiles.length) {
+      setVisibleTileCount((count) =>
+        Math.min(count + batch, shuffledTiles.length),
+      );
+      return;
+    }
+
+    if (!usingScrapbookQuery || remoteExhausted || fetchLockRef.current) {
+      return;
+    }
+
+    fetchLockRef.current = true;
+    setIsFetchingTiles(true);
+    try {
+      const page = await fetchScrapbookTiles({
+        first: SCRAPBOOK_TILES_PAGE,
+        offset: fetchOffset,
+      });
+      if (!page.length) {
+        setRemoteExhausted(true);
+        return;
+      }
+
+      setShuffledTiles((prev) => {
+        const seen = new Set(prev.map((tile) => tile.id));
+        const additions = shuffleTiles(
+          page.filter((tile) => !seen.has(tile.id)),
+        );
+        return additions.length ? [...prev, ...additions] : prev;
+      });
+      setFetchOffset((offset) => offset + page.length);
+      setVisibleTileCount((count) => count + batch);
+      if (page.length < SCRAPBOOK_TILES_PAGE) {
+        setRemoteExhausted(true);
+      }
+    } catch {
+      setRemoteExhausted(true);
+    } finally {
+      setIsFetchingTiles(false);
+      fetchLockRef.current = false;
+    }
+  }, [
+    seeMoreBatch,
+    visibleTileCount,
+    shuffledTiles.length,
+    usingScrapbookQuery,
+    remoteExhausted,
+    fetchOffset,
+  ]);
 
   const [openAccordion, setOpenAccordion] = useState(
     () => copy.mission.criteria.find((item) => item.open)?.id ?? null,
@@ -297,68 +417,69 @@ export default function AboutPageScaffold({
 
       <section className="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
         <div className="kpf-u-container">
-          <div className="kpf-gallery__layout">
-            <div className="kpf-gallery__main">
-              <div className="kpf-content-block kpf-u-invert">
-                <div className="kpf-content-block__copy">
-                  <div className="kpf-content-block__title-group">
-                    <p className="kpf-content-block__eyebrow">{copy.gallery.eyebrow}</p>
-                    <h2
-                      id="kpf-about-gallery-title"
-                      className="kpf-content-block__title kpf-content-block__title--h2"
-                    >
-                      {copy.gallery.title}
-                    </h2>
-                  </div>
-                  <div className="kpf-content-block__body-group">
-                    <p className="kpf-content-block__body">{copy.gallery.body}</p>
-                  </div>
-                </div>
+          <div className="kpf-content-block kpf-u-invert kpf-gallery__intro">
+            <div className="kpf-content-block__copy">
+              <div className="kpf-content-block__title-group">
+                <p className="kpf-content-block__eyebrow">{copy.gallery.eyebrow}</p>
+                <h2
+                  id="kpf-about-gallery-title"
+                  className="kpf-content-block__title kpf-content-block__title--h2"
+                >
+                  {copy.gallery.title}
+                </h2>
               </div>
-
-              {visibleTiles.length > 0 ? (
-                <div className="kpf-gallery__grid">
-                  {visibleTiles.map((item) => (
-                    <figure key={item.id || item.src} className="kpf-gallery__item">
-                      <img
-                        src={item.src}
-                        alt={item.alt || ""}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </figure>
-                  ))}
-                </div>
-              ) : null}
-
-              {hasMoreTiles ? (
-                <p className="kpf-gallery__more">
-                  <button
-                    type="button"
-                    className="kpf-link kpf-body--m"
-                    onClick={() =>
-                      setVisibleTileCount((count) =>
-                        Math.min(count + tilesPerPage, galleryTiles.length),
-                      )
-                    }
-                  >
-                    {copy.gallery.seeMore}
-                  </button>
-                </p>
-              ) : null}
+              <div className="kpf-content-block__body-group">
+                <p className="kpf-content-block__body">{copy.gallery.body}</p>
+              </div>
             </div>
-
-            {featured.src ? (
-              <figure className="kpf-gallery__featured">
-                <img
-                  src={featured.src}
-                  alt={featured.alt}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </figure>
-            ) : null}
           </div>
+
+          {visibleTiles.length > 0 ? (
+            <div className="kpf-gallery__mosaic" aria-live="polite">
+              {visibleTiles.map((item) => {
+                const tip = scrapbookTileTooltip(item);
+                const image = (
+                  <img
+                    src={item.src}
+                    alt={item.alt || ""}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                );
+                return (
+                  <figure key={item.id || item.src} className="kpf-gallery__item">
+                    {tip ? (
+                      <ChipCursorTooltip
+                        label={tip.label}
+                        labelSoft={tip.labelSoft}
+                        className="kpf-gallery__item-tip"
+                        desktopOnly
+                      >
+                        {image}
+                      </ChipCursorTooltip>
+                    ) : (
+                      image
+                    )}
+                  </figure>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {hasMoreTiles ? (
+            <div className="kpf-gallery__more">
+              <button
+                type="button"
+                className="kpf-link kpf-body--m"
+                disabled={isFetchingTiles}
+                onClick={() => {
+                  void revealOrFetchMore();
+                }}
+              >
+                {isFetchingTiles ? "Loading…" : copy.gallery.seeMore}
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
 

@@ -1092,6 +1092,7 @@ html {
 }
 
 .kpf-footer__brand-note {
+	color: var(--kpf-mute, #6b5c5c); /* beat global `p` ink on dark footer */
 	margin: 0;
 	max-width: 22rem;
 }
@@ -1103,9 +1104,9 @@ html {
 }
 
 .kpf-footer__heading {
-	color: var(--kpf-brass, #c9a15b);
+	color: var(--kpf-parchment, #f4efea); /* Figma 416:113 / 416:142 */
 	font-size: 0.75rem;
-	font-weight: 700;
+	font-weight: 500;
 	letter-spacing: 0.08em;
 	margin: 0 0 0.75rem;
 	text-transform: uppercase;
@@ -1129,6 +1130,7 @@ html {
 	flex-direction: column;
 	gap: 0.75rem;
 	padding: 1rem;
+	transition: box-shadow 200ms ease-out;
 }
 
 .kpf-footer__cta-title {
@@ -1142,35 +1144,61 @@ html {
 	margin: 0;
 }
 
-.kpf-footer a {
-	color: var(--kpf-brass);
-	text-decoration: none;
+/* Nav link labels — Figma Text Link / --kpf-brass-text (#83673c) */
+.kpf-footer__list a {
+	color: var(--kpf-brass-text, #83673c);
+	font-size: 0.9375rem; /* 15 */
+	font-weight: 700;
+	line-height: 1.2;
+	text-decoration: underline;
+	text-underline-offset: 0.12em;
 }
 
-.kpf-footer a:hover,
-.kpf-footer a:focus-visible {
-	color: var(--kpf-parchment);
+.kpf-footer__list a:hover,
+.kpf-footer__list a:focus-visible {
+	color: var(--kpf-parchment, #f4efea);
 }
 
+/* Subfooter — Figma 416:175 (mute caption on ink; beat global `p` ink color) */
 .kpf-footer__bar {
+	align-items: flex-start;
+	box-sizing: border-box;
+	color: var(--kpf-mute, #6b5c5c);
 	display: flex;
 	flex-direction: column;
-	font-size: var(--kpf-text-body-s);
+	font-size: 0.75rem; /* Figma ui-caption 12 */
 	gap: var(--kpf-space-sm);
+	justify-content: center;
+	line-height: 1.35;
 	margin-inline: auto;
-	margin-top: var(--kpf-space-xl);
+	margin-top: 0;
 	max-width: var(--kpf-measure-wide);
-	padding-bottom: 1.5rem; /* 24 — +12 from prior 12px */
-	padding-top: var(--kpf-space-md);
+	min-height: 2.875rem; /* 46 */
+	padding-bottom: 0.75rem; /* 12 */
+	padding-top: 0.75rem;
+	width: 100%;
+}
+
+.kpf-footer__copy,
+.kpf-footer__legal {
+	color: var(--kpf-mute, #6b5c5c);
+	font-size: 0.75rem; /* Figma ui-caption 12 — beat global `p` */
+	line-height: 1.35;
+	margin: 0;
 }
 
 .kpf-footer__copy {
-	margin: 0;
 	text-align: left;
 }
 
-.kpf-footer__legal {
-	margin: 0;
+.kpf-footer__legal a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.kpf-footer__legal a:hover,
+.kpf-footer__legal a:focus-visible {
+	color: var(--kpf-parchment, #f4efea);
 }
 
 @media (min-width: 48rem) {
@@ -1259,7 +1287,7 @@ html {
  *   .kpf-history                 stacked image slider + story card + dots
  *   .kpf-mission                 content-block
  *   .kpf-grantees                funded org logo / card grid
- *   .kpf-gallery                 organization photo gallery
+ *   .kpf-gallery                 fluid photo mosaic (The Work)
  *   .kpf-cta-closing             closing CTA band
  *   .kpf-footer
  *
@@ -1902,6 +1930,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	box-shadow: 0 18px 24px color-mix(in srgb, var(--kpf-ink) 12%, transparent);
 	color: var(--kpf-ink, #12090a);
 	overflow: clip;
+	transition: box-shadow 200ms ease-out;
 }
 
 .kpf-values__card .kpf-card__media {
@@ -2163,6 +2192,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	min-width: 0;
 	padding: var(--kpf-space-md); /* 16 — was 24 */
 	text-decoration: none;
+	transition: box-shadow 200ms ease-out;
 	width: 100%;
 }
 
@@ -2403,12 +2433,12 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	box-sizing: border-box;
 	/* (scale - 100) / 2 → equal hang each side */
 	left: 0;
-	margin: 0 0 0 -40%;
+	margin: 0 0 0 -49%;
 	max-width: none;
-	min-width: 180%;
+	min-width: 198%;
 	overflow: visible;
 	position: relative;
-	width: 180%;
+	width: 198%;
 }
 
 .kpf-hero--about .kpf-hero__media-wrap::after {
@@ -2467,7 +2497,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 		overflow: visible;
 		position: absolute;
 		top: auto;
-		width: 80vw;
+		width: 88vw; /* was 80vw — +10% */
 	}
 
 	.kpf-hero--about .kpf-hero__media-wrap {
@@ -2992,6 +3022,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	box-sizing: border-box;
 	min-width: 0;
 	padding: var(--kpf-space-lg);
+	transition: box-shadow 200ms ease-out;
 }
 
 @media (min-width: 48rem) {
@@ -3471,6 +3502,10 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	display: block;
 }
 
+.kpf-chip-tip__soft {
+	font-weight: 400;
+}
+
 .kpf-chip-tip__carrot {
 	background: var(--kpf-ink-soft, #3d2c2d);
 	bottom: -5px;
@@ -3509,7 +3544,7 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	}
 }
 
-/* About gallery — dark “The Work” band */
+/* About gallery — dark “The Work” band; fluid mosaic (max 1/3-wide tiles) */
 .kpf-gallery {
 	background: var(--kpf-ink, #12090a);
 	color: var(--kpf-parchment, #f4efea);
@@ -3522,60 +3557,53 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	color: var(--kpf-ember, #bb0d0d);
 }
 
-.kpf-gallery__layout {
-	align-items: stretch;
-	display: grid;
-	gap: var(--kpf-space-xl, 2rem);
-	grid-template-columns: 1fr;
-	min-width: 0;
+.kpf-gallery__intro {
+	margin: 0 0 var(--kpf-space-xl, 2rem);
+	max-width: 640px;
 }
 
-.kpf-gallery__main {
-	display: flex;
-	flex-direction: column;
-	gap: var(--kpf-space-l, 1.5rem);
-	min-width: 0;
-}
-
-.kpf-gallery__main > .kpf-content-block {
+.kpf-gallery__intro > .kpf-content-block__copy {
 	margin: 0;
+	max-width: 640px;
 }
 
-.kpf-gallery__featured,
+.kpf-gallery__mosaic {
+	column-count: 2; /* mobile portrait — 50/50 */
+	column-gap: 1.5rem; /* 24 */
+	margin-bottom: -1.5rem; /* cancel trailing item margin */
+	min-width: 0;
+	width: 100%;
+}
+
+@media (min-width: 30rem) {
+	.kpf-gallery__mosaic {
+		column-count: 3; /* mobile-L / tablet / desktop — max ~1/3 */
+	}
+}
+
 .kpf-gallery__item {
 	border-radius: var(--kpf-radius-md);
-	margin: 0;
+	break-inside: avoid;
+	display: block;
+	margin: 0 0 1.5rem; /* 24 vertical gap */
 	overflow: clip;
+	width: 100%;
 }
 
-.kpf-gallery__featured img,
 .kpf-gallery__item img {
 	display: block;
-	height: 100%;
-	object-fit: cover;
-	object-position: center;
+	height: auto;
 	width: 100%;
 }
 
-.kpf-gallery__featured {
-	aspect-ratio: 3 / 4;
-	min-height: 18rem;
+.kpf-gallery__item-tip {
+	display: block;
 	width: 100%;
-}
-
-.kpf-gallery__grid {
-	display: grid;
-	gap: 1.25rem;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	min-width: 0;
-}
-
-.kpf-gallery__item {
-	aspect-ratio: 1 / 1;
 }
 
 .kpf-gallery__more {
-	margin: 0;
+	margin: 1.5rem 0 0;
+	text-align: center;
 }
 
 .kpf-gallery__more .kpf-link {
@@ -3585,24 +3613,6 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	cursor: pointer;
 	font: inherit;
 	padding: 0;
-}
-
-@media (min-width: 48rem) {
-	.kpf-gallery__layout {
-		/* ~60% copy+tiles / ~40% portrait */
-		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-	}
-
-	.kpf-gallery__featured {
-		align-self: stretch;
-		aspect-ratio: auto;
-		height: 100%;
-		min-height: 100%;
-	}
-
-	.kpf-gallery__item {
-		aspect-ratio: 5 / 4;
-	}
 }
 
 .kpf-cta-closing__block {
@@ -3869,13 +3879,25 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	flex-direction: column;
 	min-width: 0;
 	overflow: visible;
+	transition: box-shadow 200ms ease-out;
+}
+
+/* Medium shadow on hover — all interactive card shells */
+@media (hover: hover) and (pointer: fine) {
+	.kpf-values__card:hover,
+	.kpf-archive__card:hover,
+	.kpf-footer__cta-card:hover,
+	.kpf-history__card:hover,
+	.kpf-event-card:not(.kpf-event-card--placeholder):hover {
+		box-shadow: var(--kpf-shadow-md);
+	}
 }
 
 /* Library empty slots — same card shell, dashed inset border, no fill */
 .kpf-event-card--placeholder {
 	align-items: center;
 	background: transparent;
-	border: 2px dashed var(--kpf-ink-100, #908585);
+	border: 3px dashed var(--kpf-ink-100, #908585);
 	box-sizing: border-box;
 	justify-content: center;
 	min-height: 100%;
@@ -4247,7 +4269,7 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 }
 
 /* Story / programs / featured collage sizing is intentional — exclude from the fluid clamp. */
-.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-gallery__featured img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host),
+.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host),
 .kpf-hero:not(.kpf-hero--about):not(.kpf-hero--events) img,
 .kpf-card__media {
 	height: auto;

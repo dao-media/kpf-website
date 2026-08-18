@@ -1019,10 +1019,22 @@ html {
 /* @spec Footer — Figma 416:100 */
 .kpf-footer {
 	background: var(--kpf-ink, #12090a);
-	border-top: 2px solid var(--kpf-ember, #bb0d0d);
+	/* Ember rule is ::before (not border-top) so it scrolls with the ink fill
+	   under ScrollSmoother — border-top was compositing over the CTA video. */
 	color: color-mix(in srgb, var(--kpf-parchment) 88%, transparent);
+	isolation: isolate;
 	padding-block: 0;
 	padding-inline: 0;
+	position: relative;
+	z-index: 1;
+}
+
+.kpf-footer::before {
+	background: var(--kpf-ember, #bb0d0d);
+	content: "";
+	display: block;
+	height: 2px;
+	width: 100%;
 }
 
 .kpf-footer__body {
@@ -3859,6 +3871,62 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	overflow: visible;
 }
 
+/* Library empty slots — same card shell, dashed inset border, no fill */
+.kpf-event-card--placeholder {
+	align-items: center;
+	background: transparent;
+	border: 2px dashed var(--kpf-ink-100, #908585);
+	box-sizing: border-box;
+	justify-content: center;
+	min-height: 100%;
+	overflow: hidden;
+	padding: 2.625rem; /* 42 — nearest intentional pad (space-3xl is 40) */
+}
+
+.kpf-event-card--placeholder-quiet {
+	border-color: color-mix(
+		in srgb,
+		var(--kpf-ink-100, #908585) 50%,
+		transparent
+	);
+}
+
+.kpf-event-card__placeholder-inner {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin: 0;
+	max-width: 16rem;
+	text-align: center;
+}
+
+.kpf-event-card__placeholder-title {
+	color: var(--kpf-ink-soft, #3d2c2d);
+	font-family: var(--kpf-font-display);
+	font-size: 1.25rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	line-height: 1.2;
+	margin: 0;
+	text-transform: uppercase;
+}
+
+.kpf-event-card__placeholder-body {
+	color: var(--kpf-ink-100, #908585);
+	font-family: var(--kpf-font-body);
+	font-size: 1rem;
+	font-weight: 400;
+	letter-spacing: 0;
+	line-height: 1.45;
+	margin: 0;
+}
+
+@media (max-width: 29.99rem) {
+	.kpf-event-card--placeholder {
+		display: none;
+	}
+}
+
 .kpf-event-card__body {
 	display: flex;
 	flex: 1 1 auto;
@@ -4093,6 +4161,7 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	padding-block: 6rem;
 	padding-inline: var(--kpf-page-gutter);
 	position: relative;
+	z-index: 0;
 }
 
 .kpf-cta-closing__media {

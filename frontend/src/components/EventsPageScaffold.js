@@ -16,6 +16,9 @@ import ChipCursorTooltip, {
 } from "@/components/ChipCursorTooltip";
 import CtaClosingBand from "@/components/CtaClosingBand";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
+import EventCardPlaceholder, {
+  eventLibraryPlaceholderCount,
+} from "@/components/EventCardPlaceholder";
 import KpfButton from "@/components/KpfButton";
 const { resolveMedia } = require("@/lib/scaffoldMedia");
 const {
@@ -26,6 +29,34 @@ const {
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
+
+/** Library grid columns: desktop 3 · tablet/mob-land 2 · mob-portrait 1 (no pads). */
+function useEventLibraryColumns() {
+  const [columns, setColumns] = useState(1);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return undefined;
+
+    const desktop = window.matchMedia("(min-width: 64rem)");
+    const tabletUp = window.matchMedia("(min-width: 30rem)");
+
+    const sync = () => {
+      if (desktop.matches) setColumns(3);
+      else if (tabletUp.matches) setColumns(2);
+      else setColumns(1);
+    };
+
+    sync();
+    desktop.addEventListener("change", sync);
+    tabletUp.addEventListener("change", sync);
+    return () => {
+      desktop.removeEventListener("change", sync);
+      tabletUp.removeEventListener("change", sync);
+    };
+  }, []);
+
+  return columns;
+}
 
 function ActionLink({ action }) {
   const className = `kpf-btn kpf-btn--${action.variant || "primary"}`;
@@ -284,6 +315,8 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
     ...featuredSectionFromEvent(featuredEvent, copy.featured),
   };
 
+  const libraryColumns = useEventLibraryColumns();
+
   const [openAccordion, setOpenAccordion] = useState(
     () => copy.context.paths.find((item) => item.open)?.id ?? null,
   );
@@ -329,6 +362,10 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
       : Array.isArray(copy.library.items)
         ? copy.library.items
         : [];
+  const libraryPlaceholders = eventLibraryPlaceholderCount(
+    events.length,
+    libraryColumns,
+  );
 
   return (
     <div className="kpf-page-events" data-kpf-scaffold="events">
@@ -593,6 +630,19 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                   fallbackMarkAlt={cardMark.alt}
                 />
               ))}
+              {Array.from({ length: libraryPlaceholders }, (_, index) => {
+                // Desktop + two pads: last (3rd column) is quiet. A lone 3rd-slot pad stays full.
+                const quiet =
+                  libraryColumns >= 3 &&
+                  libraryPlaceholders === 2 &&
+                  index === 1;
+                return (
+                  <EventCardPlaceholder
+                    key={`event-placeholder-${index}`}
+                    quiet={quiet}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="kpf-content-block kpf-event-library__empty">

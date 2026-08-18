@@ -19,6 +19,7 @@ export default function PageScaffold({
   grants = [],
   grantsTotal = "",
   scrapbookTiles = [],
+  events = [],
 }) {
   const router = useRouter();
   const routeSlug = String(router?.asPath || "")
@@ -44,7 +45,7 @@ export default function PageScaffold({
   }
 
   if (slug === "events") {
-    return <EventsPageScaffold media={media} />;
+    return <EventsPageScaffold media={media} events={events} />;
   }
 
   if (slug === "contact" || slug === "contact-2") {

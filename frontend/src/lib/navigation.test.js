@@ -18,7 +18,11 @@ assert(isCurrentPath("/", "/"), "home matches home");
 assert(!isCurrentPath("/about/", "/"), "about is not home");
 assert(isCurrentPath("/about/team/", "/about/"), "nested about matches");
 assert(isCurrentPath("/events", "/events/"), "events without slash matches");
-assert(KPF_DONATE_HREF === "/#donate", "donate anchors home donate section");
+assert(
+  KPF_DONATE_HREF.includes("paypal.com") &&
+    KPF_DONATE_HREF.includes("kevinpopke.foundation"),
+  "donate points at Foundation PayPal"
+);
 assert(
   htmlIncludesChromeClass('<header class="kpf-header">', "kpf-header"),
   "detects kpf-header class"

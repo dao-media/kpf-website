@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
-import CtaClosingFlag from "@/components/CtaClosingFlag";
+import CtaClosingBand from "@/components/CtaClosingBand";
 import GranteeCardsGrid from "@/components/GranteeCardsGrid";
 import KevinHistoryCarousel from "@/components/KevinHistoryCarousel";
 import KpfButton from "@/components/KpfButton";
@@ -362,33 +362,13 @@ export default function AboutPageScaffold({
         </div>
       </section>
 
-      <section className="kpf-cta-closing kpf-section" aria-labelledby="kpf-about-cta-title">
-        <CtaClosingFlag src={ctaFlag.src} />
-        <div className="kpf-u-container">
-          <div className="kpf-content-block kpf-u-invert kpf-cta-closing__block">
-            <div className="kpf-content-block__copy">
-              <div className="kpf-content-block__title-group">
-                <h2
-                  id="kpf-about-cta-title"
-                  className="kpf-content-block__title kpf-content-block__title--h2"
-                >
-                  {copy.cta.title}
-                </h2>
-              </div>
-              <div className="kpf-content-block__body-group">
-                <p className="kpf-content-block__body">{copy.cta.body}</p>
-              </div>
-            </div>
-            <div className="kpf-content-block__actions">
-              {copy.cta.actions.map((action) => (
-                <KpfButton key={action.href} href={action.href} className={`kpf-btn kpf-btn--${action.variant}`}>
-                  {action.label}
-                </KpfButton>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <CtaClosingBand
+        title={copy.cta.title}
+        body={copy.cta.body}
+        actions={copy.cta.actions}
+        flagSrc={ctaFlag.src}
+        titleId="kpf-about-cta-title"
+      />
     </div>
   );
 }

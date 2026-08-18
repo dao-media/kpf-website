@@ -3,9 +3,8 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { gsap } from "gsap";
 import KpfMobileNav from "@/components/KpfMobileNav";
-import KpfButton from "@/components/KpfButton";
+import DonateButton from "@/components/DonateButton";
 import {
-  KPF_DONATE_HREF,
   KPF_PRIMARY_NAV,
   isCurrentPath,
 } from "@/lib/navigation";
@@ -452,7 +451,6 @@ function Brandmark({ className = "kpf-header__mark" }) {
 export default function KpfHeader({
   brandLabel = "Kevin Popke Foundation",
   navItems = KPF_PRIMARY_NAV,
-  donateHref = KPF_DONATE_HREF,
   donateLabel = "Donate",
 }) {
   const router = useRouter();
@@ -571,13 +569,11 @@ export default function KpfHeader({
       </ul>
 
       <div className="kpf-header__actions">
-        <KpfButton
-          href={donateHref}
+        <DonateButton
+          label={donateLabel}
           className="kpf-btn kpf-btn--primary"
           data-kpf-track="donate_header_clicked"
-        >
-          {donateLabel}
-        </KpfButton>
+        />
       </div>
 
       <div className="kpf-header__menu-slot">

@@ -65,10 +65,10 @@ describe("grants total helpers", () => {
     );
     assert.equal(
       formatGranteesTitle(
-        "Recipients of more than {total} in KPF grants",
+        "More than {total} in grants — and counting",
         "$50,000",
       ),
-      "Recipients of more than $50,000 in KPF grants",
+      "More than $50,000 in grants — and counting",
     );
   });
 });

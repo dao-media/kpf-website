@@ -25,7 +25,14 @@ final class ChromeHtml {
 	}
 
 	public static function donate_href(): string {
-		return '/#donate';
+		return 'https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kevinpopke.foundation%40gmail.com&item_name=The%20Kevin%20Popke%20Foundation&currency_code=USD';
+	}
+
+	/**
+	 * PayPal donate CTA — same destination as Faust DonateButton.
+	 */
+	public static function donate_button( string $label = 'Donate', string $classes = 'kpf-btn kpf-btn--primary' ): string {
+		return self::action_button( $label, self::donate_href(), $classes, true );
 	}
 
 	public static function brandmark_html(): string {
@@ -64,7 +71,6 @@ final class ChromeHtml {
 
 	public static function header_html(): string {
 		$brand   = 'Kevin Popke Foundation';
-		$donate  = self::donate_href();
 		$nav     = self::primary_nav();
 		$items   = '';
 		$mobile  = '';
@@ -86,7 +92,7 @@ final class ChromeHtml {
 		$html .= '</a>';
 		$html .= '<div class="kpf-header__spacer" aria-hidden="true"></div>';
 		$html .= '<ul class="kpf-header__nav" aria-label="Primary">' . $items . '</ul>';
-		$html .= '<div class="kpf-header__actions">' . self::action_button( 'Donate', $donate, 'kpf-btn kpf-btn--primary' ) . '</div>';
+		$html .= '<div class="kpf-header__actions">' . self::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' ) . '</div>';
 		$html .= '<div class="kpf-header__menu-slot">';
 		$html .= '<div class="kpf-mobile-nav" data-state="closed">';
 		$html .= '<button type="button" class="kpf-mobile-nav__toggle" aria-expanded="false" aria-controls="kpf-mobile-nav-panel" aria-label="Open menu">';
@@ -118,11 +124,15 @@ final class ChromeHtml {
 		}
 		$connect_lis = '';
 		foreach ( $connect as $item ) {
-			$connect_lis .= '<li><a href="' . esc_url( $item['href'] ) . '">' . esc_html( $item['label'] ) . '</a></li>';
+			$is_external = (bool) preg_match( '#^(https?:|mailto:|tel:)#i', $item['href'] );
+			if ( $is_external ) {
+				$connect_lis .= '<li><a href="' . esc_url( $item['href'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $item['label'] ) . '</a></li>';
+			} else {
+				$connect_lis .= '<li><a href="' . esc_url( $item['href'] ) . '">' . esc_html( $item['label'] ) . '</a></li>';
+			}
 		}
 
 		$html  = '<footer class="kpf-footer">';
-		$html .= '<div class="kpf-footer__rule" aria-hidden="true"></div>';
 		$html .= '<div class="kpf-footer__body kpf-u-container">';
 		$html .= '<blockquote class="kpf-footer__tagline">Together, we can.</blockquote>';
 		$html .= '<div class="kpf-footer__grid">';
@@ -132,9 +142,12 @@ final class ChromeHtml {
 		$html .= '<div><p class="kpf-footer__heading">Connect</p><ul class="kpf-footer__list">' . $connect_lis . '</ul></div></div>';
 		$html .= '<div class="kpf-footer__cta-card"><p class="kpf-footer__cta-title">Prefer to just give?</p>';
 		$html .= '<p class="kpf-footer__cta-body">Every gift becomes a grant in Kevin’s name.</p>';
-		$html .= self::action_button( 'Donate', $donate, 'kpf-btn kpf-btn--primary kpf-btn--sm' ) . '</div>';
+		$html .= self::donate_button( 'Donate', 'kpf-btn kpf-btn--primary kpf-btn--sm' ) . '</div>';
 		$html .= '</div></div>';
-		$html .= '<div class="kpf-footer__bar kpf-u-container"><p>© ' . $year . ' ' . esc_html( $brand ) . ' All rights reserved.</p><p><a href="/privacy/">Privacy Policy</a></p></div>';
+		$html .= '<div class="kpf-footer__bar kpf-u-container">';
+		$html .= '<p class="kpf-footer__copy">© <time datetime="' . esc_attr( (string) $year ) . '">' . esc_html( (string) $year ) . '</time> ' . esc_html( $brand ) . ' All rights reserved.</p>';
+		$html .= '<p class="kpf-footer__legal"><a href="/privacy/">Privacy Policy</a></p>';
+		$html .= '</div>';
 		$html .= '</footer>';
 
 		return $html;

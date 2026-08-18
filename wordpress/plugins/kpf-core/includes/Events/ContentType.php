@@ -56,7 +56,8 @@ final class ContentType {
 					'Events shown as cards on the Events page — hosts, schedule frequency, and contact details.',
 					'kpf-core'
 				),
-				'public'              => false,
+				/* Public like Kevin/Scrapbook so Faust GraphQL can read cards; not front-routable. */
+				'public'              => true,
 				'publicly_queryable'  => false,
 				'show_ui'             => true,
 				'show_in_menu'        => true,

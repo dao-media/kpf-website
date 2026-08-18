@@ -30,8 +30,8 @@ kpf_events_assert( taxonomy_exists( EventsContentType::HOST_TAXONOMY ), 'Host ta
 $event_type = get_post_type_object( EventsContentType::POST_TYPE );
 kpf_events_assert( (bool) $event_type->show_in_rest, 'Events are available through REST' );
 kpf_events_assert( (bool) $event_type->show_in_graphql, 'Events are available through WPGraphQL' );
-kpf_events_assert( false === (bool) $event_type->public, 'Events CPT is not public' );
 kpf_events_assert( false === (bool) $event_type->publicly_queryable, 'Events CPT is not publicly queryable' );
+kpf_events_assert( true === (bool) $event_type->public, 'Events CPT is public for GraphQL (not front-routable)' );
 kpf_events_assert( false === (bool) $event_type->rewrite, 'Events CPT has no rewrite rules' );
 
 $clean = EventsMeta::sanitize(
@@ -134,10 +134,40 @@ kpf_events_assert(
 	'Directions mapsUrl uses custom URL'
 );
 
-$label = EventsMeta::format_schedule_label( $clean );
+$label = EventsMeta::format_schedule_label(
+	$clean,
+	new DateTimeImmutable( '2026-08-18', wp_timezone() )
+);
 kpf_events_assert(
-	false !== stripos( $label, 'August' ) && false !== stripos( $label, '29' ),
-	'Annual with anchor formats month/day: ' . $label
+	'August 29–30, 2026' === $label,
+	'Annual within 90 days shows concrete date: ' . $label
+);
+
+$after = EventsMeta::format_schedule_label(
+	$clean,
+	new DateTimeImmutable( '2026-08-31', wp_timezone() )
+);
+kpf_events_assert(
+	'Annually in Summer' === $after,
+	'Annual after occurrence shows season: ' . $after
+);
+
+$far = EventsMeta::format_schedule_label(
+	$clean,
+	new DateTimeImmutable( '2026-04-01', wp_timezone() )
+);
+kpf_events_assert(
+	'Annually in Summer' === $far,
+	'Annual >90 days out shows season: ' . $far
+);
+
+$edge = EventsMeta::format_schedule_label(
+	$clean,
+	new DateTimeImmutable( '2026-05-31', wp_timezone() )
+);
+kpf_events_assert(
+	'August 29–30, 2026' === $edge,
+	'Annual on day 90 shows concrete date: ' . $edge
 );
 
 $flexible = EventsMeta::sanitize(
@@ -210,6 +240,19 @@ $fallback = EventsMeta::format_schedule_label(
 );
 kpf_events_assert( 'Quarterly' === $fallback, 'Empty quarterly schedule falls back to frequency name' );
 
+$with_time = EventsMeta::sanitize(
+	array(
+		'frequency' => 'one_time',
+		'schedule'  => array(
+			'start_date' => '2026-08-29',
+			'start_time' => '7:00 PM',
+		),
+	)
+);
+kpf_events_assert( '19:00' === ( $with_time['schedule']['start_time'] ?? '' ), 'Start time normalizes to 24h HH:MM' );
+kpf_events_assert( '7:00 PM' === EventsMeta::format_time_label( $with_time ), 'Time label formats for chips' );
+kpf_events_assert( '2026-08-29' === EventsMeta::calendar_start_ymd( $with_time ), 'Calendar start uses one-time date' );
+
 $weekly_fallback = EventsMeta::format_schedule_label(
 	array(
 		'frequency' => 'weekly',
@@ -264,7 +307,11 @@ if ( ! is_wp_error( $event_id ) && $event_id > 0 ) {
 	kpf_events_assert( 'A night for veterans' === $details['logline'], 'GraphQL details include logline' );
 	kpf_events_assert( 'annually' === $details['frequency'], 'GraphQL details include frequency' );
 	kpf_events_assert( array_key_exists( 'ticketingLink', $details ), 'GraphQL details include ticketingLink' );
+	kpf_events_assert( array_key_exists( 'featured', $details ), 'GraphQL details include featured' );
+	kpf_events_assert( false === (bool) $details['featured'], 'GraphQL featured defaults to false' );
 	kpf_events_assert( '' !== $details['scheduleLabel'], 'GraphQL details include scheduleLabel' );
+	kpf_events_assert( array_key_exists( 'timeLabel', $details ), 'GraphQL details include timeLabel' );
+	kpf_events_assert( array_key_exists( 'calendarUrl', $details ), 'GraphQL details include calendarUrl' );
 	kpf_events_assert( isset( $details['location'] ), 'GraphQL details include location' );
 	kpf_events_assert( 'none' === ( $details['location']['mode'] ?? '' ), 'GraphQL location mode defaults to none' );
 	if ( ! is_wp_error( $host ) ) {

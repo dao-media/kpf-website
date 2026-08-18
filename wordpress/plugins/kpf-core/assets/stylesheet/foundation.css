@@ -1045,7 +1045,7 @@ button.kpf-btn {
 }
 
 .kpf-btn:hover {
-	transform: translateY(-0.0625rem);
+	transform: translateY(-0.125rem);
 	text-decoration: none;
 }
 

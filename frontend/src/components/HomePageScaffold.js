@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
+import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import PartnersSlider from "@/components/PartnersSlider";
 import KpfButton from "@/components/KpfButton";
 import ProgramsCheckRuntime from "@/components/ProgramsCheckRuntime";
@@ -132,9 +133,16 @@ export default function HomePageScaffold({
                 </div>
               </div>
               <div className="kpf-content-block__actions kpf-hero__actions">
-                <KpfButton href={copy.hero.primaryCta.href} className="kpf-btn kpf-btn--primary">
-                  {copy.hero.primaryCta.label}
-                </KpfButton>
+                {isDonateAction(copy.hero.primaryCta) ? (
+                  <DonateButton
+                    label={copy.hero.primaryCta.label}
+                    className="kpf-btn kpf-btn--primary"
+                  />
+                ) : (
+                  <KpfButton href={copy.hero.primaryCta.href} className="kpf-btn kpf-btn--primary">
+                    {copy.hero.primaryCta.label}
+                  </KpfButton>
+                )}
                 <Link href={copy.hero.secondaryCta.href} className="kpf-link kpf-hero__text-link">
                   {copy.hero.secondaryCta.label}
                 </Link>
@@ -186,6 +194,15 @@ export default function HomePageScaffold({
                     action.variant === "ink"
                       ? "kpf-btn kpf-btn--secondary"
                       : "kpf-btn kpf-btn--primary";
+                  if (isDonateAction(action)) {
+                    return (
+                      <DonateButton
+                        key={`donate-${action.label}`}
+                        label={action.label}
+                        className={className}
+                      />
+                    );
+                  }
                   return (
                     <KpfButton
                       key={action.href + action.label}
@@ -225,9 +242,16 @@ export default function HomePageScaffold({
                     <h3 className="kpf-card__title">{card.title}</h3>
                     <p className="kpf-card__description">{card.body}</p>
                     <div className="kpf-card__actions">
-                      <KpfButton href={card.cta.href} className="kpf-btn kpf-btn--primary kpf-btn--sm">
-                        {card.cta.label}
-                      </KpfButton>
+                      {isDonateAction(card.cta) ? (
+                        <DonateButton
+                          label={card.cta.label}
+                          className="kpf-btn kpf-btn--primary kpf-btn--sm"
+                        />
+                      ) : (
+                        <KpfButton href={card.cta.href} className="kpf-btn kpf-btn--primary kpf-btn--sm">
+                          {card.cta.label}
+                        </KpfButton>
+                      )}
                     </div>
                   </div>
                 </article>
@@ -373,9 +397,16 @@ export default function HomePageScaffold({
                 </div>
               </div>
               <div className="kpf-content-block__actions">
-                <KpfButton href={copy.donate.primaryCta.href} className="kpf-btn kpf-btn--primary">
-                  {copy.donate.primaryCta.label}
-                </KpfButton>
+                {isDonateAction(copy.donate.primaryCta) ? (
+                  <DonateButton
+                    label={copy.donate.primaryCta.label}
+                    className="kpf-btn kpf-btn--primary"
+                  />
+                ) : (
+                  <KpfButton href={copy.donate.primaryCta.href} className="kpf-btn kpf-btn--primary">
+                    {copy.donate.primaryCta.label}
+                  </KpfButton>
+                )}
                 <KpfButton href={copy.donate.secondaryCta.href} className="kpf-btn kpf-btn--secondary">
                   {copy.donate.secondaryCta.label}
                 </KpfButton>

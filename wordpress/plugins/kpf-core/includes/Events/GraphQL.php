@@ -55,6 +55,7 @@ final class GraphQL {
 				'description' => 'Frequency-specific schedule details (all preferred / optional).',
 				'fields'      => array(
 					'startDate'    => array( 'type' => 'String' ),
+					'startTime'    => array( 'type' => 'String' ),
 					'byWeekday'    => array( 'type' => array( 'list_of' => 'String' ) ),
 					'monthlyMode'  => array( 'type' => 'String' ),
 					'byMonthday'   => array( 'type' => 'Int' ),
@@ -104,6 +105,7 @@ final class GraphQL {
 				'fields'      => array(
 					'logline'       => array( 'type' => 'String' ),
 					'description'   => array( 'type' => 'String' ),
+					'featured'      => array( 'type' => 'Boolean' ),
 					'contactEmail'   => array( 'type' => 'String' ),
 					'contactPhone'   => array( 'type' => 'String' ),
 					'website'        => array( 'type' => 'String' ),
@@ -113,6 +115,8 @@ final class GraphQL {
 					'durationDays'  => array( 'type' => 'Int' ),
 					'schedule'      => array( 'type' => 'KpfEventSchedule' ),
 					'scheduleLabel' => array( 'type' => 'String' ),
+					'timeLabel'     => array( 'type' => 'String' ),
+					'calendarUrl'   => array( 'type' => 'String' ),
 					'hostTermIds'   => array( 'type' => array( 'list_of' => 'Int' ) ),
 					'hosts'         => array( 'type' => array( 'list_of' => 'KpfEventHostDetails' ) ),
 				),
@@ -165,6 +169,7 @@ final class GraphQL {
 		return array(
 			'logline'       => $meta['logline'],
 			'description'   => $meta['description'],
+			'featured'      => ! empty( $meta['featured'] ),
 			'contactEmail'  => $meta['contact_email'],
 			'contactPhone'  => $meta['contact_phone'],
 			'website'       => $meta['website'],
@@ -185,6 +190,7 @@ final class GraphQL {
 			'durationDays'  => (int) $meta['duration_days'],
 			'schedule'      => array(
 				'startDate'   => (string) ( $schedule['start_date'] ?? '' ),
+				'startTime'   => (string) ( $schedule['start_time'] ?? '' ),
 				'byWeekday'   => (array) ( $schedule['by_weekday'] ?? array() ),
 				'monthlyMode' => (string) ( $schedule['monthly_mode'] ?? 'day_of_month' ),
 				'byMonthday'  => (int) ( $schedule['by_monthday'] ?? 0 ),
@@ -204,6 +210,8 @@ final class GraphQL {
 				),
 			),
 			'scheduleLabel' => Meta::format_schedule_label( $meta ),
+			'timeLabel'     => Meta::format_time_label( $meta ),
+			'calendarUrl'   => Meta::google_calendar_url( $post_id ),
 			'hostTermIds'   => $meta['host_term_ids'],
 			'hosts'         => $hosts,
 		);

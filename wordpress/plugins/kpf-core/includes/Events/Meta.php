@@ -9,6 +9,7 @@ use KPF\Core\Seo\MetaRepository;
 final class Meta {
 	public const META_KEY        = '_kpf_event';
 	public const START_DATE_META = '_kpf_event_start_date';
+	public const FEATURED_META   = '_kpf_event_featured';
 	public const VERSION         = 2;
 
 	public const FREQUENCIES = array(
@@ -28,6 +29,9 @@ final class Meta {
 
 	/** Annual/semiannual anchors: fixed calendar day, nth weekday, or month-only. */
 	private const ANCHOR_DAY_MODES = array( 'exact', 'nth_weekday', 'month' );
+
+	/** Days before an annual exact date when the chip shows the concrete day. */
+	private const ANNUAL_DATE_WINDOW_DAYS = 90;
 
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_meta' ), 10 );
@@ -68,6 +72,7 @@ final class Meta {
 			'version'       => self::VERSION,
 			'logline'       => '',
 			'description'   => '',
+			'featured'      => false,
 			'contact_email'  => '',
 			'contact_phone'  => '',
 			'website'        => '',
@@ -102,6 +107,7 @@ final class Meta {
 	public static function default_schedule(): array {
 		return array(
 			'start_date'    => '',
+			'start_time'    => '',
 			'by_weekday'    => array(),
 			'monthly_mode'  => 'day_of_month',
 			'by_monthday'   => 0,
@@ -128,6 +134,7 @@ final class Meta {
 				),
 				'logline'       => array( 'type' => 'string', 'default' => '' ),
 				'description'   => array( 'type' => 'string', 'default' => '' ),
+				'featured'      => array( 'type' => 'boolean', 'default' => false ),
 				'contact_email'  => array( 'type' => 'string', 'default' => '' ),
 				'contact_phone'  => array( 'type' => 'string', 'default' => '' ),
 				// No format:uri — partial/empty values must round-trip while editing.
@@ -169,6 +176,7 @@ final class Meta {
 					'default'              => self::default_schedule(),
 					'properties'           => array(
 						'start_date'   => array( 'type' => 'string', 'default' => '' ),
+						'start_time'   => array( 'type' => 'string', 'default' => '' ),
 						'by_weekday'   => array(
 							'type'  => 'array',
 							'items' => array( 'type' => 'string', 'enum' => self::WEEKDAYS ),
@@ -281,6 +289,7 @@ final class Meta {
 			'version'        => self::VERSION,
 			'logline'        => sanitize_text_field( (string) ( $value['logline'] ?? '' ) ),
 			'description'    => sanitize_textarea_field( (string) ( $value['description'] ?? '' ) ),
+			'featured'       => ! empty( $value['featured'] ),
 			'contact_email'  => is_email( $email ) ? $email : '',
 			'contact_phone'  => $phone,
 			'website'        => $website,
@@ -304,9 +313,14 @@ final class Meta {
 	/**
 	 * Human schedule string for cards / admin, with frequency-name fallback.
 	 *
-	 * @param array<string, mixed> $meta
+	 * Annual exact-day anchors: within {@see ANNUAL_DATE_WINDOW_DAYS} of the next
+	 * occurrence (or while it is in progress) show the concrete date; otherwise
+	 * "Annually in {Season}" so the day can flex year to year.
+	 *
+	 * @param array<string, mixed>      $meta
+	 * @param \DateTimeImmutable|null $as_of Site-local “today” override (tests).
 	 */
-	public static function format_schedule_label( array $meta ): string {
+	public static function format_schedule_label( array $meta, ?\DateTimeImmutable $as_of = null ): string {
 		$meta      = self::sanitize( $meta );
 		$frequency = (string) $meta['frequency'];
 		$schedule  = is_array( $meta['schedule'] ?? null ) ? $meta['schedule'] : self::default_schedule();
@@ -409,6 +423,13 @@ final class Meta {
 						$all_month  = $modes && count( array_unique( $modes ) ) === 1 && 'month' === $modes[0];
 						$all_exact  = $modes && count( array_unique( $modes ) ) === 1 && 'exact' === $modes[0];
 						$is_annual  = 'annually' === $frequency;
+						if ( $is_annual && $all_exact ) {
+							$windowed = self::format_annual_exact_window_label( $anchors, $duration, $as_of );
+							if ( '' !== $windowed ) {
+								$detail = $windowed;
+								break;
+							}
+						}
 						if ( $all_month ) {
 							$detail = $is_annual
 								? sprintf(
@@ -479,6 +500,35 @@ final class Meta {
 		$clean = self::sanitize( is_array( $meta_value ) ? $meta_value : array() );
 		$start = (string) ( $clean['schedule']['start_date'] ?? '' );
 		update_post_meta( $post_id, self::START_DATE_META, $start );
+		update_post_meta( $post_id, self::FEATURED_META, ! empty( $clean['featured'] ) ? '1' : '0' );
+
+		// Only one featured event at a time — clear siblings when this one is featured.
+		if ( ! empty( $clean['featured'] ) ) {
+			$siblings = get_posts(
+				array(
+					'post_type'              => ContentType::POST_TYPE,
+					'post_status'            => 'any',
+					'posts_per_page'         => -1,
+					'post__not_in'           => array( $post_id ),
+					'fields'                 => 'ids',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+					'meta_query'             => array(
+						array(
+							'key'   => self::FEATURED_META,
+							'value' => '1',
+						),
+					),
+				)
+			);
+			foreach ( $siblings as $sibling_id ) {
+				$sibling_meta             = self::get( (int) $sibling_id );
+				$sibling_meta['featured'] = false;
+				update_post_meta( (int) $sibling_id, self::META_KEY, $sibling_meta );
+				update_post_meta( (int) $sibling_id, self::FEATURED_META, '0' );
+			}
+		}
 
 		if ( '' !== $clean['description'] && class_exists( MetaRepository::class ) ) {
 			$seo                         = MetaRepository::get( $post_id );
@@ -719,6 +769,7 @@ final class Meta {
 
 		return array(
 			'start_date'   => self::sanitize_date( (string) ( $value['start_date'] ?? '' ) ),
+			'start_time'   => self::sanitize_time( (string) ( $value['start_time'] ?? '' ) ),
 			'by_weekday'   => $by_weekday,
 			'monthly_mode' => $mode,
 			'by_monthday'  => $monthday,
@@ -729,6 +780,162 @@ final class Meta {
 			'by_month'     => $by_month,
 			'anchors'      => self::sanitize_anchors( $value['anchors'] ?? array() ),
 		);
+	}
+
+	/**
+	 * Display time for chips (e.g. "7:00 PM"). Empty when unset.
+	 *
+	 * @param array<string, mixed> $meta
+	 */
+	public static function format_time_label( array $meta ): string {
+		$meta     = self::sanitize( $meta );
+		$schedule = is_array( $meta['schedule'] ?? null ) ? $meta['schedule'] : self::default_schedule();
+		$time     = self::sanitize_time( (string) ( $schedule['start_time'] ?? '' ) );
+		if ( '' === $time ) {
+			return '';
+		}
+		$parts = array_map( 'intval', explode( ':', $time ) );
+		$hour  = $parts[0] ?? 0;
+		$min   = $parts[1] ?? 0;
+		$ts    = gmmktime( $hour, $min, 0, 1, 1, 2000 );
+		if ( false === $ts ) {
+			return $time;
+		}
+		return gmdate( 'g:i A', $ts );
+	}
+
+	/**
+	 * Next concrete Y-m-d for Google Calendar (one-time start, or next annual exact anchor).
+	 *
+	 * @param array<string, mixed> $meta
+	 */
+	public static function calendar_start_ymd( array $meta ): string {
+		$meta      = self::sanitize( $meta );
+		$frequency = (string) $meta['frequency'];
+		$schedule  = is_array( $meta['schedule'] ?? null ) ? $meta['schedule'] : self::default_schedule();
+
+		$start = self::sanitize_date( (string) ( $schedule['start_date'] ?? '' ) );
+		if ( '' !== $start ) {
+			return $start;
+		}
+
+		if ( 'annually' !== $frequency && 'semiannually' !== $frequency ) {
+			return '';
+		}
+
+		$anchors = (array) ( $schedule['anchors'] ?? array() );
+		$today   = new \DateTimeImmutable( 'today', wp_timezone() );
+		$best    = '';
+
+		foreach ( $anchors as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$day_mode = sanitize_key( (string) ( $row['day_mode'] ?? 'exact' ) );
+			$month    = absint( $row['month'] ?? 0 );
+			$day      = absint( $row['day'] ?? 0 );
+			if ( 'exact' !== $day_mode || $month < 1 || $month > 12 || $day < 1 || $day > 31 ) {
+				continue;
+			}
+			if ( ! checkdate( $month, $day, (int) $today->format( 'Y' ) ) && ! ( 2 === $month && 29 === $day ) ) {
+				continue;
+			}
+
+			$candidate = self::next_month_day( $today, $month, $day );
+			if ( '' === $candidate ) {
+				continue;
+			}
+			if ( '' === $best || $candidate < $best ) {
+				$best = $candidate;
+			}
+		}
+
+		return $best;
+	}
+
+	/**
+	 * Google Calendar “TEMPLATE” URL — title from post, busy (opaque), optional time.
+	 */
+	public static function google_calendar_url( int $post_id ): string {
+		$post = get_post( $post_id );
+		if ( ! $post || ContentType::POST_TYPE !== $post->post_type ) {
+			return '';
+		}
+
+		$meta  = self::get( $post_id );
+		$start = self::calendar_start_ymd( $meta );
+		if ( '' === $start ) {
+			return '';
+		}
+
+		$schedule = is_array( $meta['schedule'] ?? null ) ? $meta['schedule'] : self::default_schedule();
+		$time     = self::sanitize_time( (string) ( $schedule['start_time'] ?? '' ) );
+		$duration = max( 1, (int) ( $meta['duration_days'] ?? 1 ) );
+		$tz       = wp_timezone();
+		$tz_name  = (string) get_option( 'timezone_string' );
+		if ( '' === $tz_name ) {
+			// Offset-only WP installs (e.g. UTC±N) — pin a named zone Google Calendar accepts.
+			$tz_name = 'America/New_York';
+		}
+
+		try {
+			if ( '' !== $time ) {
+				$start_dt = \DateTimeImmutable::createFromFormat(
+					'Y-m-d H:i',
+					$start . ' ' . $time,
+					$tz
+				);
+				if ( ! $start_dt ) {
+					return '';
+				}
+				if ( $duration > 1 ) {
+					$end_dt = $start_dt->modify( '+' . ( $duration - 1 ) . ' days' );
+				} else {
+					$end_dt = $start_dt->modify( '+3 hours' );
+				}
+				if ( ! $end_dt ) {
+					return '';
+				}
+				$dates = $start_dt->format( 'Ymd\THis' ) . '/' . $end_dt->format( 'Ymd\THis' );
+			} else {
+				$start_dt = \DateTimeImmutable::createFromFormat( 'Y-m-d', $start, $tz );
+				if ( ! $start_dt ) {
+					return '';
+				}
+				$end_dt = $start_dt->modify( '+' . $duration . ' days' );
+				if ( ! $end_dt ) {
+					return '';
+				}
+				$dates = $start_dt->format( 'Ymd' ) . '/' . $end_dt->format( 'Ymd' );
+			}
+		} catch ( \Exception $e ) {
+			return '';
+		}
+
+		$title = html_entity_decode( get_the_title( $post_id ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$title = trim( wp_strip_all_tags( $title ) );
+		if ( '' === $title ) {
+			$title = __( 'Event', 'kpf-core' );
+		}
+
+		$details = trim( (string) ( $meta['description'] ?? '' ) );
+		if ( '' === $details ) {
+			$details = trim( (string) ( $meta['logline'] ?? '' ) );
+		}
+
+		$location = self::format_location_label( $meta );
+		$query    = array(
+			'action'   => 'TEMPLATE',
+			'text'     => $title,
+			'dates'    => $dates,
+			'ctz'      => $tz_name,
+			'details'  => $details,
+			'location' => $location,
+			// trp=false → Show as Busy (opaque).
+			'trp'      => 'false',
+		);
+
+		return 'https://calendar.google.com/calendar/render?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 );
 	}
 
 	/**
@@ -875,6 +1082,183 @@ final class Meta {
 			return '';
 		}
 		return sprintf( '%04d-%02d-%02d', $parts[0], $parts[1], $parts[2] );
+	}
+
+	/**
+	 * Normalize to 24h HH:MM (empty if unset / invalid).
+	 */
+	private static function sanitize_time( string $value ): string {
+		$value = trim( $value );
+		if ( '' === $value ) {
+			return '';
+		}
+		// Accept "19:00", "19:00:00", or "7:00 PM".
+		if ( preg_match( '/^(\d{1,2}):(\d{2})(?::\d{2})?\s*$/', $value, $m ) ) {
+			$hour = (int) $m[1];
+			$min  = (int) $m[2];
+			if ( $hour >= 0 && $hour <= 23 && $min >= 0 && $min <= 59 ) {
+				return sprintf( '%02d:%02d', $hour, $min );
+			}
+			return '';
+		}
+		if ( preg_match( '/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])\s*$/', $value, $m ) ) {
+			$hour = (int) $m[1];
+			$min  = (int) $m[2];
+			$ampm = strtoupper( $m[3] );
+			if ( $hour < 1 || $hour > 12 || $min < 0 || $min > 59 ) {
+				return '';
+			}
+			if ( 'AM' === $ampm ) {
+				$hour = 12 === $hour ? 0 : $hour;
+			} else {
+				$hour = 12 === $hour ? 12 : $hour + 12;
+			}
+			return sprintf( '%02d:%02d', $hour, $min );
+		}
+		return '';
+	}
+
+	/**
+	 * Next occurrence of month/day on or after $from (site timezone).
+	 */
+	private static function next_month_day( \DateTimeImmutable $from, int $month, int $day ): string {
+		$year = (int) $from->format( 'Y' );
+		for ( $i = 0; $i < 2; $i++ ) {
+			$y = $year + $i;
+			if ( 2 === $month && 29 === $day && ! checkdate( 2, 29, $y ) ) {
+				continue;
+			}
+			if ( ! checkdate( $month, $day, $y ) ) {
+				continue;
+			}
+			$candidate = sprintf( '%04d-%02d-%02d', $y, $month, $day );
+			if ( $candidate >= $from->format( 'Y-m-d' ) ) {
+				return $candidate;
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * Annual exact anchors: concrete date inside the 90-day window (or while running),
+	 * otherwise "Annually in {Season}".
+	 *
+	 * @param array<int, array<string, mixed>> $anchors
+	 */
+	private static function format_annual_exact_window_label(
+		array $anchors,
+		int $duration,
+		?\DateTimeImmutable $as_of = null
+	): string {
+		$tz    = wp_timezone();
+		$today = $as_of
+			? $as_of->setTimezone( $tz )->setTime( 0, 0 )
+			: new \DateTimeImmutable( 'today', $tz );
+
+		$best_start = null;
+		foreach ( $anchors as $anchor ) {
+			if ( ! is_array( $anchor ) ) {
+				continue;
+			}
+			$month = (int) ( $anchor['month'] ?? 0 );
+			$day   = (int) ( $anchor['day'] ?? 0 );
+			if ( $month < 1 || $month > 12 || $day < 1 || $day > 31 ) {
+				continue;
+			}
+			$start = self::resolve_exact_anchor_start( $today, $month, $day, $duration );
+			if ( ! $start ) {
+				continue;
+			}
+			if ( ! $best_start || $start < $best_start ) {
+				$best_start = $start;
+			}
+		}
+
+		if ( ! $best_start ) {
+			return '';
+		}
+
+		$end             = $best_start->modify( '+' . max( 0, $duration - 1 ) . ' days' );
+		$days_until_start = (int) $today->diff( $best_start )->format( '%r%a' );
+		$in_progress      = $today >= $best_start && $today <= $end;
+		$within_window    = $days_until_start >= 0 && $days_until_start <= self::ANNUAL_DATE_WINDOW_DAYS;
+
+		if ( $in_progress || $within_window ) {
+			return self::format_date_range( $best_start->format( 'Y-m-d' ), $duration );
+		}
+
+		$seasons = array();
+		foreach ( $anchors as $anchor ) {
+			if ( ! is_array( $anchor ) ) {
+				continue;
+			}
+			$month = (int) ( $anchor['month'] ?? 0 );
+			$season = self::season_label( $month );
+			if ( '' !== $season ) {
+				$seasons[] = $season;
+			}
+		}
+		$seasons = array_values( array_unique( $seasons ) );
+		if ( ! $seasons ) {
+			$seasons[] = self::season_label( (int) $best_start->format( 'n' ) );
+		}
+
+		return sprintf(
+			/* translators: %s: season name (Spring, Summer, Fall, Winter) */
+			__( 'Annually in %s', 'kpf-core' ),
+			self::join_list( $seasons )
+		);
+	}
+
+	/**
+	 * Start date of the current or next exact month/day occurrence, honoring duration.
+	 */
+	private static function resolve_exact_anchor_start(
+		\DateTimeImmutable $from,
+		int $month,
+		int $day,
+		int $duration
+	): ?\DateTimeImmutable {
+		$next_ymd = self::next_month_day( $from, $month, $day );
+		if ( '' === $next_ymd ) {
+			return null;
+		}
+
+		$tz    = $from->getTimezone();
+		$start = \DateTimeImmutable::createFromFormat( 'Y-m-d|', $next_ymd, $tz );
+		if ( ! $start ) {
+			return null;
+		}
+
+		// Multi-day: if last year's occurrence has not ended yet, keep that start.
+		$prev = $start->modify( '-1 year' );
+		if ( $prev ) {
+			$prev_end = $prev->modify( '+' . max( 0, $duration - 1 ) . ' days' );
+			if ( $prev_end && $from >= $prev && $from <= $prev_end ) {
+				return $prev;
+			}
+		}
+
+		return $start;
+	}
+
+	/**
+	 * Northern-hemisphere season for a calendar month (1–12).
+	 */
+	private static function season_label( int $month ): string {
+		if ( $month < 1 || $month > 12 ) {
+			return '';
+		}
+		if ( $month >= 3 && $month <= 5 ) {
+			return __( 'Spring', 'kpf-core' );
+		}
+		if ( $month >= 6 && $month <= 8 ) {
+			return __( 'Summer', 'kpf-core' );
+		}
+		if ( $month >= 9 && $month <= 11 ) {
+			return __( 'Fall', 'kpf-core' );
+		}
+		return __( 'Winter', 'kpf-core' );
 	}
 
 	private static function sanitize_website( string $url ): string {

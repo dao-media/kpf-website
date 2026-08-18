@@ -1,6 +1,7 @@
 /**
  * Primary site navigation + donate CTA used by KpfHeader / KpfMobileNav / KpfFooter.
- * Paths match Faust/WP pretty permalinks; Donate anchors the Home donate section.
+ * Paths match Faust/WP pretty permalinks. Donate opens the Foundation PayPal giving flow
+ * (same business account as kevinpopkefoundation.org).
  */
 
 const KPF_PRIMARY_NAV = [
@@ -11,7 +12,9 @@ const KPF_PRIMARY_NAV = [
   { href: "/contact/", label: "Contact" },
 ];
 
-const KPF_DONATE_HREF = "/#donate";
+/** PayPal donations — business email from the live site payment form. */
+const KPF_DONATE_HREF =
+  "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kevinpopke.foundation%40gmail.com&item_name=The%20Kevin%20Popke%20Foundation&currency_code=USD";
 
 const KPF_FOOTER_EXPLORE = [
   { href: "/about/", label: "About" },

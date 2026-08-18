@@ -3,21 +3,50 @@ import {
   ArrowRight,
   CalendarHeart,
   Check,
+  Clock,
   ExternalLink,
   MapPin,
   Plus,
   Ticket,
 } from "lucide-react";
 import { EVENTS } from "@/lib/pageCopy";
-import CtaClosingFlag from "@/components/CtaClosingFlag";
+import ChipCursorTooltip, {
+  tooltipForChipIcon,
+  useChipTooltipTour,
+} from "@/components/ChipCursorTooltip";
+import CtaClosingBand from "@/components/CtaClosingBand";
+import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import KpfButton from "@/components/KpfButton";
 const { resolveMedia } = require("@/lib/scaffoldMedia");
+const {
+  featuredSectionFromEvent,
+  normalizeEventNodes,
+  pickFeaturedEvent,
+} = require("@/lib/eventsQuery");
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
 
 function ActionLink({ action }) {
   const className = `kpf-btn kpf-btn--${action.variant || "primary"}`;
+  const icons = (
+    <>
+      {action.trailingIcon === "arrow" ? (
+        <ArrowRight size={20} strokeWidth={2} absoluteStrokeWidth aria-hidden />
+      ) : null}
+      {action.trailingIcon === "external" ? (
+        <ExternalLink size={20} strokeWidth={2} absoluteStrokeWidth aria-hidden />
+      ) : null}
+    </>
+  );
+  if (isDonateAction(action)) {
+    return (
+      <DonateButton label={action.label} className={className}>
+        {action.label}
+        {icons}
+      </DonateButton>
+    );
+  }
   return (
     <KpfButton
       href={action.href}
@@ -25,66 +54,209 @@ function ActionLink({ action }) {
       className={className}
     >
       {action.label}
-      {action.trailingIcon === "arrow" ? (
-        <ArrowRight size={20} strokeWidth={2} absoluteStrokeWidth aria-hidden />
-      ) : null}
-      {action.trailingIcon === "external" ? (
-        <ExternalLink size={20} strokeWidth={2} absoluteStrokeWidth aria-hidden />
-      ) : null}
+      {icons}
     </KpfButton>
   );
 }
 
-/** Same markup/classes as GranteeCard chips (Grant Amount / Date / Website). */
-function GrantChip({ icon: Icon, label }) {
-  return (
-    <span className="kpf-grantee-card__chip">
-      <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
-        <Icon size={20} strokeWidth={1.75} absoluteStrokeWidth />
-      </span>
-      <span className="kpf-grantee-card__chip-label">{label}</span>
+/**
+ * Same markup/classes as GranteeCard chips (Grant Amount / Date / Website).
+ * Optional href keeps mute outline style; variant="link" is the ember ticket chip.
+ */
+function GrantChip({
+  icon: Icon,
+  label,
+  href = "",
+  external = false,
+  variant = "",
+  trailingIcon = false,
+  tooltip = "",
+}) {
+  const isLink = Boolean(href);
+  const isEmberLink = isLink && variant === "link";
+  const className = [
+    "kpf-grantee-card__chip",
+    isEmberLink ? "kpf-grantee-card__chip--link" : "",
+    isLink && !isEmberLink ? "kpf-grantee-card__chip--action" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const icon = Icon ? (
+    <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
+      <Icon size={20} strokeWidth={1.75} absoluteStrokeWidth />
     </span>
+  ) : null;
+
+  const trailing = trailingIcon ? (
+    <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
+      <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
+    </span>
+  ) : null;
+
+  const body = (
+    <>
+      {isEmberLink ? null : icon}
+      <span className="kpf-grantee-card__chip-label">{label}</span>
+      {isEmberLink ? trailing : null}
+    </>
   );
+
+  let chip;
+  if (!isLink) {
+    chip = <span className={className}>{body}</span>;
+  } else {
+    chip = (
+      <a
+        className={className}
+        href={href}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
+        {body}
+      </a>
+    );
+  }
+
+  if (!tooltip || variant === "link") return chip;
+
+  return <ChipCursorTooltip label={tooltip}>{chip}</ChipCursorTooltip>;
 }
 
-function EventCard({ event, markSrc, markAlt }) {
+function chipIconFor(name) {
+  if (name === "map") return MapPin;
+  if (name === "ticket") return Ticket;
+  if (name === "clock") return Clock;
+  return CalendarHeart;
+}
+
+function EventCard({ event, fallbackMarkSrc = "", fallbackMarkAlt = "" }) {
+  const metaRef = useRef(null);
   const ticketsHref = event.ticketsHref || "";
   const ticketsExternal = Boolean(event.ticketsExternal);
   const ticketsLabel = event.ticketsLabel || "Get tickets";
+  const dateLabel = event.dateLabel || event.scheduleLabel || "";
+  const timeLabel = event.timeLabel || "";
+  const locationLabel = event.locationLabel || "";
+  const locationHref = event.locationHref || "";
+  const calendarHref = event.calendarHref || event.calendarUrl || "";
+  const hosts = Array.isArray(event.hosts)
+    ? event.hosts.filter((host) => host && String(host.logoUrl || "").trim())
+    : [];
+  const hostMarks =
+    hosts.length > 0
+      ? hosts.map((host, index) => ({
+          key: String(host.termId || host.logoId || host.name || index),
+          src: String(host.logoUrl).trim(),
+          alt: String(host.name || "").trim(),
+        }))
+      : fallbackMarkSrc
+        ? [{ key: "fallback-mark", src: fallbackMarkSrc, alt: fallbackMarkAlt || "" }]
+        : [];
+
+  useChipTooltipTour(metaRef, [
+    dateLabel,
+    timeLabel,
+    locationLabel,
+    ticketsHref,
+    calendarHref,
+    locationHref,
+  ]);
 
   return (
     <article className="kpf-event-card">
       <div className="kpf-event-card__body">
-        <div className="kpf-event-card__header">
+        <div className="kpf-event-card__copy">
+          {hostMarks.length > 0 ? (
+            <div
+              className="kpf-event-card__hosts"
+              role="group"
+              aria-label={
+                hostMarks.length > 1 ? "Event hosts" : hostMarks[0].alt || "Event host"
+              }
+            >
+              {hostMarks.map((host, index) => {
+                const mark = (
+                  <img
+                    className="kpf-event-card__host"
+                    src={host.src}
+                    alt={host.alt}
+                    width={48}
+                    height={48}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                );
+                if (!host.alt) {
+                  return (
+                    <span
+                      key={host.key}
+                      className="kpf-event-card__host-wrap"
+                      style={{ zIndex: index + 1 }}
+                    >
+                      {mark}
+                    </span>
+                  );
+                }
+                return (
+                  <ChipCursorTooltip
+                    key={host.key}
+                    label={host.alt}
+                    className="kpf-event-card__host-tip"
+                    style={{ zIndex: index + 1 }}
+                    desktopOnly
+                  >
+                    {mark}
+                  </ChipCursorTooltip>
+                );
+              })}
+            </div>
+          ) : null}
           <h3 className="kpf-event-card__title">{event.title}</h3>
-          {markSrc ? (
-            <img
-              className="kpf-event-card__mark"
-              src={markSrc}
-              alt={markAlt || ""}
-              width={42}
-              height={42}
-              loading="lazy"
-              decoding="async"
-            />
+          {event.body ? (
+            <p className="kpf-event-card__body-text">{event.body}</p>
           ) : null}
         </div>
-        <p className="kpf-event-card__body-text">{event.body}</p>
-        <div className="kpf-event-card__meta kpf-grantee-card__meta">
-          <GrantChip icon={CalendarHeart} label={event.dateLabel} />
+        <div
+          ref={metaRef}
+          className="kpf-event-card__meta kpf-grantee-card__meta"
+        >
+          {dateLabel ? (
+            <GrantChip
+              icon={CalendarHeart}
+              label={dateLabel}
+              href={calendarHref}
+              external={Boolean(calendarHref)}
+              tooltip={
+                calendarHref ? tooltipForChipIcon("calendar") : ""
+              }
+            />
+          ) : null}
+          {timeLabel ? (
+            <GrantChip
+              icon={Clock}
+              label={timeLabel}
+              href={calendarHref}
+              external={Boolean(calendarHref)}
+              tooltip={calendarHref ? tooltipForChipIcon("clock") : ""}
+            />
+          ) : null}
+          {locationLabel ? (
+            <GrantChip
+              icon={MapPin}
+              label={locationLabel}
+              href={locationHref}
+              external={Boolean(locationHref)}
+              tooltip={locationHref ? tooltipForChipIcon("map") : ""}
+            />
+          ) : null}
           {ticketsHref ? (
-            <a
-              className="kpf-grantee-card__chip kpf-grantee-card__chip--link"
+            <GrantChip
+              label={ticketsLabel}
               href={ticketsHref}
-              {...(ticketsExternal
-                ? { target: "_blank", rel: "noopener noreferrer" }
-                : {})}
-            >
-              <span className="kpf-grantee-card__chip-label">{ticketsLabel}</span>
-              <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
-                <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
-              </span>
-            </a>
+              external={ticketsExternal}
+              variant="link"
+              trailingIcon
+            />
           ) : (
             <GrantChip icon={Ticket} label={ticketsLabel} />
           )}
@@ -94,7 +266,7 @@ function EventCard({ event, markSrc, markAlt }) {
   );
 }
 
-export default function EventsPageScaffold({ media = {} }) {
+export default function EventsPageScaffold({ media = {}, events: eventNodes = [] }) {
   const copy = EVENTS;
   const hero = resolveMedia(media, copy.hero.media.key, copy.hero.media);
   const cardMark = resolveMedia(
@@ -106,12 +278,20 @@ export default function EventsPageScaffold({ media = {} }) {
   const collage = (copy.featured.collage || []).map((item) =>
     resolveMedia(media, item.key, item),
   );
+  const featuredEvent = pickFeaturedEvent(eventNodes);
+  const featured = {
+    ...copy.featured,
+    ...featuredSectionFromEvent(featuredEvent, copy.featured),
+  };
 
   const [openAccordion, setOpenAccordion] = useState(
     () => copy.context.paths.find((item) => item.open)?.id ?? null,
   );
   const [heldAccordionIds, setHeldAccordionIds] = useState([]);
   const accordionHoldTimerRef = useRef(null);
+  const featuredChipsRef = useRef(null);
+
+  useChipTooltipTour(featuredChipsRef, [featured.meta]);
 
   useEffect(() => {
     return () => {
@@ -142,53 +322,63 @@ export default function EventsPageScaffold({ media = {} }) {
     });
   }
 
-  const events = Array.isArray(copy.library.items) ? copy.library.items : [];
+  const liveEvents = normalizeEventNodes(eventNodes);
+  const events =
+    liveEvents.length > 0
+      ? liveEvents
+      : Array.isArray(copy.library.items)
+        ? copy.library.items
+        : [];
 
   return (
     <div className="kpf-page-events" data-kpf-scaffold="events">
       <section className="kpf-hero kpf-hero--events" aria-labelledby="kpf-events-hero-title">
         {hero.src ? (
-          <picture>
-            {hero.src.endsWith(".jpg") || hero.src.endsWith(".jpeg") ? (
-              <source
-                type="image/webp"
-                srcSet={hero.src.replace(/\.(jpe?g)$/i, ".webp")}
+          <div className="kpf-hero__media-frame">
+            <picture className="kpf-hero__media-host">
+              {hero.src.endsWith(".jpg") || hero.src.endsWith(".jpeg") ? (
+                <source
+                  type="image/webp"
+                  srcSet={hero.src.replace(/\.(jpe?g)$/i, ".webp")}
+                />
+              ) : null}
+              <img
+                className="kpf-hero__media"
+                src={hero.src}
+                alt={hero.alt || ""}
+                decoding="async"
+                fetchPriority="high"
               />
-            ) : null}
-            <img
-              className="kpf-hero__media"
-              src={hero.src}
-              alt={hero.alt || ""}
-              decoding="async"
-              fetchPriority="high"
-            />
-          </picture>
+            </picture>
+          </div>
         ) : null}
         <div className="kpf-hero__scrim" aria-hidden="true" />
-        <div className="kpf-hero__content">
-          <div className="kpf-content-block kpf-u-invert">
-            <div className="kpf-content-block__copy">
-              <div className="kpf-content-block__title-group">
-                <p className="kpf-content-block__eyebrow">{copy.hero.eyebrow}</p>
-                <h1
-                  id="kpf-events-hero-title"
-                  className="kpf-content-block__title kpf-content-block__title--h1"
+        <div className="kpf-u-container kpf-hero__layout">
+          <div className="kpf-hero__content">
+            <div className="kpf-content-block kpf-u-invert">
+              <div className="kpf-content-block__copy">
+                <div className="kpf-content-block__title-group">
+                  <p className="kpf-content-block__eyebrow">{copy.hero.eyebrow}</p>
+                  <h1
+                    id="kpf-events-hero-title"
+                    className="kpf-content-block__title kpf-content-block__title--h1"
+                  >
+                    {copy.hero.title}
+                  </h1>
+                </div>
+                <div className="kpf-content-block__body-group">
+                  <p className="kpf-content-block__body">{copy.hero.body}</p>
+                </div>
+              </div>
+              <div className="kpf-content-block__actions kpf-hero__actions">
+                <ActionLink action={copy.hero.primaryCta} />
+                <KpfButton
+                  href={copy.hero.secondaryCta.href}
+                  className="kpf-btn kpf-btn--outline"
                 >
-                  {copy.hero.title}
-                </h1>
+                  {copy.hero.secondaryCta.label}
+                </KpfButton>
               </div>
-              <div className="kpf-content-block__body-group">
-                <p className="kpf-content-block__body">{copy.hero.body}</p>
-              </div>
-            </div>
-            <div className="kpf-content-block__actions kpf-hero__actions">
-              <ActionLink action={copy.hero.primaryCta} />
-              <KpfButton
-                href={copy.hero.secondaryCta.href}
-                className="kpf-btn kpf-btn--outline"
-              >
-                {copy.hero.secondaryCta.label}
-              </KpfButton>
             </div>
           </div>
         </div>
@@ -220,9 +410,16 @@ export default function EventsPageScaffold({ media = {} }) {
               </div>
             </div>
             <div className="kpf-content-block__actions">
-              <KpfButton href={copy.context.cta.href} className="kpf-btn kpf-btn--primary">
-                {copy.context.cta.label}
-              </KpfButton>
+              {isDonateAction(copy.context.cta) ? (
+                <DonateButton
+                  label={copy.context.cta.label}
+                  className="kpf-btn kpf-btn--primary"
+                />
+              ) : (
+                <KpfButton href={copy.context.cta.href} className="kpf-btn kpf-btn--primary">
+                  {copy.context.cta.label}
+                </KpfButton>
+              )}
             </div>
           </div>
 
@@ -278,7 +475,7 @@ export default function EventsPageScaffold({ media = {} }) {
       </section>
 
       <section
-        id={copy.featured.id}
+        id={featured.id}
         className="kpf-featured-event kpf-section"
         aria-labelledby="kpf-events-featured-title"
       >
@@ -313,16 +510,16 @@ export default function EventsPageScaffold({ media = {} }) {
           <div className="kpf-content-block kpf-u-invert kpf-featured-event__copy">
             <div className="kpf-content-block__copy">
               <div className="kpf-content-block__title-group">
-                <p className="kpf-content-block__eyebrow">{copy.featured.eyebrow}</p>
+                <p className="kpf-content-block__eyebrow">{featured.eyebrow}</p>
                 <h2
                   id="kpf-events-featured-title"
                   className="kpf-content-block__title kpf-content-block__title--h2"
                 >
-                  {copy.featured.title}
+                  {featured.title}
                 </h2>
               </div>
               <div className="kpf-content-block__body-group">
-                {copy.featured.body.map((paragraph) => (
+                {(featured.body || []).map((paragraph) => (
                   <p key={paragraph.slice(0, 40)} className="kpf-content-block__body">
                     {paragraph}
                   </p>
@@ -331,22 +528,30 @@ export default function EventsPageScaffold({ media = {} }) {
             </div>
 
             <div
+              ref={featuredChipsRef}
               className="kpf-featured-event__chips kpf-grantee-card__meta"
               aria-label="Event details"
             >
-              {copy.featured.meta.map((chip) => {
-                const Icon =
-                  chip.icon === "map"
-                    ? MapPin
-                    : chip.icon === "ticket"
-                      ? Ticket
-                      : CalendarHeart;
-                return <GrantChip key={chip.label} icon={Icon} label={chip.label} />;
+              {(featured.meta || []).map((chip) => {
+                const Icon = chipIconFor(chip.icon);
+                const tip =
+                  chip.tooltip ||
+                  (chip.href ? tooltipForChipIcon(chip.icon) : "");
+                return (
+                  <GrantChip
+                    key={`${chip.icon}-${chip.label}`}
+                    icon={Icon}
+                    label={chip.label}
+                    href={chip.href || ""}
+                    external={Boolean(chip.external ?? chip.href)}
+                    tooltip={tip}
+                  />
+                );
               })}
             </div>
 
             <div className="kpf-content-block__actions">
-              {copy.featured.actions.map((action) => (
+              {(featured.actions || []).map((action) => (
                 <ActionLink key={`${action.href}-${action.label}`} action={action} />
               ))}
             </div>
@@ -384,8 +589,8 @@ export default function EventsPageScaffold({ media = {} }) {
                 <EventCard
                   key={event.id || event.title}
                   event={event}
-                  markSrc={cardMark.src}
-                  markAlt={cardMark.alt}
+                  fallbackMarkSrc={cardMark.src}
+                  fallbackMarkAlt={cardMark.alt}
                 />
               ))}
             </div>
@@ -411,31 +616,13 @@ export default function EventsPageScaffold({ media = {} }) {
         </div>
       </section>
 
-      <section className="kpf-cta-closing kpf-section" aria-labelledby="kpf-events-cta-title">
-        <CtaClosingFlag src={ctaFlag.src} />
-        <div className="kpf-u-container">
-          <div className="kpf-content-block kpf-u-invert kpf-cta-closing__block">
-            <div className="kpf-content-block__copy">
-              <div className="kpf-content-block__title-group">
-                <h2
-                  id="kpf-events-cta-title"
-                  className="kpf-content-block__title kpf-content-block__title--h2"
-                >
-                  {copy.cta.title}
-                </h2>
-              </div>
-              <div className="kpf-content-block__body-group">
-                <p className="kpf-content-block__body">{copy.cta.body}</p>
-              </div>
-            </div>
-            <div className="kpf-content-block__actions">
-              {copy.cta.actions.map((action) => (
-                <ActionLink key={action.href} action={action} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <CtaClosingBand
+        title={copy.cta.title}
+        body={copy.cta.body}
+        actions={copy.cta.actions}
+        flagSrc={ctaFlag.src}
+        titleId="kpf-events-cta-title"
+      />
     </div>
   );
 }

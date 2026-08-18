@@ -1019,22 +1019,17 @@ html {
 /* @spec Footer — Figma 416:100 */
 .kpf-footer {
 	background: var(--kpf-ink, #12090a);
+	border-top: 2px solid var(--kpf-ember, #bb0d0d);
 	color: color-mix(in srgb, var(--kpf-parchment) 88%, transparent);
 	padding-block: 0;
 	padding-inline: 0;
-}
-
-.kpf-footer__rule {
-	background: var(--kpf-ember, #bb0d0d);
-	height: 2px;
-	width: 100%;
 }
 
 .kpf-footer__body {
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
-	padding-block: 2.5rem 2rem;
+	padding-block: 1rem 2rem;
 }
 
 .kpf-footer__tagline {
@@ -1146,7 +1141,6 @@ html {
 }
 
 .kpf-footer__bar {
-	border-top: var(--kpf-stroke) solid color-mix(in srgb, var(--kpf-parchment) 18%, transparent);
 	display: flex;
 	flex-direction: column;
 	font-size: var(--kpf-text-body-s);
@@ -1154,7 +1148,17 @@ html {
 	margin-inline: auto;
 	margin-top: var(--kpf-space-xl);
 	max-width: var(--kpf-measure-wide);
+	padding-bottom: 1.5rem; /* 24 — +12 from prior 12px */
 	padding-top: var(--kpf-space-md);
+}
+
+.kpf-footer__copy {
+	margin: 0;
+	text-align: left;
+}
+
+.kpf-footer__legal {
+	margin: 0;
 }
 
 @media (min-width: 48rem) {
@@ -1162,6 +1166,11 @@ html {
 		align-items: center;
 		flex-direction: row;
 		justify-content: space-between;
+	}
+
+	.kpf-footer__legal {
+		margin-inline-start: auto;
+		text-align: right;
 	}
 }
 
@@ -2494,54 +2503,116 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 }
 
 .kpf-hero--events {
-	/* Figma 890:1211 — photo hangs right, copy left, min ~460 */
-	align-content: end;
+	/* Copy uses .kpf-u-container; photo pins to the hero section edge. */
+	background: var(--kpf-ink, #12090a);
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
 	min-height: max(var(--kpf-hero-min), 28.75rem);
-	padding-block: 1.5rem 3rem;
-	/* Full-bleed media — no page gutter on the hero shell */
+	/* 160px from page top — same as other heroes */
+	padding-block: var(--kpf-hero-copy-top) 3rem;
 	padding-inline: 0;
 }
 
-.kpf-hero--events .kpf-hero__content {
-	/* Copy inset only (media stays edge-to-edge) */
-	padding-inline: var(--kpf-page-gutter);
-}
-
-.kpf-hero--events .kpf-hero__media {
-	/* Bias photo to the right like Figma (Kevin on right) */
-	height: 100%;
-	left: 12%;
-	object-fit: cover;
-	object-position: 58% center;
+.kpf-hero--events .kpf-hero__layout {
+	position: relative;
+	z-index: 1;
 	width: 100%;
 }
 
-@media (min-width: 48rem) {
+.kpf-hero--events .kpf-hero__content {
+	margin-inline: 0;
+	max-width: 100%;
+	width: 100%;
+}
+
+/* Full-bleed over the hero section — image right edge = section right edge. */
+.kpf-hero--events .kpf-hero__media-frame {
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	position: absolute;
+	z-index: -2;
+}
+
+.kpf-hero--events .kpf-hero__media-host {
+	display: block;
+	height: 100%;
+	position: relative;
+	width: 100%;
+}
+
+.kpf-hero--events .kpf-hero__media {
+	bottom: auto;
+	display: block;
+	height: 120%;
+	left: auto;
+	max-height: none;
+	max-width: none;
+	object-fit: contain;
+	object-position: top right;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: auto;
+	/* Fade the left fifth of the photo into the ink fill */
+	-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%);
+	mask-image: linear-gradient(90deg, transparent 0%, #000 20%);
+}
+
+/* Mobile: keep overlay photo; pull right + leave left fade/scrim */
+@media (max-width: 29.99rem) {
+	.kpf-hero--events .kpf-hero__content {
+		max-width: 100%;
+	}
+
 	.kpf-hero--events .kpf-hero__media {
-		left: 18%;
-		object-position: 62% center;
-		width: 92%;
+		right: -33%;
+	}
+}
+
+/* Mobile landscape: tighter copy measure; keep photo pulled right */
+@media (min-width: 30rem) and (max-width: 47.99rem) {
+	.kpf-hero--events .kpf-hero__content {
+		max-width: 460px;
+	}
+
+	.kpf-hero--events .kpf-hero__media {
+		right: -33%;
+	}
+}
+
+/* Tablet: copy measure + pull photo past the right edge */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+	.kpf-hero--events .kpf-hero__content {
+		max-width: 540px;
+	}
+
+	.kpf-hero--events .kpf-hero__media {
+		right: -25%;
 	}
 }
 
 @media (min-width: 64rem) {
 	.kpf-hero--events {
-		padding-block: 1.5rem 3rem;
-		padding-inline: 0;
-	}
-
-	.kpf-hero--events .kpf-hero__media {
-		left: 21%;
-		width: 90%;
+		padding-block: var(--kpf-hero-copy-top) 3rem;
 	}
 
 	.kpf-hero--events .kpf-hero__content {
 		max-width: 40rem;
-		padding-inline: 5rem;
 	}
 }
 
-.kpf-hero--events .kpf-hero__scrim,
+.kpf-hero--events .kpf-hero__scrim {
+	/* Soft left wash so copy stays readable over the photo fade */
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--kpf-ink, #12090a) 92%, transparent) 0%,
+		color-mix(in srgb, var(--kpf-ink, #12090a) 55%, transparent) 28%,
+		transparent 55%
+	);
+}
+
 .kpf-hero--contact .kpf-hero__scrim {
 	background:
 		radial-gradient(ellipse at 68% 45%, transparent 0%, color-mix(in srgb, var(--kpf-ink) 55%, transparent) 42%, var(--kpf-ink) 78%),
@@ -3012,6 +3083,12 @@ button.kpf-history__dot.is-active::after {
 	pointer-events: none;
 }
 
+@media (min-width: 64rem) {
+	.kpf-grantees .kpf-content-block__copy {
+		max-width: 640px;
+	}
+}
+
 .kpf-grantees__grid {
 	align-items: start;
 	display: grid;
@@ -3257,6 +3334,34 @@ button.kpf-history__dot.is-active::after {
 	padding: 0.25rem 0.5rem 0.25rem 0.75rem; /* 4 8 4 12 — was 2 4 2 8 */
 }
 
+/* Date / location / time — mute outline chips; gold text only on hover.
+ * Specificity must beat `.kpf-u-invert :is(a):not(.kpf-btn)` (global gold links). */
+a.kpf-grantee-card__chip.kpf-grantee-card__chip--action,
+a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:visited,
+.kpf-u-invert a.kpf-grantee-card__chip.kpf-grantee-card__chip--action,
+.kpf-u-invert a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:visited {
+	color: var(--kpf-mute, #6b5c5c);
+	cursor: pointer;
+	font-weight: 500;
+	letter-spacing: -0.04em;
+	text-decoration: none;
+}
+
+a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:hover,
+a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
+.kpf-u-invert a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:hover,
+.kpf-u-invert a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible {
+	background: color-mix(in srgb, var(--kpf-mute, #6b5c5c) 8%, var(--kpf-surface, #fff));
+	color: var(--kpf-brass, #c9a15b);
+	text-decoration: none;
+}
+
+a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
+.kpf-u-invert a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible {
+	outline: 2px solid var(--kpf-ember, #bb0d0d);
+	outline-offset: 2px;
+}
+
 .kpf-grantee-card__chip-icon {
 	align-items: center;
 	border-radius: var(--kpf-radius-xs, 0.25rem);
@@ -3316,6 +3421,58 @@ button.kpf-history__dot.is-active::after {
 .kpf-grantee-card__chip--link:focus-visible {
 	outline: 2px solid var(--kpf-ember, #bb0d0d);
 	outline-offset: 2px;
+}
+
+/* Cursor-tracked chip tooltips (events meta chips) */
+.kpf-chip-tip-host {
+	display: inline-flex;
+	max-width: 100%;
+	vertical-align: top;
+}
+
+.kpf-chip-tip {
+	background: var(--kpf-ink-soft, #3d2c2d);
+	border-radius: 36px;
+	box-shadow: 0 8px 24px rgb(18 9 10 / 0.18);
+	color: var(--kpf-white, #fff);
+	font-family: var(--kpf-font-ui);
+	font-size: 14px;
+	font-weight: 500;
+	left: 0;
+	letter-spacing: 0.01em;
+	line-height: 1.25;
+	padding: 0.45rem 0.85rem;
+	pointer-events: none !important;
+	position: fixed;
+	top: 0;
+	white-space: nowrap;
+	will-change: transform, opacity;
+	z-index: 240;
+}
+
+.kpf-chip-tip *,
+.kpf-chip-tip__carrot {
+	pointer-events: none !important;
+}
+
+.kpf-chip-tip__label {
+	display: block;
+}
+
+.kpf-chip-tip__carrot {
+	background: var(--kpf-ink-soft, #3d2c2d);
+	bottom: -5px;
+	height: 10px;
+	left: 50%;
+	position: absolute;
+	transform: translateX(-50%) rotate(45deg);
+	width: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-chip-tip {
+		will-change: auto;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3438,7 +3595,10 @@ button.kpf-history__dot.is-active::after {
 
 .kpf-cta-closing__block {
 	align-items: center;
+	gap: 2rem;
+	max-width: none;
 	text-align: center;
+	width: 100%;
 }
 
 .kpf-cta-closing__block .kpf-content-block__copy,
@@ -3447,6 +3607,17 @@ button.kpf-history__dot.is-active::after {
 	align-items: center;
 	text-align: center;
 	width: 100%;
+}
+
+.kpf-cta-closing__block .kpf-content-block__copy {
+	margin-inline: auto;
+	max-width: 640px;
+}
+
+.kpf-cta-closing__block .kpf-content-block__title {
+	font-size: clamp(2rem, 5vw, 3rem);
+	letter-spacing: -0.022em;
+	line-height: 1.14;
 }
 
 /* —— Donate accordions —— */
@@ -3460,6 +3631,11 @@ button.kpf-history__dot.is-active::after {
  * Open state is signaled by header tint — no inset brand ring on the shell. */
 .kpf-donate .kpf-accordion {
 	transition: box-shadow var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+}
+
+/* Events page: gutters come from .kpf-u-container only (avoid double inset). */
+.kpf-page-events .kpf-section {
+	padding-inline: 0;
 }
 
 /* —— Events —— */
@@ -3490,102 +3666,137 @@ button.kpf-history__dot.is-active::after {
 }
 
 .kpf-featured-event__inner {
-	display: grid;
+	display: flex;
+	flex-direction: column;
 	gap: var(--kpf-space-xl);
 	min-width: 0;
 }
 
-@media (min-width: 64rem) {
+/* Mobile + mobile landscape: stack with collage above copy (DOM order) */
+@media (max-width: 47.99rem) {
 	.kpf-featured-event__inner {
-		align-items: center;
+		display: flex;
+		flex-direction: column;
+	}
+}
+
+/* Tablet + desktop: side-by-side collage | copy */
+@media (min-width: 48rem) {
+	.kpf-featured-event__inner {
+		align-items: start;
+		display: grid;
 		gap: 3rem;
 		grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
 	}
 }
 
+/*
+ * Tablet and below: two collage rows; square tiles, 100% cell width, auto height.
+ */
 @media (max-width: 63.99rem) {
-	.kpf-featured-event__inner {
-		display: flex;
-		flex-direction: column;
+	.kpf-featured-event__collage {
+		align-self: start;
+		display: grid;
+		gap: 0.75rem;
+		grid-template-rows: auto auto;
+		height: auto;
+		min-height: 0;
+		min-width: 0;
+		width: 100%;
 	}
 
-	.kpf-featured-event__copy {
-		order: -1;
+	.kpf-featured-event__collage-row {
+		display: grid;
+		gap: 0.75rem;
+		height: auto;
+		min-height: 0;
+		min-width: 0;
+		width: 100%;
+	}
+
+	.kpf-featured-event__collage-row--top {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.kpf-featured-event__collage-row--bottom {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.kpf-featured-event__tile {
+		aspect-ratio: 1 / 1;
+		height: auto;
+		max-width: none;
+		min-height: 0;
+		min-width: 0;
+		width: 100%;
+	}
+}
+
+/* Desktop: collage fills the column; tiles stretch as image fills */
+@media (min-width: 64rem) {
+	.kpf-featured-event__inner {
+		align-items: stretch;
+	}
+
+	.kpf-featured-event__collage {
+		align-self: stretch;
+		display: grid;
+		gap: 0.75rem;
+		grid-template-rows: 1fr 1fr;
+		height: 100%;
+		min-height: 0;
+		min-width: 0;
+		width: 100%;
+	}
+
+	.kpf-featured-event__collage-row {
+		display: grid;
+		gap: 1rem;
+		height: 100%;
+		min-height: 0;
+		min-width: 0;
+		width: 100%;
+	}
+
+	.kpf-featured-event__collage-row--top {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.kpf-featured-event__collage-row--bottom {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.kpf-featured-event__tile {
+		aspect-ratio: auto;
+		height: 100%;
+		min-height: 0;
+		min-width: 0;
+		width: 100%;
 	}
 }
 
 .kpf-featured-event__collage {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-	min-height: 22.75rem;
 	min-width: 0;
-}
-
-@media (min-width: 48rem) {
-	.kpf-featured-event__collage {
-		gap: 0.75rem;
-		min-height: 26.5rem;
-	}
-}
-
-.kpf-featured-event__collage-row {
-	display: flex;
-	flex: 1 1 0;
-	gap: 1rem;
-	min-height: 0;
-	min-width: 0;
-}
-
-.kpf-featured-event__collage-row--top .kpf-featured-event__tile {
-	flex: 1 1 0;
-}
-
-.kpf-featured-event__collage-row--bottom .kpf-featured-event__tile--3 {
-	flex: 0 0 auto;
-	width: min(11.625rem, 38%);
-}
-
-.kpf-featured-event__collage-row--bottom .kpf-featured-event__tile--4 {
-	flex: 1 1 0;
-}
-
-@media (max-width: 47.99rem) {
-	.kpf-featured-event__collage {
-		min-height: 0;
-	}
-
-	.kpf-featured-event__collage-row--top {
-		flex-direction: column;
-	}
-
-	.kpf-featured-event__collage-row--top .kpf-featured-event__tile {
-		aspect-ratio: 16 / 10;
-		flex: 0 0 auto;
-		min-height: 11rem;
-	}
-
-	.kpf-featured-event__collage-row--bottom .kpf-featured-event__tile--3,
-	.kpf-featured-event__collage-row--bottom .kpf-featured-event__tile--4 {
-		aspect-ratio: 1 / 1.05;
-		flex: 1 1 0;
-		min-height: 9rem;
-		width: auto;
-	}
+	width: 100%;
 }
 
 .kpf-featured-event__tile {
 	border-radius: 1rem; /* 16 — Figma */
 	margin: 0;
 	min-height: 0;
-	overflow: clip;
+	overflow: hidden;
 	position: relative;
 }
 
 .kpf-featured-event__tile img {
 	display: block;
 	height: 100%;
+	inset: 0;
+	max-height: none;
+	max-width: none;
 	object-fit: cover;
+	object-position: center;
+	position: absolute;
 	width: 100%;
 }
 
@@ -3645,6 +3856,7 @@ button.kpf-history__dot.is-active::after {
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
+	overflow: visible;
 }
 
 .kpf-event-card__body {
@@ -3655,11 +3867,85 @@ button.kpf-history__dot.is-active::after {
 	padding: 1rem;
 }
 
-.kpf-event-card__header {
-	align-items: start;
-	display: grid;
-	gap: 0.5rem;
-	grid-template-columns: minmax(0, 1fr) auto;
+.kpf-event-card__copy {
+	min-width: 0;
+}
+
+/* Floating host marks — same float treatment as .kpf-grantee-card__logo */
+.kpf-event-card__hosts {
+	display: flex;
+	float: right;
+	isolation: isolate;
+	margin: 0 0 0.5rem 0.75rem;
+	position: relative;
+}
+
+.kpf-event-card__hosts > .kpf-event-card__host-tip,
+.kpf-event-card__hosts > .kpf-event-card__host-wrap {
+	display: block;
+	flex: 0 0 auto;
+	margin-inline-start: -14px;
+	position: relative;
+}
+
+.kpf-event-card__hosts > .kpf-event-card__host-tip:first-child,
+.kpf-event-card__hosts > .kpf-event-card__host-wrap:first-child {
+	margin-inline-start: 0;
+}
+
+.kpf-event-card__host {
+	background: var(--kpf-parchment, #f7f1e8);
+	border-radius: 50%;
+	box-shadow: 0 0 0 2px var(--kpf-surface, #fff);
+	display: block;
+	flex: 0 0 auto;
+	height: 48px;
+	margin-inline-start: 0;
+	object-fit: cover;
+	object-position: center;
+	position: relative;
+	width: 48px;
+}
+
+/* Desktop fine pointer only — lift + scale; tablet/mobile stay stacked */
+@media (hover: hover) and (pointer: fine) and (min-width: 64rem) {
+	.kpf-event-card__host {
+		transition:
+			transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: transform;
+	}
+
+	.kpf-event-card__host-tip:hover,
+	.kpf-event-card__host-tip:focus-within,
+	.kpf-event-card__host-wrap:hover,
+	.kpf-event-card__host-wrap:focus-within {
+		z-index: 20 !important;
+	}
+
+	.kpf-event-card__host-tip:hover .kpf-event-card__host,
+	.kpf-event-card__host-tip:focus-within .kpf-event-card__host,
+	.kpf-event-card__host-wrap:hover .kpf-event-card__host,
+	.kpf-event-card__host-wrap:focus-within .kpf-event-card__host {
+		box-shadow:
+			0 0 0 2px var(--kpf-surface, #fff),
+			0 6px 14px rgb(18 9 10 / 0.16);
+		transform: scale(1.1);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-event-card__host {
+		transition: none;
+		will-change: auto;
+	}
+
+	.kpf-event-card__host-tip:hover .kpf-event-card__host,
+	.kpf-event-card__host-tip:focus-within .kpf-event-card__host,
+	.kpf-event-card__host-wrap:hover .kpf-event-card__host,
+	.kpf-event-card__host-wrap:focus-within .kpf-event-card__host {
+		transform: none;
+	}
 }
 
 .kpf-event-card__title {
@@ -3669,59 +3955,19 @@ button.kpf-history__dot.is-active::after {
 	letter-spacing: -0.016em;
 	line-height: 2rem;
 	margin: 0;
-	padding-top: 0.25rem;
-}
-
-.kpf-event-card__mark {
-	border-radius: var(--kpf-radius-md);
-	display: block;
-	height: 2.625rem;
-	object-fit: contain;
-	width: 2.625rem;
 }
 
 .kpf-event-card__body-text {
 	color: var(--kpf-ink-soft, #3d2c2d);
 	font-size: 1rem;
 	line-height: 1.63;
-	margin: 0;
+	margin: 0.5rem 0 0;
 }
 
 .kpf-event-card__meta {
 	/* Host also carries .kpf-grantee-card__meta for chip layout */
+	clear: both;
 	margin-top: auto;
-}
-
-.kpf-page-events .kpf-cta-closing {
-	/* Flag video is the fill; deep keeps contrast before/without media */
-	background: var(--kpf-deep, #640f0e);
-	padding-block: 6rem;
-}
-
-.kpf-page-events .kpf-cta-closing__block {
-	align-items: center;
-	gap: 2rem;
-	max-width: none;
-	text-align: center;
-	width: 100%;
-}
-
-.kpf-page-events .kpf-cta-closing__block .kpf-content-block__copy,
-.kpf-page-events .kpf-cta-closing__block .kpf-content-block__title-group,
-.kpf-page-events .kpf-cta-closing__block .kpf-content-block__body-group {
-	align-items: center;
-	text-align: center;
-	width: 100%;
-}
-
-.kpf-page-events .kpf-cta-closing__block .kpf-content-block__title {
-	font-size: clamp(2rem, 5vw, 3rem);
-	letter-spacing: -0.022em;
-	line-height: 1.14;
-}
-
-.kpf-page-events .kpf-cta-closing .kpf-content-block__actions {
-	justify-content: center;
 }
 
 /* —— Blog —— */
@@ -3844,7 +4090,7 @@ button.kpf-history__dot.is-active::after {
 	background: var(--kpf-deep, #640f0e);
 	isolation: isolate;
 	overflow: clip;
-	padding-block: var(--kpf-section-y);
+	padding-block: 6rem;
 	padding-inline: var(--kpf-page-gutter);
 	position: relative;
 }
@@ -3931,10 +4177,9 @@ button.kpf-history__dot.is-active::after {
 	box-sizing: border-box;
 }
 
-/* Story / programs collage sizing is intentional — exclude from the fluid clamp. */
-.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-gallery__featured img),
-.kpf-hero:not(.kpf-hero--about) img,
-.kpf-featured-event img,
+/* Story / programs / featured collage sizing is intentional — exclude from the fluid clamp. */
+.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-gallery__featured img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host),
+.kpf-hero:not(.kpf-hero--about):not(.kpf-hero--events) img,
 .kpf-card__media {
 	height: auto;
 	max-width: 100%;
@@ -3987,8 +4232,7 @@ button.kpf-history__dot.is-active::after {
 	.kpf-hero--about .kpf-hero__layout,
 	.kpf-history__split,
 	.kpf-mission__inner,
-	.kpf-story__inner,
-	.kpf-featured-event {
+	.kpf-story__inner {
 		grid-template-columns: 1fr;
 	}
 

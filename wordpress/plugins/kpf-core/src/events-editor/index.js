@@ -19,6 +19,7 @@ const HOST_TAXONOMY = cfg.hostTaxonomy || 'kpf_event_host';
 
 const DEFAULT_SCHEDULE = {
 	start_date: '',
+	start_time: '',
 	by_weekday: [],
 	monthly_mode: 'day_of_month',
 	by_monthday: 0,
@@ -42,6 +43,7 @@ const DEFAULTS = {
 	version: 2,
 	logline: '',
 	description: '',
+	featured: false,
 	contact_email: '',
 	contact_phone: '',
 	website: '',
@@ -594,6 +596,19 @@ function SchedulePanel({ details, update, updateSchedule }) {
 				/>
 			) : null}
 
+			<TextControl
+				label={__('Start time', 'kpf-core')}
+				type="time"
+				value={schedule.start_time || ''}
+				onChange={(start_time) => updateSchedule({ start_time })}
+				help={__(
+					'Optional. Shown on event chips and used when adding the event to Google Calendar.',
+					'kpf-core'
+				)}
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+			/>
+
 			{frequency === 'weekly' ? (
 				<div style={{ marginBottom: 12 }}>
 					<p style={{ marginBottom: 8 }}>
@@ -798,6 +813,16 @@ function EventsEditorApp() {
 
 			<section className="kpf-events-editor-app__section">
 				<h3>{__('Event details', 'kpf-core')}</h3>
+				<CheckboxControl
+					label={__('Featured on Events page', 'kpf-core')}
+					help={__(
+						'Shows this event in the Featured section. Only one event can be featured.',
+						'kpf-core'
+					)}
+					checked={Boolean(details.featured)}
+					onChange={(featured) => update({ featured })}
+					__nextHasNoMarginBottom
+				/>
 				<TextControl
 					label={__('Logline', 'kpf-core')}
 					help={__('Short blurb for event cards.', 'kpf-core')}
@@ -808,6 +833,10 @@ function EventsEditorApp() {
 				/>
 				<TextareaControl
 					label={__('Description', 'kpf-core')}
+					help={__(
+						'Featured section body. Use blank lines to split paragraphs.',
+						'kpf-core'
+					)}
 					value={details.description || ''}
 					onChange={(description) => update({ description })}
 					rows={5}

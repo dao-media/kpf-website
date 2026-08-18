@@ -8,7 +8,7 @@ const HOME = {
     eyebrow: "Together, we can.",
     title: "We fund organizations showing up for vets.",
     body: "The Kevin Popke Foundation makes targeted grants to veteran-focused nonprofits in Tampa Bay and across Florida — the small organizations doing the hardest work, closest to the ground.",
-    primaryCta: { href: "/#donate", label: "Donate" },
+    primaryCta: { donate: true, label: "Donate" },
     secondaryCta: { href: "/#programs", label: "Where your donations go" },
     /* Solid ink stage + cutouts only — Figma 616:1060 (no beach hero.jpg). */
     media: {
@@ -48,7 +48,7 @@ const HOME = {
       "The Kevin Popke Foundation serves in tribute of Kevin as a veteran-focused organization providing fundraising opportunities to other veteran-focused charities in the Tampa Bay Area and surrounding. Through targeted grants in Kevin’s honor, we support people like him who have served and sacrificed to protect us.",
     ],
     actions: [
-      { href: "/#donate", label: "Donate $50 for ‘50’", variant: "primary" },
+      { donate: true, label: "Donate $50 for ‘50’", variant: "primary" },
       { href: "/about/", label: "Kevin’s story", variant: "ink" },
       { href: "/#programs", label: "Where your donation goes", variant: "link" },
     ],
@@ -66,7 +66,7 @@ const HOME = {
         eyebrow: "What You Can Do",
         title: "Donate to Kevin’s Cause",
         body: "Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.",
-        cta: { href: "/#donate", label: "Donate" },
+        cta: { donate: true, label: "Donate" },
         media: { key: "home.hero", src: "/media/home/hero.jpg", alt: "" },
       },
       {
@@ -142,7 +142,7 @@ const HOME = {
     titleEmphasized: "vetted",
     titleAfter: " organizations helping veterans.",
     body: "Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.",
-    primaryCta: { href: "/#donate", label: "Donate via PayPal" },
+    primaryCta: { donate: true, label: "Donate via PayPal" },
     secondaryCta: { href: "/about/", label: "Learn about our work" },
     note: "A 501(c)(3) nonprofit organization",
     impactTitle: "How your donations are used",
@@ -246,31 +246,31 @@ const ABOUT = {
       {
         id: "leadership",
         title: "Leadership in the work",
-        body: "We look for organizations with leadership that lives the commitment rather than administering it — people who are personally in the work.",
+        body: "Founders and directors who are personally in it — hands on the wheelchair, not just the org chart.",
         open: true,
       },
       {
-        id: "dollar-reach",
-        title: "Dollar reach",
-        body: "We look at how much of each dollar reaches a veteran — low overhead, high impact, money that shows up where it’s needed.",
+        id: "dollars",
+        title: "Dollars that reach veterans",
+        body: "Money that lands with the people it's for, not administration and overhead.",
       },
       {
-        id: "longevity",
-        title: "Longevity",
-        body: "We look at whether the organization will still be here in five years — stability matters when veterans need ongoing support.",
+        id: "built-to-last",
+        title: "Built to last",
+        body: "Organizations that will still be standing — and still serving — five years from now.",
       },
       {
-        id: "local",
-        title: "Local enough to visit",
-        body: "That’s why we grant locally. Tampa Bay and Florida are close enough that we can meet the people running these programs, watch the work, and stay in touch afterward.",
+        id: "close-enough",
+        title: "Close enough to see",
+        body: "Local enough that we can show up in person and confirm the work is real.",
       },
     ],
   },
   grantees: {
     eyebrow: "Making an impact",
     // `{total}` → %%grants_total%% / {{grants.total}} / kpfGrantsTotal.label
-    title: "Recipients of more than {total} in KPF grants",
-    body: "Our grants have supported veterans facing very different situations: veterans without housing, veterans living with serious injuries, and Special Operations families hit with a sudden financial crisis.",
+    title: "More than {total} in grants — and counting",
+    body: "Our grants have met veterans in very different moments: without housing, living with serious injuries, or a Special Operations family hit by sudden crisis. Same standard behind every one — proven work, real reach, people we've often watched firsthand.",
     items: [
       {
         id: "freedom-riding",
@@ -358,11 +358,11 @@ const ABOUT = {
     ],
   },
   cta: {
-    title: "Together, we can.",
-    body: "There’s more than one way to be part of this.",
+    title: "There's more than one way to make a difference.",
+    body: "Volunteer a Saturday. Point us toward an org that deserves a look. Or give — every gift becomes a grant in Kevin's name.",
     actions: [
-      { href: "/#donate", label: "Donate", variant: "primary" },
-      { href: "/contact/", label: "Get in touch", variant: "secondary" },
+      { donate: true, label: "Donate", variant: "primary" },
+      { href: "/contact/", label: "Get in touch", variant: "outline" },
     ],
     media: {
       key: "cta.flag",
@@ -410,7 +410,7 @@ const CONTACT = {
     title: "Or reach us directly",
     org: "The Kevin Popke Foundation, Inc.",
     note: "A 501(c)(3) nonprofit organization",
-    donate: { href: "/#donate", label: "Donate" },
+    donate: { donate: true, label: "Donate" },
   },
 };
 
@@ -421,7 +421,7 @@ const EVENTS = {
     body: "Our events raise money to support our mission, and we have a good time while doing it.",
     primaryCta: {
       href: "#featured",
-      label: "See featured event",
+      label: "Featured event",
       variant: "primary",
       trailingIcon: "arrow",
     },
@@ -429,7 +429,7 @@ const EVENTS = {
     media: {
       key: "events.hero",
       src: "/media/events/hero.webp",
-      alt: "Kevin Popke speaking into a microphone",
+      alt: "Performer smiling on stage with a microphone and guitar",
     },
   },
   context: {
@@ -439,7 +439,7 @@ const EVENTS = {
       "Our events happen because businesses and individuals decide to put their name behind them. Sponsorship puts your business in front of a room that cares who's in it, and it funds grants directly.",
       "There's also room for other ideas. If you want to run a fundraiser, host a collection, or partner on an event of your own, we'd like to hear it.",
     ],
-    cta: { href: "/#donate", label: "Donate via PayPal" },
+    cta: { donate: true, label: "Donate via PayPal" },
     paths: [
       {
         id: "sponsor",
@@ -488,17 +488,32 @@ const EVENTS = {
       {
         key: "events.featured4",
         src: "/media/events/featured-4.webp",
-        alt: "",
+        alt: "Songwriters for Vets group with a Song Vets 50 sign",
       },
     ],
     meta: [
-      { icon: "calendar", label: "Sat, Aug 29, 2026" },
-      { icon: "map", label: "Hyatt Regency, Bonita Springs" },
-      { icon: "ticket", label: "Tickets from $125" },
+      {
+        icon: "calendar",
+        label: "August 29",
+        href: "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Songwriters%204%20Vets%20%C3%97%20KPF&dates=20260829T190000%2F20260829T220000&ctz=America%2FNew_York&details=&location=Hyatt%20Regency%20Resort%20%E2%80%94%20Coconut%20Point&trp=false",
+        external: true,
+      },
+      {
+        icon: "clock",
+        label: "7:00 PM",
+        href: "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Songwriters%204%20Vets%20%C3%97%20KPF&dates=20260829T190000%2F20260829T220000&ctz=America%2FNew_York&details=&location=Hyatt%20Regency%20Resort%20%E2%80%94%20Coconut%20Point&trp=false",
+        external: true,
+      },
+      {
+        icon: "map",
+        label: "Hyatt Regency Resort — Coconut Point",
+        href: "https://www.google.com/travel/search?ts=CAEaSQopEicyJTB4ODhkYjE3OTYxM2RmN2E3NToweGM4M2NkNDM3NWY4YjM3MTgSHBIUCgcI6g8QCBgeEgcI6g8QCBgfGAEyBAgAEAAqBwoFOgNVU0Q&qs=CAEyFENnc0ltTzZzX1BXR3RaN0lBUkFCOAJCCQkYN4tfN9Q8yEIJCRg3i1831DzI&utm_campaign=sharing&utm_medium=link_btn&utm_source=htls",
+        external: true,
+      },
     ],
     actions: [
       {
-        href: "https://songwriters4vets.com",
+        href: "https://www.songwriters4vets.com/event-details/songwriters-4-vets-naples-2026",
         label: "Get tickets",
         variant: "primary",
         external: true,
@@ -514,7 +529,7 @@ const EVENTS = {
   library: {
     eyebrow: "On the calendar",
     title: "Upcoming events",
-    body: "Partner nights and fundraisers added over time. Each one a card, not a calendar.",
+    body: "Benefit nights and partner fundraisers that put money straight into grants for Florida veterans. Will we see you there?",
     emptyTitle: "Nothing on the calendar right now",
     emptyBody:
       "We announce events a few months out. The best way to hear first is to follow along, or reach out if you'd like to help put one together.",
@@ -528,7 +543,13 @@ const EVENTS = {
         id: "songwriters-naples",
         title: "Songwriters for Vets - Naples",
         body: "Nashville songwriters perform their #1 hits and tell the stories behind them. Auction, open bar, proceeds supporting Florida veterans.",
-        dateLabel: "Aug 2025",
+        dateLabel: "August 29",
+        timeLabel: "7:00 PM",
+        locationLabel: "Hyatt Regency Resort — Coconut Point",
+        locationHref:
+          "https://www.google.com/travel/search?ts=CAEaSQopEicyJTB4ODhkYjE3OTYxM2RmN2E3NToweGM4M2NkNDM3NWY4YjM3MTgSHBIUCgcI6g8QCBgeEgcI6g8QCBgfGAEyBAgAEAAqBwoFOgNVU0Q&qs=CAEyFENnc0ltTzZzX1BXR3RaN0lBUkFCOAJCCQkYN4tfN9Q8yEIJCRg3i1831DzI&utm_campaign=sharing&utm_medium=link_btn&utm_source=htls",
+        calendarHref:
+          "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Songwriters%204%20Vets%20%C3%97%20KPF&dates=20260829T190000%2F20260829T220000&ctz=America%2FNew_York&details=&location=Hyatt%20Regency%20Resort%20%E2%80%94%20Coconut%20Point&trp=false",
         ticketsLabel: "Get tickets",
         ticketsHref: "https://songwriters4vets.com",
         ticketsExternal: true,
@@ -554,10 +575,10 @@ const EVENTS = {
     ],
   },
   cta: {
-    title: "Together, we can.",
-    body: "There's more than one way to be part of this.",
+    title: "There's more than one way to make a difference.",
+    body: "Volunteer a Saturday. Point us toward an org that deserves a look. Or give — every gift becomes a grant in Kevin's name.",
     actions: [
-      { href: "/#donate", label: "Donate", variant: "primary" },
+      { donate: true, label: "Donate", variant: "primary" },
       { href: "/contact/", label: "Get in touch", variant: "outline" },
     ],
     media: {

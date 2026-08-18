@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
+import DonateButton from "@/components/DonateButton";
 import FormRenderer from "@/components/FormRenderer";
-import KpfButton from "@/components/KpfButton";
 import { CONTACT } from "@/lib/pageCopy";
 
 function withInquiryDefault(definition, inquiry) {
@@ -159,9 +159,10 @@ export default function ContactPageScaffold({ form = null }) {
                 </address>
                 <p className="kpf-content-block__body">
                   Prefer to just give?{" "}
-                  <KpfButton href={copy.aside.donate.href} className="kpf-btn kpf-btn--primary kpf-btn--sm">
-                    {copy.aside.donate.label}
-                  </KpfButton>
+                  <DonateButton
+                    label={copy.aside.donate.label}
+                    className="kpf-btn kpf-btn--primary kpf-btn--sm"
+                  />
                 </p>
               </div>
             </div>

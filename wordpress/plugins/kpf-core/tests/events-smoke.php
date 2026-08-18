@@ -140,6 +140,68 @@ kpf_events_assert(
 	'Annual with anchor formats month/day: ' . $label
 );
 
+$flexible = EventsMeta::sanitize(
+	array(
+		'frequency' => 'annually',
+		'schedule'  => array(
+			'anchors' => array(
+				array(
+					'month'    => 8,
+					'day'      => 0,
+					'day_mode' => 'month',
+				),
+			),
+		),
+	)
+);
+$flexible_label = EventsMeta::format_schedule_label( $flexible );
+kpf_events_assert(
+	false !== stripos( $flexible_label, 'August' )
+		&& false !== stripos( $flexible_label, 'Annually in' )
+		&& 1 !== preg_match( '/\b\d{1,2}\b/', $flexible_label ),
+	'Annual month-only label has no fixed day: ' . $flexible_label
+);
+
+$nth = EventsMeta::sanitize(
+	array(
+		'frequency' => 'annually',
+		'schedule'  => array(
+			'anchors' => array(
+				array(
+					'month'       => 8,
+					'day_mode'    => 'nth_weekday',
+					'nth_weekday' => array(
+						'n'   => 3,
+						'day' => 'SA',
+					),
+				),
+			),
+		),
+	)
+);
+$nth_label = EventsMeta::format_schedule_label( $nth );
+kpf_events_assert(
+	false !== stripos( $nth_label, 'August' )
+		&& false !== stripos( $nth_label, 'Saturday' )
+		&& false !== stripos( $nth_label, 'third' ),
+	'Annual nth-weekday label is floating: ' . $nth_label
+);
+
+$legacy_anchor = EventsMeta::sanitize(
+	array(
+		'frequency' => 'annually',
+		'schedule'  => array(
+			'anchors' => array(
+				array( 'month' => 11, 'day' => 11 ),
+			),
+		),
+	)
+);
+kpf_events_assert(
+	'exact' === ( $legacy_anchor['schedule']['anchors'][0]['day_mode'] ?? '' ),
+	'Legacy month+day anchors become exact day_mode'
+);
+
 $fallback = EventsMeta::format_schedule_label(
 	array(
 		'frequency' => 'quarterly',

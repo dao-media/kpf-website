@@ -1392,7 +1392,7 @@ button.kpf-button__link {
 	align-items: center;
 	background: transparent;
 	border: 0;
-	color: var(--kpf-color-text-primary);
+	color: var(--kpf-deep);
 	cursor: pointer;
 	display: flex;
 	font-family: var(--kpf-font-display);
@@ -1424,7 +1424,7 @@ button.kpf-button__link {
 
 .kpf-accordion__leading {
 	align-items: center;
-	color: var(--kpf-color-icon-primary);
+	color: currentColor;
 	display: inline-flex;
 	flex: 0 0 auto;
 	height: 1.25rem;
@@ -1440,7 +1440,13 @@ button.kpf-button__link {
 
 .kpf-accordion__title {
 	align-self: center;
+	color: inherit;
 	flex: 1 1 auto;
+	font-family: var(--kpf-font-display);
+	font-size: var(--kpf-text-h5);
+	font-weight: var(--kpf-weight-h5);
+	letter-spacing: var(--kpf-tracking-h5);
+	line-height: var(--kpf-leading-h5);
 	margin: 0;
 }
 

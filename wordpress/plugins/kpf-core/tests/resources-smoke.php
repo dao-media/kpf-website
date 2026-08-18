@@ -24,30 +24,51 @@ wp_set_current_user( 1 );
 
 $data = Resources::data();
 kpf_resources_assert( ! empty( $data['title'] ), 'Resources data includes a title' );
-kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 2, 'Resources includes at least two cards' );
+kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 2, 'Resources includes at least two topic groups' );
+kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 3, 'Resources includes at least three cards' );
+
+$group_ids = array_map( static fn( array $group ): string => (string) ( $group['id'] ?? '' ), $data['groups'] );
+kpf_resources_assert( in_array( 'kevin-stories', $group_ids, true ), 'Resources includes Kevin’s Stories topic' );
+kpf_resources_assert( in_array( 'grants-partners', $group_ids, true ), 'Resources includes Grants & partners topic' );
 
 $ids = array_map( static fn( array $card ): string => (string) ( $card['id'] ?? '' ), $data['cards'] );
 kpf_resources_assert( in_array( 'kevin-story', $ids, true ), 'Resources includes Kevin’s Story card' );
+kpf_resources_assert( in_array( 'kevin-story-edit', $ids, true ), 'Resources includes Editing Kevin’s Stories card' );
 kpf_resources_assert( in_array( 'grantee', $ids, true ), 'Resources includes Grantee card' );
+
+foreach ( $data['groups'] as $group ) {
+	kpf_resources_assert( ! empty( $group['title'] ), 'Each topic group has a title' );
+	kpf_resources_assert( ! empty( $group['cards'] ) && is_array( $group['cards'] ), 'Each topic group has cards' );
+}
 
 foreach ( $data['cards'] as $card ) {
 	kpf_resources_assert( ! empty( $card['title'] ), 'Each card has a title' );
 	kpf_resources_assert( ! empty( $card['sections'] ), 'Each card has instruction sections' );
 	kpf_resources_assert( ! empty( $card['actions'] ), 'Each card has actions' );
+	kpf_resources_assert( ! empty( $card['groupId'] ), 'Each flat card carries a groupId' );
 }
 
 $kevin = null;
+$kevin_edit = null;
 foreach ( $data['cards'] as $card ) {
 	if ( 'kevin-story' === ( $card['id'] ?? '' ) ) {
 		$kevin = $card;
-		break;
+	}
+	if ( 'kevin-story-edit' === ( $card['id'] ?? '' ) ) {
+		$kevin_edit = $card;
 	}
 }
 kpf_resources_assert( is_array( $kevin ), 'Kevin card resolved' );
+kpf_resources_assert( is_array( $kevin_edit ), 'Editing Kevin’s Stories card resolved' );
 $kevin_blob = wp_json_encode( $kevin );
 kpf_resources_assert( false !== strpos( (string) $kevin_blob, '1120' ), 'Kevin card mentions image dimensions' );
 kpf_resources_assert( false !== stripos( (string) $kevin_blob, 'transparent' ), 'Kevin card mentions transparency' );
 kpf_resources_assert( false !== stripos( (string) $kevin_blob, 'Order' ), 'Kevin card mentions order' );
+
+$edit_blob = wp_json_encode( $kevin_edit );
+kpf_resources_assert( false !== stripos( (string) $edit_blob, 'Scrapbook' ), 'Edit card points editors to Scrapbook → Kevin' );
+kpf_resources_assert( false !== stripos( (string) $edit_blob, 'Order' ), 'Edit card mentions order' );
+kpf_resources_assert( false !== stripos( (string) $edit_blob, 'Draft' ), 'Edit card mentions draft/publish' );
 
 require_once ABSPATH . 'wp-admin/includes/admin.php';
 

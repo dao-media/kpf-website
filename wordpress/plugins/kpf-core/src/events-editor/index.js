@@ -9,8 +9,7 @@ import {
 	TextControl,
 	TextareaControl,
 } from '@wordpress/components';
-import { useEntityProp } from '@wordpress/core-data';
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { createRoot, useEffect, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -94,15 +93,12 @@ const NTH_OPTIONS = [
 ];
 
 function useMeta() {
-	const postType = useSelect(
-		(select) => select('core/editor').getCurrentPostType(),
+	const meta = useSelect(
+		(select) => select('core/editor')?.getEditedPostAttribute?.('meta') || {},
 		[]
 	);
-	const [meta, setMeta] = useEntityProp(
-		'postType',
-		postType || 'kpf_event',
-		'meta'
-	);
+	const { editPost } = useDispatch('core/editor');
+
 	const details = useMemo(
 		() => ({
 			...DEFAULTS,
@@ -124,19 +120,25 @@ function useMeta() {
 	);
 
 	const update = (patch) => {
-		setMeta({
-			...meta,
-			[META_KEY]: {
-				...details,
-				...patch,
-				version: 2,
-				location: {
-					...details.location,
-					...(patch.location || {}),
-				},
-				schedule: {
-					...details.schedule,
-					...(patch.schedule || {}),
+		const currentMeta =
+			window.wp?.data?.select('core/editor')?.getEditedPostAttribute?.('meta') ||
+			meta ||
+			{};
+		editPost({
+			meta: {
+				...currentMeta,
+				[META_KEY]: {
+					...details,
+					...patch,
+					version: 2,
+					location: {
+						...details.location,
+						...(patch.location || {}),
+					},
+					schedule: {
+						...details.schedule,
+						...(patch.schedule || {}),
+					},
 				},
 			},
 		});
@@ -151,6 +153,43 @@ function useMeta() {
 	};
 
 	return { details, update, updateSchedule, updateLocation };
+}
+
+/**
+ * URL fields keep a local draft while typing and commit on blur / Enter.
+ * Avoids autosave wiping partial URIs and browser type=url constraints.
+ */
+function UrlTextControl({ value, onCommit, ...props }) {
+	const [draft, setDraft] = useState(value || '');
+
+	useEffect(() => {
+		setDraft(value || '');
+	}, [value]);
+
+	const commit = () => {
+		const next = draft.trim();
+		if (next !== (value || '').trim()) {
+			onCommit(next);
+		}
+	};
+
+	return (
+		<TextControl
+			{...props}
+			type="text"
+			inputMode="url"
+			autoComplete="url"
+			value={draft}
+			onChange={setDraft}
+			onBlur={commit}
+			onKeyDown={(event) => {
+				if (event.key === 'Enter') {
+					event.preventDefault();
+					commit();
+				}
+			}}
+		/>
+	);
 }
 
 function HostPicker({ selectedIds, onChange }) {
@@ -361,57 +400,163 @@ function DayRuleFields({ schedule, updateSchedule }) {
 
 function AnchorEditor({ anchors, onChange, max = 2 }) {
 	const rows = anchors.length ? anchors : [];
+
+	const setRow = (index, patch) => {
+		const next = [...rows];
+		next[index] = { ...next[index], ...patch };
+		onChange(next);
+	};
+
 	return (
 		<div>
-			{rows.map((anchor, index) => (
-				<div
-					key={index}
-					style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, marginBottom: 8 }}
-				>
-					<SelectControl
-						label={index === 0 ? __('Month', 'kpf-core') : undefined}
-						value={String(anchor.month || 1)}
-						options={MONTH_OPTIONS}
-						onChange={(month) => {
-							const next = [...rows];
-							next[index] = { ...next[index], month: parseInt(month, 10) };
-							onChange(next);
+			<p style={{ marginBottom: 10, color: '#646970', fontSize: 12 }}>
+				{__(
+					'Annual events can use an exact date, a weekday pattern (e.g. third Saturday), or anytime in the month.',
+					'kpf-core'
+				)}
+			</p>
+			{rows.map((anchor, index) => {
+				const dayMode = anchor.day_mode || (anchor.day >= 1 ? 'exact' : 'month');
+				return (
+					<div
+						key={index}
+						style={{
+							display: 'grid',
+							gap: 8,
+							marginBottom: 16,
+							paddingBottom: 12,
+							borderBottom: index < rows.length - 1 ? '1px solid #dcdcde' : undefined,
 						}}
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-					/>
-					<TextControl
-						label={index === 0 ? __('Day', 'kpf-core') : undefined}
-						type="number"
-						min={1}
-						max={31}
-						value={String(anchor.day || '')}
-						onChange={(day) => {
-							const next = [...rows];
-							const n = parseInt(day, 10);
-							next[index] = {
-								...next[index],
-								day: Number.isFinite(n) ? n : 1,
-							};
-							onChange(next);
-						}}
-						__next40pxDefaultSize
-						__nextHasNoMarginBottom
-					/>
-					<Button
-						variant="tertiary"
-						isDestructive
-						onClick={() => onChange(rows.filter((_, i) => i !== index))}
-						style={{ alignSelf: 'end' }}
 					>
-						{__('Remove', 'kpf-core')}
-					</Button>
-				</div>
-			))}
+						<div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
+							<SelectControl
+								label={__('Month', 'kpf-core')}
+								value={String(anchor.month || 1)}
+								options={MONTH_OPTIONS}
+								onChange={(month) => setRow(index, { month: parseInt(month, 10) })}
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+							/>
+							<Button
+								variant="tertiary"
+								isDestructive
+								onClick={() => onChange(rows.filter((_, i) => i !== index))}
+								style={{ alignSelf: 'end' }}
+							>
+								{__('Remove', 'kpf-core')}
+							</Button>
+						</div>
+						<SelectControl
+							label={__('Date rule', 'kpf-core')}
+							value={dayMode}
+							options={[
+								{
+									label: __('Exact day of the month', 'kpf-core'),
+									value: 'exact',
+								},
+								{
+									label: __('Weekday of the month (e.g. 3rd Saturday)', 'kpf-core'),
+									value: 'nth_weekday',
+								},
+								{
+									label: __('Anytime that month', 'kpf-core'),
+									value: 'month',
+								},
+							]}
+							onChange={(nextMode) => {
+								const patch = { day_mode: nextMode };
+								if (nextMode === 'exact') {
+									patch.day = anchor.day >= 1 ? anchor.day : 1;
+								} else {
+									patch.day = 0;
+								}
+								if (nextMode === 'nth_weekday' && !anchor.nth_weekday) {
+									patch.nth_weekday = { n: 3, day: 'SA' };
+								}
+								setRow(index, patch);
+							}}
+							help={
+								dayMode === 'month'
+									? __(
+											'Good when the event stays in the same month but not on a fixed date.',
+											'kpf-core'
+										)
+									: dayMode === 'nth_weekday'
+										? __(
+												'Date moves each year (e.g. the third Saturday of August).',
+												'kpf-core'
+											)
+										: undefined
+							}
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+						/>
+						{dayMode === 'exact' ? (
+							<TextControl
+								label={__('Day', 'kpf-core')}
+								type="number"
+								min={1}
+								max={31}
+								value={String(anchor.day || '')}
+								onChange={(day) => {
+									const n = parseInt(day, 10);
+									setRow(index, {
+										day: Number.isFinite(n) ? n : 1,
+										day_mode: 'exact',
+									});
+								}}
+								__next40pxDefaultSize
+								__nextHasNoMarginBottom
+							/>
+						) : null}
+						{dayMode === 'nth_weekday' ? (
+							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+								<SelectControl
+									label={__('Which week', 'kpf-core')}
+									value={String(anchor.nth_weekday?.n || 3)}
+									options={NTH_OPTIONS}
+									onChange={(n) =>
+										setRow(index, {
+											day_mode: 'nth_weekday',
+											nth_weekday: {
+												...(anchor.nth_weekday || { day: 'SA' }),
+												n: parseInt(n, 10),
+											},
+										})
+									}
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+								/>
+								<SelectControl
+									label={__('Weekday', 'kpf-core')}
+									value={anchor.nth_weekday?.day || 'SA'}
+									options={WEEKDAYS}
+									onChange={(day) =>
+										setRow(index, {
+											day_mode: 'nth_weekday',
+											nth_weekday: {
+												...(anchor.nth_weekday || { n: 3 }),
+												day,
+											},
+										})
+									}
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+								/>
+							</div>
+						) : null}
+					</div>
+				);
+			})}
 			{rows.length < max ? (
 				<Button
 					variant="secondary"
-					onClick={() => onChange([...rows, { month: 1, day: 1 }])}
+					onClick={() =>
+						onChange([
+							...rows,
+							{ month: 1, day: 1, day_mode: 'exact', nth_weekday: { n: 3, day: 'SA' } },
+						])
+					}
 				>
 					{__('Add date', 'kpf-core')}
 				</Button>
@@ -606,16 +751,15 @@ function LocationPanel({ location, updateLocation }) {
 							__nextHasNoMarginBottom
 						/>
 					</div>
-					<TextControl
+					<UrlTextControl
 						label={__('Custom directions URL (optional)', 'kpf-core')}
-						type="url"
 						placeholder="https://"
 						help={__(
 							'Leave blank to auto-build a Google Maps directions link from the fields above.',
 							'kpf-core'
 						)}
 						value={location.url || ''}
-						onChange={(url) => updateLocation({ url })}
+						onCommit={(url) => updateLocation({ url })}
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 					/>
@@ -623,16 +767,15 @@ function LocationPanel({ location, updateLocation }) {
 			) : null}
 
 			{mode === 'directions' ? (
-				<TextControl
+				<UrlTextControl
 					label={__('Directions URL', 'kpf-core')}
-					type="url"
 					placeholder="https://"
 					help={__(
 						'Link that opens driving directions or a hotel/venue map page.',
 						'kpf-core'
 					)}
 					value={location.url || ''}
-					onChange={(url) => updateLocation({ url })}
+					onCommit={(url) => updateLocation({ url })}
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 				/>
@@ -686,26 +829,24 @@ function EventsEditorApp() {
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 				/>
-				<TextControl
+				<UrlTextControl
 					label={__('Website', 'kpf-core')}
-					type="url"
 					placeholder="https://"
 					help={__('General event or organization page.', 'kpf-core')}
 					value={details.website || ''}
-					onChange={(website) => update({ website })}
+					onCommit={(website) => update({ website })}
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 				/>
-				<TextControl
+				<UrlTextControl
 					label={__('Ticketing link', 'kpf-core')}
-					type="url"
 					placeholder="https://"
 					help={__(
 						'Where visitors buy tickets (Eventbrite, venue page, etc.).',
 						'kpf-core'
 					)}
 					value={details.ticketing_link || ''}
-					onChange={(ticketing_link) => update({ ticketing_link })}
+					onCommit={(ticketing_link) => update({ ticketing_link })}
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 				/>

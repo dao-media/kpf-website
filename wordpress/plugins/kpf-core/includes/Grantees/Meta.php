@@ -62,7 +62,6 @@ final class Meta {
 				'website'      => array(
 					'type'    => 'string',
 					'default' => '',
-					'format'  => 'uri',
 				),
 				'blurb'        => array(
 					'type'    => 'string',
@@ -104,6 +103,12 @@ final class Meta {
 			$url = 'https://' . $url;
 		}
 		$clean = esc_url_raw( $url );
-		return is_string( $clean ) ? $clean : '';
+		if ( is_string( $clean ) && '' !== $clean ) {
+			return $clean;
+		}
+		if ( preg_match( '#^https?://[a-zA-Z0-9._~:/\?#\[\]@!$&\'()*+,;=%-]*$#', $url ) ) {
+			return $url;
+		}
+		return '';
 	}
 }

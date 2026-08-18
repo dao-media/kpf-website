@@ -26,6 +26,9 @@ final class Meta {
 
 	private const MONTHLY_MODES = array( 'day_of_month', 'nth_weekday' );
 
+	/** Annual/semiannual anchors: fixed calendar day, nth weekday, or month-only. */
+	private const ANCHOR_DAY_MODES = array( 'exact', 'nth_weekday', 'month' );
+
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_meta' ), 10 );
 		add_action( 'added_post_meta', array( self::class, 'sync_on_meta_change' ), 10, 4 );
@@ -127,8 +130,9 @@ final class Meta {
 				'description'   => array( 'type' => 'string', 'default' => '' ),
 				'contact_email'  => array( 'type' => 'string', 'default' => '' ),
 				'contact_phone'  => array( 'type' => 'string', 'default' => '' ),
-				'website'        => array( 'type' => 'string', 'default' => '', 'format' => 'uri' ),
-				'ticketing_link' => array( 'type' => 'string', 'default' => '', 'format' => 'uri' ),
+				// No format:uri — partial/empty values must round-trip while editing.
+				'website'        => array( 'type' => 'string', 'default' => '' ),
+				'ticketing_link' => array( 'type' => 'string', 'default' => '' ),
 				'location'       => array(
 					'type'                 => 'object',
 					'additionalProperties' => false,
@@ -145,7 +149,7 @@ final class Meta {
 						'city'        => array( 'type' => 'string', 'default' => '' ),
 						'state'       => array( 'type' => 'string', 'default' => '' ),
 						'postal_code' => array( 'type' => 'string', 'default' => '' ),
-						'url'         => array( 'type' => 'string', 'default' => '', 'format' => 'uri' ),
+						'url'         => array( 'type' => 'string', 'default' => '' ),
 					),
 				),
 				'frequency'     => array(
@@ -192,10 +196,22 @@ final class Meta {
 						'anchors'      => array(
 							'type'  => 'array',
 							'items' => array(
-								'type'       => 'object',
-								'properties' => array(
-									'month' => array( 'type' => 'integer', 'minimum' => 1, 'maximum' => 12 ),
-									'day'   => array( 'type' => 'integer', 'minimum' => 1, 'maximum' => 31 ),
+								'type'                 => 'object',
+								'additionalProperties' => false,
+								'properties'           => array(
+									'month'       => array( 'type' => 'integer', 'minimum' => 1, 'maximum' => 12 ),
+									'day'         => array( 'type' => 'integer', 'minimum' => 0, 'maximum' => 31 ),
+									'day_mode'    => array(
+										'type' => 'string',
+										'enum' => self::ANCHOR_DAY_MODES,
+									),
+									'nth_weekday' => array(
+										'type'       => 'object',
+										'properties' => array(
+											'n'   => array( 'type' => 'integer', 'minimum' => 1, 'maximum' => 5 ),
+											'day' => array( 'type' => 'string', 'enum' => self::WEEKDAYS ),
+										),
+									),
 								),
 							),
 						),
@@ -382,22 +398,56 @@ final class Meta {
 				$anchors = self::sanitize_anchors( $schedule['anchors'] ?? array() );
 				if ( $anchors ) {
 					$parts = array();
+					$modes = array();
 					foreach ( $anchors as $anchor ) {
-						$parts[] = self::format_month_day( (int) $anchor['month'], (int) $anchor['day'] );
+						$parts[] = self::format_anchor( $anchor );
+						$modes[] = (string) ( $anchor['day_mode'] ?? 'exact' );
 					}
-					$joined = self::join_list( $parts );
-					$detail = 'annually' === $frequency
-						? sprintf(
-							/* translators: %s: month day (e.g. August 29) */
-							__( 'Annually on %s', 'kpf-core' ),
-							$joined
-						)
-						: sprintf(
-							/* translators: %s: month day list */
-							__( 'Semiannually on %s', 'kpf-core' ),
-							$joined
-						);
-					$detail = self::append_duration_note( $detail, $duration );
+					$parts = array_values( array_filter( $parts ) );
+					if ( $parts ) {
+						$joined     = self::join_list( $parts );
+						$all_month  = $modes && count( array_unique( $modes ) ) === 1 && 'month' === $modes[0];
+						$all_exact  = $modes && count( array_unique( $modes ) ) === 1 && 'exact' === $modes[0];
+						$is_annual  = 'annually' === $frequency;
+						if ( $all_month ) {
+							$detail = $is_annual
+								? sprintf(
+									/* translators: %s: month name(s) */
+									__( 'Annually in %s', 'kpf-core' ),
+									$joined
+								)
+								: sprintf(
+									/* translators: %s: month name list */
+									__( 'Semiannually in %s', 'kpf-core' ),
+									$joined
+								);
+						} elseif ( $all_exact ) {
+							$detail = $is_annual
+								? sprintf(
+									/* translators: %s: month day (e.g. August 29) */
+									__( 'Annually on %s', 'kpf-core' ),
+									$joined
+								)
+								: sprintf(
+									/* translators: %s: month day list */
+									__( 'Semiannually on %s', 'kpf-core' ),
+									$joined
+								);
+						} else {
+							$detail = $is_annual
+								? sprintf(
+									/* translators: %s: annual date rule (e.g. the third Saturday of August) */
+									__( 'Annually · %s', 'kpf-core' ),
+									$joined
+								)
+								: sprintf(
+									/* translators: %s: semiannual date rules */
+									__( 'Semiannually · %s', 'kpf-core' ),
+									$joined
+								);
+						}
+						$detail = self::append_duration_note( $detail, $duration );
+					}
 				}
 				break;
 		}
@@ -683,7 +733,7 @@ final class Meta {
 
 	/**
 	 * @param mixed $value
-	 * @return array<int, array{month: int, day: int}>
+	 * @return array<int, array<string, mixed>>
 	 */
 	private static function sanitize_anchors( $value ): array {
 		$out = array();
@@ -692,8 +742,41 @@ final class Meta {
 				continue;
 			}
 			$month = absint( $row['month'] ?? 0 );
-			$day   = absint( $row['day'] ?? 0 );
-			if ( $month < 1 || $month > 12 || $day < 1 || $day > 31 ) {
+			if ( $month < 1 || $month > 12 ) {
+				continue;
+			}
+
+			$day_mode = sanitize_key( (string) ( $row['day_mode'] ?? '' ) );
+			$day      = absint( $row['day'] ?? 0 );
+
+			// Legacy anchors only stored month+day — treat as exact.
+			if ( '' === $day_mode ) {
+				$day_mode = $day >= 1 ? 'exact' : 'month';
+			}
+			if ( ! in_array( $day_mode, self::ANCHOR_DAY_MODES, true ) ) {
+				$day_mode = 'exact';
+			}
+
+			if ( 'month' === $day_mode ) {
+				$out[] = array(
+					'month'    => $month,
+					'day'      => 0,
+					'day_mode' => 'month',
+				);
+				continue;
+			}
+
+			if ( 'nth_weekday' === $day_mode ) {
+				$out[] = array(
+					'month'       => $month,
+					'day'         => 0,
+					'day_mode'    => 'nth_weekday',
+					'nth_weekday' => self::sanitize_nth_weekday_row( $row['nth_weekday'] ?? array() ),
+				);
+				continue;
+			}
+
+			if ( $day < 1 || $day > 31 ) {
 				continue;
 			}
 			// Soft calendar check with leap-safe Feb 29.
@@ -701,11 +784,67 @@ final class Meta {
 				continue;
 			}
 			$out[] = array(
-				'month' => $month,
-				'day'   => $day,
+				'month'    => $month,
+				'day'      => $day,
+				'day_mode' => 'exact',
 			);
 		}
 		return array_values( $out );
+	}
+
+	/**
+	 * @param mixed $value
+	 * @return array{n: int, day: string}
+	 */
+	private static function sanitize_nth_weekday_row( $value ): array {
+		$value = is_array( $value ) ? $value : array();
+		$n     = max( 1, min( 5, absint( $value['n'] ?? 1 ) ) );
+		$day   = strtoupper( sanitize_key( (string) ( $value['day'] ?? 'SA' ) ) );
+		if ( ! in_array( $day, self::WEEKDAYS, true ) ) {
+			$day = 'SA';
+		}
+		return array(
+			'n'   => $n,
+			'day' => $day,
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $anchor
+	 */
+	private static function format_anchor( array $anchor ): string {
+		$month    = (int) ( $anchor['month'] ?? 0 );
+		$day_mode = (string) ( $anchor['day_mode'] ?? 'exact' );
+		$month_name = self::month_label( $month );
+		if ( '' === $month_name ) {
+			return '';
+		}
+
+		if ( 'month' === $day_mode ) {
+			return $month_name;
+		}
+
+		if ( 'nth_weekday' === $day_mode ) {
+			$nth = is_array( $anchor['nth_weekday'] ?? null ) ? $anchor['nth_weekday'] : array();
+			$n   = (int) ( $nth['n'] ?? 0 );
+			$day = (string) ( $nth['day'] ?? '' );
+			if ( $n < 1 || $n > 5 || '' === $day ) {
+				return $month_name;
+			}
+			return sprintf(
+				/* translators: 1: ordinal week, 2: weekday, 3: month name */
+				__( 'the %1$s %2$s of %3$s', 'kpf-core' ),
+				self::ordinal_week_label( $n ),
+				self::weekday_label( $day ),
+				$month_name
+			);
+		}
+
+		$day = (int) ( $anchor['day'] ?? 0 );
+		if ( $day < 1 ) {
+			return $month_name;
+		}
+		return self::format_month_day( $month, $day );
 	}
 
 	/**
@@ -747,7 +886,15 @@ final class Meta {
 			$url = 'https://' . $url;
 		}
 		$clean = esc_url_raw( $url );
-		return is_string( $clean ) ? $clean : '';
+		if ( is_string( $clean ) && '' !== $clean ) {
+			return $clean;
+		}
+		// Keep incomplete-but-safe drafts through autosave (e.g. "https://ex") so
+		// editors are not wiped mid-type. Final publish still prefers esc_url_raw.
+		if ( preg_match( '#^https?://[a-zA-Z0-9._~:/\?#\[\]@!$&\'()*+,;=%-]*$#', $url ) ) {
+			return $url;
+		}
+		return '';
 	}
 
 	private static function format_date_range( string $start_ymd, int $duration_days ): string {

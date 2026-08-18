@@ -134,13 +134,55 @@ final class Resources {
 	 * @return array<string, mixed>
 	 */
 	public static function data(): array {
+		$groups = self::groups();
+
 		return array(
 			'title'       => __( 'Resources', 'kpf-core' ),
 			'description' => __(
 				'Short how-tos for common Kevin Popke Foundation CMS tasks. Open a card when you need the checklist.',
 				'kpf-core'
 			),
-			'cards'       => self::cards(),
+			'groups'      => $groups,
+			// Flat list kept for smoke tests and older consumers.
+			'cards'       => self::flatten_cards( $groups ),
+		);
+	}
+
+	/**
+	 * Topic groups shown on Dashboard → Resources.
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	public static function groups(): array {
+		$kevin_list   = admin_url( 'edit.php?post_type=' . KevinContentType::POST_TYPE );
+		$kevin_new    = admin_url( 'post-new.php?post_type=' . KevinContentType::POST_TYPE );
+		$grantee_list = admin_url( 'edit.php?post_type=' . GranteesContentType::POST_TYPE );
+		$grantee_new  = admin_url( 'post-new.php?post_type=' . GranteesContentType::POST_TYPE );
+
+		return array(
+			array(
+				'id'          => 'kevin-stories',
+				'title'       => __( 'Kevin’s Stories', 'kpf-core' ),
+				'description' => __(
+					'About page “Who Kevin was” photo + copy slides (Scrapbook → Kevin).',
+					'kpf-core'
+				),
+				'cards'       => array(
+					self::card_adding_kevin_story( $kevin_new, $kevin_list ),
+					self::card_editing_kevin_stories( $kevin_list ),
+				),
+			),
+			array(
+				'id'          => 'grants-partners',
+				'title'       => __( 'Grants & partners', 'kpf-core' ),
+				'description' => __(
+					'Organizations that receive grants and appear in the partners slider.',
+					'kpf-core'
+				),
+				'cards'       => array(
+					self::card_adding_grantee( $grantee_new, $grantee_list ),
+				),
+			),
 		);
 	}
 
@@ -148,102 +190,175 @@ final class Resources {
 	 * @return list<array<string, mixed>>
 	 */
 	public static function cards(): array {
-		$kevin_list = admin_url( 'edit.php?post_type=' . KevinContentType::POST_TYPE );
-		$kevin_new  = admin_url( 'post-new.php?post_type=' . KevinContentType::POST_TYPE );
-		$grantee_list = admin_url( 'edit.php?post_type=' . GranteesContentType::POST_TYPE );
-		$grantee_new  = admin_url( 'post-new.php?post_type=' . GranteesContentType::POST_TYPE );
+		return self::flatten_cards( self::groups() );
+	}
 
+	/**
+	 * @param list<array<string, mixed>> $groups
+	 * @return list<array<string, mixed>>
+	 */
+	private static function flatten_cards( array $groups ): array {
+		$cards = array();
+		foreach ( $groups as $group ) {
+			foreach ( (array) ( $group['cards'] ?? array() ) as $card ) {
+				if ( ! is_array( $card ) ) {
+					continue;
+				}
+				$card['groupId']    = (string) ( $group['id'] ?? '' );
+				$card['groupTitle'] = (string) ( $group['title'] ?? '' );
+				$cards[]            = $card;
+			}
+		}
+		return $cards;
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_adding_kevin_story( string $kevin_new, string $kevin_list ): array {
 		return array(
-			array(
-				'id'          => 'kevin-story',
-				'icon'        => 'BookHeart',
-				'title'       => __( 'Adding to Kevin’s Story', 'kpf-core' ),
-				'summary'     => __(
-					'Photo + header + body slides for the About page “Who Kevin was” stack (Scrapbook → Kevin).',
-					'kpf-core'
-				),
-				'sections'    => array(
-					array(
-						'title' => __( 'Slide photo', 'kpf-core' ),
-						'items' => array(
-							__( 'Use a portrait frame of <strong>1120×1296</strong> pixels (same ratio the About carousel crops to).', 'kpf-core' ),
-							__( 'Export as <strong>PNG or WebP with a transparent background</strong> — the photo sits on parchment, so any solid backdrop will show as a box.', 'kpf-core' ),
-							__( 'Set the image as the slide’s <strong>featured image</strong> (“Slide photo”).', 'kpf-core' ),
-						),
-					),
-					array(
-						'title' => __( 'Copy', 'kpf-core' ),
-						'items' => array(
-							__( '<strong>Title</strong> → the story-card header (short, name-or-moment style).', 'kpf-core' ),
-							__( '<strong>Body</strong> (block editor content) → the supporting paragraph on the card. Keep it to a few sentences.', 'kpf-core' ),
-						),
-					),
-					array(
-						'title' => __( 'Order in the stack', 'kpf-core' ),
-						'items' => array(
-							__( 'Open <strong>Page Attributes → Order</strong> (or the Order column on the Kevin list).', 'kpf-core' ),
-							__( 'Slides sort by <strong>menu order ascending</strong> — lower numbers appear earlier in the designed sequence.', 'kpf-core' ),
-							__( 'After adding a slide, update Order on the new item <em>and</em> neighbors so the stack matches the intended left-to-right / front-to-back layout.', 'kpf-core' ),
-							__( 'The About page query uses this order (up to 12 slides). Publish when ready.', 'kpf-core' ),
-						),
+			'id'       => 'kevin-story',
+			'icon'     => 'BookHeart',
+			'title'    => __( 'Adding to Kevin’s Story', 'kpf-core' ),
+			'summary'  => __(
+				'Create a new photo + header + body slide for the About page stack.',
+				'kpf-core'
+			),
+			'sections' => array(
+				array(
+					'title' => __( 'Slide photo', 'kpf-core' ),
+					'items' => array(
+						__( 'Use a portrait frame of <strong>1120×1296</strong> pixels (same ratio the About carousel crops to).', 'kpf-core' ),
+						__( 'Export as <strong>PNG or WebP with a transparent background</strong> — the photo sits on parchment, so any solid backdrop will show as a box.', 'kpf-core' ),
+						__( 'Set the image as the slide’s <strong>featured image</strong> (“Slide photo”).', 'kpf-core' ),
 					),
 				),
-				'actions'     => array(
-					array(
-						'label'   => __( 'Add Kevin slide', 'kpf-core' ),
-						'url'     => $kevin_new,
-						'primary' => true,
+				array(
+					'title' => __( 'Copy', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Title</strong> → the story-card header (short, name-or-moment style).', 'kpf-core' ),
+						__( '<strong>Body</strong> (block editor content) → the supporting paragraph on the card. Keep it to a few sentences.', 'kpf-core' ),
 					),
-					array(
-						'label'   => __( 'All Kevin slides', 'kpf-core' ),
-						'url'     => $kevin_list,
-						'primary' => false,
+				),
+				array(
+					'title' => __( 'Order in the stack', 'kpf-core' ),
+					'items' => array(
+						__( 'Open <strong>Page Attributes → Order</strong> (or the Order column on the Kevin list).', 'kpf-core' ),
+						__( 'Slides sort by <strong>menu order ascending</strong> — lower numbers appear earlier in the designed sequence.', 'kpf-core' ),
+						__( 'After adding a slide, update Order on the new item <em>and</em> neighbors so the stack matches the intended left-to-right / front-to-back layout.', 'kpf-core' ),
+						__( 'The About page query uses this order (up to 12 slides). Publish when ready.', 'kpf-core' ),
 					),
 				),
 			),
-			array(
-				'id'          => 'grantee',
-				'icon'        => 'Users',
-				'title'       => __( 'Adding a Grantee', 'kpf-core' ),
-				'summary'     => __(
-					'Organizations that receive grants and appear in the partners slider (Grants → Grantees).',
-					'kpf-core'
+			'actions'  => array(
+				array(
+					'label'   => __( 'Add Kevin slide', 'kpf-core' ),
+					'url'     => $kevin_new,
+					'primary' => true,
 				),
-				'sections'    => array(
-					array(
-						'title' => __( 'Organization', 'kpf-core' ),
-						'items' => array(
-							__( '<strong>Title</strong> → organization name (shown on partner chips and grant cards).', 'kpf-core' ),
-							__( '<strong>Logo / profile image</strong> → featured image. Prefer JPEG, PNG, or SVG; square or clear mark works best.', 'kpf-core' ),
-						),
-					),
-					array(
-						'title' => __( 'Grantee details sidebar', 'kpf-core' ),
-						'items' => array(
-							__( '<strong>Website</strong> → preferred public URL (include https:// when possible). Powers the Website chip.', 'kpf-core' ),
-							__( '<strong>Mission / blurb</strong> → optional short description for the partners slider.', 'kpf-core' ),
-							__( '<strong>Point of contact</strong> → optional, admin-only (not shown on the site).', 'kpf-core' ),
-						),
-					),
-					array(
-						'title' => __( 'Awards & amounts', 'kpf-core' ),
-						'items' => array(
-							__( 'Grant dollars and award dates live on <strong>Grants</strong> posts, linked to this grantee — not on the grantee record itself.', 'kpf-core' ),
-							__( 'After the grantee exists, create or edit a Grant and select them as the recipient.', 'kpf-core' ),
-						),
+				array(
+					'label'   => __( 'All Kevin slides', 'kpf-core' ),
+					'url'     => $kevin_list,
+					'primary' => false,
+				),
+			),
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_editing_kevin_stories( string $kevin_list ): array {
+		return array(
+			'id'       => 'kevin-story-edit',
+			'icon'     => 'PencilLine',
+			'title'    => __( 'Editing Kevin’s Stories', 'kpf-core' ),
+			'summary'  => __(
+				'Update an existing About-page slide: photo, copy, order, or publish state.',
+				'kpf-core'
+			),
+			'sections' => array(
+				array(
+					'title' => __( 'Find the slide', 'kpf-core' ),
+					'items' => array(
+						__( 'Go to <strong>Scrapbook → Kevin</strong> (or use All Kevin slides below).', 'kpf-core' ),
+						__( 'Use the list’s <strong>Photo</strong> and <strong>Order</strong> columns to spot the right card quickly.', 'kpf-core' ),
+						__( 'Open the slide title to edit — this is the same CPT as “Adding to Kevin’s Story,” not Scrapbook photo entries.', 'kpf-core' ),
 					),
 				),
-				'actions'     => array(
-					array(
-						'label'   => __( 'Add grantee', 'kpf-core' ),
-						'url'     => $grantee_new,
-						'primary' => true,
+				array(
+					'title' => __( 'What to change', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Title</strong> and <strong>body</strong> update the card header and supporting paragraph on About.', 'kpf-core' ),
+						__( 'Replace the <strong>featured image</strong> when the photo changes — keep <strong>1120×1296</strong> PNG/WebP with a <strong>transparent background</strong>.', 'kpf-core' ),
+						__( 'Adjust <strong>Page Attributes → Order</strong> (or the Order column) if the stack sequence should shift. Lower numbers appear earlier.', 'kpf-core' ),
 					),
-					array(
-						'label'   => __( 'All grantees', 'kpf-core' ),
-						'url'     => $grantee_list,
-						'primary' => false,
+				),
+				array(
+					'title' => __( 'Publish & review', 'kpf-core' ),
+					'items' => array(
+						__( 'Save as <strong>Draft</strong> to hold changes off the site; <strong>Update</strong> / Publish when the About carousel should show them.', 'kpf-core' ),
+						__( 'After publish, hard-refresh the About page if you still see an old photo or line of copy (frontend cache).', 'kpf-core' ),
+						__( 'To remove a slide from the stack without deleting history, set it to <strong>Draft</strong> or trash it from the Kevin list.', 'kpf-core' ),
 					),
+				),
+			),
+			'actions'  => array(
+				array(
+					'label'   => __( 'Edit Kevin slides', 'kpf-core' ),
+					'url'     => $kevin_list,
+					'primary' => true,
+				),
+			),
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_adding_grantee( string $grantee_new, string $grantee_list ): array {
+		return array(
+			'id'       => 'grantee',
+			'icon'     => 'Users',
+			'title'    => __( 'Adding a Grantee', 'kpf-core' ),
+			'summary'  => __(
+				'Organizations that receive grants and appear in the partners slider (Grants → Grantees).',
+				'kpf-core'
+			),
+			'sections' => array(
+				array(
+					'title' => __( 'Organization', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Title</strong> → organization name (shown on partner chips and grant cards).', 'kpf-core' ),
+						__( '<strong>Logo / profile image</strong> → featured image. Prefer JPEG, PNG, or SVG; square or clear mark works best.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Grantee details sidebar', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Website</strong> → preferred public URL (include https:// when possible). Powers the Website chip.', 'kpf-core' ),
+						__( '<strong>Mission / blurb</strong> → optional short description for the partners slider.', 'kpf-core' ),
+						__( '<strong>Point of contact</strong> → optional, admin-only (not shown on the site).', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Awards & amounts', 'kpf-core' ),
+					'items' => array(
+						__( 'Grant dollars and award dates live on <strong>Grants</strong> posts, linked to this grantee — not on the grantee record itself.', 'kpf-core' ),
+						__( 'After the grantee exists, create or edit a Grant and select them as the recipient.', 'kpf-core' ),
+					),
+				),
+			),
+			'actions'  => array(
+				array(
+					'label'   => __( 'Add grantee', 'kpf-core' ),
+					'url'     => $grantee_new,
+					'primary' => true,
+				),
+				array(
+					'label'   => __( 'All grantees', 'kpf-core' ),
+					'url'     => $grantee_list,
+					'primary' => false,
 				),
 			),
 		);

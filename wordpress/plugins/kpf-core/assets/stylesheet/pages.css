@@ -2378,7 +2378,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 }
 
 .kpf-hero--about .kpf-hero__media-wrap {
-	bottom: -15%;
+	bottom: -10%;
 	box-sizing: border-box;
 	/* (scale - 100) / 2 → equal hang each side */
 	left: 0;
@@ -2438,7 +2438,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 	.kpf-hero--about .kpf-hero__media-bleed {
 		/* Hang below the hero band (was vertical middle-align) */
-		bottom: -15%;
+		bottom: -10%;
 		height: fit-content;
 		left: 0;
 		margin: 0 0 0 -15vw;
@@ -2651,6 +2651,9 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	.kpf-history {
 		/* Keep photo < stack so front can sit right-aligned and trail fans left. */
 		--kpf-history-photo-width: 78%;
+		/* Desktop fan: rear clips more; front nudged toward copy (see carousel JS). */
+		--kpf-history-fan: -28%;
+		--kpf-history-front-nudge: 48px;
 	}
 }
 
@@ -2823,23 +2826,30 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 .kpf-history__layer--1,
 .kpf-history__layer--2,
 .kpf-history__layer--back {
-	/* Static fallback without JS — approximate fan toward left: -20%. */
+	/* Static fallback without JS — approximate fan toward left. */
 	bottom: 0;
 }
 .kpf-history__layer--1 {
-	left: calc(-20% / 3);
+	left: calc(var(--kpf-history-fan) / 3);
 	opacity: 0.73;
 	z-index: 3;
 }
 .kpf-history__layer--2 {
-	left: calc(-20% * 2 / 3);
+	left: calc(var(--kpf-history-fan) * 2 / 3);
 	opacity: 0.5;
 	z-index: 2;
 }
 .kpf-history__layer--back {
-	left: -20%;
+	left: var(--kpf-history-fan);
 	opacity: 0.28;
 	z-index: 1;
+}
+
+@media (min-width: 64rem) {
+	/* No-JS desktop: front +48px toward copy; rear/middles use --kpf-history-fan. */
+	.kpf-history__layer--front {
+		right: calc(var(--kpf-history-front-nudge) * -1);
+	}
 }
 
 .kpf-history__aside {
@@ -3031,7 +3041,9 @@ button.kpf-history__dot.is-active::after {
 }
 
 /*
- * Grantee flip cards — photo front, `.kpf-card` info on Y-flip.
+ * Grantee flip cards — photo front, `.kpf-card` info on 3D flip.
+ * Desktop (fine pointer): GSAP owns directional flip (`.kpf-grantee-card--js-flip`).
+ * Tablet/mobile: tap `.is-flipped` keeps the classic Y flip.
  * Archived photo-pop styles: styles/archive/grantee-card-photo-pop.css
  */
 .kpf-grantee-card--flip {
@@ -3074,6 +3086,11 @@ button.kpf-history__dot.is-active::after {
 	width: 100%;
 }
 
+/* Desktop GSAP path — disable CSS transitions so enter/leave don't fight. */
+.kpf-grantee-card--js-flip .kpf-grantee-card__face {
+	transition: none;
+}
+
 .kpf-grantee-card__face--front {
 	background: var(--kpf-color-bg-surface-muted, #e8e0d8);
 	box-shadow: var(--kpf-shadow-card, 0 18px 24px color-mix(in srgb, var(--kpf-ink) 12%, transparent));
@@ -3086,7 +3103,7 @@ button.kpf-history__dot.is-active::after {
 	z-index: 1;
 }
 
-/* Mobile / touch: only `.is-flipped` (tap toggle). Desktop: hover + keyboard focus-visible. */
+/* Mobile / touch: only `.is-flipped` (tap toggle) — always Y-axis. */
 .kpf-grantee-card--flip.is-flipped .kpf-grantee-card__face--front {
 	pointer-events: none;
 	transform: rotateY(-180deg);
@@ -3096,22 +3113,6 @@ button.kpf-history__dot.is-active::after {
 .kpf-grantee-card--flip.is-flipped .kpf-grantee-card__face--back {
 	transform: rotateY(0deg);
 	z-index: 2;
-}
-
-@media (hover: hover) and (pointer: fine) {
-	/* :has(:focus-visible) — keyboard only; mouse click focus must not stick after unhover. */
-	.kpf-grantee-card--flip:hover .kpf-grantee-card__face--front,
-	.kpf-grantee-card--flip:has(:focus-visible) .kpf-grantee-card__face--front {
-		pointer-events: none;
-		transform: rotateY(-180deg);
-		z-index: 1;
-	}
-
-	.kpf-grantee-card--flip:hover .kpf-grantee-card__face--back,
-	.kpf-grantee-card--flip:has(:focus-visible) .kpf-grantee-card__face--back {
-		transform: rotateY(0deg);
-		z-index: 2;
-	}
 }
 
 .kpf-grantee-card__face--fallback {
@@ -3322,6 +3323,10 @@ button.kpf-history__dot.is-active::after {
 		transition: opacity 160ms ease;
 	}
 
+	.kpf-grantee-card--js-flip .kpf-grantee-card__face {
+		transition: none;
+	}
+
 	.kpf-grantee-card--flip.is-flipped .kpf-grantee-card__face--front {
 		opacity: 0;
 		transform: none;
@@ -3332,22 +3337,6 @@ button.kpf-history__dot.is-active::after {
 		opacity: 1;
 		transform: none;
 		visibility: visible;
-	}
-
-	@media (hover: hover) and (pointer: fine) {
-		.kpf-grantee-card--flip:hover .kpf-grantee-card__face--front,
-		.kpf-grantee-card--flip:has(:focus-visible) .kpf-grantee-card__face--front {
-			opacity: 0;
-			transform: none;
-			visibility: hidden;
-		}
-
-		.kpf-grantee-card--flip:hover .kpf-grantee-card__face--back,
-		.kpf-grantee-card--flip:has(:focus-visible) .kpf-grantee-card__face--back {
-			opacity: 1;
-			transform: none;
-			visibility: visible;
-		}
 	}
 }
 

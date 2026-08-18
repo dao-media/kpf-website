@@ -4,6 +4,7 @@ import {
 	ArrowUpRight,
 	BookHeart,
 	ExternalLink,
+	PencilLine,
 	Users,
 } from 'lucide-react';
 import './admin.scss';
@@ -12,6 +13,7 @@ const data = window.kpfResourcesAdmin || {};
 
 const icons = {
 	BookHeart,
+	PencilLine,
 	Users,
 };
 
@@ -77,8 +79,62 @@ function Card({ card }) {
 	);
 }
 
-function App() {
+function TopicGroup({ group }) {
+	const cards = Array.isArray(group.cards) ? group.cards : [];
+	if (!cards.length) {
+		return null;
+	}
+
+	return (
+		<section
+			aria-labelledby={`kpf-resources-topic-${group.id}`}
+			className="kpf-resources-topic"
+			id={`kpf-resources-topic-${group.id}`}
+		>
+			<header className="kpf-resources-topic__header">
+				<h2 id={`kpf-resources-topic-${group.id}-title`}>
+					{group.title}
+				</h2>
+				{group.description ? <p>{group.description}</p> : null}
+			</header>
+			<div className="kpf-resources-grid">
+				{cards.map((card) => (
+					<Card card={card} key={card.id} />
+				))}
+			</div>
+		</section>
+	);
+}
+
+function buildGroups() {
+	if (Array.isArray(data.groups) && data.groups.length) {
+		return data.groups;
+	}
+
 	const cards = Array.isArray(data.cards) ? data.cards : [];
+	if (!cards.length) {
+		return [];
+	}
+
+	// Fallback: group flat cards by groupTitle / groupId when present.
+	const byKey = new Map();
+	cards.forEach((card) => {
+		const key = card.groupId || card.groupTitle || 'general';
+		if (!byKey.has(key)) {
+			byKey.set(key, {
+				id: key,
+				title: card.groupTitle || __('Guides', 'kpf-core'),
+				description: '',
+				cards: [],
+			});
+		}
+		byKey.get(key).cards.push(card);
+	});
+	return [...byKey.values()];
+}
+
+function App() {
+	const groups = buildGroups();
 
 	return (
 		<div className="kpf-resources">
@@ -94,10 +150,10 @@ function App() {
 				</p>
 			</header>
 
-			{cards.length ? (
-				<div className="kpf-resources-grid">
-					{cards.map((card) => (
-						<Card card={card} key={card.id} />
+			{groups.length ? (
+				<div className="kpf-resources-topics">
+					{groups.map((group) => (
+						<TopicGroup group={group} key={group.id} />
 					))}
 				</div>
 			) : (

@@ -147,6 +147,16 @@ export function injectPostFieldTags(fieldTags = {}) {
 				if (node.closest('.kpf-seo-editor') || node.closest('.kpf-seo-canvas-root')) {
 					return;
 				}
+				// Event / Scrapbook field metaboxes — not post publish date.
+				if (
+					node.closest('#kpf-events-editor-root') ||
+					node.closest('#kpf-scrapbook-images-root') ||
+					node.closest('.kpf-events-editor-root') ||
+					node.closest('.kpf-scrapbook-images-root') ||
+					node.closest('.kpf-scrapbook-editor-panel')
+				) {
+					return;
+				}
 				if (!labelMatches(node, rule.patterns)) {
 					return;
 				}

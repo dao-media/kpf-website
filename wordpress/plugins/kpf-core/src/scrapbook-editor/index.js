@@ -40,7 +40,16 @@ function useScrapbookMeta() {
 		(select) => select('core/editor').getCurrentPostType(),
 		[]
 	);
-	const [allMeta, setAllMeta] = useEntityProp('postType', postType, 'meta');
+	const postId = useSelect(
+		(select) => select('core/editor').getCurrentPostId(),
+		[]
+	);
+	const [allMeta, setAllMeta] = useEntityProp(
+		'postType',
+		postType,
+		'meta',
+		postId
+	);
 	const details = useMemo(() => {
 		const merged = { ...DEFAULTS, ...(allMeta?.[META_KEY] || {}) };
 		if (merged.date_precision === 'decade') {

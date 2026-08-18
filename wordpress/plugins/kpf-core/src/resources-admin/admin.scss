@@ -75,6 +75,32 @@
 	margin: 0;
 }
 
+.kpf-resources-topics {
+	display: grid;
+	gap: 36px;
+}
+
+.kpf-resources-topic__header {
+	margin-bottom: 14px;
+	max-width: 40rem;
+}
+
+.kpf-resources-topic__header h2 {
+	color: var(--kpf-resources-ink);
+	font-size: 18px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	line-height: 1.25;
+	margin: 0 0 6px;
+}
+
+.kpf-resources-topic__header p {
+	color: var(--kpf-resources-muted);
+	font-size: 13px;
+	line-height: 1.45;
+	margin: 0;
+}
+
 .kpf-resources-grid {
 	display: grid;
 	gap: 18px;

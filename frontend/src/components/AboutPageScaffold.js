@@ -245,7 +245,7 @@ export default function AboutPageScaffold({
                     <span className="kpf-accordion__leading" aria-hidden="true">
                       <Check size={20} strokeWidth={2} absoluteStrokeWidth />
                     </span>
-                    <span className="kpf-accordion__title">{item.title}</span>
+                    <h5 className="kpf-accordion__title">{item.title}</h5>
                     <span className="kpf-accordion__icon" aria-hidden="true">
                       <Plus
                         size={20}

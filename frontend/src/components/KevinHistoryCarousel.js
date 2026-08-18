@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const {
   DEFAULT_BACK_OPACITY,
@@ -10,10 +11,17 @@ const {
   stackLayout,
 } = require("@/lib/stackedImageSlider");
 
+gsap.registerPlugin(ScrollTrigger);
+
 const SWIPE_THRESHOLD_PX = 48;
 const WHEEL_THRESHOLD = 48;
 const STEP_DURATION = 0.7;
 const STEP_EASE = "power2.out";
+/** Entrance: after the split is fully in view, wait then stagger imgs from the left. */
+const INTRO_DELAY = 0.2;
+const INTRO_DURATION = 0.7;
+const INTRO_STAGGER = 0.12;
+const INTRO_X = -72;
 /** Rightward peel on forward exit; no vertical travel — bottom edge stays put. */
 const EXIT_X = Math.max(DEFAULT_EXIT_X, 64);
 const EXIT_Y = 0;
@@ -27,19 +35,22 @@ const PEEK_NEIGHBOR_OPACITY = 0.4;
 
 /**
  * Fan left offsets relative to the STACK container (not the photo box):
- * - front: right-aligned (stays where it is)
- * - rear: left: -20% of the stack
+ * - front: right-aligned, then +48px toward the copy card
+ * - rear: further left than −20% so more of the back slide clips out
  * - middle slides: evenly spaced between those two left edges
  */
+const FAN_FRONT_NUDGE_PX = 48;
+const FAN_REAR_LEFT_FRACTION = -0.28;
+
 function fanLeftPercent(slot, visibleCount, stackWidth, photoWidth) {
   const deep = Math.max(1, visibleCount - 1);
   // Allow indices past `deep` so a new rear card can slide in from further left.
   const index = Math.max(0, Number(slot) || 0);
   if (!stackWidth || !photoWidth) {
-    return (-20 * index) / deep;
+    return ((FAN_REAR_LEFT_FRACTION * 100) * index) / deep;
   }
-  const frontLeftPx = Math.max(0, stackWidth - photoWidth);
-  const rearLeftPx = stackWidth * -0.2;
+  const frontLeftPx = Math.max(0, stackWidth - photoWidth) + FAN_FRONT_NUDGE_PX;
+  const rearLeftPx = stackWidth * FAN_REAR_LEFT_FRACTION;
   const leftPx = frontLeftPx + ((rearLeftPx - frontLeftPx) * index) / deep;
   return (leftPx / stackWidth) * 100;
 }
@@ -92,6 +103,7 @@ function decodeEntities(value) {
  * About “Who Kevin was” stack.
  * Fan via CSS `left` %; depth via GSAP `scale` (not width — avoids reflow / fan drift).
  * Step: front peels right + expands + fades, then recycles to the rear.
+ * Intro: after the split fully enters the viewport, photos stagger slide/fade in from the left.
  */
 export default function KevinHistoryCarousel({
   slides = [],
@@ -403,6 +415,58 @@ export default function KevinHistoryCarousel({
       animatingRef.current = false;
     };
   }, [baseQueue, count, paint]);
+
+  // Stack photos: hide until the split fully enters, then stagger slide/fade from left.
+  useLayoutEffect(() => {
+    const split = splitRef.current;
+    if (!split || count < 1) return undefined;
+
+    const imgs = gsap.utils.toArray(".kpf-history__layer img", split);
+    if (!imgs.length) return undefined;
+
+    if (prefersReducedMotion()) {
+      gsap.set(imgs, { autoAlpha: 1, x: 0 });
+      return undefined;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.set(imgs, { autoAlpha: 0, x: INTRO_X });
+
+      const playIntro = () => {
+        const layers = gsap.utils.toArray(".kpf-history__layer", split);
+        // Leftmost first so the fan reads as stacking in from the left.
+        const orderedImgs = [...layers]
+          .sort(
+            (a, b) =>
+              a.getBoundingClientRect().left - b.getBoundingClientRect().left,
+          )
+          .map((layer) => layer.querySelector("img"))
+          .filter(Boolean);
+
+        gsap.to(orderedImgs.length ? orderedImgs : imgs, {
+          autoAlpha: 1,
+          x: 0,
+          duration: INTRO_DURATION,
+          ease: "power3.out",
+          stagger: INTRO_STAGGER,
+          delay: INTRO_DELAY,
+          overwrite: "auto",
+        });
+      };
+
+      // `bottom bottom` = element has fully entered the viewport from below.
+      ScrollTrigger.create({
+        trigger: split,
+        start: "bottom bottom",
+        once: true,
+        onEnter: playIntro,
+      });
+    }, split);
+
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+
+    return () => ctx.revert();
+  }, [count, items]);
 
   useEffect(() => {
     const split = splitRef.current;

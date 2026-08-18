@@ -173,7 +173,7 @@ const ABOUT = {
   hero: {
     eyebrow: "About",
     title: "About the Kevin Popke Foundation",
-    body: "A Florida foundation that funds the organizations doing the hardest work for veterans — built to continue the way one man spent his life.",
+    body: "We don't run the programs. We find the people already doing the hardest work for Florida's veterans — and we make sure their next year is funded.",
     primaryCta: { href: "#mission", label: "Our mission" },
     secondaryCta: { href: "#history", label: "Who Kevin was" },
     /* Pinned — restore framed photo + tampa-bay cutout layout later */
@@ -239,10 +239,8 @@ const ABOUT = {
     eyebrow: "Our mission",
     title: "In tribute to Kevin Popke, we fund the work already underway",
     body: [
-      "The Kevin Popke Foundation supports veteran-focused charities in the Tampa Bay area and other Florida communities through targeted grants.",
-      "We look for orgs already doing great work and give them money to keep doing it.",
-      "Before a grant goes out, we do the homework. Leadership that lives the commitment. Dollars that reach veterans. Organizations that will still be here in 5 years.",
-      "And when we can, we go see it.",
+      "The Foundation makes targeted grants to veteran-focused charities across Tampa Bay and the rest of Florida. We don't build programs from scratch — we look for the ones that already deliver, and we help them keep going.",
+      "Before a dollar moves, we do the homework. And when we can, we put boots on the ground to watch the inspiring work happening firsthand.",
     ],
     criteria: [
       {

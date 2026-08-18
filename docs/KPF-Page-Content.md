@@ -201,7 +201,7 @@ Home · About · Events · Blog · Contact          [Donate]
 **H1:** About the Kevin Popke Foundation
 
 **Standfirst:**
-> A Florida foundation that funds the organizations doing the hardest work for veterans — built to continue the way one man spent his life.
+> We don't run the programs. We find the people already doing the hardest work for Florida's veterans — and we make sure their next year is funded.
 
 ---
 
@@ -209,13 +209,9 @@ Home · About · Events · Blog · Contact          [Donate]
 
 **H2:** Our mission
 
-> The Kevin Popke Foundation supports veteran-focused charities in the Tampa Bay area and other Florida communities through targeted grants.
+> The Foundation makes targeted grants to veteran-focused charities across Tampa Bay and the rest of Florida. We don't build programs from scratch — we look for the ones that already deliver, and we help them keep going.
 >
-> We don't run programs ourselves. We look for organizations already doing the work — housing, job training, mental health care, family support, and the everyday business of keeping veterans connected to each other — and we give them money to keep doing it.
->
-> The grants are targeted on purpose. A small organization with committed leadership and low overhead can do more with a well-timed grant than a large one can do with the same money. Our job is to find those organizations and fund them.
-
-> **`[NOTE]`** Compressed from the client draft's three paragraphs. The original ran ~230 words and closed on "honor his memory"; this runs ~110 and closes on the actual strategic rationale, which is more persuasive and doesn't front-load the legacy framing three sections before the section that's actually about Kevin.
+> Before a dollar moves, we do the homework. And when we can, we put boots on the ground to watch the inspiring work happening firsthand.
 
 ---
 

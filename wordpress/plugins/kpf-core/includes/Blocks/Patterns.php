@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace KPF\Core\Blocks;
 
 final class Patterns {
-	private const SEED_VERSION = '1';
+	private const SEED_VERSION = '2';
 
 	public static function register(): void {
 		add_action('init', array( self::class, 'seed' ), 50);
@@ -51,6 +51,12 @@ final class Patterns {
 				'title'   => __('Important notice', 'kpf-core'),
 				'group'   => 'information',
 				'content' => '<!-- wp:kpf/notice {"heading":"Important information","body":"Use this space for information visitors should not miss.","tone":"information"} --><aside class="wp-block-kpf-notice kpf-notice kpf-notice--information"><span class="kpf-notice__icon" aria-hidden="true">i</span><div><h3 class="kpf-notice__heading">Important information</h3><p class="kpf-notice__body">Use this space for information visitors should not miss.</p></div></aside><!-- /wp:kpf/notice -->',
+			),
+			array(
+				'slug'    => 'kpf-cigar',
+				'title'   => __('Cigar', 'kpf-core'),
+				'group'   => 'content',
+				'content' => '<!-- wp:kpf/cigar --><div class="wp-block-kpf-cigar kpf-cigar"></div><!-- /wp:kpf/cigar -->',
 			),
 		);
 	}

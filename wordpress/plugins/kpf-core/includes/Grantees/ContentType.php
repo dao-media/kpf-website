@@ -65,6 +65,9 @@ final class ContentType {
 				'menu_position'       => null,
 				'supports'            => array(
 					'title',
+					// Required so the block editor boots and Grantee details
+					// (PluginDocumentSettingPanel) can enqueue/render.
+					'editor',
 					'thumbnail',
 					'revisions',
 					'custom-fields',

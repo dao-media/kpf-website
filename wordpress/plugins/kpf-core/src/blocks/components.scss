@@ -513,6 +513,15 @@
 	margin-top: 0.2rem;
 }
 
+.kpf-cigar {
+	min-height: 2rem;
+}
+
+.kpf-cigar .kpf-component-hint {
+	display: block;
+	padding: 1.25rem 0;
+}
+
 @media (max-width: 700px) {
 	.kpf-cta--split {
 		display: block;

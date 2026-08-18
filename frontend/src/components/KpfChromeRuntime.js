@@ -31,8 +31,78 @@ export default function KpfChromeRuntime({ enabled }) {
       else link.removeAttribute("aria-current");
     });
 
+    const brandCleanups = Array.from(
+      document.querySelectorAll(".kpf-header__brand-text[data-full]"),
+    ).map((slot) => {
+      const label = slot.querySelector(".kpf-header__brand-text-label");
+      const measure = slot.querySelector(".kpf-header__brand-text-measure");
+      const full = slot.getAttribute("data-full") || "Kevin Popke Foundation";
+      const short = slot.getAttribute("data-short") || "KPF";
+      const brand = slot.closest(".kpf-header__brand");
+      const header = brand?.closest(".kpf-header") || brand?.parentElement;
+      if (
+        !label ||
+        !measure ||
+        !brand ||
+        !header ||
+        typeof ResizeObserver === "undefined"
+      ) {
+        return () => {};
+      }
+
+      let compact = false;
+      const sync = () => {
+        const needed = measure.offsetWidth;
+        if (needed <= 0) return;
+
+        const badge = brand.querySelector(".kpf-header__badge");
+        const brandCs = getComputedStyle(brand);
+        const gap = parseFloat(brandCs.gap) || 0;
+        const brandPad =
+          (parseFloat(brandCs.paddingLeft) || 0) +
+          (parseFloat(brandCs.paddingRight) || 0);
+        const fullBrandW =
+          (badge?.offsetWidth || 0) + gap + needed + brandPad;
+
+        const headerCs = getComputedStyle(header);
+        const headerPad =
+          (parseFloat(headerCs.paddingLeft) || 0) +
+          (parseFloat(headerCs.paddingRight) || 0);
+        const headerGap = parseFloat(headerCs.gap) || 0;
+        const spacer = header.querySelector(".kpf-header__spacer");
+        const spacerMin = spacer
+          ? parseFloat(getComputedStyle(spacer).minWidth) || 0
+          : 0;
+        let fixed = 0;
+        for (const child of header.children) {
+          if (child === brand || child === spacer) continue;
+          fixed += child.offsetWidth;
+        }
+        const availableForBrand =
+          header.clientWidth -
+          headerPad -
+          fixed -
+          spacerMin -
+          headerGap * Math.max(0, header.children.length - 1);
+
+        const next = compact
+          ? availableForBrand < fullBrandW + 4
+          : availableForBrand < fullBrandW;
+        if (next === compact) return;
+        compact = next;
+        slot.toggleAttribute("data-compact", compact);
+        label.textContent = compact ? short : full;
+      };
+
+      const ro = new ResizeObserver(sync);
+      ro.observe(header);
+      ro.observe(brand);
+      sync();
+      return () => ro.disconnect();
+    });
+
     const roots = Array.from(document.querySelectorAll(".kpf-mobile-nav"));
-    if (!roots.length) return undefined;
+    if (!roots.length && !brandCleanups.length) return undefined;
 
     const cleanups = roots.map((root) => {
       const toggle = root.querySelector(".kpf-mobile-nav__toggle");
@@ -93,6 +163,7 @@ export default function KpfChromeRuntime({ enabled }) {
     });
 
     return () => {
+      brandCleanups.forEach((fn) => fn());
       cleanups.forEach((fn) => fn());
     };
   }, [enabled]);

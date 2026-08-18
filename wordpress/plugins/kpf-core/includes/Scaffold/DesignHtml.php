@@ -195,24 +195,26 @@ HTML;
 	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
 	 */
 	public static function about( array $media ): string {
-		$bg       = self::img( $media, 'about.tampaBay', '', 'kpf-hero__media' );
-		$frame    = self::img( $media, 'about.heroFrame', 'Kevin Popke with his wife in a wooden frame', '' );
+		$bg       = self::img( $media, 'about.heroBeach', 'Volunteers and veterans gathered on the beach around a beach wheelchair', 'kpf-hero__media' );
+		/* Pinned for restore: about.heroFrame + about.tampaBay cutout layout */
 		$front    = self::img( $media, 'about.historyFront', 'Donald “Kevin” Popke', '' );
 		$l1       = self::img( $media, 'about.history1', 'Donald “Kevin” Popke with his wife', '' );
 		$l2       = self::img( $media, 'about.history2', 'Donald “Kevin” Popke running', '' );
 		$back     = self::img( $media, 'about.historyBack', '', '' );
-		$featured = self::img( $media, 'about.galleryFeatured', 'Donald “Kevin” Popke', '' );
+		$featured = self::img( $media, 'about.galleryFeatured', 'Volunteer helping a veteran in a beach wheelchair near the shore', '' );
 		$g1       = self::img( $media, 'about.gallery1', 'Kevin Popke in flight gear', '' );
 		$g2       = self::img( $media, 'about.gallery2', 'Kevin Popke running', '' );
 		$g3       = self::img( $media, 'about.gallery3', 'Kevin Popke with family', '' );
 		$g4       = self::img( $media, 'about.gallery4', 'Foundation volunteers at a cookout', '' );
+		$hero_media = '' !== $bg ? '<div class="kpf-hero__media-wrap">' . $bg . '</div>' : '';
+		$flag     = self::cta_flag( $media );
 
 		return <<<HTML
 <div class="kpf-page-about" data-kpf-scaffold="about">
   <section class="kpf-hero kpf-hero--about" aria-labelledby="kpf-about-hero-title">
-    {$bg}
+    {$hero_media}
     <div class="kpf-u-container kpf-hero__layout">
-      <div class="kpf-hero__frame-motion"><div class="kpf-hero__frame">{$frame}</div></div>
+      <!-- Pinned: framed photo — restore with tampa-bay cutout later -->
       <div class="kpf-hero__content">
         <div class="kpf-content-block">
             <div class="kpf-content-block__copy">
@@ -247,6 +249,12 @@ HTML;
           </div>
       </div>
       <div class="kpf-history__split">
+        <div class="kpf-history__stack">
+          <div class="kpf-history__layer kpf-history__layer--front">{$front}</div>
+          <div class="kpf-history__layer kpf-history__layer--1">{$l1}</div>
+          <div class="kpf-history__layer kpf-history__layer--2">{$l2}</div>
+          <div class="kpf-history__layer kpf-history__layer--back">{$back}</div>
+        </div>
         <div class="kpf-history__aside">
           <div class="kpf-history__card">
             <div class="kpf-content-block">
@@ -263,18 +271,12 @@ HTML;
                 </div>
             </div>
           </div>
-        </div>
-        <div class="kpf-history__stack">
-          <div class="kpf-history__layer kpf-history__layer--front">{$front}</div>
-          <div class="kpf-history__layer kpf-history__layer--1">{$l1}</div>
-          <div class="kpf-history__layer kpf-history__layer--2">{$l2}</div>
-          <div class="kpf-history__layer kpf-history__layer--back">{$back}</div>
-        </div>
-        <div class="kpf-history__dots" role="tablist" aria-label="History slides">
-          <button type="button" class="kpf-history__dot is-active" aria-current="true" aria-label="Show history image 1 of 4"></button>
-          <button type="button" class="kpf-history__dot" aria-label="Show history image 2 of 4"></button>
-          <button type="button" class="kpf-history__dot" aria-label="Show history image 3 of 4"></button>
-          <button type="button" class="kpf-history__dot" aria-label="Show history image 4 of 4"></button>
+          <div class="kpf-history__dots" role="tablist" aria-label="History slides">
+            <button type="button" class="kpf-history__dot is-active" aria-current="true" aria-label="Show history image 1 of 4"></button>
+            <button type="button" class="kpf-history__dot" aria-label="Show history image 2 of 4"></button>
+            <button type="button" class="kpf-history__dot" aria-label="Show history image 3 of 4"></button>
+            <button type="button" class="kpf-history__dot" aria-label="Show history image 4 of 4"></button>
+          </div>
         </div>
       </div>
     </div>
@@ -347,7 +349,7 @@ HTML;
           <div class="kpf-content-block__copy">
         <div class="kpf-content-block__title-group">
           <p class="kpf-content-block__eyebrow">Making an impact</p>
-          <h2 id="kpf-about-grantees-title" class="kpf-content-block__title kpf-content-block__title--h2">Meet our grantees</h2>
+          <h2 id="kpf-about-grantees-title" class="kpf-content-block__title kpf-content-block__title--h2">Recipients of more than {{grants.total}} in KPF grants</h2>
         </div>
             <div class="kpf-content-block__body-group">
         <p class="kpf-content-block__body">Our grants have supported veterans facing very different situations: veterans without housing, veterans living with serious injuries, and Special Operations families hit with a sudden financial crisis.</p>
@@ -359,32 +361,35 @@ HTML;
 
   <section class="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
     <div class="kpf-u-container">
-      <div class="kpf-content-block kpf-u-invert">
-          <div class="kpf-content-block__copy">
-        <div class="kpf-content-block__title-group">
-          <p class="kpf-content-block__eyebrow">The work</p>
-          <h2 id="kpf-about-gallery-title" class="kpf-content-block__title kpf-content-block__title--h2">KPF volunteers enable our ongoing support for our nation’s protectors</h2>
-        </div>
-            <div class="kpf-content-block__body-group">
-        <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.</p>
+      <div class="kpf-gallery__layout">
+        <div class="kpf-gallery__main">
+          <div class="kpf-content-block kpf-u-invert">
+            <div class="kpf-content-block__copy">
+              <div class="kpf-content-block__title-group">
+                <p class="kpf-content-block__eyebrow">The work</p>
+                <h2 id="kpf-about-gallery-title" class="kpf-content-block__title kpf-content-block__title--h2">KPF volunteers enable our ongoing support for our nation’s protectors</h2>
+              </div>
+              <div class="kpf-content-block__body-group">
+                <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.</p>
+              </div>
             </div>
           </div>
-      </div>
-      <div class="kpf-gallery__layout">
-        <figure class="kpf-gallery__featured">{$featured}</figure>
-        <div class="kpf-gallery__grid">
-          <figure class="kpf-gallery__item">{$g1}</figure>
-          <figure class="kpf-gallery__item">{$g2}</figure>
-          <figure class="kpf-gallery__item">{$g3}</figure>
-          <figure class="kpf-gallery__item">{$g4}</figure>
+          <div class="kpf-gallery__grid">
+            <figure class="kpf-gallery__item">{$g1}</figure>
+            <figure class="kpf-gallery__item">{$g2}</figure>
+            <figure class="kpf-gallery__item">{$g3}</figure>
+            <figure class="kpf-gallery__item">{$g4}</figure>
+          </div>
         </div>
+        <figure class="kpf-gallery__featured">{$featured}</figure>
       </div>
     </div>
   </section>
 
   <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-about-cta-title">
+    {$flag}
     <div class="kpf-u-container">
-      <div class="kpf-content-block kpf-content-block--inverse kpf-cta-closing__block">
+      <div class="kpf-content-block kpf-u-invert kpf-cta-closing__block">
           <div class="kpf-content-block__copy">
         <div class="kpf-content-block__title-group">
           <h2 id="kpf-about-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">Together, we can.</h2>
@@ -408,9 +413,13 @@ HTML;
 	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
 	 */
 	public static function events( array $media ): string {
-		$hero     = self::img( $media, 'events.hero', '', 'kpf-hero__media' );
-		$featured = self::img( $media, 'events.featured', '', '' );
-		$library  = self::img( $media, 'events.library1', '', '' );
+		$hero      = self::img( $media, 'events.hero', 'Kevin Popke speaking into a microphone', 'kpf-hero__media' );
+		$tile1     = self::img( $media, 'events.featured1', '', '' );
+		$tile2     = self::img( $media, 'events.featured2', '', '' );
+		$tile3     = self::img( $media, 'events.featured3', '', '' );
+		$tile4     = self::img( $media, 'events.featured4', '', '' );
+		$card_mark = self::img( $media, 'events.cardMark', '', 'kpf-event-card__mark' );
+		$flag      = self::cta_flag( $media );
 
 		return <<<HTML
 <div class="kpf-page-events" data-kpf-scaffold="events">
@@ -418,60 +427,127 @@ HTML;
     {$hero}
     <div class="kpf-hero__scrim" aria-hidden="true"></div>
     <div class="kpf-hero__content">
-      <div class="kpf-content-block kpf-content-block--inverse">
-          <div class="kpf-content-block__copy">
-        <div class="kpf-content-block__title-group">
-          <p class="kpf-content-block__eyebrow">What funds our mission</p>
-          <h1 id="kpf-events-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">Events</h1>
-        </div>
-            <div class="kpf-content-block__body-group">
-        <p class="kpf-content-block__body">Our events raise the money we grant. They’re also a good time.</p>
-            </div>
+      <div class="kpf-content-block kpf-u-invert">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">What funds our mission</p>
+            <h1 id="kpf-events-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">Kevin Popke Foundation events</h1>
           </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Our events raise money to support our mission, and we have a good time while doing it.</p>
+          </div>
+        </div>
         <div class="kpf-content-block__actions kpf-hero__actions">
-          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="#featured" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Songwriters for Vets</button>
-          <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Partner with us</button>
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="#featured" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">See featured event</button>
+          <button type="button" class="kpf-btn kpf-btn--outline" data-kpf-href="#partner" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Partner with us</button>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="featured" class="kpf-featured-event kpf-section kpf-section--surface" aria-labelledby="kpf-events-featured-title">
-    {$featured}
-    <div class="kpf-content-block">
-          <div class="kpf-content-block__copy">
-      <div class="kpf-content-block__title-group">
-        <p class="kpf-content-block__eyebrow">Our largest source of support</p>
-        <h2 id="kpf-events-featured-title" class="kpf-content-block__title kpf-content-block__title--h2">Songwriters for Vets</h2>
-      </div>
-            <div class="kpf-content-block__body-group">
-      <p class="kpf-content-block__body">Once a year, Nashville songwriters take a stage in Florida and play the songs they wrote — the ones you already know by heart — and tell you how each one came to exist. There’s an auction, an open bar, and a room full of people who came for the same reason.</p>
-      <p class="kpf-content-block__body">Songwriters for Vets is the single largest source of the grant money this Foundation puts to work each year. Buying a ticket is one of the most direct ways to support Florida veterans.</p>
-            </div>
+  <section id="partner" class="kpf-events-partner kpf-section kpf-section--page" aria-labelledby="kpf-events-context-title">
+    <div class="kpf-u-container kpf-events-partner__inner">
+      <div class="kpf-content-block">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">Partner with us</p>
+            <h2 id="kpf-events-context-title" class="kpf-content-block__title kpf-content-block__title--h2">Sponsor, partner, or host something with us</h2>
           </div>
-      <div class="kpf-content-block__actions">
-        <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="https://songwriters4vets.com" data-kpf-external="true" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get tickets</button>
-        <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Become a sponsor</button>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Our events happen because businesses and individuals decide to put their name behind them. Sponsorship puts your business in front of a room that cares who's in it, and it funds grants directly.</p>
+            <p class="kpf-content-block__body">There's also room for other ideas. If you want to run a fundraiser, host a collection, or partner on an event of your own, we'd like to hear it.</p>
+          </div>
+        </div>
+        <div class="kpf-content-block__actions">
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate via PayPal</button>
+        </div>
+      </div>
+      <div class="kpf-events-partner__paths kpf-donate__list">
+        <div class="kpf-accordion is-open">
+          <button type="button" class="kpf-accordion__header" aria-expanded="true"><span class="kpf-accordion__title">Sponsor a night</span></button>
+          <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Put your name behind a room that cares who's in it. Packages start where you are and fund grants directly.</p></div></div>
+        </div>
+        <div class="kpf-accordion">
+          <button type="button" class="kpf-accordion__header" aria-expanded="false"><span class="kpf-accordion__title">Host a fundraiser</span></button>
+          <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Run a collection, a dinner, or a night of your own. We'll help you point every dollar toward Florida veterans.</p></div></div>
+        </div>
+        <div class="kpf-accordion">
+          <button type="button" class="kpf-accordion__header" aria-expanded="false"><span class="kpf-accordion__title">Corporate match</span></button>
+          <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Double the impact of employee giving with a corporate match tied to an event or a year-round partnership.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="featured" class="kpf-featured-event kpf-section" aria-labelledby="kpf-events-featured-title">
+    <div class="kpf-u-container kpf-featured-event__inner">
+      <div class="kpf-featured-event__collage">
+        <div class="kpf-featured-event__collage-row kpf-featured-event__collage-row--top">
+          <figure class="kpf-featured-event__tile kpf-featured-event__tile--1">{$tile1}</figure>
+          <figure class="kpf-featured-event__tile kpf-featured-event__tile--2">{$tile2}</figure>
+        </div>
+        <div class="kpf-featured-event__collage-row kpf-featured-event__collage-row--bottom">
+          <figure class="kpf-featured-event__tile kpf-featured-event__tile--3">{$tile3}</figure>
+          <figure class="kpf-featured-event__tile kpf-featured-event__tile--4">{$tile4}</figure>
+        </div>
+      </div>
+      <div class="kpf-content-block kpf-u-invert kpf-featured-event__copy">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">Featured</p>
+            <h2 id="kpf-events-featured-title" class="kpf-content-block__title kpf-content-block__title--h2">Songwriters for Vets</h2>
+          </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Once a year, Nashville songwriters take a stage in Florida and play the songs they wrote, many you already know by heart, and share the fascinating stories behind each tune. There's an auction, an open bar, and a community proudly supporting our protectors.</p>
+            <p class="kpf-content-block__body">Buying a ticket is one of the most direct ways to support Florida veterans.</p>
+          </div>
+        </div>
+        <div class="kpf-content-block__actions">
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="https://songwriters4vets.com" data-kpf-external="true" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get tickets</button>
+          <button type="button" class="kpf-btn kpf-btn--outline" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Become a sponsor</button>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="kpf-event-library kpf-section" aria-labelledby="kpf-events-library-title">
     <div class="kpf-u-container">
-      <div class="kpf-content-block">
-          <div class="kpf-content-block__copy">
-        <div class="kpf-content-block__title-group">
-          <p class="kpf-content-block__eyebrow">Upcoming</p>
-          <h2 id="kpf-events-library-title" class="kpf-content-block__title kpf-content-block__title--h2">Upcoming events</h2>
-        </div>
-            <div class="kpf-content-block__body-group">
-        <h3 class="kpf-content-block__title kpf-content-block__title--h3">Nothing on the calendar right now</h3>
-        <p class="kpf-content-block__body">We announce events a few months out. The best way to hear first is to follow along — or reach out if you’d like to help put one together.</p>
-            </div>
+      <div class="kpf-content-block kpf-event-library__intro">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">On the calendar</p>
+            <h2 id="kpf-events-library-title" class="kpf-content-block__title kpf-content-block__title--h2">Upcoming events</h2>
           </div>
-        <div class="kpf-content-block__actions"><button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/contact/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get in touch</button></div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Partner nights and fundraisers added over time. Each one a card, not a calendar.</p>
+          </div>
+        </div>
       </div>
-      <div class="kpf-event-library__grid">{$library}</div>
+      <div class="kpf-event-library__grid">
+        <article class="kpf-event-card"><div class="kpf-event-card__body"><div class="kpf-event-card__header"><h3 class="kpf-event-card__title">Songwriters for Vets - Naples</h3>{$card_mark}</div><p class="kpf-event-card__body-text">Nashville songwriters perform their #1 hits and tell the stories behind them. Auction, open bar, proceeds supporting Florida veterans.</p></div></article>
+        <article class="kpf-event-card"><div class="kpf-event-card__body"><div class="kpf-event-card__header"><h3 class="kpf-event-card__title">Community Golf Classic</h3>{$card_mark}</div><p class="kpf-event-card__body-text">A partner-hosted scramble raising funds for veteran housing and emergency assistance grants across Southwest Florida.</p></div></article>
+        <article class="kpf-event-card"><div class="kpf-event-card__body"><div class="kpf-event-card__header"><h3 class="kpf-event-card__title">Holiday Giving Night</h3>{$card_mark}</div><p class="kpf-event-card__body-text">An end-of-year gathering with music, auction items, and a direct path to fund the next round of KPF grants.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-events-cta-title">
+    {$flag}
+    <div class="kpf-u-container">
+      <div class="kpf-content-block kpf-u-invert kpf-cta-closing__block">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <h2 id="kpf-events-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">Together, we can.</h2>
+          </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">There's more than one way to be part of this.</p>
+          </div>
+        </div>
+        <div class="kpf-content-block__actions">
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/#donate" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Donate</button>
+          <button type="button" class="kpf-btn kpf-btn--outline" data-kpf-href="/contact/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get in touch</button>
+        </div>
+      </div>
     </div>
   </section>
 </div>
@@ -619,6 +695,23 @@ HTML;
 			$class_attr,
 			esc_url( $url ),
 			esc_attr( $alt )
+		);
+	}
+
+	/**
+	 * Full-bleed flag video + scrim for closing CTA bands.
+	 *
+	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
+	 */
+	private static function cta_flag( array $media ): string {
+		$url = (string) ( $media['cta.flag']['sourceUrl'] ?? '' );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		return sprintf(
+			'<div class="kpf-cta-closing__media" aria-hidden="true"><video autoplay muted loop playsinline preload="metadata"><source src="%s" type="video/mp4"/></video></div><div class="kpf-cta-closing__scrim" aria-hidden="true"></div>',
+			esc_url( $url )
 		);
 	}
 

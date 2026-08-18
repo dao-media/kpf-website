@@ -65,10 +65,11 @@ final class Meta {
 			'version'       => self::VERSION,
 			'logline'       => '',
 			'description'   => '',
-			'contact_email' => '',
-			'contact_phone' => '',
-			'website'       => '',
-			'location'      => self::default_location(),
+			'contact_email'  => '',
+			'contact_phone'  => '',
+			'website'        => '',
+			'ticketing_link' => '',
+			'location'       => self::default_location(),
 			'frequency'     => 'one_time',
 			'duration_days' => 1,
 			'schedule'      => self::default_schedule(),
@@ -124,10 +125,11 @@ final class Meta {
 				),
 				'logline'       => array( 'type' => 'string', 'default' => '' ),
 				'description'   => array( 'type' => 'string', 'default' => '' ),
-				'contact_email' => array( 'type' => 'string', 'default' => '' ),
-				'contact_phone' => array( 'type' => 'string', 'default' => '' ),
-				'website'       => array( 'type' => 'string', 'default' => '', 'format' => 'uri' ),
-				'location'      => array(
+				'contact_email'  => array( 'type' => 'string', 'default' => '' ),
+				'contact_phone'  => array( 'type' => 'string', 'default' => '' ),
+				'website'        => array( 'type' => 'string', 'default' => '', 'format' => 'uri' ),
+				'ticketing_link' => array( 'type' => 'string', 'default' => '', 'format' => 'uri' ),
+				'location'       => array(
 					'type'                 => 'object',
 					'additionalProperties' => false,
 					'default'              => self::default_location(),
@@ -254,22 +256,24 @@ final class Meta {
 			$frequency = 'one_time';
 		}
 
-		$website = self::sanitize_website( (string) ( $value['website'] ?? '' ) );
-		$email   = sanitize_email( (string) ( $value['contact_email'] ?? '' ) );
-		$phone   = sanitize_text_field( (string) ( $value['contact_phone'] ?? '' ) );
+		$website         = self::sanitize_website( (string) ( $value['website'] ?? '' ) );
+		$ticketing_link  = self::sanitize_website( (string) ( $value['ticketing_link'] ?? '' ) );
+		$email           = sanitize_email( (string) ( $value['contact_email'] ?? '' ) );
+		$phone           = sanitize_text_field( (string) ( $value['contact_phone'] ?? '' ) );
 
 		return array(
-			'version'       => self::VERSION,
-			'logline'       => sanitize_text_field( (string) ( $value['logline'] ?? '' ) ),
-			'description'   => sanitize_textarea_field( (string) ( $value['description'] ?? '' ) ),
-			'contact_email' => is_email( $email ) ? $email : '',
-			'contact_phone' => $phone,
-			'website'       => $website,
-			'location'      => self::sanitize_location( $value['location'] ?? array() ),
-			'frequency'     => $frequency,
-			'duration_days' => max( 1, min( 30, absint( $value['duration_days'] ?? 1 ) ) ),
-			'schedule'      => self::sanitize_schedule( $value['schedule'] ?? array() ),
-			'host_term_ids' => self::sanitize_id_list( $value['host_term_ids'] ?? array() ),
+			'version'        => self::VERSION,
+			'logline'        => sanitize_text_field( (string) ( $value['logline'] ?? '' ) ),
+			'description'    => sanitize_textarea_field( (string) ( $value['description'] ?? '' ) ),
+			'contact_email'  => is_email( $email ) ? $email : '',
+			'contact_phone'  => $phone,
+			'website'        => $website,
+			'ticketing_link' => $ticketing_link,
+			'location'       => self::sanitize_location( $value['location'] ?? array() ),
+			'frequency'      => $frequency,
+			'duration_days'  => max( 1, min( 30, absint( $value['duration_days'] ?? 1 ) ) ),
+			'schedule'       => self::sanitize_schedule( $value['schedule'] ?? array() ),
+			'host_term_ids'  => self::sanitize_id_list( $value['host_term_ids'] ?? array() ),
 		);
 	}
 

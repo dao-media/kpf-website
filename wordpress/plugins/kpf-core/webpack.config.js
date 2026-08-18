@@ -3,10 +3,17 @@ const path = require('path');
 
 module.exports = {
 	...defaultConfig,
+	// Keep sibling build entries when rebuilding a subset; never wipe the whole
+	// admin/editor asset tree (admin-shell, dashboard-admin, etc.).
+	output: {
+		...defaultConfig.output,
+		clean: false,
+	},
 	entry: {
 		'admin-shell': path.resolve(__dirname, 'src/admin-shell/index.js'),
 		components: path.resolve(__dirname, 'src/blocks/index.js'),
 		'dashboard-admin': path.resolve(__dirname, 'src/dashboard-admin/index.js'),
+		'resources-admin': path.resolve(__dirname, 'src/resources-admin/index.js'),
 		'seo-admin': path.resolve(__dirname, 'src/seo-admin/index.js'),
 		'seo-editor': path.resolve(__dirname, 'src/seo-editor/index.js'),
 		'page-editor': path.resolve(__dirname, 'src/page-editor/index.js'),

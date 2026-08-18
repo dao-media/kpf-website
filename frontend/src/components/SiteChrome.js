@@ -4,6 +4,7 @@ import KpfFooter from "@/components/KpfFooter";
 import KpfHeader from "@/components/KpfHeader";
 import LinkArrowRuntime from "@/components/LinkArrowRuntime";
 import ScrollSmootherRuntime from "@/components/ScrollSmootherRuntime";
+import AnalyticsRuntime from "@/components/AnalyticsRuntime";
 import { SiteDateTimeProvider } from "@/components/SiteDateTimeProvider";
 
 const {
@@ -224,6 +225,7 @@ export default function SiteChrome({ chrome, children }) {
         <KpfChromeRuntime enabled={!useHeaderScaffold} />
         <LinkArrowRuntime />
         <ScrollSmootherRuntime />
+        <AnalyticsRuntime />
         <div id="smooth-wrapper" className="kpf-smooth-wrapper">
           <div id="smooth-content" className="kpf-smooth-content">
             <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>

@@ -164,7 +164,7 @@ npm run test:inbox
 Marketing pages prefer React scaffolds over CMS HTML when interactivity is required (`PageScaffold.js`). The About page (`AboutPageScaffold.js`) mirrors Figma desktop / tablet / mobile and includes:
 
 - Mission criteria **accordions** (shared `.kpf-accordion` chrome)
-- **Grantee cards** carousel (`GranteeCard` + `GranteeCardsSlider`) with hover / focus photo pop-out
+- **Grantee cards** grid (`GranteeCard` + `GranteeCardsGrid`) with equal-height cells and bottom photo pop-out
 - History split, gallery band, and closing CTA
 
 Copy and media paths live in `frontend/src/lib/pageCopy.js`. Grantee hover photos are under `frontend/public/media/grantees/`.
@@ -189,6 +189,23 @@ Then hard-refresh the Faust app (GraphQL stylesheet is cached).
 Accordion open/hover title fills use an inset `box-shadow` ring (no layout border) so the soft header background meets the rounded corners without a hairline gap.
 
 Grantee cards: default parchment-deep body; on hover / `:focus-within` / `.is-featured`, photo expands upward (~244px pad, ~264px media) per Figma `849:2104` → `849:2102`. Responsive widths: ~364px desktop, ~284px tablet, one + peek on mobile.
+
+### Analytics (GA4 / GTM)
+
+Interactive stylesheet UI is auto-tracked by `AnalyticsRuntime` (wired in `SiteChrome`) into `window.dataLayer` and `gtag` when present.
+
+| Default event | Selectors |
+|---|---|
+| `cta_clicked` | `.kpf-btn`, Gutenberg button bridges |
+| `nav_link_clicked` | header + mobile nav links |
+| `accordion_toggled` | `.kpf-accordion__header` |
+| `grantee_card_clicked` | `.kpf-grantee-card` |
+| `partner_chip_clicked` | `.kpf-partners__chip` |
+| `carousel_control_clicked` | partners / grantees / history dots |
+| `footer_link_clicked` | `.kpf-footer a` |
+| `link_clicked` | `a.kpf-link` |
+
+Override any control with `data-kpf-track="event_name"` (header/footer Donate already use `donate_header_clicked` / `donate_footer_clicked`). Catalog: `frontend/src/lib/analyticsUi.js`.
 
 ## Notes
 

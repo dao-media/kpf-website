@@ -40,8 +40,9 @@ $clean = EventsMeta::sanitize(
 		'description'   => 'Longer description here.',
 		'contact_email' => 'events@example.org',
 		'contact_phone' => '555-0100',
-		'website'       => 'example.org/events',
-		'frequency'     => 'annually',
+		'website'        => 'example.org/events',
+		'ticketing_link' => 'tickets.example.org/show',
+		'frequency'      => 'annually',
 		'duration_days' => 2,
 		'schedule'      => array(
 			'anchors' => array(
@@ -56,6 +57,10 @@ $clean = EventsMeta::sanitize(
 
 kpf_events_assert( 'A night for veterans' === $clean['logline'], 'Logline is sanitized' );
 kpf_events_assert( 'https://example.org/events' === $clean['website'], 'Website gets https://' );
+kpf_events_assert(
+	'https://tickets.example.org/show' === $clean['ticketing_link'],
+	'Ticketing link gets https://'
+);
 kpf_events_assert( 'annually' === $clean['frequency'], 'Frequency kept' );
 kpf_events_assert( 2 === $clean['duration_days'], 'Duration days kept' );
 kpf_events_assert( array( 1, 2 ) === $clean['host_term_ids'], 'Host term IDs normalized' );
@@ -196,6 +201,7 @@ if ( ! is_wp_error( $event_id ) && $event_id > 0 ) {
 	$details = EventsGraphQL::details( (int) $event_id );
 	kpf_events_assert( 'A night for veterans' === $details['logline'], 'GraphQL details include logline' );
 	kpf_events_assert( 'annually' === $details['frequency'], 'GraphQL details include frequency' );
+	kpf_events_assert( array_key_exists( 'ticketingLink', $details ), 'GraphQL details include ticketingLink' );
 	kpf_events_assert( '' !== $details['scheduleLabel'], 'GraphQL details include scheduleLabel' );
 	kpf_events_assert( isset( $details['location'] ), 'GraphQL details include location' );
 	kpf_events_assert( 'none' === ( $details['location']['mode'] ?? '' ), 'GraphQL location mode defaults to none' );

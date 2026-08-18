@@ -11,8 +11,8 @@ import {
 import { useEntityProp } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
 import { PluginDocumentSettingPanel } from '@wordpress/editor';
-import { useMemo } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { createRoot, useMemo } from '@wordpress/element';
+import { __, sprintf as formatString } from '@wordpress/i18n';
 import { registerPlugin } from '@wordpress/plugins';
 import HistoricalDateFields, {
 	composeEventDate,
@@ -35,6 +35,33 @@ const DEFAULTS = {
 	images: [],
 };
 
+function useScrapbookMeta() {
+	const postType = useSelect(
+		(select) => select('core/editor').getCurrentPostType(),
+		[]
+	);
+	const [allMeta, setAllMeta] = useEntityProp('postType', postType, 'meta');
+	const details = useMemo(() => {
+		const merged = { ...DEFAULTS, ...(allMeta?.[META_KEY] || {}) };
+		if (merged.date_precision === 'decade') {
+			merged.date_precision = 'year';
+		}
+		return merged;
+	}, [allMeta]);
+
+	function update(patch) {
+		setAllMeta({
+			...(allMeta || {}),
+			[META_KEY]: {
+				...details,
+				...patch,
+			},
+		});
+	}
+
+	return { details, update };
+}
+
 function ImagePlacement({ placement, index, total, onChange, onMove, onRemove }) {
 	const media = useSelect(
 		(select) => select('core').getMedia(placement.attachment_id),
@@ -50,35 +77,16 @@ function ImagePlacement({ placement, index, total, onChange, onMove, onRemove })
 	const effectiveAlt = placement.alt_text || fallbackAlt;
 
 	return (
-		<div
-			style={{
-				border: '1px solid #dcdcde',
-				borderRadius: 4,
-				padding: 12,
-				marginBottom: 12,
-				background: '#fff',
-			}}
-		>
+		<div className="kpf-scrapbook-image-card">
 			{previewUrl ? (
-				<img
-					src={previewUrl}
-					alt=""
-					style={{
-						display: 'block',
-						width: '100%',
-						maxHeight: 180,
-						objectFit: 'cover',
-						borderRadius: 3,
-						marginBottom: 10,
-					}}
-				/>
+				<img src={previewUrl} alt="" />
 			) : (
 				<p>{__('Loading image preview…', 'kpf-core')}</p>
 			)}
 
 			<p style={{ marginTop: 0 }}>
 				<strong>
-					{sprintf(
+					{formatString(
 						/* translators: 1: image position, 2: total images */
 						__('Image %1$d of %2$d', 'kpf-core'),
 						index + 1,
@@ -100,7 +108,10 @@ function ImagePlacement({ placement, index, total, onChange, onMove, onRemove })
 								'kpf-core'
 							)
 				}
-				placeholder={fallbackAlt || __('Example: Kevin speaking at the 2018 fundraiser', 'kpf-core')}
+				placeholder={
+					fallbackAlt ||
+					__('Example: Kevin speaking at the 2018 fundraiser', 'kpf-core')
+				}
 				value={placement.alt_text || ''}
 				onChange={(alt_text) => onChange({ ...placement, alt_text })}
 				__next40pxDefaultSize
@@ -124,7 +135,6 @@ function ImagePlacement({ placement, index, total, onChange, onMove, onRemove })
 				onChange={(caption) => onChange({ ...placement, caption })}
 				__nextHasNoMarginBottom
 			/>
-
 			<div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
 				<Button
 					variant="secondary"
@@ -150,31 +160,9 @@ function ImagePlacement({ placement, index, total, onChange, onMove, onRemove })
 	);
 }
 
-function ScrapbookPanel() {
-	const postType = useSelect((select) => select('core/editor').getCurrentPostType(), []);
-	const [allMeta, setAllMeta] = useEntityProp('postType', postType, 'meta');
-	const details = useMemo(
-		() => ({ ...DEFAULTS, ...(allMeta?.[META_KEY] || {}) }),
-		[allMeta]
-	);
-
-	function update(patch) {
-		setAllMeta({
-			...(allMeta || {}),
-			[META_KEY]: {
-				...details,
-				...patch,
-			},
-		});
-	}
-
-	function updateEntryType(entry_type) {
-		const images =
-			entry_type === 'photo' && details.images.length > 1
-				? details.images.slice(0, 1)
-				: details.images;
-		update({ entry_type, images });
-	}
+function ScrapbookImagesApp() {
+	const { details, update } = useScrapbookMeta();
+	const isStory = details.entry_type === 'story';
 
 	function addImages(selection) {
 		const selected = Array.isArray(selection) ? selection : [selection];
@@ -214,7 +202,72 @@ function ScrapbookPanel() {
 		update({ images });
 	}
 
-	const isStory = details.entry_type === 'story';
+	return (
+		<div className="kpf-scrapbook-images-app">
+			<p className="kpf-scrapbook-images-app__intro">
+				{isStory
+					? __(
+							'Add the photos in the order you want them shown. You can move them after uploading. Set the title above and other details in the Scrapbook details sidebar.',
+							'kpf-core'
+						)
+					: __(
+							'Choose the photo for this scrapbook item. The first image also becomes its cover image. Set the title above and other details in the Scrapbook details sidebar.',
+							'kpf-core'
+						)}
+			</p>
+
+			{details.images.length === 0 ? (
+				<Notice status="info" isDismissible={false}>
+					{__('No images have been added yet.', 'kpf-core')}
+				</Notice>
+			) : null}
+
+			{details.images.map((placement, index) => (
+				<ImagePlacement
+					key={placement.attachment_id}
+					placement={placement}
+					index={index}
+					total={details.images.length}
+					onChange={(next) => changeImage(index, next)}
+					onMove={moveImage}
+					onRemove={removeImage}
+				/>
+			))}
+
+			<MediaUploadCheck>
+				<MediaUpload
+					allowedTypes={['image']}
+					multiple={isStory}
+					gallery={isStory}
+					value={details.images.map((image) => image.attachment_id)}
+					onSelect={addImages}
+					render={({ open }) => (
+						<Button variant="secondary" onClick={open}>
+							{details.images.length
+								? isStory
+									? __('Add more images', 'kpf-core')
+									: __('Replace image', 'kpf-core')
+								: isStory
+									? __('Choose images', 'kpf-core')
+									: __('Choose an image', 'kpf-core')}
+						</Button>
+					)}
+				/>
+			</MediaUploadCheck>
+		</div>
+	);
+}
+
+function ScrapbookPanel() {
+	const { details, update } = useScrapbookMeta();
+
+	function updateEntryType(entry_type) {
+		const images =
+			entry_type === 'photo' && details.images.length > 1
+				? details.images.slice(0, 1)
+				: details.images;
+		update({ entry_type, images });
+	}
 
 	return (
 		<PluginDocumentSettingPanel
@@ -224,7 +277,7 @@ function ScrapbookPanel() {
 		>
 			<p>
 				{__(
-					'Choose whether this is one photo or a story made from several photos. Add the details you know; anything uncertain can be left blank.',
+					'Choose whether this is one photo or a story made from several photos. Add images in the Images box below the title. Anything uncertain can be left blank.',
 					'kpf-core'
 				)}
 			</p>
@@ -247,59 +300,6 @@ function ScrapbookPanel() {
 				__nextHasNoMarginBottom
 			/>
 
-			<PanelBody title={__('Images', 'kpf-core')} initialOpen>
-				<p>
-					{isStory
-						? __(
-								'Add the photos in the order you want them shown. You can move them after uploading.',
-								'kpf-core'
-							)
-						: __(
-								'Choose the photo for this scrapbook item. The first image also becomes its cover image.',
-								'kpf-core'
-							)}
-				</p>
-
-				{details.images.length === 0 ? (
-					<Notice status="info" isDismissible={false}>
-						{__('No images have been added yet.', 'kpf-core')}
-					</Notice>
-				) : null}
-
-				{details.images.map((placement, index) => (
-					<ImagePlacement
-						key={placement.attachment_id}
-						placement={placement}
-						index={index}
-						total={details.images.length}
-						onChange={(next) => changeImage(index, next)}
-						onMove={moveImage}
-						onRemove={removeImage}
-					/>
-				))}
-
-				<MediaUploadCheck>
-					<MediaUpload
-						allowedTypes={['image']}
-						multiple={isStory}
-						gallery={isStory}
-						value={details.images.map((image) => image.attachment_id)}
-						onSelect={addImages}
-						render={({ open }) => (
-							<Button variant="secondary" onClick={open}>
-								{details.images.length
-									? isStory
-										? __('Add more images', 'kpf-core')
-										: __('Replace image', 'kpf-core')
-									: isStory
-										? __('Choose images', 'kpf-core')
-										: __('Choose an image', 'kpf-core')}
-							</Button>
-						)}
-					/>
-				</MediaUploadCheck>
-			</PanelBody>
-
 			<PanelBody title={__('When and where', 'kpf-core')} initialOpen>
 				<SelectControl
 					label={__('How exact is the date?', 'kpf-core')}
@@ -307,8 +307,7 @@ function ScrapbookPanel() {
 					options={[
 						{ label: __('Exact day', 'kpf-core'), value: 'exact' },
 						{ label: __('Month and year', 'kpf-core'), value: 'month' },
-						{ label: __('Year only', 'kpf-core'), value: 'year' },
-						{ label: __('Decade only', 'kpf-core'), value: 'decade' },
+						{ label: __('Year (month optional)', 'kpf-core'), value: 'year' },
 						{ label: __('Date unknown', 'kpf-core'), value: 'unknown' },
 					]}
 					onChange={(date_precision) => {
@@ -327,7 +326,12 @@ function ScrapbookPanel() {
 				<HistoricalDateFields
 					precision={details.date_precision}
 					eventDate={details.event_date}
-					onChange={(event_date) => update({ event_date })}
+					onChange={(event_date, date_precision) =>
+						update({
+							event_date,
+							...(date_precision ? { date_precision } : {}),
+						})
+					}
 				/>
 				<TextControl
 					label={__('Place', 'kpf-core')}
@@ -401,7 +405,44 @@ function ScrapbookPanel() {
 	);
 }
 
+function mountScrapbookImages() {
+	const el = document.getElementById('kpf-scrapbook-images-root');
+	if (!el || el.dataset.kpfMounted === '1') {
+		return;
+	}
+
+	const tryMount = () => {
+		const postType = window.wp?.data?.select('core/editor')?.getCurrentPostType?.();
+		if (!postType) {
+			return false;
+		}
+		el.dataset.kpfMounted = '1';
+		createRoot(el).render(<ScrapbookImagesApp />);
+		return true;
+	};
+
+	if (tryMount()) {
+		return;
+	}
+
+	if (!window.wp?.data?.subscribe) {
+		return;
+	}
+
+	const unsubscribe = window.wp.data.subscribe(() => {
+		if (tryMount()) {
+			unsubscribe();
+		}
+	});
+}
+
 registerPlugin('kpf-scrapbook-editor', {
 	render: ScrapbookPanel,
 	icon: 'format-gallery',
 });
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', mountScrapbookImages);
+} else {
+	mountScrapbookImages();
+}

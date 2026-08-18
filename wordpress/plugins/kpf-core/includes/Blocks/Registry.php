@@ -15,6 +15,7 @@ final class Registry {
 		'notice',
 		'call-to-action',
 		'container',
+		'cigar',
 	);
 
 	public static function register(): void {
@@ -70,6 +71,12 @@ final class Registry {
 				)
 			);
 		}
+
+		wp_add_inline_script(
+			self::SCRIPT_HANDLE,
+			'window.kpfCigarDefaults = ' . wp_json_encode( Cigar::defaults() ) . ';',
+			'before'
+		);
 	}
 
 	/**

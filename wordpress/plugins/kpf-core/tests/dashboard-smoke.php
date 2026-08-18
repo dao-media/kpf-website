@@ -35,6 +35,19 @@ kpf_dashboard_assert( isset( $data['calendar']['days'], $data['calendar']['start
 kpf_dashboard_assert( is_array( $data['recent'] ), 'Dashboard includes recent editorial activity' );
 kpf_dashboard_assert( is_array( $data['attention'] ), 'Dashboard includes an editorial review queue' );
 
+$editorial_types = ( new ReflectionClass( Dashboard::class ) )
+	->getMethod( 'editorial_post_types' );
+$editorial_types->setAccessible( true );
+/** @var list<string> $types */
+$types = $editorial_types->invoke( null );
+foreach ( array( 'page', 'post', 'kpf_scrapbook', 'kpf_kevin', 'kpf_grant', 'kpf_grantee', 'kpf_event', 'kpf_code', 'kpf_form_entry' ) as $expected ) {
+	kpf_dashboard_assert(
+		in_array( $expected, $types, true ),
+		"Recently updated includes post type {$expected}"
+	);
+}
+kpf_dashboard_assert( ! in_array( 'attachment', $types, true ), 'Recently updated excludes Media attachments' );
+
 require_once ABSPATH . 'wp-admin/includes/dashboard.php';
 set_current_screen( 'dashboard' );
 Dashboard::setup();

@@ -28,6 +28,7 @@ function ArrowIcon() {
 /**
  * Mobile nav panel — Figma Mobile Nav Menu `950:566`.
  * Toggle 44×44; open = X + popover with Sidebar Parent rows (arrow + label).
+ * Both icons stay mounted so CSS can crossfade / ease the button swap.
  */
 export default function KpfMobileNav({
   items = [],
@@ -79,11 +80,18 @@ export default function KpfMobileNav({
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => onOpenChange?.(!open)}
       >
-        {open ? (
-          <X size={22} strokeWidth={1.8} aria-hidden="true" />
-        ) : (
-          <Menu size={22} strokeWidth={1.8} aria-hidden="true" />
-        )}
+        <Menu
+          className="kpf-mobile-nav__icon kpf-mobile-nav__icon--menu"
+          size={22}
+          strokeWidth={1.8}
+          aria-hidden="true"
+        />
+        <X
+          className="kpf-mobile-nav__icon kpf-mobile-nav__icon--close"
+          size={22}
+          strokeWidth={1.8}
+          aria-hidden="true"
+        />
       </button>
 
       <div
@@ -103,7 +111,7 @@ export default function KpfMobileNav({
                 tabIndex={open ? undefined : -1}
                 onClick={() => onOpenChange?.(false)}
               >
-                <ArrowIcon />
+                {current ? <ArrowIcon /> : null}
                 <span className="kpf-mobile-nav__label">{item.label}</span>
               </Link>
             );

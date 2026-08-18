@@ -122,6 +122,7 @@ kpf_query_assert( in_array( 'latest-blogs', $slugs, true ), 'Design HTML query s
 
 $allowed_names = array_column( Meta::allowed_post_types(), 'name' );
 kpf_query_assert( in_array( 'kpf_kevin', $allowed_names, true ), 'Kevin CPT is allowlisted for Queries' );
+kpf_query_assert( in_array( 'kpf_grant', $allowed_names, true ), 'Grants CPT is allowlisted for Queries' );
 
 $kevin_query_id = \KPF\Core\Queries\Defaults::ensure_kevin_query();
 kpf_query_assert( $kevin_query_id > 0, 'Built-in Kevin query can be ensured' );
@@ -130,8 +131,17 @@ kpf_query_assert( 'kpf_kevin' === $kevin_def['postType'], 'Kevin query targets k
 kpf_query_assert( 'menu_order' === $kevin_def['orderby'], 'Kevin query orders by menu_order' );
 kpf_query_assert( 'kevin' === get_post_field( 'post_name', $kevin_query_id ), 'Kevin query slug is kevin' );
 
+$grants_query_id = \KPF\Core\Queries\Defaults::ensure_grants_query();
+kpf_query_assert( $grants_query_id > 0, 'Built-in Grants query can be ensured' );
+$grants_def = Meta::get( $grants_query_id );
+kpf_query_assert( 'kpf_grant' === $grants_def['postType'], 'Grants query targets kpf_grant' );
+kpf_query_assert( 'meta_value_num' === $grants_def['orderby'], 'Grants query orders by meta_value_num' );
+kpf_query_assert( '_kpf_grant_sort_date' === $grants_def['metaKey'], 'Grants query uses award-date meta key' );
+kpf_query_assert( 'grants' === get_post_field( 'post_name', $grants_query_id ), 'Grants query slug is grants' );
+
 $mapped = Resolver::map_item( get_post( (int) $sample ) );
 kpf_query_assert( isset( $mapped['content'] ), 'Query items expose stripped content' );
+kpf_query_assert( array_key_exists( 'recipientName', $mapped ), 'Query items expose grant card fields' );
 
 wp_delete_post( (int) $sample, true );
 wp_delete_post( (int) $query_id, true );

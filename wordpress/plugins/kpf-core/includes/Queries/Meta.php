@@ -34,23 +34,24 @@ final class Meta {
 	 */
 	public static function defaults(): array {
 		return array(
-			'version'       => self::VERSION,
-			'postType'      => 'post',
-			'perPage'       => 6,
-			'orderby'       => 'date',
-			'order'         => 'DESC',
-			'status'        => array( 'publish' ),
-			'excludeIds'    => array(),
-			'excludeCurrent'=> true,
-			'includeIds'    => array(),
-			'taxonomies'    => array(),
-			'metaQuery'     => array(),
-			'related'       => array(
+			'version'        => self::VERSION,
+			'postType'       => 'post',
+			'perPage'        => 6,
+			'orderby'        => 'date',
+			'metaKey'        => '',
+			'order'          => 'DESC',
+			'status'         => array( 'publish' ),
+			'excludeIds'     => array(),
+			'excludeCurrent' => true,
+			'includeIds'     => array(),
+			'taxonomies'     => array(),
+			'metaQuery'      => array(),
+			'related'        => array(
 				'enabled'  => false,
 				'by'       => 'category',
 				'taxonomy' => 'category',
 			),
-			'pagination'    => array(
+			'pagination'     => array(
 				'enabled' => false,
 				'perPage' => 6,
 			),
@@ -89,8 +90,25 @@ final class Meta {
 		}
 
 		$orderby = sanitize_key( (string) ( $value['orderby'] ?? $defaults['orderby'] ) );
-		$allowed_orderby = array( 'date', 'modified', 'title', 'menu_order', 'rand', 'relevance' );
+		$allowed_orderby = array(
+			'date',
+			'modified',
+			'title',
+			'menu_order',
+			'rand',
+			'relevance',
+			'meta_value',
+			'meta_value_num',
+		);
 		if ( ! in_array( $orderby, $allowed_orderby, true ) ) {
+			$orderby = 'date';
+		}
+
+		$meta_key = sanitize_key( (string) ( $value['metaKey'] ?? $defaults['metaKey'] ) );
+		if ( '' !== $meta_key && ! preg_match( '/^[a-z0-9_]+$/', $meta_key ) ) {
+			$meta_key = '';
+		}
+		if ( '' === $meta_key && in_array( $orderby, array( 'meta_value', 'meta_value_num' ), true ) ) {
 			$orderby = 'date';
 		}
 
@@ -124,6 +142,7 @@ final class Meta {
 			'postType'       => $post_type,
 			'perPage'        => $per_page,
 			'orderby'        => $orderby,
+			'metaKey'        => $meta_key,
 			'order'          => $order,
 			'status'         => array_values( array_unique( $status ) ),
 			'excludeIds'     => self::sanitize_id_list( $value['excludeIds'] ?? array() ),
@@ -156,7 +175,7 @@ final class Meta {
 	 * @return array<int, array{name: string, label: string}>
 	 */
 	public static function allowed_post_types(): array {
-		$names = array( 'post', 'page', 'kpf_event', 'kpf_scrapbook', 'kpf_kevin' );
+		$names = array( 'post', 'page', 'kpf_event', 'kpf_scrapbook', 'kpf_kevin', 'kpf_grant' );
 		$rows  = array();
 		foreach ( $names as $name ) {
 			$object = get_post_type_object( $name );

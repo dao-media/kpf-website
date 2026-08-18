@@ -8,6 +8,11 @@ const {
   splitDesignHtml,
 } = require("./pageDesignTemplate");
 const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
+const {
+  resolveGrantsTotalLabel,
+  sumGrantAmounts,
+  formatGrantTotal,
+} = require("@/lib/grantsQuery");
 const { HOME } = require("@/lib/pageCopy");
 
 function textOnly(value) {
@@ -48,7 +53,12 @@ function imagesFromQuery(query) {
     .filter((item) => item.src);
 }
 
-export function buildDesignModel(page) {
+function grantsTotalFromQueries(queries) {
+  const items = queries?.grants?.items || [];
+  return formatGrantTotal(sumGrantAmounts(items));
+}
+
+export function buildDesignModel(page, { grantsTotal = "" } = {}) {
   const fields = Object.fromEntries(
     (page?.kpfDesignFields || [])
       .filter((field) => field?.key)
@@ -57,6 +67,11 @@ export function buildDesignModel(page) {
   const image = page?.featuredImage?.node;
   const author = page?.author?.node;
   const design = page?.kpfPageDesign;
+  const queries = queriesFromDesign(design);
+  const totalLabel = resolveGrantsTotalLabel(
+    { label: grantsTotal },
+    queries?.grants?.items || [],
+  ) || grantsTotalFromQueries(queries);
 
   return {
     page: {
@@ -87,7 +102,10 @@ export function buildDesignModel(page) {
       },
     },
     fields,
-    queries: queriesFromDesign(design),
+    queries,
+    grants: {
+      total: totalLabel,
+    },
   };
 }
 
@@ -143,7 +161,11 @@ function renderDesignPart(part, index, { forms, queries, partnerGrantees }) {
   return null;
 }
 
-export default function PageDesignRenderer({ page, partnerGrantees = [] }) {
+export default function PageDesignRenderer({
+  page,
+  partnerGrantees = [],
+  grantsTotal = "",
+}) {
   const design = page?.kpfPageDesign;
 
   if (!design || !design.html) {
@@ -156,7 +178,7 @@ export default function PageDesignRenderer({ page, partnerGrantees = [] }) {
     );
   }
 
-  const model = buildDesignModel(page);
+  const model = buildDesignModel(page, { grantsTotal });
   const html = renderDesignTemplate(design.html, model);
   const forms = formsFromDesign(design);
   const parts = splitDesignHtml(html);

@@ -31,7 +31,18 @@ final class ChromeHtml {
 	public static function brandmark_html(): string {
 		$src = FrontendUrl::base() . 'media/brand/50-badge.png';
 
-		return '<span class="kpf-header__badge"><img class="kpf-header__mark" src="' . esc_url( $src ) . '" alt="" width="320" height="480" decoding="async" aria-hidden="true" /></span>';
+		$strings  = '<svg class="kpf-header__badge-strings" viewBox="0 0 86 177" width="86" height="177" aria-hidden="true" focusable="false">';
+		$strings .= '<defs><filter id="kpf-badge-string-shadow" x="-40%" y="-20%" width="180%" height="140%" color-interpolation-filters="sRGB">';
+		$strings .= '<feDropShadow dx="0" dy="0.6" stdDeviation="0.55" flood-color="#12090a" flood-opacity="0.28"/>';
+		$strings .= '</filter></defs>';
+		$strings .= '<g class="kpf-header__badge-strings-group" filter="url(#kpf-badge-string-shadow)" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" fill="none">';
+		$strings .= '<line x1="43" y1="5" x2="31" y2="52"/><line x1="43" y1="5" x2="55" y2="52"/>';
+		$strings .= '</g>';
+		$strings .= '<circle class="kpf-header__badge-string-pin" cx="43" cy="5" r="1.65" filter="url(#kpf-badge-string-shadow)"/>';
+		$strings .= '</svg>';
+
+		return '<span class="kpf-header__badge" data-kpf-badge="">' . $strings
+			. '<img class="kpf-header__mark" src="' . esc_url( $src ) . '" alt="" width="320" height="480" decoding="async" aria-hidden="true" /></span>';
 	}
 
 	/** @deprecated Use brandmark_html(). */
@@ -68,11 +79,14 @@ final class ChromeHtml {
 		$html  = '<header class="kpf-header" data-kpf-header="float">';
 		$html .= '<a class="kpf-header__brand" href="/" aria-label="' . esc_attr( $brand ) . '">';
 		$html .= self::brandmark_html();
-		$html .= '<span class="kpf-header__brand-text">' . esc_html( $brand ) . '</span>';
+		$html .= '<span class="kpf-header__brand-text" data-full="' . esc_attr( $brand ) . '" data-short="KPF">';
+		$html .= '<span class="kpf-header__brand-text-label">' . esc_html( $brand ) . '</span>';
+		$html .= '<span class="kpf-header__brand-text-measure" aria-hidden="true">' . esc_html( $brand ) . '</span>';
+		$html .= '</span>';
 		$html .= '</a>';
 		$html .= '<div class="kpf-header__spacer" aria-hidden="true"></div>';
 		$html .= '<ul class="kpf-header__nav" aria-label="Primary">' . $items . '</ul>';
-		$html .= '<div class="kpf-header__actions"><a class="kpf-btn kpf-btn--primary" href="' . esc_url( $donate ) . '">Donate</a></div>';
+		$html .= '<div class="kpf-header__actions">' . self::action_button( 'Donate', $donate, 'kpf-btn kpf-btn--primary' ) . '</div>';
 		$html .= '<div class="kpf-header__menu-slot">';
 		$html .= '<div class="kpf-mobile-nav" data-state="closed">';
 		$html .= '<button type="button" class="kpf-mobile-nav__toggle" aria-expanded="false" aria-controls="kpf-mobile-nav-panel" aria-label="Open menu">';
@@ -118,12 +132,22 @@ final class ChromeHtml {
 		$html .= '<div><p class="kpf-footer__heading">Connect</p><ul class="kpf-footer__list">' . $connect_lis . '</ul></div></div>';
 		$html .= '<div class="kpf-footer__cta-card"><p class="kpf-footer__cta-title">Prefer to just give?</p>';
 		$html .= '<p class="kpf-footer__cta-body">Every gift becomes a grant in Kevin’s name.</p>';
-		$html .= '<a class="kpf-btn kpf-btn--primary kpf-btn--sm" href="' . esc_url( $donate ) . '">Donate</a></div>';
+		$html .= self::action_button( 'Donate', $donate, 'kpf-btn kpf-btn--primary kpf-btn--sm' ) . '</div>';
 		$html .= '</div></div>';
-		$html .= '<div class="kpf-footer__bar kpf-u-container"><p>© ' . $year . ' ' . esc_html( $brand ) . '</p><p><a href="/">Home</a></p></div>';
+		$html .= '<div class="kpf-footer__bar kpf-u-container"><p>© ' . $year . ' ' . esc_html( $brand ) . ' All rights reserved.</p><p><a href="/privacy/">Privacy Policy</a></p></div>';
 		$html .= '</footer>';
 
 		return $html;
+	}
+
+	/**
+	 * Native button CTA for scaffold chrome (keeps buttons as buttons in the a11y tree).
+	 */
+	public static function action_button( string $label, string $href, string $classes = 'kpf-btn kpf-btn--primary', bool $external = false ): string {
+		$ext_attr = $external ? ' data-kpf-external="true"' : '';
+		$onclick  = '(function(el){var h=el.getAttribute("data-kpf-href");if(!h)return;if(el.getAttribute("data-kpf-external")==="true"&&!/^mailto:|^tel:/i.test(h)){window.open(h,"_blank","noopener,noreferrer");return;}location.assign(h);})(this)';
+
+		return '<button type="button" class="' . esc_attr( $classes ) . '" data-kpf-href="' . esc_url( $href ) . '"' . $ext_attr . ' onclick="' . esc_attr( $onclick ) . '">' . esc_html( $label ) . '</button>';
 	}
 
 	/**

@@ -13,13 +13,17 @@ const {
 const SWIPE_THRESHOLD_PX = 48;
 const WHEEL_THRESHOLD = 48;
 const STEP_DURATION = 0.7;
-const STEP_EASE = "power2.inOut";
+const STEP_EASE = "power2.out";
 /** Rightward peel on forward exit; no vertical travel — bottom edge stays put. */
 const EXIT_X = Math.max(DEFAULT_EXIT_X, 64);
 const EXIT_Y = 0;
 const EXIT_SCALE = Math.max(DEFAULT_EXIT_SCALE, 1.1);
 /** Layers 2–4 (behind the front) are 20% dimmer than the base trail ramp. */
 const TRAIL_OPACITY_SCALE = 0.8;
+/** Peek neighbors sit smaller; step animates scale up/in ↔ scale down/out. */
+const PEEK_NEIGHBOR_SCALE = 0.86;
+/** Peek neighbors also sit at 40% opacity (on top of CSS edge/bottom masks). */
+const PEEK_NEIGHBOR_OPACITY = 0.4;
 
 /**
  * Fan left offsets relative to the STACK container (not the photo box):
@@ -45,11 +49,24 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** Desktop fan stack vs tablet/mobile horizontal peek strip. */
+function modeForViewport() {
+  if (typeof window === "undefined" || !window.matchMedia) return "fan";
+  return window.matchMedia("(min-width: 64rem)").matches ? "fan" : "peek";
+}
+
 function visibleCountForViewport() {
   if (typeof window === "undefined" || !window.matchMedia) return 4;
   if (window.matchMedia("(min-width: 64rem)").matches) return 4;
-  if (window.matchMedia("(min-width: 48rem)").matches) return 2;
-  return 4;
+  // Peek mode shows prev + active + next (and a transitioning neighbor).
+  return 3;
+}
+
+/** Queue index → signed slot (−1 prev, 0 active, +1 next, …). */
+function queueSlot(qi, length) {
+  if (qi === 0) return 0;
+  if (qi > length / 2) return qi - length;
+  return qi;
 }
 
 function decodeEntities(value) {
@@ -97,14 +114,17 @@ export default function KevinHistoryCarousel({
   });
   const metricsRef = useRef({ stackWidth: 0, photoWidth: 0 });
   const visibleCountRef = useRef(4);
+  const modeRef = useRef("fan");
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(4);
   const [metrics, setMetrics] = useState({ stackWidth: 0, photoWidth: 0 });
+  const [mode, setMode] = useState("fan");
 
   activeIndexRef.current = activeIndex;
   metricsRef.current = metrics;
   visibleCountRef.current = visibleCount;
+  modeRef.current = mode;
 
   const items = useMemo(
     () =>
@@ -140,47 +160,96 @@ export default function KevinHistoryCarousel({
     [items],
   );
 
-  const paint = useCallback(
-    (queue, stepProgress) => {
-      const layers = layerRefs.current;
-      const { stackWidth, photoWidth } = metricsRef.current;
-      const visible = visibleCountRef.current;
-      const layout = stackLayout({
-        queueLength: queue.length,
-        stepProgress,
-        visibleCount: visible,
-        scaleStep: DEFAULT_SCALE_STEP,
-        exitScale: EXIT_SCALE,
-        backOpacity: DEFAULT_BACK_OPACITY,
-        trailOpacityScale: TRAIL_OPACITY_SCALE,
-        exitX: EXIT_X,
-        exitY: EXIT_Y,
-        slotLeftPercent: (slot) =>
-          fanLeftPercent(slot, visible, stackWidth, photoWidth),
-      });
+  const paint = useCallback((queue, stepProgress) => {
+    const layers = layerRefs.current;
+    const { stackWidth, photoWidth } = metricsRef.current;
+    if (!stackWidth || !photoWidth || queue.length < 1) return;
 
-      layout.forEach((slot) => {
-        const imageIndex = queue[slot.queueIndex];
+    if (modeRef.current === "peek") {
+      // ~25% of each neighbor photo peeks past the active frame.
+      const peek = Math.max(1, Math.round(photoWidth * 0.25));
+      const stride = Math.max(1, photoWidth - peek);
+      const centerLeft = (stackWidth - photoWidth) / 2;
+      const p = Math.max(0, Math.min(1, Number(stepProgress) || 0));
+
+      queue.forEach((imageIndex, qi) => {
         const layer = layers[imageIndex];
         if (!layer) return;
-        const show = slot.visible && slot.opacity > 0.001;
+        const slot = queueSlot(qi, queue.length);
+        const offset = slot - p;
+        const dist = Math.abs(offset);
+        const leftPx = centerLeft + offset * stride;
+        const show = dist < 1.85;
+        // Active = 1; neighbors = 40% (masks still fade the edges).
+        const opacity = show
+          ? dist <= 1
+            ? 1 + (PEEK_NEIGHBOR_OPACITY - 1) * Math.min(1, dist)
+            : PEEK_NEIGHBOR_OPACITY
+          : 0;
+        // Active = 1; neighbors = smaller. Progress drives scale up/in and down/out.
+        const scale =
+          dist <= 1
+            ? 1 + (PEEK_NEIGHBOR_SCALE - 1) * Math.min(1, dist)
+            : PEEK_NEIGHBOR_SCALE;
+        let peekRole = "hidden";
+        if (dist < 0.35) peekRole = "active";
+        else if (offset < 0) peekRole = "prev";
+        else if (offset > 0) peekRole = "next";
+
+        layer.dataset.kpfPeek = peekRole;
         gsap.set(layer, {
-          left: slot.left == null ? "0%" : `${slot.left}%`,
-          x: slot.x,
-          y: slot.y,
+          left: leftPx,
+          x: 0,
+          y: 0,
           xPercent: 0,
           yPercent: 0,
-          scale: slot.scale,
-          opacity: slot.opacity,
-          zIndex: slot.zIndex,
+          scale,
+          opacity,
+          zIndex: Math.round(40 - dist * 12),
           transformOrigin: "50% 100%",
           visibility: show ? "visible" : "hidden",
           force3D: true,
         });
       });
-    },
-    [],
-  );
+      return;
+    }
+
+    const visible = visibleCountRef.current;
+    const layout = stackLayout({
+      queueLength: queue.length,
+      stepProgress,
+      visibleCount: visible,
+      scaleStep: DEFAULT_SCALE_STEP,
+      exitScale: EXIT_SCALE,
+      backOpacity: DEFAULT_BACK_OPACITY,
+      trailOpacityScale: TRAIL_OPACITY_SCALE,
+      exitX: EXIT_X,
+      exitY: EXIT_Y,
+      slotLeftPercent: (slot) =>
+        fanLeftPercent(slot, visible, stackWidth, photoWidth),
+    });
+
+    layout.forEach((slot) => {
+      const imageIndex = queue[slot.queueIndex];
+      const layer = layers[imageIndex];
+      if (!layer) return;
+      delete layer.dataset.kpfPeek;
+      const show = slot.visible && slot.opacity > 0.001;
+      gsap.set(layer, {
+        left: slot.left == null ? "0%" : `${slot.left}%`,
+        x: slot.x,
+        y: slot.y,
+        xPercent: 0,
+        yPercent: 0,
+        scale: slot.scale,
+        opacity: slot.opacity,
+        zIndex: slot.zIndex,
+        transformOrigin: "50% 100%",
+        visibility: show ? "visible" : "hidden",
+        force3D: true,
+      });
+    });
+  }, []);
 
   const measure = useCallback(() => {
     const stack = stackRef.current;
@@ -190,10 +259,16 @@ export default function KevinHistoryCarousel({
     const photoWidth = probe?.offsetWidth || Math.min(stackWidth, 416);
     const nextMetrics = { stackWidth, photoWidth };
     const nextVisible = visibleCountForViewport();
+    const nextMode = modeForViewport();
     metricsRef.current = nextMetrics;
     visibleCountRef.current = nextVisible;
+    modeRef.current = nextMode;
     setMetrics(nextMetrics);
     setVisibleCount(nextVisible);
+    setMode(nextMode);
+    if (splitRef.current) {
+      splitRef.current.dataset.kpfKevinMode = nextMode;
+    }
     if (!animatingRef.current && baseQueue.length > 0) {
       paint(rotateQueue(baseQueue, activeIndexRef.current), 0);
     }
@@ -435,7 +510,50 @@ export default function KevinHistoryCarousel({
       ref={splitRef}
       className="kpf-history__split"
       data-kpf-kevin-carousel=""
+      data-kpf-kevin-mode={mode}
     >
+      <div
+        ref={stackRef}
+        className="kpf-history__stack"
+        role="group"
+        aria-roledescription="carousel"
+        aria-label={ariaLabel}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+            event.preventDefault();
+            step(1);
+          } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+            event.preventDefault();
+            step(-1);
+          }
+        }}
+      >
+        <div className="kpf-history__sizer" aria-hidden="true" />
+        {items.map((slide, imageIndex) => (
+          <figure
+            key={slide.id}
+            ref={(node) => {
+              layerRefs.current[imageIndex] = node;
+            }}
+            className="kpf-history__layer"
+            data-stack-index={imageIndex}
+            aria-hidden={imageIndex !== activeIndex}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={slide.src}
+              alt={slide.alt}
+              width={1120}
+              height={1296}
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          </figure>
+        ))}
+      </div>
+
       <div className="kpf-history__aside">
         <div className="kpf-history__card-stack">
           {items.map((slide, index) => {
@@ -480,61 +598,19 @@ export default function KevinHistoryCarousel({
             );
           })}
         </div>
-      </div>
 
-      <div
-        ref={stackRef}
-        className="kpf-history__stack"
-        role="group"
-        aria-roledescription="carousel"
-        aria-label={ariaLabel}
-        tabIndex={0}
-        onKeyDown={(event) => {
-          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-            event.preventDefault();
-            step(1);
-          } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-            event.preventDefault();
-            step(-1);
-          }
-        }}
-      >
-        <div className="kpf-history__sizer" aria-hidden="true" />
-        {items.map((slide, imageIndex) => (
-          <figure
-            key={slide.id}
-            ref={(node) => {
-              layerRefs.current[imageIndex] = node;
-            }}
-            className="kpf-history__layer"
-            data-stack-index={imageIndex}
-            aria-hidden={imageIndex !== activeIndex}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={1120}
-              height={1296}
-              loading="lazy"
-              decoding="async"
-              draggable={false}
+        <div className="kpf-history__dots" role="group" aria-label="History slides">
+          {items.map((slide, i) => (
+            <button
+              key={`history-dot-${slide.id}`}
+              type="button"
+              className={`kpf-history__dot${i === activeIndex ? " is-active" : ""}`}
+              aria-label={`Show slide ${i + 1} of ${count}: ${slide.header || slide.alt}`}
+              aria-current={i === activeIndex ? "true" : undefined}
+              onClick={() => goTo(i)}
             />
-          </figure>
-        ))}
-      </div>
-
-      <div className="kpf-history__dots" role="group" aria-label="History slides">
-        {items.map((slide, i) => (
-          <button
-            key={`history-dot-${slide.id}`}
-            type="button"
-            className={`kpf-history__dot${i === activeIndex ? " is-active" : ""}`}
-            aria-label={`Show slide ${i + 1} of ${count}: ${slide.header || slide.alt}`}
-            aria-current={i === activeIndex ? "true" : undefined}
-            onClick={() => goTo(i)}
-          />
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

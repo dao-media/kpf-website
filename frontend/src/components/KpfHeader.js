@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { gsap } from "gsap";
 import KpfMobileNav from "@/components/KpfMobileNav";
+import KpfButton from "@/components/KpfButton";
 import {
   KPF_DONATE_HREF,
   KPF_PRIMARY_NAV,
@@ -10,14 +11,131 @@ import {
 } from "@/lib/navigation";
 
 const BRAND_BADGE_SRC = "/media/brand/50-badge.png";
+const BRAND_LABEL_FULL = "Kevin Popke Foundation";
+const BRAND_LABEL_SHORT = "KPF";
 
 /** Survives SPA remounts within one full document load; resets on hard refresh. */
 let navEntrancePlayed = false;
+
+/**
+ * Wordmark that matches nav-link type, swapping to a short label when the
+ * flex slot is narrower than the full name (no ellipsis).
+ */
+function BrandText({
+  full = BRAND_LABEL_FULL,
+  short = BRAND_LABEL_SHORT,
+}) {
+  const slotRef = useRef(null);
+  const measureRef = useRef(null);
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const slot = slotRef.current;
+    const measure = measureRef.current;
+    if (!slot || !measure || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+
+    const brand = slot.closest(".kpf-header__brand");
+    const header = brand?.closest(".kpf-header") || brand?.parentElement;
+    if (!brand || !header) return undefined;
+
+    const sync = () => {
+      const needed = measure.offsetWidth;
+      if (needed <= 0) return;
+
+      const badge = brand.querySelector(".kpf-header__badge");
+      const brandCs = getComputedStyle(brand);
+      const gap = parseFloat(brandCs.gap) || 0;
+      const brandPad =
+        (parseFloat(brandCs.paddingLeft) || 0) +
+        (parseFloat(brandCs.paddingRight) || 0);
+      const fullBrandW =
+        (badge?.offsetWidth || 0) + gap + needed + brandPad;
+
+      const headerCs = getComputedStyle(header);
+      const headerPad =
+        (parseFloat(headerCs.paddingLeft) || 0) +
+        (parseFloat(headerCs.paddingRight) || 0);
+      const headerGap = parseFloat(headerCs.gap) || 0;
+      const spacer = header.querySelector(".kpf-header__spacer");
+      const spacerMin = spacer
+        ? parseFloat(getComputedStyle(spacer).minWidth) || 0
+        : 0;
+      // Spacer flex-grows into leftover space — exclude it or available
+      // collapses to the brand's *current* width and KPF never expands back.
+      let fixed = 0;
+      for (const child of header.children) {
+        if (child === brand || child === spacer) continue;
+        fixed += child.offsetWidth;
+      }
+      const availableForBrand =
+        header.clientWidth -
+        headerPad -
+        fixed -
+        spacerMin -
+        headerGap * Math.max(0, header.children.length - 1);
+
+      setCompact((prev) => {
+        if (prev) return availableForBrand < fullBrandW + 4;
+        return availableForBrand < fullBrandW;
+      });
+    };
+
+    const ro = new ResizeObserver(sync);
+    ro.observe(header);
+    ro.observe(brand);
+    sync();
+    return () => ro.disconnect();
+  }, [full]);
+
+  return (
+    <span
+      ref={slotRef}
+      className="kpf-header__brand-text"
+      data-compact={compact ? "true" : undefined}
+    >
+      <span className="kpf-header__brand-text-label">{compact ? short : full}</span>
+      <span
+        ref={measureRef}
+        className="kpf-header__brand-text-measure"
+        aria-hidden="true"
+      >
+        {full}
+      </span>
+    </span>
+  );
+}
+
+/** Force badge/header to resting visibility — clears GSAP inline hide only. */
+function settleHeaderEntrance(header, badge) {
+  if (!header) return;
+  // overwrite:"auto" only interrupts conflicting props (opacity/y), so CMS
+  // badge-swing rotation and ribbon breeze tweens keep running.
+  gsap.set(header, {
+    autoAlpha: 1,
+    y: 0,
+    overwrite: "auto",
+    clearProps: "transform",
+  });
+  if (badge) {
+    gsap.set(badge, {
+      autoAlpha: 1,
+      y: 0,
+      overwrite: "auto",
+    });
+    // Prefer stylesheet as source of truth after entrance.
+    badge.style.opacity = "";
+    badge.style.visibility = "";
+  }
+  navEntrancePlayed = true;
+}
 
 /** Rosette stays still; ribbons (lower clip) get a soft displacement gust. */
 function Brandmark({ className = "kpf-header__mark" }) {
   const reactId = useId().replace(/:/g, "");
   const filterId = `kpf-badge-breeze-${reactId}`;
+  const stringShadowId = `kpf-badge-string-shadow-${reactId}`;
   const rosetteClipId = `kpf-badge-rosette-${reactId}`;
   const ribbonsClipId = `kpf-badge-ribbons-${reactId}`;
   const badgeRef = useRef(null);
@@ -214,6 +332,55 @@ function Brandmark({ className = "kpf-header__mark" }) {
   // does not disagree with React's attribute reconciliation on hydrate.
   return (
     <span className="kpf-header__badge" ref={badgeRef} data-kpf-badge="">
+      {/*
+        Suspension cords — converge on the GSAP pivot (50% 0%). Nested in the
+        badge so they rotate with the hover swing.
+      */}
+      <svg
+        className="kpf-header__badge-strings"
+        viewBox="0 0 86 177"
+        width={86}
+        height={177}
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <filter
+            id={stringShadowId}
+            x="-40%"
+            y="-20%"
+            width="180%"
+            height="140%"
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow
+              dx="0"
+              dy="0.6"
+              stdDeviation="0.55"
+              floodColor="#12090a"
+              floodOpacity="0.28"
+            />
+          </filter>
+        </defs>
+        <g
+          className="kpf-header__badge-strings-group"
+          filter={`url(#${stringShadowId})`}
+          stroke="currentColor"
+          strokeWidth="1.15"
+          strokeLinecap="round"
+          fill="none"
+        >
+          <line x1="43" y1="5" x2="31" y2="52" />
+          <line x1="43" y1="5" x2="55" y2="52" />
+        </g>
+        <circle
+          className="kpf-header__badge-string-pin"
+          cx="43"
+          cy="5"
+          r="1.65"
+          filter={`url(#${stringShadowId})`}
+        />
+      </svg>
       <svg
         className={className}
         viewBox="0 0 320 480"
@@ -299,46 +466,53 @@ export default function KpfHeader({
     const header = headerRef.current;
     if (!header) return undefined;
 
-    const badge = header.querySelector("[data-kpf-badge]");
+    // Re-query on settle — Brandmark may remount with a new node.
+    const badgeEl = () => header.querySelector("[data-kpf-badge]");
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const settle = () => {
-      gsap.set(header, { autoAlpha: 1, clearProps: "transform" });
-      if (badge) {
-        // Never leave the badge invisible — only clear motion props.
-        gsap.set(badge, {
-          autoAlpha: 1,
-          opacity: 1,
-          visibility: "visible",
-          clearProps: "transform",
-        });
-      }
-      navEntrancePlayed = true;
-    };
+    const settle = () => settleHeaderEntrance(header, badgeEl());
 
     if (navEntrancePlayed || reduceMotion) {
       settle();
       return undefined;
     }
 
+    const badge = badgeEl();
+
     // Hide, then enter — after hydration has committed matching markup.
-    gsap.set(header, { autoAlpha: 0, scale: 0.96, y: -10 });
-    if (badge) gsap.set(badge, { autoAlpha: 0, y: -140 });
+    // Opacity + slight y only — never scale the header (scale reflows Donate
+    // ~1–2px on both axes and reads as a persistent “proportion shift”).
+    // overwrite:false so CMS hover / transformOrigin seeds cannot kill this
+    // mid-flight and leave autoAlpha stuck at 0.
+    gsap.set(header, { autoAlpha: 0, y: -8, overwrite: false });
+    if (badge) gsap.set(badge, { autoAlpha: 0, y: -140, overwrite: false });
+
+    let settled = false;
+    const settleOnce = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(safetyTimer);
+      settle();
+    };
+
+    // If the timeline is killed (Strict Mode, route remount, CMS overwrite),
+    // still force the badge visible — never park at autoAlpha 0.
+    const safetyTimer = window.setTimeout(settleOnce, 1600);
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
-        defaults: { ease: "power3.out" },
-        onComplete: settle,
+        defaults: { ease: "power3.out", overwrite: false },
+        onComplete: settleOnce,
       });
 
       tl.to(header, {
         autoAlpha: 1,
-        scale: 1,
         y: 0,
-        duration: 0.55,
+        duration: 0.5,
         ease: "power3.out",
+        overwrite: false,
       });
 
       if (badge) {
@@ -349,6 +523,7 @@ export default function KpfHeader({
             y: 0,
             duration: 0.7,
             ease: "power3.out",
+            overwrite: false,
           },
           "-=0.12",
         );
@@ -356,17 +531,10 @@ export default function KpfHeader({
     }, header);
 
     return () => {
+      window.clearTimeout(safetyTimer);
       ctx.revert();
-      // Strict-mode / remount safety: never park the badge at autoAlpha 0.
-      gsap.set(header, { autoAlpha: 1, clearProps: "transform" });
-      if (badge) {
-        gsap.set(badge, {
-          autoAlpha: 1,
-          opacity: 1,
-          visibility: "visible",
-          clearProps: "transform",
-        });
-      }
+      // Treat interrupt as "entrance done" so remounts never re-hide the badge.
+      settleOnce();
     };
   }, []);
 
@@ -378,7 +546,7 @@ export default function KpfHeader({
     >
       <Link className="kpf-header__brand" href="/" aria-label={brandLabel}>
         <Brandmark />
-        <span className="kpf-header__brand-text">{brandLabel}</span>
+        <BrandText full={brandLabel} />
       </Link>
 
       <div className="kpf-header__spacer" aria-hidden="true" />
@@ -403,9 +571,13 @@ export default function KpfHeader({
       </ul>
 
       <div className="kpf-header__actions">
-        <Link href={donateHref} className="kpf-btn kpf-btn--primary">
+        <KpfButton
+          href={donateHref}
+          className="kpf-btn kpf-btn--primary"
+          data-kpf-track="donate_header_clicked"
+        >
           {donateLabel}
-        </Link>
+        </KpfButton>
       </div>
 
       <div className="kpf-header__menu-slot">

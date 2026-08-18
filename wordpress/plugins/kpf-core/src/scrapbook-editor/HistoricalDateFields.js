@@ -81,20 +81,6 @@ function yearOptions() {
 	return options;
 }
 
-function decadeOptions() {
-	const endDecade = Math.floor(currentYear() / 10) * 10;
-	const options = [
-		{ label: __('Choose decade…', 'kpf-core'), value: '' },
-	];
-	for (let decade = endDecade; decade >= START_YEAR; decade -= 10) {
-		options.push({
-			label: `${decade}s`,
-			value: String(decade),
-		});
-	}
-	return options;
-}
-
 function monthOptions() {
 	return [
 		{ label: __('Choose month…', 'kpf-core'), value: '' },
@@ -141,33 +127,45 @@ export default function HistoricalDateFields({
 		onChange(composeEventDate(nextParts, precision));
 	}
 
-	if (precision === 'decade') {
-		const decadeValue = parts.year
-			? String(Math.floor(parseInt(parts.year, 10) / 10) * 10)
-			: '';
+	if (precision === 'year' || precision === 'decade') {
 		return (
-			<SelectControl
-				label={__('Decade', 'kpf-core')}
-				help={__('Choose the decade this photo or story is from.', 'kpf-core')}
-				value={decadeValue}
-				options={decadeOptions()}
-				onChange={(year) => commit({ ...parts, year, month: '', day: '' })}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
-		);
-	}
-
-	if (precision === 'year') {
-		return (
-			<SelectControl
-				label={__('Year', 'kpf-core')}
-				value={parts.year}
-				options={yearOptions()}
-				onChange={(year) => commit({ ...parts, year, month: '', day: '' })}
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-			/>
+			<>
+				<SelectControl
+					label={__('Year', 'kpf-core')}
+					help={__('Choose the year. Month is optional.', 'kpf-core')}
+					value={parts.year}
+					options={yearOptions()}
+					onChange={(year) => {
+						const nextPrecision = parts.month ? 'month' : 'year';
+						onChange(
+							composeEventDate({ ...parts, year, day: '' }, nextPrecision),
+							nextPrecision
+						);
+					}}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+				/>
+				<SelectControl
+					label={__('Month (optional)', 'kpf-core')}
+					value={parts.month}
+					options={monthOptions()}
+					onChange={(month) => {
+						if (!month) {
+							onChange(
+								composeEventDate({ ...parts, month: '', day: '' }, 'year'),
+								'year'
+							);
+							return;
+						}
+						onChange(
+							composeEventDate({ ...parts, month, day: '' }, 'month'),
+							'month'
+						);
+					}}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+				/>
+			</>
 		);
 	}
 

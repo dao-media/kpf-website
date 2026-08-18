@@ -114,6 +114,44 @@ final class GraphQL {
 			)
 		);
 
+		register_graphql_object_type(
+			'KpfScrapbookTile',
+			array(
+				'description' => 'A single scrapbook image for the About “The Work” gallery.',
+				'fields'      => array(
+					'id'            => array( 'type' => 'String' ),
+					'databaseId'    => array( 'type' => 'Int' ),
+					'attachmentId'  => array( 'type' => 'Int' ),
+					'sourceUrl'     => array( 'type' => 'String' ),
+					'altText'       => array( 'type' => 'String' ),
+					'caption'       => array( 'type' => 'String' ),
+					'eventDate'     => array( 'type' => 'String' ),
+					'datePrecision' => array( 'type' => 'KpfScrapbookDatePrecisionEnum' ),
+					'title'         => array( 'type' => 'String' ),
+				),
+			)
+		);
+
+		register_graphql_field(
+			'RootQuery',
+			'kpfScrapbookTiles',
+			array(
+				'type'        => array( 'list_of' => 'KpfScrapbookTile' ),
+				'description' => 'Flattened scrapbook images for The Work gallery, ordered by display order then date.',
+				'args'        => array(
+					'first' => array(
+						'type'        => 'Int',
+						'description' => 'Max tiles to return (default 48, max 120).',
+					),
+				),
+				'resolve'     => static function ( $source, array $args ): array {
+					unset( $source );
+					$first = isset( $args['first'] ) ? (int) $args['first'] : 48;
+					return self::tile_list( $first );
+				},
+			)
+		);
+
 		$where_type = 'RootQueryTo' . self::GRAPHQL_TYPE . 'ConnectionWhereArgs';
 		register_graphql_field(
 			$where_type,
@@ -207,6 +245,81 @@ final class GraphQL {
 		}
 
 		return $query_args;
+	}
+
+	/**
+	 * Flattened scrapbook images for The Work section.
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	public static function tile_list( int $first = 48 ): array {
+		$first = max( 1, min( 120, $first > 0 ? $first : 48 ) );
+
+		$query = new \WP_Query(
+			array(
+				'post_type'              => ContentType::POST_TYPE,
+				'post_status'            => 'publish',
+				'posts_per_page'         => 100,
+				'orderby'                => array(
+					'date' => 'DESC',
+				),
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		$posts = $query->posts;
+		usort(
+			$posts,
+			static function ( $a, $b ): int {
+				$order_a = (int) get_post_meta( (int) $a->ID, Meta::DISPLAY_ORDER_META, true );
+				$order_b = (int) get_post_meta( (int) $b->ID, Meta::DISPLAY_ORDER_META, true );
+				if ( $order_a !== $order_b ) {
+					return $order_a <=> $order_b;
+				}
+				return strcmp( (string) $b->post_date, (string) $a->post_date );
+			}
+		);
+
+		$tiles = array();
+		foreach ( $posts as $post ) {
+			$details = self::details( (int) $post->ID );
+			$title   = html_entity_decode(
+				trim( (string) get_the_title( $post ) ),
+				ENT_QUOTES | ENT_HTML5,
+				'UTF-8'
+			);
+			foreach ( (array) $details['images'] as $image ) {
+				$source_url = (string) ( $image['sourceUrl'] ?? '' );
+				if ( '' === $source_url ) {
+					continue;
+				}
+				$attachment_id = (int) ( $image['attachmentId'] ?? 0 );
+				$alt           = trim( (string) ( $image['altText'] ?? '' ) );
+				if ( '' === $alt ) {
+					$alt = $title !== '' ? $title : __( 'Scrapbook photo', 'kpf-core' );
+				}
+
+				$tiles[] = array(
+					'id'            => (int) $post->ID . '-' . $attachment_id . '-' . (int) ( $image['index'] ?? 0 ),
+					'databaseId'    => (int) $post->ID,
+					'attachmentId'  => $attachment_id,
+					'sourceUrl'     => $source_url,
+					'altText'       => $alt,
+					'caption'       => (string) ( $image['caption'] ?? '' ),
+					'eventDate'     => (string) ( $details['eventDate'] ?? '' ),
+					'datePrecision' => (string) ( $details['datePrecision'] ?? 'unknown' ),
+					'title'         => $title,
+				);
+
+				if ( count( $tiles ) >= $first ) {
+					return $tiles;
+				}
+			}
+		}
+
+		return $tiles;
 	}
 
 	/**

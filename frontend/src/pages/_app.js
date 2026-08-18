@@ -25,9 +25,16 @@ export default function App({ Component, pageProps }) {
   const router = useRouter();
   const chrome = chromeFromPageProps(pageProps);
   const css = stylesheetFromPageProps(pageProps);
-  // Pathname only — asPath (query/hash) differs SSR vs client and remounts the
-  // page tree mid-hydrate when used as a React key.
-  const pageKey = router.pathname || router.asPath?.split(/[?#]/)[0] || "/";
+  // Key by the real URL path (no query/hash). `router.pathname` is always
+  // `/[...wordpressNode]` for WP pages, so using it as a key left About/Events/
+  // Contact sharing one React tree — client nav kept the previous scaffold
+  // while the address bar updated. Normalize trailing slashes so `/about` and
+  // `/about/` do not remount mid-hydrate.
+  const pageKey = (() => {
+    let path = String(router.asPath || "/").split(/[?#]/)[0] || "/";
+    if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+    return path || "/";
+  })();
 
   return (
     <FaustProvider pageProps={pageProps}>

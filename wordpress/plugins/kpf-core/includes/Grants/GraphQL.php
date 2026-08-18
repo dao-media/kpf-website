@@ -44,6 +44,17 @@ final class GraphQL {
 			)
 		);
 
+		register_graphql_object_type(
+			'KpfGrantsTotal',
+			array(
+				'description' => 'Sum of published KPF grant amounts (%%grants_total%% / {{grants.total}}).',
+				'fields'      => array(
+					'amount' => array( 'type' => 'Float' ),
+					'label'  => array( 'type' => 'String' ),
+				),
+			)
+		);
+
 		register_graphql_field(
 			self::GRAPHQL_TYPE,
 			'grantDetails',
@@ -58,6 +69,18 @@ final class GraphQL {
 				},
 			)
 		);
+
+		if ( function_exists( 'register_graphql_field' ) ) {
+			register_graphql_field(
+				'RootQuery',
+				'kpfGrantsTotal',
+				array(
+					'type'        => 'KpfGrantsTotal',
+					'description' => 'Formatted total of published grant amounts for copy and tags.',
+					'resolve'     => static fn(): array => Totals::payload(),
+				)
+			);
+		}
 	}
 
 	/**

@@ -211,7 +211,7 @@ final class Admin {
 		echo '<div class="notice notice-info inline" style="margin:12px 0 16px;">';
 		echo '<p><strong>' . esc_html__('How to build this scrapbook item', 'kpf-core') . '</strong><br />';
 		echo esc_html__(
-			'Use the main editor for the story. Open the Scrapbook details panel in the right sidebar to choose images, add historical details, and set their order.',
+			'Set the title above, then add images in the Images box. Open Scrapbook details in the sidebar for date, place, and other notes.',
 			'kpf-core'
 		);
 		echo '</p></div>';
@@ -227,6 +227,10 @@ final class Admin {
 			return __('Unknown', 'kpf-core');
 		}
 		if ('decade' === $precision) {
+			$year = (int) substr($date, 0, 4);
+			if ($year > 0) {
+				return (string) $year;
+			}
 			return substr($date, 0, 3) . '0s';
 		}
 		return $date;

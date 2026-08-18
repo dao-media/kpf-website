@@ -93,11 +93,16 @@ Queries are stored as allowlisted JSON (post type, count, order, exclusions,
 taxonomy filters, custom-field filters, related-post rules, pagination) — never
 raw PHP.
 
-Allowlisted post types include `post`, `page`, `kpf_event`, `kpf_scrapbook`, and
-`kpf_kevin`. A built-in **Kevin** query (`slug: kevin`) is seeded automatically
-for the About history stack (`menu_order` ASC, up to 12 slides). Use it as
-`{{#each queries.kevin}}` or GraphQL `kpfQuery(slug: "kevin")`. Item fields:
-`title` (header), `content` / `excerpt` (body), `featuredImage.url` (photo).
+Allowlisted post types include `post`, `page`, `kpf_event`, `kpf_scrapbook`,
+`kpf_kevin`, and `kpf_grant`. Built-in queries are seeded automatically:
+
+- **Kevin** (`slug: kevin`) — About history stack (`menu_order` ASC, up to 12).
+  Use `{{#each queries.kevin}}` or GraphQL `kpfQuery(slug: "kevin")`. Item fields:
+  `title` (header), `content` / `excerpt` (body), `featuredImage.url` (photo).
+- **Grants** (`slug: grants`) — About grantee cards (`_kpf_grant_sort_date` DESC,
+  up to 12). Use `{{#each queries.grants}}` or GraphQL `kpfQuery(slug: "grants")`.
+  Item fields: `recipientName`, `blurb`, `grantAmountLabel`, `awardedLabel`,
+  `checkPhotoUrl`, `logoUrl`, `website`.
 
 ## Forms builder
 

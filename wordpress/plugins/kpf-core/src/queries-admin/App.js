@@ -21,6 +21,7 @@ const EMPTY_DEFINITION = {
 	postType: 'post',
 	perPage: 6,
 	orderby: 'date',
+	metaKey: '',
 	order: 'DESC',
 	status: ['publish'],
 	excludeIds: [],
@@ -147,6 +148,14 @@ function QueryEditor({ draft, options, onChange, onSave, onCancel, saving, previ
 						options={(options?.orderby || ['date']).map((key) => ({ label: key, value: key }))}
 						onChange={(orderby) => patchDefinition({ orderby })}
 					/>
+					{(definition.orderby === 'meta_value' || definition.orderby === 'meta_value_num') && (
+						<TextControl
+							label={__('Meta key', 'kpf-core')}
+							help={__('Required for meta_value / meta_value_num ordering (e.g. _kpf_grant_sort_date).', 'kpf-core')}
+							value={definition.metaKey || ''}
+							onChange={(metaKey) => patchDefinition({ metaKey })}
+						/>
+					)}
 					<SelectControl
 						label={__('Order', 'kpf-core')}
 						value={definition.order}

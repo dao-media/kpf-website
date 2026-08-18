@@ -205,15 +205,14 @@ export default function PartnersSlider({
         </div>
 
         {slideCount > 1 ? (
-          <div className="kpf-partners__dots" role="tablist" aria-label="Grantee slider pages">
+          <div className="kpf-partners__dots" role="group" aria-label="Grantee slider pages">
             {dots.map((dotIndex) => (
               <button
                 key={dotIndex}
                 type="button"
-                role="tab"
                 className={dotIndex === index ? "is-active" : undefined}
                 aria-label={`Show grantee ${dotIndex + 1} of ${slideCount}`}
-                aria-selected={dotIndex === index}
+                aria-current={dotIndex === index ? "true" : undefined}
                 onClick={() => setIndex(dotIndex)}
               />
             ))}

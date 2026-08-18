@@ -1,21 +1,66 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
+import CtaClosingFlag from "@/components/CtaClosingFlag";
 import GranteeCardsGrid from "@/components/GranteeCardsGrid";
 import KevinHistoryCarousel from "@/components/KevinHistoryCarousel";
 import KpfButton from "@/components/KpfButton";
 const { resolveMedia } = require("@/lib/scaffoldMedia");
+const {
+  resolveGrantsTotalLabel,
+  formatGranteesTitle,
+} = require("@/lib/grantsQuery");
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
+/** The Work grid: 2 columns → 2 tiles per row; initial 2 rows, then +2 rows per “see more”. */
+const GALLERY_TILES_PER_ROW = 2;
+const GALLERY_INITIAL_ROWS = 2;
+const GALLERY_ROWS_PER_PAGE = 2;
 
-export default function AboutPageScaffold({ media = {}, kevinSlides = [], grants = [] }) {
+export default function AboutPageScaffold({
+  media = {},
+  kevinSlides = [],
+  grants = [],
+  grantsTotal = "",
+  scrapbookTiles = [],
+}) {
   const copy = ABOUT;
   const background = resolveMedia(media, copy.hero.background.key, copy.hero.background);
-  const frame = resolveMedia(media, copy.hero.frame.key, copy.hero.frame);
   const featured = resolveMedia(media, copy.gallery.featured.key, copy.gallery.featured);
+  const ctaFlag = resolveMedia(media, copy.cta.media.key, copy.cta.media);
   const granteeItems =
     Array.isArray(grants) && grants.length > 0 ? grants : copy.grantees.items;
+  const granteesTitle = formatGranteesTitle(
+    copy.grantees.title,
+    resolveGrantsTotalLabel({ label: grantsTotal }, granteeItems),
+  );
+
+  const galleryTiles =
+    Array.isArray(scrapbookTiles) && scrapbookTiles.length > 0
+      ? scrapbookTiles
+      : copy.gallery.items
+          .map((item) => {
+            const resolved = resolveMedia(media, item.key, item);
+            if (!resolved.src) return null;
+            return {
+              id: item.key || resolved.src,
+              src: resolved.src,
+              alt: resolved.alt || item.alt || "",
+            };
+          })
+          .filter(Boolean);
+
+  const initialTileCount = GALLERY_TILES_PER_ROW * GALLERY_INITIAL_ROWS;
+  const tilesPerPage = GALLERY_TILES_PER_ROW * GALLERY_ROWS_PER_PAGE;
+  const [visibleTileCount, setVisibleTileCount] = useState(initialTileCount);
+
+  useEffect(() => {
+    setVisibleTileCount(initialTileCount);
+  }, [galleryTiles.length, initialTileCount]);
+
+  const visibleTiles = galleryTiles.slice(0, visibleTileCount);
+  const hasMoreTiles = visibleTileCount < galleryTiles.length;
 
   const [openAccordion, setOpenAccordion] = useState(
     () => copy.mission.criteria.find((item) => item.open)?.id ?? null,
@@ -75,19 +120,19 @@ export default function AboutPageScaffold({ media = {}, kevinSlides = [], grants
     <div className="kpf-page-about" data-kpf-scaffold="about">
       <section className="kpf-hero kpf-hero--about" aria-labelledby="kpf-about-hero-title">
         {background.src ? (
-          <img
-            className="kpf-hero__media"
-            src={background.src}
-            alt={background.alt}
-            decoding="async"
-          />
-        ) : null}
-        <div className="kpf-u-container kpf-hero__layout">
-          <div className="kpf-hero__frame-motion">
-            <div className="kpf-hero__frame">
-              {frame.src ? <img src={frame.src} alt={frame.alt} decoding="async" /> : null}
+          <div className="kpf-hero__media-bleed" aria-hidden={background.alt ? undefined : true}>
+            <div className="kpf-hero__media-wrap">
+              <img
+                className="kpf-hero__media"
+                src={background.src}
+                alt={background.alt || ""}
+                decoding="async"
+              />
             </div>
           </div>
+        ) : null}
+        {/* Pinned: framed photo (.kpf-hero__frame-motion) — restore with tampa-bay cutout later */}
+        <div className="kpf-u-container kpf-hero__layout">
           <div className="kpf-hero__content">
             <div className="kpf-content-block">
               <div className="kpf-content-block__copy">
@@ -238,7 +283,7 @@ export default function AboutPageScaffold({ media = {}, kevinSlides = [], grants
                   id="kpf-about-grantees-title"
                   className="kpf-content-block__title kpf-content-block__title--h2"
                 >
-                  {copy.grantees.title}
+                  {granteesTitle}
                 </h2>
               </div>
               <div className="kpf-content-block__body-group">
@@ -246,30 +291,63 @@ export default function AboutPageScaffold({ media = {}, kevinSlides = [], grants
               </div>
             </div>
           </div>
-          <GranteeCardsGrid items={granteeItems} label={copy.grantees.title} />
+          <GranteeCardsGrid items={granteeItems} label={granteesTitle} />
         </div>
       </section>
 
       <section className="kpf-gallery kpf-section" aria-labelledby="kpf-about-gallery-title">
         <div className="kpf-u-container">
-          <div className="kpf-content-block kpf-u-invert">
-            <div className="kpf-content-block__copy">
-              <div className="kpf-content-block__title-group">
-                <p className="kpf-content-block__eyebrow">{copy.gallery.eyebrow}</p>
-                <h2
-                  id="kpf-about-gallery-title"
-                  className="kpf-content-block__title kpf-content-block__title--h2"
-                >
-                  {copy.gallery.title}
-                </h2>
-              </div>
-              <div className="kpf-content-block__body-group">
-                <p className="kpf-content-block__body">{copy.gallery.body}</p>
-              </div>
-            </div>
-          </div>
-
           <div className="kpf-gallery__layout">
+            <div className="kpf-gallery__main">
+              <div className="kpf-content-block kpf-u-invert">
+                <div className="kpf-content-block__copy">
+                  <div className="kpf-content-block__title-group">
+                    <p className="kpf-content-block__eyebrow">{copy.gallery.eyebrow}</p>
+                    <h2
+                      id="kpf-about-gallery-title"
+                      className="kpf-content-block__title kpf-content-block__title--h2"
+                    >
+                      {copy.gallery.title}
+                    </h2>
+                  </div>
+                  <div className="kpf-content-block__body-group">
+                    <p className="kpf-content-block__body">{copy.gallery.body}</p>
+                  </div>
+                </div>
+              </div>
+
+              {visibleTiles.length > 0 ? (
+                <div className="kpf-gallery__grid">
+                  {visibleTiles.map((item) => (
+                    <figure key={item.id || item.src} className="kpf-gallery__item">
+                      <img
+                        src={item.src}
+                        alt={item.alt || ""}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </figure>
+                  ))}
+                </div>
+              ) : null}
+
+              {hasMoreTiles ? (
+                <p className="kpf-gallery__more">
+                  <button
+                    type="button"
+                    className="kpf-link kpf-body--m"
+                    onClick={() =>
+                      setVisibleTileCount((count) =>
+                        Math.min(count + tilesPerPage, galleryTiles.length),
+                      )
+                    }
+                  >
+                    {copy.gallery.seeMore}
+                  </button>
+                </p>
+              ) : null}
+            </div>
+
             {featured.src ? (
               <figure className="kpf-gallery__featured">
                 <img
@@ -280,29 +358,14 @@ export default function AboutPageScaffold({ media = {}, kevinSlides = [], grants
                 />
               </figure>
             ) : null}
-            <div className="kpf-gallery__grid">
-              {copy.gallery.items.map((item) => {
-                const resolved = resolveMedia(media, item.key, item);
-                if (!resolved.src) return null;
-                return (
-                  <figure key={item.key || item.src} className="kpf-gallery__item">
-                    <img
-                      src={resolved.src}
-                      alt={resolved.alt}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </figure>
-                );
-              })}
-            </div>
           </div>
         </div>
       </section>
 
       <section className="kpf-cta-closing kpf-section" aria-labelledby="kpf-about-cta-title">
+        <CtaClosingFlag src={ctaFlag.src} />
         <div className="kpf-u-container">
-          <div className="kpf-content-block kpf-content-block--inverse kpf-cta-closing__block">
+          <div className="kpf-content-block kpf-u-invert kpf-cta-closing__block">
             <div className="kpf-content-block__copy">
               <div className="kpf-content-block__title-group">
                 <h2

@@ -141,7 +141,17 @@ function createTween(targets, animation, extra = {}) {
     config.keyframes?.find((frame) => frame?.props?.transformOrigin)?.props
       ?.transformOrigin;
   if (origin) {
-    gsap.set(tweenTargets, { transformOrigin: origin });
+    // GSAP writes an inline `transform` when touch transformOrigin. A bare
+    // translate(0,0) overrides CSS resting transforms (e.g. nav underline
+    // scaleX:0) and leaves every link looking active. Seed `from` for paused
+    // hover tweens so the resting state stays correct.
+    // overwrite:false — a bare origin seed must not kill header badge entrance
+    // (autoAlpha/y) and leave the anniversary mark stuck invisible.
+    const setProps = { transformOrigin: origin, overwrite: false };
+    if (extra.paused && config.from && typeof config.from === "object") {
+      Object.assign(setProps, config.from);
+    }
+    gsap.set(tweenTargets, setProps);
   }
   const common = {
     duration: config.duration,
@@ -150,7 +160,9 @@ function createTween(targets, animation, extra = {}) {
     stagger: config.stagger || 0,
     repeat: config.repeat || 0,
     yoyo: Boolean(config.yoyo),
-    overwrite: "auto",
+    // Paused hover tweens: don't clobber concurrent page entrances (badge drop).
+    // Active/load tweens keep overwrite:auto so staggered entrances still compose.
+    overwrite: extra.paused ? false : "auto",
     ...extra,
   };
   const svg = config.svg || {};
@@ -296,19 +308,23 @@ export default function GsapRuntime({ animations = [] }) {
           if (!targets.length) return;
 
           if (animation.trigger === "in-view") {
-            targets.forEach((target) => {
+            targets.forEach((target, index) => {
               const scroll = animation.config.scroll || {};
+              const scrub = Number(scroll.scrub) || false;
+              const once = scroll.once !== false;
               createTween(target, animation, {
                 scrollTrigger: {
                   trigger: target,
                   start: scroll.start || "top 85%",
                   end: scroll.end || "bottom 20%",
-                  scrub: Number(scroll.scrub) || false,
-                  once: Boolean(scroll.once),
-                  toggleActions: Number(scroll.scrub)
+                  scrub,
+                  once,
+                  toggleActions: scrub
                     ? undefined
-                    : "play none none reverse",
-                  id: `kpf-animation-${animation.databaseId}`,
+                    : once
+                      ? "play none none none"
+                      : "play none none reverse",
+                  id: `kpf-animation-${animation.databaseId}-${index}`,
                 },
               });
             });
@@ -319,7 +335,10 @@ export default function GsapRuntime({ animations = [] }) {
             targets.forEach((target) => {
               const tween = createTween(target, animation, {
                 paused: true,
-                immediateRender: false,
+                // Apply `from` so resting state matches CSS (nav underlines
+                // must start at scaleX:0; otherwise GSAP inline transforms
+                // make every link look current).
+                immediateRender: true,
               });
               if (!tween) return;
               if (animation.trigger === "hover") {
@@ -333,6 +352,8 @@ export default function GsapRuntime({ animations = [] }) {
                 /** Soft edge: delay leave so the hit-boundary doesn’t stutter. */
                 const LEAVE_GRACE_MS = 160;
                 let leaveTimer = null;
+                /** True from first enter until a real leave — blocks click/focusin restarts. */
+                let hovering = false;
 
                 const clearLeaveTimer = () => {
                   if (leaveTimer) {
@@ -351,6 +372,9 @@ export default function GsapRuntime({ animations = [] }) {
                     return;
                   }
                   clearLeaveTimer();
+                  // Already hovered (e.g. click → focusin while :hover) — do not re-run.
+                  if (hovering) return;
+                  hovering = true;
                   if (usesRotation) {
                     // Already mid-swing — don’t restart (avoids edge flicker).
                     if (tween.isActive()) return;
@@ -375,6 +399,7 @@ export default function GsapRuntime({ animations = [] }) {
                       if (target.matches(":hover") || target.contains(document.activeElement)) {
                         return;
                       }
+                      hovering = false;
                       tween.pause();
                       gsap.to(resolveTweenTargets(target, animation.config), {
                         rotation: 0,
@@ -385,7 +410,8 @@ export default function GsapRuntime({ animations = [] }) {
                     }, LEAVE_GRACE_MS);
                     return;
                   }
-                  // Nav underline etc. — reverse the hover tween.
+                  // Nav underline etc. — reverse only after a true unhover.
+                  hovering = false;
                   tween.reverse();
                 };
 

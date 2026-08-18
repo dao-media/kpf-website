@@ -289,32 +289,67 @@ final class Dashboard {
 	}
 
 	/**
-	 * Editorial post types shown in Recently updated / calendar.
+	 * Post types shown in Recently updated / calendar.
+	 * Includes every registered type with an admin UI, plus all KPF types,
+	 * excluding Media and WordPress chrome/internal UI types.
 	 *
 	 * @return list<string>
 	 */
 	private static function editorial_post_types(): array {
-		$types = array( 'page', 'post' );
-		foreach ( array(
-			ScrapbookContentType::POST_TYPE,
-			GrantsContentType::POST_TYPE,
-			GranteesContentType::POST_TYPE,
-			EventsContentType::POST_TYPE,
-		) as $type ) {
-			if ( post_type_exists( $type ) ) {
+		$exclude = array(
+			'attachment',
+			'revision',
+			'nav_menu_item',
+			'custom_css',
+			'customize_changeset',
+			'oembed_cache',
+			'user_request',
+			'wp_block',
+			'wp_template',
+			'wp_template_part',
+			'wp_global_styles',
+			'wp_navigation',
+			'wp_font_family',
+			'wp_font_face',
+			'wp_pattern',
+		);
+
+		$types = array_keys( get_post_types( array( 'show_ui' => true ), 'names' ) );
+		foreach ( array_keys( get_post_types( array(), 'names' ) ) as $type ) {
+			if ( str_starts_with( $type, 'kpf_' ) ) {
 				$types[] = $type;
 			}
 		}
-		return $types;
+
+		$types = array_values(
+			array_unique(
+				array_diff( $types, $exclude )
+			)
+		);
+		sort( $types );
+
+		/**
+		 * Filter post types included in the site dashboard Recently updated list.
+		 *
+		 * @param list<string> $types
+		 */
+		return apply_filters( 'kpf_dashboard_editorial_post_types', $types );
 	}
 
 	private static function icon_for_post_type( string $post_type ): string {
 		return match ( $post_type ) {
 			'post'                            => 'Newspaper',
 			ScrapbookContentType::POST_TYPE   => 'BookHeart',
+			'kpf_kevin'                       => 'Images',
 			GrantsContentType::POST_TYPE      => 'HandCoins',
 			GranteesContentType::POST_TYPE    => 'Users',
 			EventsContentType::POST_TYPE      => 'CalendarDays',
+			'kpf_code'                        => 'Braces',
+			'kpf_query'                       => 'Braces',
+			'kpf_form', 'kpf_form_entry'      => 'Inbox',
+			'kpf_design'                      => 'PanelsTopLeft',
+			'kpf_stylesheet'                  => 'FileText',
+			'kpf_animation'                   => 'Activity',
 			default                           => 'FileText',
 		};
 	}

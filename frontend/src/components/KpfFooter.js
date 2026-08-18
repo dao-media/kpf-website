@@ -1,4 +1,5 @@
 import Link from "next/link";
+import KpfButton from "@/components/KpfButton";
 import {
   KPF_DONATE_HREF,
   KPF_FOOTER_CONNECT,
@@ -58,17 +59,23 @@ export default function KpfFooter({
             <p className="kpf-footer__cta-body">
               Every gift becomes a grant in Kevin’s name.
             </p>
-            <Link href={donateHref} className="kpf-btn kpf-btn--primary kpf-btn--sm">
+            <KpfButton
+              href={donateHref}
+              className="kpf-btn kpf-btn--primary kpf-btn--sm"
+              data-kpf-track="donate_footer_clicked"
+            >
               Donate
-            </Link>
+            </KpfButton>
           </div>
         </div>
       </div>
 
       <div className="kpf-footer__bar kpf-u-container">
-        <p>© {year} {brandLabel}</p>
         <p>
-          <Link href="/">Home</Link>
+          © {year} {brandLabel} All rights reserved.
+        </p>
+        <p>
+          <Link href="/privacy/">Privacy Policy</Link>
         </p>
       </div>
     </footer>

@@ -44,6 +44,7 @@ import containerMetadata from '../../blocks/container/block.json';
 import ctaMetadata from '../../blocks/call-to-action/block.json';
 import disclosureMetadata from '../../blocks/disclosure/block.json';
 import noticeMetadata from '../../blocks/notice/block.json';
+import cigarMetadata from '../../blocks/cigar/block.json';
 import './components.scss';
 
 const variants = {
@@ -85,6 +86,7 @@ const COMPOSABLE_INNER_BLOCKS = [
 	'kpf/notice',
 	'kpf/call-to-action',
 	'kpf/container',
+	'kpf/cigar',
 ];
 
 function ButtonEdit({ attributes, setAttributes }) {
@@ -581,6 +583,153 @@ function containerClassName(attributes) {
 		.join(' ');
 }
 
+function cigarMarkup(attributes = {}) {
+	const cigarUrl = attributes.cigarUrl || '';
+	const smokeUrl = attributes.smokeUrl || '';
+	const cigarAlt = attributes.cigarAlt || '';
+	const cigarId = attributes.cigarId || 0;
+
+	return (
+		<>
+			{cigarUrl ? (
+				<img
+					className={`kpf-cigar__image${cigarId ? ` wp-image-${cigarId}` : ''}`}
+					src={cigarUrl}
+					alt={cigarAlt}
+				/>
+			) : null}
+			{smokeUrl ? (
+				<video
+					className="kpf-cigar__smoke"
+					autoPlay
+					loop
+					muted
+					playsInline
+					preload="auto"
+					aria-hidden="true"
+				>
+					<source src={smokeUrl} type="video/mp4" />
+				</video>
+			) : null}
+		</>
+	);
+}
+
+function CigarEdit({ attributes, setAttributes }) {
+	const defaults = window.kpfCigarDefaults || {};
+	const cigarUrl = attributes.cigarUrl || defaults.cigarUrl || '';
+	const smokeUrl = attributes.smokeUrl || defaults.smokeUrl || '';
+	const cigarId = attributes.cigarId || defaults.cigarId || 0;
+	const smokeId = attributes.smokeId || defaults.smokeId || 0;
+	const cigarAlt = attributes.cigarAlt || defaults.cigarAlt || '';
+	const blockProps = useBlockProps({ className: 'kpf-cigar' });
+
+	useEffect(() => {
+		const next = {};
+		if (!attributes.cigarUrl && defaults.cigarUrl) {
+			next.cigarId = defaults.cigarId || 0;
+			next.cigarUrl = defaults.cigarUrl;
+			if (!attributes.cigarAlt && defaults.cigarAlt) {
+				next.cigarAlt = defaults.cigarAlt;
+			}
+		}
+		if (!attributes.smokeUrl && defaults.smokeUrl) {
+			next.smokeId = defaults.smokeId || 0;
+			next.smokeUrl = defaults.smokeUrl;
+		}
+		if (Object.keys(next).length) {
+			setAttributes(next);
+		}
+	}, [
+		attributes.cigarAlt,
+		attributes.cigarUrl,
+		attributes.smokeUrl,
+		defaults.cigarAlt,
+		defaults.cigarId,
+		defaults.cigarUrl,
+		defaults.smokeId,
+		defaults.smokeUrl,
+		setAttributes,
+	]);
+
+	return (
+		<>
+			<InspectorControls>
+				<PanelBody title={__('Cigar media', 'kpf-core')}>
+					<MediaUploadCheck>
+						<MediaUpload
+							allowedTypes={['image']}
+							value={cigarId}
+							onSelect={(media) =>
+								setAttributes({
+									cigarId: media?.id || 0,
+									cigarUrl: media?.sizes?.full?.url || media?.url || '',
+									cigarAlt: media?.alt || cigarAlt,
+								})
+							}
+							render={({ open }) => (
+								<Button variant="secondary" onClick={open}>
+									{cigarUrl
+										? __('Replace cigar image', 'kpf-core')
+										: __('Choose cigar image', 'kpf-core')}
+								</Button>
+							)}
+						/>
+					</MediaUploadCheck>
+					{cigarUrl ? (
+						<TextControl
+							label={__('Image description', 'kpf-core')}
+							help={__('Describe the cigar for visitors using screen readers.', 'kpf-core')}
+							value={cigarAlt}
+							onChange={(value) => setAttributes({ cigarAlt: value })}
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+						/>
+					) : null}
+					<MediaUploadCheck>
+						<MediaUpload
+							allowedTypes={['video']}
+							value={smokeId}
+							onSelect={(media) =>
+								setAttributes({
+									smokeId: media?.id || 0,
+									smokeUrl: media?.url || '',
+								})
+							}
+							render={({ open }) => (
+								<Button variant="secondary" onClick={open}>
+									{smokeUrl
+										? __('Replace smoke video', 'kpf-core')
+										: __('Choose smoke video', 'kpf-core')}
+								</Button>
+							)}
+						/>
+					</MediaUploadCheck>
+				</PanelBody>
+			</InspectorControls>
+			<div {...blockProps}>
+				{cigarUrl ? (
+					cigarMarkup({
+						cigarAlt,
+						cigarId,
+						cigarUrl,
+						smokeUrl,
+					})
+				) : (
+					<span className="kpf-component-hint">
+						{__('Choose a cigar image in the sidebar.', 'kpf-core')}
+					</span>
+				)}
+			</div>
+		</>
+	);
+}
+
+function CigarSave({ attributes }) {
+	const blockProps = useBlockProps.save({ className: 'kpf-cigar' });
+	return <div {...blockProps}>{cigarMarkup(attributes)}</div>;
+}
+
 function ContainerEdit({ attributes, setAttributes }) {
 	const { tagName, theme, padding, contentWidth } = attributes;
 	const Tag = tagName || 'div';
@@ -702,6 +851,10 @@ registerBlockType(ctaMetadata, {
 registerBlockType(containerMetadata, {
 	edit: ContainerEdit,
 	save: ContainerSave,
+});
+registerBlockType(cigarMetadata, {
+	edit: CigarEdit,
+	save: CigarSave,
 });
 
 const COMPONENT_IMPORT_MAX_BYTES = 1024 * 1024;

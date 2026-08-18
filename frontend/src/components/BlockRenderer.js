@@ -1,4 +1,6 @@
 import { Fragment } from "react";
+import CigarSmoke from "@/components/CigarSmoke";
+import KpfUiButton from "@/components/KpfButton";
 
 const {
   buildBlockTree,
@@ -135,6 +137,16 @@ export const KPF_EDITOR_BLOCKS_QUERY = `
         padding
         tagName
         theme
+      }
+    }
+    ... on KpfCigar {
+      attributes {
+        anchor
+        cigarAlt
+        cigarId
+        cigarUrl
+        smokeId
+        smokeUrl
       }
     }
   }
@@ -315,27 +327,40 @@ function CoreImage({ attributes = {} }) {
 function KpfButton({ attributes = {} }) {
   const href = safeUrl(attributes.url);
   const opensInNewTab = Boolean(attributes.opensInNewTab);
+  const variant = attributes.variant || "primary";
+  const size =
+    attributes.size === "small"
+      ? "sm"
+      : attributes.size === "large"
+        ? "lg"
+        : undefined;
 
   return (
     <div
       className={joinClasses(
         "kpf-button",
-        `kpf-button--${attributes.variant || "primary"}`,
+        `kpf-button--${variant}`,
         `kpf-button--${attributes.size || "medium"}`,
         alignmentClass(attributes.alignment || "left"),
       )}
     >
-      <a
-        className="kpf-button__link"
+      <KpfUiButton
         href={href}
-        target={opensInNewTab ? "_blank" : undefined}
-        rel={opensInNewTab ? "noopener noreferrer" : undefined}
+        external={opensInNewTab}
+        variant={variant === "text" ? "ghost" : variant}
+        size={size}
+        className={joinClasses(
+          "kpf-button__link",
+          "kpf-btn",
+          `kpf-btn--${variant === "text" ? "ghost" : variant}`,
+          size ? `kpf-btn--${size}` : "",
+        )}
       >
         <RichText
           className="kpf-button__label"
           html={attributes.text || "Learn more"}
         />
-      </a>
+      </KpfUiButton>
     </div>
   );
 }
@@ -481,6 +506,20 @@ function KpfContainer({ attributes = {}, children }) {
   );
 }
 
+function KpfCigar({ attributes = {} }) {
+  const cigarUrl = safeUrl(attributes.cigarUrl, { allowHash: false });
+  const smokeUrl = safeUrl(attributes.smokeUrl, { allowHash: false });
+
+  return (
+    <CigarSmoke
+      id={attributes.anchor || undefined}
+      cigarSrc={cigarUrl}
+      smokeSrc={smokeUrl}
+      cigarAlt={attributes.cigarAlt || ""}
+    />
+  );
+}
+
 function HtmlFallback({ block }) {
   if (!block?.renderedHtml) {
     return null;
@@ -503,6 +542,7 @@ const BLOCK_COMPONENTS = {
   "kpf/button": KpfButton,
   "kpf/call-to-action": KpfCallToAction,
   "kpf/card": KpfCard,
+  "kpf/cigar": KpfCigar,
   "kpf/container": KpfContainer,
   "kpf/disclosure": KpfDisclosure,
   "kpf/notice": KpfNotice,

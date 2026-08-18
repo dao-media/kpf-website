@@ -33,6 +33,14 @@ final class Resolver {
 			'update_post_term_cache' => true,
 		);
 
+		$meta_key = sanitize_key( (string) ( $definition['metaKey'] ?? '' ) );
+		if (
+			'' !== $meta_key
+			&& in_array( (string) $definition['orderby'], array( 'meta_value', 'meta_value_num' ), true )
+		) {
+			$args['meta_key'] = $meta_key;
+		}
+
 		$exclude = array_map( 'absint', (array) $definition['excludeIds'] );
 		if ( ! empty( $definition['excludeCurrent'] ) && $context_id > 0 ) {
 			$exclude[] = $context_id;
@@ -179,18 +187,86 @@ final class Resolver {
 			? trim( wp_strip_all_tags( (string) $post->post_excerpt ) )
 			: $content;
 
+		$item = array(
+			'databaseId'        => (int) $post->ID,
+			'title'             => get_the_title( $post ),
+			'excerpt'           => $excerpt,
+			'content'           => $content,
+			'link'              => (string) get_permalink( $post ),
+			'uri'               => (string) ( wp_parse_url( (string) get_permalink( $post ), PHP_URL_PATH ) ?: '/' ),
+			'slug'              => (string) $post->post_name,
+			'date'              => get_post_time( 'c', true, $post ),
+			'modified'          => get_post_modified_time( 'c', true, $post ),
+			'postType'          => (string) $post->post_type,
+			'featuredImage'     => $image,
+			'recipientName'     => '',
+			'blurb'             => '',
+			'grantAmountLabel'  => '',
+			'awardedLabel'      => '',
+			'checkPhotoUrl'     => '',
+			'logoUrl'           => '',
+			'website'           => '',
+		);
+
+		if ( \KPF\Core\Grants\ContentType::POST_TYPE === $post->post_type ) {
+			$item = array_merge( $item, self::map_grant_fields( $post ) );
+		}
+
+		return $item;
+	}
+
+	/**
+	 * Enrich grant query items for About grantee cards.
+	 *
+	 * @return array{
+	 *   recipientName: string,
+	 *   blurb: string,
+	 *   grantAmountLabel: string,
+	 *   awardedLabel: string,
+	 *   checkPhotoUrl: string,
+	 *   logoUrl: string,
+	 *   website: string,
+	 *   featuredImage?: array{url: string, alt: string}
+	 * }
+	 */
+	private static function map_grant_fields( \WP_Post $post ): array {
+		$details = \KPF\Core\Grants\GraphQL::details( (int) $post->ID );
+		$grantee_id = (int) ( $details['granteeId'] ?? 0 );
+		$grantee    = $grantee_id > 0 ? \KPF\Core\Grantees\GraphQL::details( $grantee_id ) : array();
+
+		$recipient = trim(
+			html_entity_decode(
+				(string) ( $details['recipientName'] ?? '' ),
+				ENT_QUOTES | ENT_HTML5,
+				'UTF-8'
+			)
+		);
+		if ( '' === $recipient && $grantee_id > 0 ) {
+			$recipient = trim(
+				html_entity_decode(
+					(string) ( $grantee['organization'] ?? get_the_title( $grantee_id ) ),
+					ENT_QUOTES | ENT_HTML5,
+					'UTF-8'
+				)
+			);
+		}
+
+		$check_url = (string) ( $details['checkPhotoUrl'] ?? '' );
+		$logo_url  = (string) ( $grantee['logoUrl'] ?? '' );
+		$image     = array(
+			'url' => $check_url !== '' ? $check_url : $logo_url,
+			'alt' => $recipient,
+		);
+
 		return array(
-			'databaseId'    => (int) $post->ID,
-			'title'         => get_the_title( $post ),
-			'excerpt'       => $excerpt,
-			'content'       => $content,
-			'link'          => (string) get_permalink( $post ),
-			'uri'           => (string) ( wp_parse_url( (string) get_permalink( $post ), PHP_URL_PATH ) ?: '/' ),
-			'slug'          => (string) $post->post_name,
-			'date'          => get_post_time( 'c', true, $post ),
-			'modified'      => get_post_modified_time( 'c', true, $post ),
-			'postType'      => (string) $post->post_type,
-			'featuredImage' => $image,
+			'recipientName'    => $recipient,
+			'blurb'            => trim( (string) ( $grantee['blurb'] ?? '' ) ),
+			'grantAmountLabel' => (string) ( $details['grantAmountLabel'] ?? '' ),
+			'awardedLabel'     => (string) ( $details['awardedLabel'] ?? '' ),
+			'checkPhotoUrl'    => $check_url,
+			'logoUrl'          => $logo_url,
+			'website'          => (string) ( $grantee['website'] ?? '' ),
+			'featuredImage'    => $image,
 		);
 	}
 

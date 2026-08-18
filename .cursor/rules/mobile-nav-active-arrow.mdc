@@ -1,0 +1,13 @@
+---
+description: Tablet/mobile menu shows only the active-page arrow (ember/red)
+alwaysApply: true
+---
+
+# Mobile nav: active arrow only
+
+In `.kpf-mobile-nav` (tablet/mobile menu):
+
+- The **only** visible arrow is on the active page link (`aria-current="page"`).
+- That link’s label is ember/red (`--kpf-ember`), and the arrow must be ember/red too.
+- Inactive items: **no arrow** — not idle, not on hover/focus.
+- Prefer rendering the arrow only for the current item (React `KpfMobileNav`) and/or CSS default `display: none` / `visibility: hidden` with show only under `[aria-current="page"]` (WP chrome).

@@ -104,10 +104,11 @@ final class GraphQL {
 				'fields'      => array(
 					'logline'       => array( 'type' => 'String' ),
 					'description'   => array( 'type' => 'String' ),
-					'contactEmail'  => array( 'type' => 'String' ),
-					'contactPhone'  => array( 'type' => 'String' ),
-					'website'       => array( 'type' => 'String' ),
-					'location'      => array( 'type' => 'KpfEventLocation' ),
+					'contactEmail'   => array( 'type' => 'String' ),
+					'contactPhone'   => array( 'type' => 'String' ),
+					'website'        => array( 'type' => 'String' ),
+					'ticketingLink'  => array( 'type' => 'String' ),
+					'location'       => array( 'type' => 'KpfEventLocation' ),
 					'frequency'     => array( 'type' => 'KpfEventFrequencyEnum' ),
 					'durationDays'  => array( 'type' => 'Int' ),
 					'schedule'      => array( 'type' => 'KpfEventSchedule' ),
@@ -167,6 +168,7 @@ final class GraphQL {
 			'contactEmail'  => $meta['contact_email'],
 			'contactPhone'  => $meta['contact_phone'],
 			'website'       => $meta['website'],
+			'ticketingLink' => $meta['ticketing_link'],
 			'location'      => array(
 				'mode'       => (string) ( $location['mode'] ?? 'none' ),
 				'label'      => (string) ( $location['label'] ?? '' ),

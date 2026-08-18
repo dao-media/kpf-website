@@ -230,7 +230,16 @@ final class Rest {
 				'postTypes'  => Meta::allowed_post_types(),
 				'taxonomies' => $taxonomies,
 				'maxPerPage' => Meta::MAX_PER_PAGE,
-				'orderby'    => array( 'date', 'modified', 'title', 'menu_order', 'rand', 'relevance' ),
+				'orderby'    => array(
+					'date',
+					'modified',
+					'title',
+					'menu_order',
+					'rand',
+					'relevance',
+					'meta_value',
+					'meta_value_num',
+				),
 			)
 		);
 	}

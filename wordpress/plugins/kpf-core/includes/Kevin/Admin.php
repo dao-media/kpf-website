@@ -108,7 +108,7 @@ final class Admin {
 	private static function image_size_message(): string {
 		return sprintf(
 			/* translators: %s: recommended pixel dimensions (e.g. 1120×1296). */
-			__( 'Recommended slide photo size: <strong>%s</strong> (portrait). Photos are cropped to this frame in the About page carousel.', 'kpf-core' ),
+			__( 'Recommended slide photo: <strong>%s</strong> portrait PNG/WebP with a <strong>transparent background</strong>. Set Order under Page Attributes so the stack matches the designed sequence. See Dashboard → Resources for the full checklist.', 'kpf-core' ),
 			'1120×1296'
 		);
 	}

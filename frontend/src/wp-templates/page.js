@@ -6,6 +6,11 @@ import PageScaffold from "@/components/PageScaffold";
 import SeoHead, { KPF_SEO_FRAGMENT } from "@/components/SeoHead";
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
+const { KPF_GRANTS_QUERY, KPF_GRANTS_TOTAL_QUERY, normalizeGrantQueryItems } = require("@/lib/grantsQuery");
+const {
+  KPF_SCRAPBOOK_TILES_QUERY,
+  normalizeScrapbookTiles,
+} = require("@/lib/scrapbookTiles");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 const {
   KPF_SCAFFOLD_MEDIA_QUERY,
@@ -26,16 +31,23 @@ export default function PageTemplate(props) {
   const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
   const contactForm = props?.data?.kpfForm || null;
   const kevinSlides = props?.data?.kpfKevinSlides || [];
+  const grants = normalizeGrantQueryItems(props?.data?.kpfQuery);
+  const grantsTotal = String(props?.data?.kpfGrantsTotal?.label || "").trim();
+  const scrapbookTiles = normalizeScrapbookTiles(props?.data?.kpfScrapbookTiles);
 
   return (
     <>
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={page?.kpfSeo} />
       <PageScaffold
+        key={page?.databaseId || page?.slug || page?.uri || "page"}
         page={page}
         media={media}
         contactForm={contactForm}
         kevinSlides={kevinSlides}
+        grants={grants}
+        grantsTotal={grantsTotal}
+        scrapbookTiles={scrapbookTiles}
       />
     </>
   );
@@ -50,6 +62,9 @@ PageTemplate.query = gql`
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}
     ${KPF_GSAP_QUERY}
+    ${KPF_GRANTS_QUERY}
+    ${KPF_GRANTS_TOTAL_QUERY}
+    ${KPF_SCRAPBOOK_TILES_QUERY}
     kpfKevinSlides(first: 12) {
       databaseId
       header
@@ -109,6 +124,13 @@ PageTemplate.query = gql`
               url
               alt
             }
+            recipientName
+            blurb
+            grantAmountLabel
+            awardedLabel
+            checkPhotoUrl
+            logoUrl
+            website
           }
           pagination {
             page

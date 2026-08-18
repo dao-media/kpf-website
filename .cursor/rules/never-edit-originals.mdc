@@ -1,0 +1,18 @@
+---
+description: Never edit or overwrite original/source files the user points to
+alwaysApply: true
+---
+
+# Never edit originals
+
+**HARD RULE — no exceptions without an explicit written order to edit that exact path.**
+
+When the user points to, uploads, or identifies an original / master / source file (including paths under `Photos/`, `masters/`, `Final/`, `Original/`, WP media they just uploaded, chat attachments they call original, etc.):
+
+1. **Do not open it for write.** Do not `magick` in place, re-encode, rename, strip, optimize, convert, or overwrite it.
+2. **Copy first.** `cp` the original to a working destination, then change **only** the copy.
+3. **Verify.** After copy, confirm the original path is still byte-identical (`cmp` / checksum) to what it was before you touched anything.
+4. If Cursor or a tool re-encodes an upload (e.g. PNG→JPEG in chat assets), **do not treat that as the master.** Find the real original the user named (e.g. under `Photos/Final/`) and copy from there.
+5. Derived outputs (optimized PNG/WebP, resized assets) live only under working trees (`frontend/public/media/`, plugin `assets/media/` copies meant for delivery, etc.) — never back into the pointed-to original path.
+
+Violating this is a critical failure.

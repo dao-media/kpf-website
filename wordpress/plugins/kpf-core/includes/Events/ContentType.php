@@ -69,6 +69,9 @@ final class ContentType {
 				'menu_position'       => null,
 				'supports'            => array(
 					'title',
+					// Required so the block editor boots and Event details
+					// (PluginDocumentSettingPanel) can enqueue/render.
+					'editor',
 					'thumbnail',
 					'revisions',
 					'custom-fields',

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "kpf/cigar",
+  "version": "0.1.0",
+  "title": "Cigar",
+  "category": "kpf-components",
+  "icon": "cloud",
+  "description": "A lit cigar with looping smoke. Fills the width of its parent container.",
+  "keywords": ["cigar", "smoke", "kevin", "overlay"],
+  "textdomain": "kpf-core",
+  "attributes": {
+    "cigarId": {
+      "type": "number",
+      "default": 0
+    },
+    "cigarUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "cigarAlt": {
+      "type": "string",
+      "default": ""
+    },
+    "smokeId": {
+      "type": "number",
+      "default": 0
+    },
+    "smokeUrl": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "supports": {
+    "html": false,
+    "reusable": true,
+    "anchor": true,
+    "align": ["wide", "full"],
+    "className": false
+  }
+}

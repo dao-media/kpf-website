@@ -176,15 +176,21 @@ const ABOUT = {
     body: "A Florida foundation that funds the organizations doing the hardest work for veterans — built to continue the way one man spent his life.",
     primaryCta: { href: "#mission", label: "Our mission" },
     secondaryCta: { href: "#history", label: "Who Kevin was" },
+    /* Pinned — restore framed photo + tampa-bay cutout layout later */
     frame: {
       key: "about.heroFrame",
       src: "/media/about/hero-frame.png",
       alt: "Kevin Popke with his wife in a wooden frame",
     },
-    background: {
+    backgroundPinned: {
       key: "about.tampaBay",
       src: "/media/about/tampa-bay.png",
       alt: "",
+    },
+    background: {
+      key: "about.heroBeach",
+      src: "/media/about/2_transparent.webp",
+      alt: "Volunteers and veterans gathered on the beach around a beach wheelchair",
     },
   },
   history: {
@@ -264,7 +270,8 @@ const ABOUT = {
   },
   grantees: {
     eyebrow: "Making an impact",
-    title: "Meet our grantees",
+    // `{total}` → %%grants_total%% / {{grants.total}} / kpfGrantsTotal.label
+    title: "Recipients of more than {total} in KPF grants",
     body: "Our grants have supported veterans facing very different situations: veterans without housing, veterans living with serious injuries, and Special Operations families hit with a sudden financial crisis.",
     items: [
       {
@@ -323,10 +330,11 @@ const ABOUT = {
     eyebrow: "The work",
     title: "KPF volunteers enable our ongoing support for our nation’s protectors",
     body: "Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.",
+    seeMore: "See more",
     featured: {
       key: "about.galleryFeatured",
-      src: "/media/home/kevin.jpg",
-      alt: "Donald “Kevin” Popke",
+      src: "/media/about/Beach_wheelchair.png",
+      alt: "Volunteer helping a veteran in a beach wheelchair near the shore",
     },
     items: [
       {
@@ -358,6 +366,11 @@ const ABOUT = {
       { href: "/#donate", label: "Donate", variant: "primary" },
       { href: "/contact/", label: "Get in touch", variant: "secondary" },
     ],
+    media: {
+      key: "cta.flag",
+      src: "/media/brand/kpf-flag.mp4",
+      alt: "",
+    },
   },
 };
 
@@ -406,71 +419,154 @@ const CONTACT = {
 const EVENTS = {
   hero: {
     eyebrow: "What funds our mission",
-    title: "Events",
-    body: "Our events raise the money we grant. They’re also a good time.",
-    primaryCta: { href: "#featured", label: "Songwriters for Vets" },
-    secondaryCta: { href: "/contact/?inquiry=partnership", label: "Partner with us" },
+    title: "Kevin Popke Foundation events",
+    body: "Our events raise money to support our mission, and we have a good time while doing it.",
+    primaryCta: {
+      href: "#featured",
+      label: "See featured event",
+      variant: "primary",
+      trailingIcon: "arrow",
+    },
+    secondaryCta: { href: "#partner", label: "Partner with us" },
     media: {
       key: "events.hero",
-      src: "/media/events/hero.jpg",
-      alt: "",
+      src: "/media/events/hero.webp",
+      alt: "Kevin Popke speaking into a microphone",
     },
   },
   context: {
-    eyebrow: "Partnership",
+    eyebrow: "Partner with us",
     title: "Sponsor, partner, or host something with us",
     body: [
-      "Our events happen because businesses and individuals decide to put their name behind them. Sponsorship puts your business in front of a room that cares who’s in it — and it funds grants directly.",
-      "There’s also room for other ideas. If you want to run a fundraiser for the Foundation, host a collection, put together a corporate giving match, or partner on an event of your own, we’d like to hear it.",
+      "Our events happen because businesses and individuals decide to put their name behind them. Sponsorship puts your business in front of a room that cares who's in it, and it funds grants directly.",
+      "There's also room for other ideas. If you want to run a fundraiser, host a collection, or partner on an event of your own, we'd like to hear it.",
     ],
-    cta: { href: "/contact/?inquiry=partnership", label: "Start a conversation" },
+    cta: { href: "/#donate", label: "Donate via PayPal" },
+    paths: [
+      {
+        id: "sponsor",
+        title: "Sponsor a night",
+        body: "Put your name behind a room that cares who's in it. Packages start where you are and fund grants directly.",
+        open: true,
+      },
+      {
+        id: "host",
+        title: "Host a fundraiser",
+        body: "Run a collection, a dinner, or a night of your own. We'll help you point every dollar toward Florida veterans.",
+        open: false,
+      },
+      {
+        id: "match",
+        title: "Corporate match",
+        body: "Double the impact of employee giving with a corporate match tied to an event or a year-round partnership.",
+        open: false,
+      },
+    ],
   },
   featured: {
     id: "featured",
-    eyebrow: "Our largest source of support",
+    eyebrow: "Featured",
     title: "Songwriters for Vets",
     body: [
-      "Once a year, Nashville songwriters take a stage in Florida and play the songs they wrote — the ones you already know by heart — and tell you how each one came to exist. There’s an auction, an open bar, and a room full of people who came for the same reason.",
-      "Songwriters for Vets is the single largest source of the grant money this Foundation puts to work each year. Buying a ticket is one of the most direct ways to support Florida veterans.",
+      "Once a year, Nashville songwriters take a stage in Florida and play the songs they wrote, many you already know by heart, and share the fascinating stories behind each tune. There's an auction, an open bar, and a community proudly supporting our protectors.",
+      "Buying a ticket is one of the most direct ways to support Florida veterans.",
     ],
-    media: {
-      key: "events.featured",
-      src: "/media/events/featured.jpg",
-      alt: "",
-    },
+    collage: [
+      {
+        key: "events.featured1",
+        src: "/media/events/featured-1.webp",
+        alt: "",
+      },
+      {
+        key: "events.featured2",
+        src: "/media/events/featured-2.webp",
+        alt: "",
+      },
+      {
+        key: "events.featured3",
+        src: "/media/events/featured-3.webp",
+        alt: "",
+      },
+      {
+        key: "events.featured4",
+        src: "/media/events/featured-4.webp",
+        alt: "",
+      },
+    ],
+    meta: [
+      { icon: "calendar", label: "Sat, Aug 29, 2026" },
+      { icon: "map", label: "Hyatt Regency, Bonita Springs" },
+      { icon: "ticket", label: "Tickets from $125" },
+    ],
     actions: [
       {
         href: "https://songwriters4vets.com",
         label: "Get tickets",
         variant: "primary",
         external: true,
+        trailingIcon: "external",
       },
       {
         href: "/contact/?inquiry=partnership",
         label: "Become a sponsor",
-        variant: "secondary",
+        variant: "outline",
       },
     ],
   },
   library: {
-    eyebrow: "Upcoming",
+    eyebrow: "On the calendar",
     title: "Upcoming events",
+    body: "Partner nights and fundraisers added over time. Each one a card, not a calendar.",
     emptyTitle: "Nothing on the calendar right now",
     emptyBody:
-      "We announce events a few months out. The best way to hear first is to follow along — or reach out if you’d like to help put one together.",
-    media: {
-      key: "events.library1",
-      src: "/media/events/library-1.jpg",
+      "We announce events a few months out. The best way to hear first is to follow along, or reach out if you'd like to help put one together.",
+    cardMark: {
+      key: "events.cardMark",
+      src: "/media/brand/50-badge.png",
       alt: "",
     },
+    items: [
+      {
+        id: "songwriters-naples",
+        title: "Songwriters for Vets - Naples",
+        body: "Nashville songwriters perform their #1 hits and tell the stories behind them. Auction, open bar, proceeds supporting Florida veterans.",
+        dateLabel: "Aug 2025",
+        ticketsLabel: "Get tickets",
+        ticketsHref: "https://songwriters4vets.com",
+        ticketsExternal: true,
+      },
+      {
+        id: "golf-classic",
+        title: "Community Golf Classic",
+        body: "A partner-hosted scramble raising funds for veteran housing and emergency assistance grants across Southwest Florida.",
+        dateLabel: "Jan 2025",
+        ticketsLabel: "Get tickets",
+        ticketsHref: "/contact/?inquiry=partnership",
+        ticketsExternal: false,
+      },
+      {
+        id: "holiday-giving",
+        title: "Holiday Giving Night",
+        body: "An end-of-year gathering with music, auction items, and a direct path to fund the next round of KPF grants.",
+        dateLabel: "Dec 2024",
+        ticketsLabel: "Get tickets",
+        ticketsHref: "/contact/?inquiry=partnership",
+        ticketsExternal: false,
+      },
+    ],
   },
   cta: {
-    title: "Ready to help put on the next one?",
-    body: "Tell us what you have in mind — sponsorship, a fundraiser, or a partnership of your own.",
+    title: "Together, we can.",
+    body: "There's more than one way to be part of this.",
     actions: [
-      { href: "/contact/?inquiry=partnership", label: "Start a conversation", variant: "primary" },
-      { href: "/#donate", label: "Donate", variant: "secondary" },
+      { href: "/#donate", label: "Donate", variant: "primary" },
+      { href: "/contact/", label: "Get in touch", variant: "outline" },
     ],
+    media: {
+      key: "cta.flag",
+      src: "/media/brand/kpf-flag.mp4",
+      alt: "",
+    },
   },
 };
 

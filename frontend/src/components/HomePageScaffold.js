@@ -2,6 +2,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import PartnersSlider from "@/components/PartnersSlider";
+import KpfButton from "@/components/KpfButton";
+import ProgramsCheckRuntime from "@/components/ProgramsCheckRuntime";
 import { HOME } from "@/lib/pageCopy";
 const { normalizeLatestBlogPost } = require("@/lib/latestBlogPost");
 const { resolveMedia } = require("@/lib/scaffoldMedia");
@@ -98,6 +100,7 @@ export default function HomePageScaffold({
 
   return (
     <div className="kpf-page-home" data-kpf-scaffold="home">
+      <ProgramsCheckRuntime />
       <section className="kpf-hero kpf-hero--home" aria-labelledby="kpf-home-hero-title">
         <div className="kpf-hero__scrim" aria-hidden="true" />
         <div className="kpf-hero__stage" aria-hidden="true">
@@ -105,13 +108,9 @@ export default function HomePageScaffold({
             const resolved = resolveMedia(media, cutout.key, cutout);
             if (!resolved.src) return null;
             return (
-              <img
-                key={cutout.key}
-                className={cutout.className}
-                src={resolved.src}
-                alt=""
-                decoding="async"
-              />
+              <div key={cutout.key} className={cutout.className}>
+                <img src={resolved.src} alt="" decoding="async" />
+              </div>
             );
           })}
         </div>
@@ -133,9 +132,9 @@ export default function HomePageScaffold({
                 </div>
               </div>
               <div className="kpf-content-block__actions kpf-hero__actions">
-                <Link href={copy.hero.primaryCta.href} className="kpf-btn kpf-btn--primary">
+                <KpfButton href={copy.hero.primaryCta.href} className="kpf-btn kpf-btn--primary">
                   {copy.hero.primaryCta.label}
-                </Link>
+                </KpfButton>
                 <Link href={copy.hero.secondaryCta.href} className="kpf-link kpf-hero__text-link">
                   {copy.hero.secondaryCta.label}
                 </Link>
@@ -188,9 +187,13 @@ export default function HomePageScaffold({
                       ? "kpf-btn kpf-btn--secondary"
                       : "kpf-btn kpf-btn--primary";
                   return (
-                    <Link key={action.href + action.label} href={action.href} className={className}>
+                    <KpfButton
+                      key={action.href + action.label}
+                      href={action.href}
+                      className={className}
+                    >
                       {action.label}
-                    </Link>
+                    </KpfButton>
                   );
                 })}
               </div>
@@ -222,9 +225,9 @@ export default function HomePageScaffold({
                     <h3 className="kpf-card__title">{card.title}</h3>
                     <p className="kpf-card__description">{card.body}</p>
                     <div className="kpf-card__actions">
-                      <Link href={card.cta.href} className="kpf-btn kpf-btn--primary kpf-btn--sm">
+                      <KpfButton href={card.cta.href} className="kpf-btn kpf-btn--primary kpf-btn--sm">
                         {card.cta.label}
-                      </Link>
+                      </KpfButton>
                     </div>
                   </div>
                 </article>
@@ -335,7 +338,9 @@ export default function HomePageScaffold({
                   ) : null}
                   {blog.readTime}
                 </p>
-                <h3 className="kpf-archive__title">{blog.title}</h3>
+                <h3 className="kpf-content-block__title kpf-content-block__title--h3">
+                  {blog.title}
+                </h3>
                 <span className="kpf-link">{blog.cta}</span>
               </div>
             </Link>
@@ -368,12 +373,12 @@ export default function HomePageScaffold({
                 </div>
               </div>
               <div className="kpf-content-block__actions">
-                <Link href={copy.donate.primaryCta.href} className="kpf-btn kpf-btn--primary">
+                <KpfButton href={copy.donate.primaryCta.href} className="kpf-btn kpf-btn--primary">
                   {copy.donate.primaryCta.label}
-                </Link>
-                <Link href={copy.donate.secondaryCta.href} className="kpf-btn kpf-btn--secondary">
+                </KpfButton>
+                <KpfButton href={copy.donate.secondaryCta.href} className="kpf-btn kpf-btn--secondary">
                   {copy.donate.secondaryCta.label}
-                </Link>
+                </KpfButton>
               </div>
             </div>
             <p className="kpf-donate__note">{copy.donate.note}</p>
@@ -386,6 +391,8 @@ export default function HomePageScaffold({
                   openAccordion === item.id ||
                   heldAccordionIds.includes(item.id);
                 const isExpanded = openAccordion === item.id;
+                const panelId = `kpf-donate-panel-${item.id}`;
+                const headerId = `kpf-donate-header-${item.id}`;
                 return (
                   <div
                     key={item.id}
@@ -393,8 +400,10 @@ export default function HomePageScaffold({
                   >
                     <button
                       type="button"
+                      id={headerId}
                       className="kpf-accordion__header"
                       aria-expanded={isExpanded}
+                      aria-controls={panelId}
                       onClick={() => selectAccordion(item.id)}
                     >
                       <span className="kpf-accordion__title">{item.title}</span>
@@ -408,6 +417,9 @@ export default function HomePageScaffold({
                       </span>
                     </button>
                     <div
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={headerId}
                       className="kpf-accordion__body"
                       aria-hidden={!isOpen}
                     >

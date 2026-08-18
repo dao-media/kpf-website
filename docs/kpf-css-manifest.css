@@ -1041,25 +1041,49 @@
 }
 
 .kpf-history__dots {
+	align-items: center;
 	display: flex;
-	gap: var(--kpf-space-xs);
+	flex-wrap: wrap;
+	gap: 0.5rem;
 	justify-content: flex-start;
-	margin-top: var(--kpf-space-md);
+	min-height: 0.75rem;
 }
 
-.kpf-history__dot {
-	background: var(--kpf-color-border-default);
+button.kpf-history__dot {
+	--kpf-history-dot-size: 0.75rem;
+	aspect-ratio: 1 / 1;
+	background: transparent;
 	border: 0;
-	border-radius: 50%;
-	cursor: pointer;
-	height: 0.625rem;
+	flex: 0 0 var(--kpf-history-dot-size);
+	font-size: 0;
+	height: var(--kpf-history-dot-size);
+	line-height: 0;
+	max-height: var(--kpf-history-dot-size);
+	max-width: var(--kpf-history-dot-size);
+	min-height: var(--kpf-history-dot-size);
+	min-width: var(--kpf-history-dot-size);
 	padding: 0;
-	width: 0.625rem;
+	position: relative;
+	width: var(--kpf-history-dot-size);
 }
 
-.kpf-history__dot[aria-current="true"],
-.kpf-history__dot.is-active {
+button.kpf-history__dot::after {
+	aspect-ratio: 1 / 1;
+	background: color-mix(in srgb, var(--kpf-parchment, #f4efea) 45%, transparent);
+	border-radius: 50%;
+	content: "";
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	transform: scale(0.6667);
+	width: 100%;
+}
+
+button.kpf-history__dot[aria-current="true"]::after,
+button.kpf-history__dot.is-active::after {
 	background: var(--kpf-color-action-primary);
+	transform: scale(1);
 }
 
 /* —— Programs / Values / Grantees / Gallery —— */

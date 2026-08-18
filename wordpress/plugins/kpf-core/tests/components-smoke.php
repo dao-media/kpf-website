@@ -84,10 +84,11 @@ $patterns = get_posts(
 			'kpf-frequently-asked-questions',
 			'kpf-featured-story-card',
 			'kpf-important-notice',
+			'kpf-cigar',
 		),
 	)
 );
-kpf_component_assert(count($patterns) === 4, 'Four editable starter components exist');
+kpf_component_assert(count($patterns) === 5, 'Five editable starter components exist');
 
 foreach ($patterns as $pattern) {
 	$groups = wp_get_object_terms($pattern->ID, Groups::TAXONOMY, array( 'fields' => 'slugs' ));
@@ -144,6 +145,22 @@ kpf_component_assert(
 	str_contains($rendered_container, 'Nested content.') &&
 	str_contains($rendered_container, 'Inside container'),
 	'Container renders as a section wrapper with nested blocks'
+);
+
+$cigar = '<!-- wp:kpf/cigar {"cigarUrl":"https://example.org/Cigar.png","cigarAlt":"Kevin’s cigar","smokeUrl":"https://example.org/smoke.mp4"} --><div class="wp-block-kpf-cigar kpf-cigar"><img class="kpf-cigar__image" src="https://example.org/Cigar.png" alt="Kevin’s cigar"/><video class="kpf-cigar__smoke" autoplay loop muted playsinline preload="auto" aria-hidden="true"><source src="https://example.org/smoke.mp4" type="video/mp4"/></video></div><!-- /wp:kpf/cigar -->';
+$parsed_cigar = parse_blocks($cigar);
+kpf_component_assert(
+	'kpf/cigar' === ($parsed_cigar[0]['blockName'] ?? ''),
+	'Cigar serialization parses as the custom block'
+);
+$rendered_cigar = do_blocks($cigar);
+kpf_component_assert(
+	str_contains($rendered_cigar, 'kpf-cigar') &&
+	str_contains($rendered_cigar, 'kpf-cigar__image') &&
+	str_contains($rendered_cigar, 'kpf-cigar__smoke') &&
+	str_contains($rendered_cigar, 'https://example.org/Cigar.png') &&
+	str_contains($rendered_cigar, 'https://example.org/smoke.mp4'),
+	'Cigar renders the image and smoke overlay markup'
 );
 
 $rest_request  = new WP_REST_Request('GET', '/wp/v2/' . Groups::TAXONOMY);

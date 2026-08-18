@@ -32,15 +32,25 @@ final class Media {
 			'about.history1'      => 'history-1.png',
 			'about.history2'      => 'history-2.png',
 			'about.historyBack'   => 'history-back.png',
-			'events.hero'         => 'hero-1.jpg', // WP renames duplicate hero.jpg
+			'about.galleryFeatured' => 'Beach_wheelchair.png',
+			'about.heroBeach'     => '2_transparent.webp',
+			'events.hero'         => 'hero.jpg', // WP may rename duplicate → hero-1.jpg
 			'events.featured'     => 'featured.jpg',
+			'events.featured1'    => 'featured-1.jpg',
+			'events.featured2'    => 'featured-2.jpg',
+			'events.featured3'    => 'featured-3.jpg',
+			'events.featured4'    => 'featured-4.jpg',
 			'events.library1'     => 'library-1.jpg',
+			'events.cardMark'     => '50-badge.png',
 			'partners.freedom'    => 'Freedom_Riding_Academy.jpg',
 			'partners.warriors'   => 'My_Warriors_Place.jpg',
 			'partners.dunes'      => 'Other_Side_of_the_Dunes.jpg',
 			'partners.stano'      => 'The_Stano_Foundation.png',
 			'partners.relief'     => 'Wounded_Veterans_Relief_Fund.jpg',
 			'partners.ranch'      => 'Wounded_Warriors_Abilities_Ranch.webp',
+			'cigar.image'         => 'Cigar.png',
+			'cigar.smoke'         => 'smoke.mp4',
+			'cta.flag'            => 'kpf-flag.mp4',
 		);
 	}
 
@@ -51,8 +61,25 @@ final class Media {
 	 */
 	public static function filename_aliases(): array {
 		return array(
-			'events.hero' => array( 'hero-1.jpg', 'hero.jpg' ),
+			'events.hero'  => array( 'hero-1.jpg', 'hero.jpg', 'hero.webp' ),
+			'events.featured1' => array( 'featured-1.webp', 'featured-1.jpg' ),
+			'events.featured2' => array( 'featured-2.webp', 'featured-2.jpg' ),
+			'events.featured3' => array( 'featured-3.webp', 'featured-3.jpg' ),
+			'events.featured4' => array( 'featured-4.webp', 'featured-4.jpg' ),
+			'events.cardMark' => array( '50-badge.png', 'brandmark.png' ),
+			'about.galleryFeatured' => array( 'Beach_wheelchair.png', 'Beach wheelchair.png' ),
+			'about.heroBeach' => array( '2_transparent.webp', '2_transparent.png' ),
+			'cigar.image' => array( 'Cigar.png', 'cigar.png' ),
+			'cigar.smoke' => array( 'smoke.mp4', 'smoke.webm' ),
+			'cta.flag' => array( 'kpf-flag.mp4', 'flag.mp4' ),
 		);
+	}
+
+	/**
+	 * @param list<string> $basenames
+	 */
+	public static function find_id( array $basenames ): int {
+		return self::find_attachment_id( $basenames );
 	}
 
 	public static function register(): void {

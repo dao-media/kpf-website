@@ -281,7 +281,7 @@
 	--kpf-tracking-blockquote: -0.005em;
 
 	--kpf-text-btn: var(--kpf-text-ui-m);
-	--kpf-weight-btn: 700;
+	--kpf-weight-btn: 600;
 	--kpf-leading-btn: 1.2;
 	--kpf-tracking-btn: 0.02em;
 
@@ -355,6 +355,12 @@
 }
 
 /* —— Base —— */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
 html {
 	font-size: 100%;
 	-webkit-font-smoothing: antialiased;
@@ -661,8 +667,9 @@ textarea::placeholder {
 	opacity: 1;
 }
 
-button,
-.kpf-btn {
+/* Type role for plain <button> only — .kpf-btn owns its type in the Buttons section
+ * (competing line-height/tracking here caused a 1–2px Donate shift on load). */
+button:not(.kpf-btn) {
 	font-family: var(--kpf-font-ui);
 	font-size: var(--kpf-text-btn);
 	font-weight: var(--kpf-weight-btn);
@@ -991,7 +998,27 @@ a[aria-disabled="true"],
 	pointer-events: none;
 }
 
+/*
+ * Reset UA button chrome only. Font metrics live exclusively on `.kpf-btn`
+ * so they are not competed with by the type-role `button` rule.
+ */
+button.kpf-btn {
+	appearance: none;
+	background-image: none;
+	margin: 0;
+}
+
 /* —— Buttons —— */
+/*
+ * Analytics (GA4 / GTM): interactive chrome is auto-tracked by AnalyticsRuntime.
+ * Override any control with data-kpf-track="event_name" (+ optional data-kpf-track-component).
+ * Marker attribute is intentional — no visual styles.
+ * Prefer <button class="kpf-btn"> via KpfButton; keep nav/text links as <a>/<Link>.
+ */
+[data-kpf-track] {
+	/* tracking hook only */
+}
+
 .kpf-btn {
 	align-items: center;
 	border: var(--kpf-stroke-strong) solid transparent;
@@ -1000,7 +1027,7 @@ a[aria-disabled="true"],
 	display: inline-flex;
 	font-family: var(--kpf-font-ui);
 	font-size: var(--kpf-text-ui);
-	font-weight: 700;
+	font-weight: var(--kpf-weight-btn);
 	gap: var(--kpf-space-tight);
 	justify-content: center;
 	letter-spacing: var(--kpf-tracking-ui);
@@ -1178,6 +1205,12 @@ a[aria-disabled="true"],
 }
 
 /* Bridge existing Gutenberg button block classes to foundation tokens */
+button.kpf-button__link {
+	appearance: none;
+	font: inherit;
+	margin: 0;
+}
+
 .kpf-button__link {
 	font-family: var(--kpf-font-ui);
 }
@@ -1214,6 +1247,53 @@ a[aria-disabled="true"],
 
 .kpf-button__link:focus-visible {
 	outline-color: var(--kpf-brass);
+}
+
+/* —— Cigar (smoke overlay) —— */
+.kpf-cigar {
+	--kpf-cigar-smoke-height: 120%;
+	--kpf-cigar-smoke-bottom: 48%;
+	--kpf-cigar-smoke-left: 15%;
+	--kpf-cigar-smoke-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 494.75 1158'%3E%3Cdefs%3E%3CradialGradient id='t' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(247.37, 828.60) scale(247.37, 828.60)'%3E%3Cstop offset='70%25' stop-color='black' stop-opacity='1'/%3E%3Cstop offset='100%25' stop-color='black' stop-opacity='0'/%3E%3C/radialGradient%3E%3CradialGradient id='b' cx='0' cy='0' r='1' gradientUnits='userSpaceOnUse' gradientTransform='translate(247.37, 828.60) scale(247.37, 329.39)'%3E%3Cstop offset='70%25' stop-color='black' stop-opacity='1'/%3E%3Cstop offset='100%25' stop-color='black' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M247.37,0 C110.75,0 0,370.98 0,828.60 L494.75,828.60 C494.75,370.98 383.99,0 247.37,0 Z' fill='url(%23t)'/%3E%3Cg transform='translate(0,-0.5)'%3E%3Cpath d='M0,828.60 c0,181.92 110.75,329.39 247.37,329.39 s247.38,-147.47 247.38,-329.39 Z' fill='url(%23b)'/%3E%3C/g%3E%3C/svg%3E");
+	box-sizing: border-box;
+	display: block;
+	height: auto;
+	max-width: 100%;
+	overflow: visible;
+	position: relative;
+	width: 100%;
+}
+
+.kpf-cigar__image {
+	display: block;
+	height: auto;
+	width: 100%;
+}
+
+.kpf-cigar__smoke {
+	-webkit-mask-image: var(--kpf-cigar-smoke-mask);
+	-webkit-mask-position: center bottom;
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-size: auto 100%;
+	bottom: var(--kpf-cigar-smoke-bottom);
+	height: var(--kpf-cigar-smoke-height);
+	left: var(--kpf-cigar-smoke-left);
+	mask-image: var(--kpf-cigar-smoke-mask);
+	mask-position: center bottom;
+	mask-repeat: no-repeat;
+	mask-size: auto 100%;
+	mix-blend-mode: screen;
+	pointer-events: none;
+	position: absolute;
+	transform: translateX(-50%);
+	width: auto;
+	z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.kpf-cigar__smoke {
+		display: none;
+	}
 }
 
 /* —— Card (Figma: Card DS) —— */

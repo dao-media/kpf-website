@@ -11,10 +11,8 @@ import {
 } from '@wordpress/components';
 import { useEntityProp } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
-import { PluginDocumentSettingPanel } from '@wordpress/editor';
-import { useEffect, useMemo, useState } from '@wordpress/element';
+import { createRoot, useEffect, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { registerPlugin } from '@wordpress/plugins';
 
 const cfg = window.kpfEventsEditor || {};
 const META_KEY = cfg.metaKey || '_kpf_event';
@@ -48,6 +46,7 @@ const DEFAULTS = {
 	contact_email: '',
 	contact_phone: '',
 	website: '',
+	ticketing_link: '',
 	location: DEFAULT_LOCATION,
 	frequency: 'one_time',
 	duration_days: 1,
@@ -99,7 +98,11 @@ function useMeta() {
 		(select) => select('core/editor').getCurrentPostType(),
 		[]
 	);
-	const [meta, setMeta] = useEntityProp('postType', postType, 'meta');
+	const [meta, setMeta] = useEntityProp(
+		'postType',
+		postType || 'kpf_event',
+		'meta'
+	);
 	const details = useMemo(
 		() => ({
 			...DEFAULTS,
@@ -638,16 +641,20 @@ function LocationPanel({ location, updateLocation }) {
 	);
 }
 
-function EventsSidebar() {
+function EventsEditorApp() {
 	const { details, update, updateSchedule, updateLocation } = useMeta();
 
 	return (
-		<>
-			<PluginDocumentSettingPanel
-				name="kpf-event-details"
-				title={__('Event details', 'kpf-core')}
-				className="kpf-events-editor-panel"
-			>
+		<div className="kpf-events-editor-app">
+			<p className="kpf-events-editor-app__intro">
+				{__(
+					'These fields power event cards on the Events page. Set the title above and the event image in the sidebar.',
+					'kpf-core'
+				)}
+			</p>
+
+			<section className="kpf-events-editor-app__section">
+				<h3>{__('Event details', 'kpf-core')}</h3>
 				<TextControl
 					label={__('Logline', 'kpf-core')}
 					help={__('Short blurb for event cards.', 'kpf-core')}
@@ -683,47 +690,88 @@ function EventsSidebar() {
 					label={__('Website', 'kpf-core')}
 					type="url"
 					placeholder="https://"
+					help={__('General event or organization page.', 'kpf-core')}
 					value={details.website || ''}
 					onChange={(website) => update({ website })}
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 				/>
-			</PluginDocumentSettingPanel>
+				<TextControl
+					label={__('Ticketing link', 'kpf-core')}
+					type="url"
+					placeholder="https://"
+					help={__(
+						'Where visitors buy tickets (Eventbrite, venue page, etc.).',
+						'kpf-core'
+					)}
+					value={details.ticketing_link || ''}
+					onChange={(ticketing_link) => update({ ticketing_link })}
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+				/>
+			</section>
 
-			<PluginDocumentSettingPanel
-				name="kpf-event-location"
-				title={__('Location', 'kpf-core')}
-			>
+			<section className="kpf-events-editor-app__section">
+				<h3>{__('Location', 'kpf-core')}</h3>
 				<LocationPanel
 					location={details.location || DEFAULT_LOCATION}
 					updateLocation={updateLocation}
 				/>
-			</PluginDocumentSettingPanel>
+			</section>
 
-			<PluginDocumentSettingPanel
-				name="kpf-event-hosts"
-				title={__('Hosts', 'kpf-core')}
-			>
+			<section className="kpf-events-editor-app__section">
+				<h3>{__('Hosts', 'kpf-core')}</h3>
 				<HostPicker
 					selectedIds={details.host_term_ids || []}
 					onChange={(host_term_ids) => update({ host_term_ids })}
 				/>
-			</PluginDocumentSettingPanel>
+			</section>
 
-			<PluginDocumentSettingPanel
-				name="kpf-event-schedule"
-				title={__('Frequency & schedule', 'kpf-core')}
-			>
+			<section className="kpf-events-editor-app__section">
+				<h3>{__('Frequency & schedule', 'kpf-core')}</h3>
 				<SchedulePanel
 					details={details}
 					update={update}
 					updateSchedule={updateSchedule}
 				/>
-			</PluginDocumentSettingPanel>
-		</>
+			</section>
+		</div>
 	);
 }
 
-registerPlugin('kpf-events-editor', {
-	render: EventsSidebar,
-});
+function mountEventsEditor() {
+	const el = document.getElementById('kpf-events-editor-root');
+	if (!el || el.dataset.kpfMounted === '1') {
+		return;
+	}
+
+	const tryMount = () => {
+		const postType = window.wp?.data?.select('core/editor')?.getCurrentPostType?.();
+		if (!postType) {
+			return false;
+		}
+		el.dataset.kpfMounted = '1';
+		createRoot(el).render(<EventsEditorApp />);
+		return true;
+	};
+
+	if (tryMount()) {
+		return;
+	}
+
+	if (!window.wp?.data?.subscribe) {
+		return;
+	}
+
+	const unsubscribe = window.wp.data.subscribe(() => {
+		if (tryMount()) {
+			unsubscribe();
+		}
+	});
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', mountEventsEditor);
+} else {
+	mountEventsEditor();
+}

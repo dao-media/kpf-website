@@ -36,7 +36,8 @@ final class ContentType {
 					'Individual Foundation awards: recipient, date, amount, and check presentation photo.',
 					'kpf-core'
 				),
-				'public'              => false,
+				/* Public like Kevin so Code → Queries can target this type; not front-routable. */
+				'public'              => true,
 				'publicly_queryable'  => false,
 				'show_ui'             => true,
 				'show_in_menu'        => true,

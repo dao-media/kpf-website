@@ -169,6 +169,10 @@ final class Meta {
 		if (! in_array($date_precision, self::DATE_PRECISIONS, true)) {
 			$date_precision = 'unknown';
 		}
+		// Decade precision retired — store as year going forward.
+		if ('decade' === $date_precision) {
+			$date_precision = 'year';
+		}
 
 		$images = self::sanitize_images($value['images'] ?? array());
 		if ('photo' === $entry_type && count($images) > 1) {

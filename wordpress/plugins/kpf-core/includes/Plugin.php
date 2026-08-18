@@ -16,6 +16,7 @@ use KPF\Core\Backups\Settings as BackupsSettings;
 use KPF\Core\Admin\Dashboard as AdminDashboard;
 use KPF\Core\Admin\HeadlessAppearance;
 use KPF\Core\Admin\MenuOrganizer;
+use KPF\Core\Admin\Resources as AdminResources;
 use KPF\Core\Admin\Theme as AdminTheme;
 use KPF\Core\Code\Admin as CodeAdmin;
 use KPF\Core\Code\ContentType as CodeContentType;
@@ -98,6 +99,7 @@ use KPF\Core\Grants\ContentType as GrantsContentType;
 use KPF\Core\Grants\GraphQL as GrantsGraphQL;
 use KPF\Core\Grants\Meta as GrantsMeta;
 use KPF\Core\Grants\Rest as GrantsRest;
+use KPF\Core\Grants\Totals as GrantsTotals;
 use KPF\Core\Scrapbook\Admin as ScrapbookAdmin;
 use KPF\Core\Kevin\Admin as KevinAdmin;
 use KPF\Core\Kevin\ContentType as KevinContentType;
@@ -179,6 +181,7 @@ final class Plugin {
 		AdminSrcset::register();
 
 		AdminDashboard::register();
+		AdminResources::register();
 		AdminTheme::register();
 		HeadlessAppearance::register();
 		MenuOrganizer::register();
@@ -256,6 +259,7 @@ final class Plugin {
 
 		GrantsContentType::register();
 		GrantsMeta::register();
+		GrantsTotals::register();
 		GrantsAdmin::register();
 		GrantsGraphQL::register();
 		GrantsRest::register();

@@ -4,12 +4,20 @@ import { gsap } from "gsap";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+const {
+  isSameDocumentHash,
+  scrollToTarget,
+} = require("@/lib/smoothScrollTo");
+
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
 /**
  * GSAP ScrollSmoother for the site shell.
  * Requires #smooth-wrapper > #smooth-content (see SiteChrome).
  * Skipped when the user prefers reduced motion.
+ *
+ * Also intercepts same-page hash links — native #anchor scrolling fights
+ * ScrollSmoother and creates a huge empty gap under the page.
  */
 export default function ScrollSmootherRuntime() {
   const router = useRouter();
@@ -17,7 +25,27 @@ export default function ScrollSmootherRuntime() {
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return undefined;
+      // Still intercept hashes so reduced-motion gets header-aware scrolling.
+      const onClickReduced = (event) => {
+        if (event.defaultPrevented || event.button !== 0) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+          return;
+        }
+        const anchor = event.target?.closest?.("a[href]");
+        if (!anchor || anchor.target === "_blank") return;
+        const href = anchor.getAttribute("href");
+        if (!isSameDocumentHash(href)) return;
+        event.preventDefault();
+        scrollToTarget(href, { smooth: false, updateHash: true });
+      };
+      document.addEventListener("click", onClickReduced, true);
+      if (window.location.hash) {
+        scrollToTarget(window.location.hash, {
+          smooth: false,
+          updateHash: false,
+        });
+      }
+      return () => document.removeEventListener("click", onClickReduced, true);
     }
 
     const wrapper = document.querySelector("#smooth-wrapper");
@@ -42,11 +70,49 @@ export default function ScrollSmootherRuntime() {
       });
     };
 
+    const scrollHash = ({ smooth = false } = {}) => {
+      const { hash } = window.location;
+      if (!hash) return;
+      // Wait a frame so layout + smoother height are settled.
+      requestAnimationFrame(() => {
+        scrollToTarget(hash, { smooth, updateHash: false });
+        refresh();
+      });
+    };
+
+    const onClick = (event) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      const anchor = event.target?.closest?.("a[href]");
+      if (!anchor || anchor.target === "_blank") return;
+      const href = anchor.getAttribute("href");
+      if (!isSameDocumentHash(href)) return;
+      event.preventDefault();
+      scrollToTarget(href, { smooth: true, updateHash: true });
+    };
+
+    const onHashChange = () => {
+      scrollHash({ smooth: true });
+    };
+
     refresh();
-    router.events?.on("routeChangeComplete", refresh);
+    scrollHash({ smooth: false });
+
+    const onRouteComplete = () => {
+      refresh();
+      scrollHash({ smooth: false });
+    };
+
+    document.addEventListener("click", onClick, true);
+    window.addEventListener("hashchange", onHashChange);
+    router.events?.on("routeChangeComplete", onRouteComplete);
 
     return () => {
-      router.events?.off("routeChangeComplete", refresh);
+      document.removeEventListener("click", onClick, true);
+      window.removeEventListener("hashchange", onHashChange);
+      router.events?.off("routeChangeComplete", onRouteComplete);
       smoother.kill();
     };
   }, [router.asPath, router.events]);

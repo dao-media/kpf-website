@@ -3,6 +3,7 @@ import BlogPageScaffold from "@/components/BlogPageScaffold";
 import ContactPageScaffold from "@/components/ContactPageScaffold";
 import EventsPageScaffold from "@/components/EventsPageScaffold";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
+import PrivacyPageScaffold from "@/components/PrivacyPageScaffold";
 import { useRouter } from "next/router";
 
 /**
@@ -52,6 +53,10 @@ export default function PageScaffold({
 
   if (slug === "blog") {
     return <BlogPageScaffold media={media} posts={posts} />;
+  }
+
+  if (slug === "privacy") {
+    return <PrivacyPageScaffold page={page} />;
   }
 
   if (slug === "contact" || slug === "contact-2") {

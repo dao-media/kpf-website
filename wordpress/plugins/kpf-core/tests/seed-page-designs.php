@@ -67,6 +67,24 @@ if ( ! $blog instanceof WP_Post ) {
 	echo "Blog page ready (ID {$blog->ID}).\n";
 }
 
+// Ensure Privacy page exists (React PrivacyPageScaffold).
+$privacy = get_page_by_path( 'privacy' );
+if ( ! $privacy instanceof WP_Post ) {
+	$privacy_id = wp_insert_post(
+		array(
+			'post_type'   => 'page',
+			'post_status' => 'publish',
+			'post_title'  => 'Privacy Policy',
+			'post_name'   => 'privacy',
+		),
+		true
+	);
+	$privacy = is_wp_error( $privacy_id ) ? null : get_post( (int) $privacy_id );
+	echo $privacy ? "Created Privacy page (ID {$privacy->ID}).\n" : "FAILED to create Privacy page.\n";
+} else {
+	echo "Privacy page ready (ID {$privacy->ID}).\n";
+}
+
 // Ensure / update contact form.
 $form_id = FormsDefinition::find_by_slug( 'contact' );
 if ( $form_id < 1 ) {

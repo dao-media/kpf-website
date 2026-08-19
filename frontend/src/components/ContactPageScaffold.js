@@ -46,8 +46,10 @@ export default function ContactPageScaffold({ form = null }) {
 
   useEffect(() => {
     if (inquiry) {
-      document.getElementById("kpf-contact-form-title")?.scrollIntoView?.({
-        block: "start",
+      const { scrollToTarget } = require("@/lib/smoothScrollTo");
+      scrollToTarget("kpf-contact-form-title", {
+        smooth: true,
+        updateHash: false,
       });
     }
   }, [inquiry]);

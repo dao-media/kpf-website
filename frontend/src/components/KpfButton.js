@@ -1,5 +1,7 @@
 import { useRouter } from "next/router";
 
+const { scrollToTarget } = require("@/lib/smoothScrollTo");
+
 function isExternalHref(href = "") {
   return /^(https?:|mailto:|tel:)/i.test(href);
 }
@@ -58,12 +60,7 @@ export default function KpfButton({
     }
 
     if (isHashOnly(href)) {
-      const id = href.slice(1);
-      const target = id ? document.getElementById(id) : null;
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (history?.replaceState) history.replaceState(null, "", href);
-      } else {
+      if (!scrollToTarget(href, { smooth: true, updateHash: true })) {
         window.location.hash = href;
       }
       return;
@@ -74,12 +71,7 @@ export default function KpfButton({
       const currentPath = router.asPath.split("#")[0] || "/";
       const nextPath = path || currentPath;
       if (nextPath === currentPath) {
-        const target = hash ? document.getElementById(hash) : null;
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth", block: "start" });
-          if (history?.replaceState) {
-            history.replaceState(null, "", `${nextPath}#${hash}`);
-          }
+        if (scrollToTarget(hash ? `#${hash}` : null, { smooth: true, updateHash: true })) {
           return;
         }
       }

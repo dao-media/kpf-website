@@ -416,7 +416,7 @@ const CONTACT = {
 
 const BLOG = {
   hero: {
-    eyebrow: "Updates, New & More",
+    eyebrow: "Updates, News & More",
     title: "Welcome to the KPF blog",
     body: "We have the privilege of supporting veterans because of the dedication and passion of our volunteers. Be sure to check out our stories, updates, and other news.",
     primaryCta: { href: "#archive", label: "Latest stories", variant: "primary" },

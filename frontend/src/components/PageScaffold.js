@@ -1,4 +1,5 @@
 import AboutPageScaffold from "@/components/AboutPageScaffold";
+import BlogPageScaffold from "@/components/BlogPageScaffold";
 import ContactPageScaffold from "@/components/ContactPageScaffold";
 import EventsPageScaffold from "@/components/EventsPageScaffold";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
@@ -20,6 +21,7 @@ export default function PageScaffold({
   grantsTotal = "",
   scrapbookTiles = [],
   events = [],
+  posts = null,
 }) {
   const router = useRouter();
   const routeSlug = String(router?.asPath || "")
@@ -46,6 +48,10 @@ export default function PageScaffold({
 
   if (slug === "events") {
     return <EventsPageScaffold media={media} events={events} />;
+  }
+
+  if (slug === "blog") {
+    return <BlogPageScaffold media={media} posts={posts} />;
   }
 
   if (slug === "contact" || slug === "contact-2") {

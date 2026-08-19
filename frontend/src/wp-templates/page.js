@@ -17,6 +17,7 @@ const {
   scaffoldMediaMap,
 } = require("@/lib/scaffoldMedia");
 const { KPF_EVENTS_QUERY } = require("@/lib/eventsQuery");
+const { KPF_BLOG_POSTS_QUERY } = require("@/lib/blogPosts");
 
 const KPF_CONTACT_FORM_QUERY = `
   kpfForm(slug: "contact") {
@@ -36,6 +37,7 @@ export default function PageTemplate(props) {
   const grantsTotal = String(props?.data?.kpfGrantsTotal?.label || "").trim();
   const scrapbookTiles = normalizeScrapbookTiles(props?.data?.kpfScrapbookTiles);
   const events = props?.data?.foundationEvents?.nodes || [];
+  const posts = props?.data?.kpfBlogPosts || null;
 
   return (
     <>
@@ -51,6 +53,7 @@ export default function PageTemplate(props) {
         grantsTotal={grantsTotal}
         scrapbookTiles={scrapbookTiles}
         events={events}
+        posts={posts}
       />
     </>
   );
@@ -69,6 +72,7 @@ PageTemplate.query = gql`
     ${KPF_GRANTS_TOTAL_QUERY}
     ${KPF_SCRAPBOOK_TILES_QUERY}
     ${KPF_EVENTS_QUERY}
+    ${KPF_BLOG_POSTS_QUERY}
     kpfKevinSlides(first: 12) {
       databaseId
       header

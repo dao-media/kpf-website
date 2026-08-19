@@ -414,6 +414,25 @@ const CONTACT = {
   },
 };
 
+const BLOG = {
+  hero: {
+    eyebrow: "Updates, New & More",
+    title: "Welcome to the KPF blog",
+    body: "We have the privilege of supporting veterans because of the dedication and passion of our volunteers. Be sure to check out our stories, updates, and other news.",
+    primaryCta: { href: "#archive", label: "Latest stories", variant: "primary" },
+    secondaryCta: { href: "#topics", label: "Browse topics", variant: "outline" },
+  },
+  archive: {
+    id: "archive",
+    eyebrow: "Our Blog Archive",
+    title: "All stories",
+    body: "Updates from grants, events, and the people doing the work — newest first.",
+    featuredCta: "Read the story",
+    rowCta: "Read story",
+    empty: "No stories published yet. Check back soon.",
+  },
+};
+
 const EVENTS = {
   hero: {
     eyebrow: "What funds our mission",
@@ -591,6 +610,7 @@ const EVENTS = {
 
 module.exports = {
   ABOUT,
+  BLOG,
   CONTACT,
   EVENTS,
   HOME,

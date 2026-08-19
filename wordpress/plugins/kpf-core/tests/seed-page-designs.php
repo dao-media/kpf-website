@@ -49,6 +49,24 @@ if ( ! $contact instanceof WP_Post ) {
 	echo $contact ? "Created Contact page (ID {$contact->ID}).\n" : "FAILED to create Contact page.\n";
 }
 
+// Ensure Blog page exists (React BlogPageScaffold; no design HTML required).
+$blog = get_page_by_path( 'blog' );
+if ( ! $blog instanceof WP_Post ) {
+	$blog_id = wp_insert_post(
+		array(
+			'post_type'   => 'page',
+			'post_status' => 'publish',
+			'post_title'  => 'Blog',
+			'post_name'   => 'blog',
+		),
+		true
+	);
+	$blog = is_wp_error( $blog_id ) ? null : get_post( (int) $blog_id );
+	echo $blog ? "Created Blog page (ID {$blog->ID}).\n" : "FAILED to create Blog page.\n";
+} else {
+	echo "Blog page ready (ID {$blog->ID}).\n";
+}
+
 // Ensure / update contact form.
 $form_id = FormsDefinition::find_by_slug( 'contact' );
 if ( $form_id < 1 ) {

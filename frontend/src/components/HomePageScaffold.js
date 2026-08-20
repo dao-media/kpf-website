@@ -30,7 +30,7 @@ function CheckIcon() {
 }
 
 /**
- * Home scaffold — Figma Homepage Desktop hero `616:1060` (+ page `414:532`).
+ * Home scaffold — Figma Homepage Desktop hero `1101:3435` (+ page `414:532`).
  */
 export default function HomePageScaffold({
   media = {},
@@ -157,7 +157,22 @@ export default function HomePageScaffold({
       <section className="kpf-story kpf-section" aria-labelledby="kpf-home-story-title">
         <div className="kpf-story__media">
           {kevin.src ? (
-            <img src={kevin.src} alt={kevin.alt} loading="lazy" decoding="async" />
+            <picture>
+              <source
+                type="image/webp"
+                srcSet={
+                  kevin.src.endsWith(".webp")
+                    ? kevin.src
+                    : kevin.src.replace(/\.(png|jpe?g)$/i, ".webp")
+                }
+              />
+              <img
+                src={kevin.src.replace(/\.webp$/i, ".png")}
+                alt={kevin.alt}
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
           ) : null}
         </div>
         <div className="kpf-u-container kpf-story__inner">

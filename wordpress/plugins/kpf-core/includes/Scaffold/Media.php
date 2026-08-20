@@ -61,6 +61,7 @@ final class Media {
 	 */
 	public static function filename_aliases(): array {
 		return array(
+			'home.kevinDoubleExposure' => array( 'kevin-double-exposure.webp', 'kevin-double-exposure.png' ),
 			'events.hero'  => array( 'hero-1.jpg', 'hero.jpg', 'hero.webp' ),
 			'events.featured1' => array( 'featured-1.webp', 'featured-1.jpg' ),
 			'events.featured2' => array( 'featured-2.webp', 'featured-2.jpg' ),

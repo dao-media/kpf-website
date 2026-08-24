@@ -178,6 +178,30 @@ function kpf_media_seo_catalog(): array {
 			'description' => "Events page hero photograph capturing Songwriters for Vets atmosphere. Songwriters for Vets is the largest annual source of grant funding for the {$org}, supporting veteran nonprofits across Florida.",
 			'alt'         => 'Atmospheric stage lighting at a Songwriters for Vets fundraising event',
 		),
+		'events-hero.jpg' => array(
+			'title'       => 'Events hero — Songwriters for Vets performer on stage',
+			'caption'     => "Performer on stage at Songwriters for Vets, the {$org}’s flagship fundraiser.",
+			'description' => "Events page hero photograph of a performer smiling on stage with a microphone and guitar at Songwriters for Vets. Songwriters for Vets is the largest annual source of grant funding for the {$org}, supporting veteran nonprofits across Florida.",
+			'alt'         => 'Performer smiling on stage with a microphone and guitar',
+		),
+		'events-hero.webp' => array(
+			'title'       => 'Events hero — Songwriters for Vets performer on stage',
+			'caption'     => "Performer on stage at Songwriters for Vets, the {$org}’s flagship fundraiser.",
+			'description' => "Events page hero photograph of a performer smiling on stage with a microphone and guitar at Songwriters for Vets. Songwriters for Vets is the largest annual source of grant funding for the {$org}, supporting veteran nonprofits across Florida.",
+			'alt'         => 'Performer smiling on stage with a microphone and guitar',
+		),
+		'events-hero-performer.jpg' => array(
+			'title'       => 'Events hero — Songwriters for Vets performer on stage',
+			'caption'     => "Performer on stage at Songwriters for Vets, the {$org}’s flagship fundraiser.",
+			'description' => "Events page hero photograph of a performer smiling on stage with a microphone and guitar at Songwriters for Vets. Songwriters for Vets is the largest annual source of grant funding for the {$org}, supporting veteran nonprofits across Florida.",
+			'alt'         => 'Performer smiling on stage with a microphone and guitar',
+		),
+		'events-hero-performer.webp' => array(
+			'title'       => 'Events hero — Songwriters for Vets performer on stage',
+			'caption'     => "Performer on stage at Songwriters for Vets, the {$org}’s flagship fundraiser.",
+			'description' => "Events page hero photograph of a performer smiling on stage with a microphone and guitar at Songwriters for Vets. Songwriters for Vets is the largest annual source of grant funding for the {$org}, supporting veteran nonprofits across Florida.",
+			'alt'         => 'Performer smiling on stage with a microphone and guitar',
+		),
 		'featured.jpg' => array(
 			'title'       => 'Songwriters for Vets featured event photograph',
 			'caption'     => "Songwriters for Vets — the {$org}’s largest source of grant support each year.",

@@ -301,7 +301,7 @@ function EventCard({ event, fallbackMarkSrc = "", fallbackMarkAlt = "" }) {
 
 export default function EventsPageScaffold({ media = {}, events: eventNodes = [] }) {
   const copy = EVENTS;
-  const hero = resolveMedia(media, copy.hero.media.key, copy.hero.media);
+  const heroAlt = copy.hero.media.alt || "";
   const cardMark = resolveMedia(
     media,
     copy.library.cardMark.key,
@@ -367,25 +367,18 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
   return (
     <div className="kpf-page-events" data-kpf-scaffold="events">
       <section className="kpf-hero kpf-hero--events" aria-labelledby="kpf-events-hero-title">
-        {hero.src ? (
-          <div className="kpf-hero__media-frame">
-            <picture className="kpf-hero__media-host">
-              {hero.src.endsWith(".jpg") || hero.src.endsWith(".jpeg") ? (
-                <source
-                  type="image/webp"
-                  srcSet={hero.src.replace(/\.(jpe?g)$/i, ".webp")}
-                />
-              ) : null}
-              <img
-                className="kpf-hero__media"
-                src={hero.src}
-                alt={hero.alt || ""}
-                decoding="async"
-                fetchPriority="high"
-              />
-            </picture>
-          </div>
-        ) : null}
+        <div className="kpf-hero__media-frame">
+          <picture className="kpf-hero__media-host">
+            <source type="image/webp" srcSet="/media/events/hero.webp" />
+            <img
+              className="kpf-hero__media"
+              src="/media/events/hero.jpg"
+              alt={heroAlt}
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
+        </div>
         <div className="kpf-hero__scrim" aria-hidden="true" />
         <div className="kpf-u-container kpf-hero__layout">
           <div className="kpf-hero__content">

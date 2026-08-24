@@ -16,7 +16,7 @@ final class Media {
 	 */
 	public static function catalog(): array {
 		return array(
-			'home.hero'           => 'hero.jpg',
+			'home.hero'           => '541-hero.jpg',
 			'home.kevin'          => 'kevin.jpg',
 			'home.kevinDad'       => 'kevin-with-dad.png',
 			'home.kevinRunner'    => 'kevin-runner.png',
@@ -34,7 +34,7 @@ final class Media {
 			'about.historyBack'   => 'history-back.png',
 			'about.galleryFeatured' => 'Beach_wheelchair.png',
 			'about.heroBeach'     => '2_transparent.webp',
-			'events.hero'         => 'hero.jpg', // WP may rename duplicate → hero-1.jpg
+			'events.hero'         => 'events-hero-performer.jpg',
 			'events.featured'     => 'featured.jpg',
 			'events.featured1'    => 'featured-1.jpg',
 			'events.featured2'    => 'featured-2.jpg',
@@ -63,7 +63,15 @@ final class Media {
 		return array(
 			/* Prefer PNG cutout: WP WebP thumbs often flatten alpha to opaque black. */
 			'home.kevinDoubleExposure' => array( 'kevin-double-exposure-cutout.png', 'kevin-double-exposure.png', 'kevin-double-exposure-cutout.webp' ),
-			'events.hero'  => array( 'hero-1.jpg', 'hero.jpg', 'hero.webp' ),
+			'home.hero'    => array( '541-hero.jpg', 'hero.jpg', 'hero.webp' ),
+			'events.hero'  => array(
+				'events-hero-performer.webp',
+				'events-hero-performer.jpg',
+				'events-hero-2.webp',
+				'events-hero-1.jpg',
+				'events-hero.webp',
+				'events-hero.jpg',
+			),
 			'events.featured1' => array( 'featured-1.webp', 'featured-1.jpg' ),
 			'events.featured2' => array( 'featured-2.webp', 'featured-2.jpg' ),
 			'events.featured3' => array( 'featured-3.webp', 'featured-3.jpg' ),
@@ -133,6 +141,7 @@ final class Media {
 			if ( ! is_string( $url ) || '' === $url ) {
 				continue;
 			}
+			$url = \KPF\Core\Media\PublicUrls::to_wp_host( $url );
 			$items[] = array(
 				'key'        => $key,
 				'databaseId' => $id,
@@ -155,22 +164,24 @@ final class Media {
 			if ( '' === $basename ) {
 				continue;
 			}
-			$like = '%' . $wpdb->esc_like( '/' . $basename );
-			$id   = (int) $wpdb->get_var(
+			$like_guid = '%' . $wpdb->esc_like( '/' . $basename );
+			$id        = (int) $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND guid LIKE %s ORDER BY ID DESC LIMIT 1",
-					$like
+					$like_guid
 				)
 			);
 			if ( $id > 0 ) {
 				return $id;
 			}
 
-			// Also match _wp_attached_file meta (relative path).
-			$id = (int) $wpdb->get_var(
+			// Exact basename only — a loose "%hero.jpg" match would also hit "541-hero.jpg".
+			$like_meta = '%/' . $wpdb->esc_like( $basename );
+			$id        = (int) $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND meta_value LIKE %s ORDER BY post_id DESC LIMIT 1",
-					'%' . $wpdb->esc_like( $basename )
+					"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND (meta_value = %s OR meta_value LIKE %s) ORDER BY post_id DESC LIMIT 1",
+					$basename,
+					$like_meta
 				)
 			);
 			if ( $id > 0 ) {

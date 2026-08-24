@@ -2323,12 +2323,25 @@ button.kpf-partners__dot:focus-visible {
 	color: inherit;
 	display: flex;
 	flex-direction: column; /* stacked through tablet */
+	font-weight: inherit;
 	gap: var(--kpf-space-md); /* 16 */
+	letter-spacing: inherit;
 	min-width: 0;
 	padding: var(--kpf-space-md); /* 16 — was 24 */
 	text-decoration: none;
 	transition: box-shadow 200ms ease-out;
 	width: 100%;
+}
+
+a.kpf-archive__card:link,
+a.kpf-archive__card:visited,
+a.kpf-archive__card:hover,
+a.kpf-archive__card:active,
+a.kpf-archive__card:focus-visible {
+	color: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+	text-decoration: none;
 }
 
 @media (max-width: 1200px) {
@@ -2428,7 +2441,29 @@ button.kpf-partners__dot:focus-visible {
 }
 
 .kpf-archive__meta .kpf-content-block__title {
+	color: var(--kpf-color-text-primary, var(--kpf-ink, #12090a));
 	margin: 1rem 0;
+	text-decoration: none;
+}
+
+.kpf-archive__category,
+.kpf-archive__date {
+	text-decoration: none;
+}
+
+/* Only the CTA reads as a hyperlink; the rest of the card copy stays body/heading. */
+.kpf-archive__card .kpf-link {
+	color: var(--kpf-color-text-link);
+	font-weight: var(--kpf-weight-link);
+	letter-spacing: var(--kpf-tracking-link);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--kpf-color-text-link) 45%, transparent);
+}
+
+.kpf-archive__card:hover .kpf-link,
+.kpf-archive__card:focus-visible .kpf-link {
+	color: var(--kpf-ember, #bb0d0d);
+	text-decoration-color: var(--kpf-ember, #bb0d0d);
 }
 
 /* Donate band — Figma 416:613 */

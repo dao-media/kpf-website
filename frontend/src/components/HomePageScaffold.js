@@ -355,15 +355,24 @@ export default function HomePageScaffold({
             </div>
           </div>
           {blog ? (
-            <Link href={blog.href} className="kpf-archive__card">
+            <Link
+              href={blog.href}
+              className={
+                blog.media?.src
+                  ? "kpf-archive__card kpf-archive__card--media"
+                  : "kpf-archive__card"
+              }
+            >
               {blog.media?.src ? (
-                <img
-                  className="kpf-archive__thumb"
-                  src={blog.media.src}
-                  alt={blog.media.alt || ""}
-                  loading="lazy"
-                  decoding="async"
-                />
+                <div className="kpf-archive__media">
+                  <img
+                    className="kpf-archive__thumb"
+                    src={blog.media.src}
+                    alt={blog.media.alt || ""}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
               ) : null}
               <div className="kpf-archive__meta">
                 <p className="kpf-archive__category">{blog.category}</p>

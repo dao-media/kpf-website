@@ -139,8 +139,8 @@ final class DesignHtml {
           </div>
         </div>
       </div>
-      <a class="kpf-archive__card" href="/blog/">
-        {$blog}
+      <a class="kpf-archive__card kpf-archive__card--media" href="/blog/">
+        <div class="kpf-archive__media">{$blog}</div>
         <div class="kpf-archive__meta">
           <p class="kpf-archive__category">Events</p>
           <p class="kpf-archive__date">July 18, 2026 · 6 min read</p>

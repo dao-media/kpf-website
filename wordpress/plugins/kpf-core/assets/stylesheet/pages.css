@@ -2337,17 +2337,24 @@ button.kpf-partners__dot:focus-visible {
 	}
 }
 
-/* Side-by-side card internals only with the wide desktop row */
+/* Side-by-side: image 40% of the card, copy the remaining 60% */
 @media (min-width: 1201px) {
-	.kpf-archive__card {
-		align-items: center; /* vertically middle-align thumb + meta */
-		flex-direction: row;
+	.kpf-archive__card--media {
+		align-items: stretch;
+		display: grid;
+		gap: 0;
+		grid-template-columns: 40% 60%;
 	}
+}
+
+.kpf-archive__media {
+	min-width: 0;
+	width: 100%;
 }
 
 .kpf-archive__thumb {
 	border-radius: var(--kpf-radius-md);
-	flex: 0 0 auto;
+	display: block;
 	height: auto;
 	max-height: 14rem;
 	max-width: 100%;
@@ -2356,11 +2363,27 @@ button.kpf-partners__dot:focus-visible {
 }
 
 @media (min-width: 1201px) {
-	.kpf-archive__thumb {
-		flex: 0 0 40%;
-		max-height: none;
+	.kpf-archive__media {
+		box-sizing: border-box;
+		height: 100%;
 		min-height: 256px;
-		width: 40%;
+	}
+
+	.kpf-archive__thumb {
+		height: 100%;
+		max-height: none;
+		max-width: none;
+		min-height: 256px;
+		min-width: 0;
+		object-fit: cover;
+		width: 100%;
+	}
+
+	.kpf-archive__meta {
+		box-sizing: border-box;
+		min-width: 0;
+		padding-left: var(--kpf-space-md);
+		width: auto;
 	}
 }
 
@@ -5455,7 +5478,7 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 }
 
 /* Story / programs / featured collage sizing is intentional — exclude from the fluid clamp. */
-.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host),
+.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host):not(.kpf-archive__thumb),
 .kpf-hero:not(.kpf-hero--about):not(.kpf-hero--events) img,
 .kpf-card__media {
 	height: auto;

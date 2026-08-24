@@ -1,11 +1,18 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
+  KPF_ACCESSIBILITY_QUERY,
   normalizeAccessibility,
   buildAccessibilityCss,
 } = require("./accessibility");
 
 describe("accessibility utilities", () => {
+  it("keeps the Faust SSG fragment on the live WordPress schema", () => {
+    assert.match(KPF_ACCESSIBILITY_QUERY, /skipLink/);
+    assert.doesNotMatch(KPF_ACCESSIBILITY_QUERY, /\bskipLabel\b/);
+    assert.doesNotMatch(KPF_ACCESSIBILITY_QUERY, /\bdisplay\s*\{/);
+  });
+
   it("normalizes missing config safely", () => {
     const config = normalizeAccessibility(null);
     assert.equal(config.navigation.skipTarget, "#main");

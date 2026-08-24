@@ -1,30 +1,21 @@
+// Faust SSG talks to live WP during `next build`. Unknown fields fail the
+// whole page query, so this fragment stays on the schema currently published
+// at kpf.dreamhosters.com. Newer keys (skipLabel, display, …) are filled in
+// by normalizeAccessibility() until kpf-core is updated on DreamHost.
 const KPF_ACCESSIBILITY_QUERY = `
   kpfAccessibility {
     preset
     navigation {
       skipLink
       skipTarget
-      skipLabel
-      skipFooter
-      footerTarget
       focusRing
       focusRingColor
       focusRingWidth
-      focusNotObscured
-      focusScrollMargin
     }
     content {
       language
       underlineLinks
       routeAnnouncer
-      announceNewWindows
-      readableMeasure
-    }
-    display {
-      textScale
-      contrastBoost
-      honorPrefersContrast
-      minTargetSize
     }
     media {
       blockAutoplayReducedMotion
@@ -36,8 +27,6 @@ const KPF_ACCESSIBILITY_QUERY = `
     forms {
       enhancedFocus
       statusLiveRegion
-      requiredVisible
-      focusFirstError
     }
     advanced {
       customCss

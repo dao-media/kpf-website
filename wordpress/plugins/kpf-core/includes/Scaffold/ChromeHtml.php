@@ -153,7 +153,11 @@ final class ChromeHtml {
 		$html .= '<blockquote class="kpf-footer__tagline">Together, we can.</blockquote>';
 		$html .= '<div class="kpf-footer__grid">';
 		$html .= '<div class="kpf-footer__brand"><p class="kpf-footer__brand-name">' . esc_html( $brand ) . '</p>';
-		$html .= '<p class="kpf-footer__brand-note">A 501(c)(3) nonprofit organization serving Tampa Bay &amp; Florida.</p></div>';
+		$html .= '<p class="kpf-footer__brand-note">A 501(c)(3) nonprofit organization serving Tampa Bay &amp; Florida.</p>';
+		$html .= '<div class="kpf-cigar kpf-footer__cigar" aria-hidden="true">';
+		$html .= '<img class="kpf-cigar__image" src="/media/cigar/Cigar.png" alt=""/>';
+		$html .= '<video class="kpf-cigar__smoke" autoplay loop muted playsinline preload="auto" aria-hidden="true"><source src="/media/cigar/smoke.mp4" type="video/mp4"/></video>';
+		$html .= '</div></div>';
 		$html .= '<div class="kpf-footer__columns"><div><p class="kpf-footer__heading">Explore</p><ul class="kpf-footer__list">' . $explore_lis . '</ul></div>';
 		$html .= '<div><p class="kpf-footer__heading">Connect</p><ul class="kpf-footer__list">' . $connect_lis . '</ul></div></div>';
 		$html .= '<div class="kpf-footer__cta-card"><p class="kpf-footer__cta-title">Prefer to just give?</p>';

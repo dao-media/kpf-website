@@ -1174,6 +1174,13 @@ html {
 	}
 }
 
+.kpf-footer__brand {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+
 .kpf-footer__brand-name {
 	color: var(--kpf-parchment, #f4efea);
 	font-family: var(--kpf-font-display);
@@ -1188,10 +1195,22 @@ html {
 	max-width: 22rem;
 }
 
+.kpf-footer__cigar {
+	margin-top: 1.25rem;
+	max-width: 12.5rem;
+	width: 12.5rem;
+}
+
 .kpf-footer__columns {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 3.5rem;
+}
+
+@media (min-width: 64rem) {
+	.kpf-footer__columns {
+		margin-inline-start: 5rem; /* ~80px toward the donate card */
+	}
 }
 
 .kpf-footer__heading {

@@ -17,7 +17,6 @@ const {
   normalizeHeaderBehavior,
   shouldRevealSmartHeader,
 } = require("@/lib/siteChrome");
-const { htmlIncludesChromeClass } = require("@/lib/navigation");
 
 function prefersReducedMotion() {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -196,9 +195,9 @@ export default function SiteChrome({
 }) {
   const cmsHeader = chrome?.header || null;
   const cmsFooter = chrome?.footer || null;
-  // Prefer React header so the Figma Nav (desktop + mobile) always ships; CMS header stays seeded for Components.
+  // Prefer React chrome so Figma Nav + footer cigar/layout always ship.
   const useHeaderScaffold = true;
-  const useFooterScaffold = !htmlIncludesChromeClass(cmsFooter?.html, "kpf-footer");
+  const useFooterScaffold = true;
 
   const header = {
     databaseId: cmsHeader?.databaseId || 0,

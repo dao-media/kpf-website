@@ -2,7 +2,7 @@
 
 > Private foundation funding veteran-focused nonprofits in Tampa Bay and across Florida.
 
-- Site: https://kpf-website-daneoleary.vercel.app/
+- Site: https://kpf-site.vercel.app/
 - CMS: WordPress at https://kpf.dreamhosters.com/
 - Contact: /contact
 - Donate: PayPal (header, footer, and page CTAs)

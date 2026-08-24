@@ -7,7 +7,7 @@ alwaysApply: true
 
 When the user talks about the site, pages, Dashboard, Resources, chrome, or “make this live,” they mean **production**:
 
-- **Frontend:** Vercel project `kpf-website` → https://kpf-website-daneoleary.vercel.app (push `main`; root `frontend/`)
+- **Frontend:** Vercel project `kpf` → https://kpf-site.vercel.app (push `main`; root `frontend/`)
 - **WordPress / CMS / plugin / theme / admin screens:** DreamHost → https://kpf.dreamhosters.com
 
 Local (`frontend/` on :3010, wp-env on :8888) is a **copy of live**, not the place the user is looking.

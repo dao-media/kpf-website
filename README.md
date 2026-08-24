@@ -4,8 +4,8 @@ Headless WordPress (Faust.js + Next.js) for the Kevin Popke Foundation site.
 
 ## Stack
 
-- **Frontend:** Faust.js / Next.js in `frontend/`
-- **Backend:** Local WordPress via `@wordpress/env` (Docker)
+- **Frontend:** Faust.js / Next.js in `frontend/` — production https://kpf-site.vercel.app (Vercel project `kpf`)
+- **Backend:** Local WordPress via `@wordpress/env` (Docker); production CMS https://kpf.dreamhosters.com
 - **Custom plugin:** `wordpress/plugins/kpf-core` (includes reusable components, Scrapbook, and the custom SEO suite)
 - **Icons:** Lucide via `lucide-react` ([dao-media/LucideIcons](https://github.com/dao-media/LucideIcons))
 

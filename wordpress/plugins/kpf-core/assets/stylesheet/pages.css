@@ -1235,9 +1235,11 @@ html {
 	margin: 0;
 }
 
-/* Nav link labels — Figma Text Link / --kpf-brass-text (#83673c) */
-.kpf-footer__list a {
-	color: var(--kpf-brass-text, #83673c);
+/* Nav link labels — default + visited use link color; hover stays parchment */
+.kpf-footer__list a,
+.kpf-footer__list a:link,
+.kpf-footer__list a:visited {
+	color: var(--kpf-color-text-link);
 	font-size: 0.9375rem; /* 15 */
 	font-weight: 700;
 	line-height: 1.2;
@@ -1282,8 +1284,10 @@ html {
 	text-align: left;
 }
 
-.kpf-footer__legal a {
-	color: inherit;
+.kpf-footer__legal a,
+.kpf-footer__legal a:link,
+.kpf-footer__legal a:visited {
+	color: var(--kpf-color-text-link);
 	text-decoration: none;
 }
 

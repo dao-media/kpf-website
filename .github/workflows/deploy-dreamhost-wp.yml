@@ -1,0 +1,45 @@
+name: Deploy WordPress to DreamHost
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "wordpress/plugins/kpf-core/**"
+      - "wordpress/themes/kpf-blank/**"
+      - "scripts/deploy-dreamhost-wp.sh"
+      - ".github/workflows/deploy-dreamhost-wp.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check DreamHost secrets
+        env:
+          DH_HOST: ${{ secrets.DH_HOST }}
+          DH_USER: ${{ secrets.DH_USER }}
+          DH_SSH_KEY: ${{ secrets.DH_SSH_KEY }}
+          DH_PLUGIN_PATH: ${{ secrets.DH_PLUGIN_PATH }}
+          DH_THEME_PATH: ${{ secrets.DH_THEME_PATH }}
+        run: |
+          missing=0
+          for v in DH_HOST DH_USER DH_SSH_KEY DH_PLUGIN_PATH DH_THEME_PATH; do
+            if [ -z "${!v}" ]; then
+              echo "Missing GitHub secret: $v"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Sync plugin and theme
+        env:
+          DH_HOST: ${{ secrets.DH_HOST }}
+          DH_USER: ${{ secrets.DH_USER }}
+          DH_SSH_KEY: ${{ secrets.DH_SSH_KEY }}
+          DH_PLUGIN_PATH: ${{ secrets.DH_PLUGIN_PATH }}
+          DH_THEME_PATH: ${{ secrets.DH_THEME_PATH }}
+        run: |
+          chmod +x scripts/deploy-dreamhost-wp.sh
+          scripts/deploy-dreamhost-wp.sh

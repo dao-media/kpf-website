@@ -7,10 +7,11 @@ const {
 } = require("./accessibility");
 
 describe("accessibility utilities", () => {
-  it("keeps the Faust SSG fragment on the live WordPress schema", () => {
+  it("queries the published accessibility schema including display controls", () => {
     assert.match(KPF_ACCESSIBILITY_QUERY, /skipLink/);
-    assert.doesNotMatch(KPF_ACCESSIBILITY_QUERY, /\bskipLabel\b/);
-    assert.doesNotMatch(KPF_ACCESSIBILITY_QUERY, /\bdisplay\s*\{/);
+    assert.match(KPF_ACCESSIBILITY_QUERY, /\bskipLabel\b/);
+    assert.match(KPF_ACCESSIBILITY_QUERY, /\bdisplay\s*\{/);
+    assert.match(KPF_ACCESSIBILITY_QUERY, /\bminTargetSize\b/);
   });
 
   it("normalizes missing config safely", () => {

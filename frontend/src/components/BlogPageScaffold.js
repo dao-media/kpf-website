@@ -7,10 +7,7 @@ import KpfButton from "@/components/KpfButton";
 import { BLOG } from "@/lib/pageCopy";
 
 const { resolveMedia } = require("@/lib/scaffoldMedia");
-const {
-  blogTopicFilters,
-  normalizeBlogPosts,
-} = require("@/lib/blogPosts");
+const { blogFilterBar, normalizeBlogPosts } = require("@/lib/blogPosts");
 
 function PostMeta({ category, date, readTime, chip = false }) {
   const parts = [];
@@ -123,7 +120,10 @@ export default function BlogPageScaffold({ media = {}, posts: postSource = null 
     [postSource, copy.archive.rowCta],
   );
 
-  const filters = useMemo(() => blogTopicFilters(posts), [posts]);
+  const { items: filterItems, interactive: filtersInteractive } = useMemo(
+    () => blogFilterBar(posts),
+    [posts],
+  );
 
   const filtered = useMemo(() => {
     if (topic === "all") return posts;
@@ -207,24 +207,26 @@ export default function BlogPageScaffold({ media = {}, posts: postSource = null 
 
           {featured ? <BlogCard post={featured} featured /> : null}
 
-          {posts.length > 1 && filters.length > 1 ? (
+          {posts.length > 0 ? (
             <div
               id="topics"
               className="kpf-blog-filters"
               role="group"
               aria-label="Filter stories by topic"
             >
-              {filters.map((item) => {
+              {filterItems.map((item) => {
                 const active = topic === item.slug;
+                const inert = !filtersInteractive;
                 return (
                   <button
                     key={item.slug}
                     type="button"
                     className={`kpf-blog-filters__chip${active ? " is-active" : ""}`}
                     aria-pressed={active}
-                    data-kpf-track="filter_selected"
-                    data-kpf-track-component="blog_filter"
-                    onClick={() => setTopic(item.slug)}
+                    disabled={inert}
+                    data-kpf-track={inert ? undefined : "filter_selected"}
+                    data-kpf-track-component={inert ? undefined : "blog_filter"}
+                    onClick={inert ? undefined : () => setTopic(item.slug)}
                   >
                     {item.label}
                   </button>

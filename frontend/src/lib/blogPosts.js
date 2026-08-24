@@ -153,10 +153,26 @@ function blogTopicFilters(posts) {
   ];
 }
 
+/**
+ * Filter bar: All-only and inert until two or more categories are in use.
+ * @param {Array<{ category?: string, categorySlug?: string }>} posts
+ * @returns {{ items: Array<{ slug: string, label: string }>, interactive: boolean }}
+ */
+function blogFilterBar(posts) {
+  const filters = blogTopicFilters(posts);
+  const categoryCount = filters.filter((item) => item.slug !== "all").length;
+  const interactive = categoryCount > 1;
+  return {
+    interactive,
+    items: interactive ? filters : [{ slug: "all", label: "All" }],
+  };
+}
+
 module.exports = {
   BLOG_CARD_MAX_WORDS,
   KPF_BLOG_POSTS_QUERY,
   blogCardDescription,
+  blogFilterBar,
   blogTopicFilters,
   normalizeBlogPost,
   normalizeBlogPosts,

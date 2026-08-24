@@ -4607,6 +4607,15 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	color: var(--kpf-color-text-primary);
 }
 
+.kpf-blog-filters__chip:disabled {
+	cursor: default;
+}
+
+.kpf-blog-filters__chip:disabled:hover,
+.kpf-blog-filters__chip:disabled:focus-visible {
+	color: var(--kpf-mute, #6b5c5c);
+}
+
 .kpf-blog-grid {
 	display: grid;
 	gap: var(--kpf-space-md);

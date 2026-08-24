@@ -128,12 +128,18 @@ final class Rest {
 			array(
 				'preset'              => $settings['preset'],
 				'skip_link'           => ! empty( $settings['navigation']['skip_link'] ),
+				'skip_footer'         => ! empty( $settings['navigation']['skip_footer'] ),
 				'focus_ring'          => ! empty( $settings['navigation']['focus_ring'] ),
+				'focus_not_obscured'  => ! empty( $settings['navigation']['focus_not_obscured'] ),
 				'route_announcer'     => ! empty( $settings['content']['route_announcer'] ),
 				'underline_links'     => ! empty( $settings['content']['underline_links'] ),
+				'announce_new_windows' => ! empty( $settings['content']['announce_new_windows'] ),
+				'contrast_boost'      => ! empty( $settings['display']['contrast_boost'] ),
+				'min_target_size'     => (string) ( $settings['display']['min_target_size'] ?? 'off' ),
 				'reduced_motion'      => ! empty( $settings['motion']['honor_prefers_reduced_motion'] ),
 				'force_reduce_motion' => ! empty( $settings['motion']['force_reduce_motion'] ),
 				'forms_focus'         => ! empty( $settings['forms']['enhanced_focus'] ),
+				'focus_first_error'   => ! empty( $settings['forms']['focus_first_error'] ),
 			),
 			200
 		);

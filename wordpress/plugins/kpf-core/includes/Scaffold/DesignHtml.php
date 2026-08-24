@@ -28,9 +28,7 @@ final class DesignHtml {
 		$collage2 = self::img( $media, 'home.programsCollageBbq', '', '' );
 		$blog     = self::img( $media, 'events.library1', '', 'kpf-archive__thumb' );
 
-		$donate_50 = ChromeHtml::donate_button( 'Donate $50 for ‘50’', 'kpf-btn kpf-btn--primary' );
 		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
-		$donate_paypal = ChromeHtml::donate_button( 'Donate via PayPal', 'kpf-btn kpf-btn--primary' );
 		$donate_sm = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary kpf-btn--sm' );
 
 		return <<<HTML
@@ -77,7 +75,7 @@ final class DesignHtml {
             </div>
           </div>
           <div class="kpf-content-block__actions kpf-story__actions">
-            {$donate_50}
+            {$donate_btn}
             <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/about/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Kevin’s story</button>
             <a class="kpf-link" href="/#programs">Where your donation goes</a>
           </div>
@@ -167,7 +165,7 @@ final class DesignHtml {
             </div>
           </div>
           <div class="kpf-content-block__actions">
-            {$donate_paypal}
+            {$donate_btn}
             <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/about/" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Learn about our work</button>
           </div>
         </div>
@@ -435,7 +433,6 @@ HTML;
 		$flag      = self::cta_flag( $media );
 
 		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
-		$donate_paypal = ChromeHtml::donate_button( 'Donate via PayPal', 'kpf-btn kpf-btn--primary' );
 
 		return <<<HTML
 <div class="kpf-page-events" data-kpf-scaffold="events">
@@ -477,7 +474,7 @@ HTML;
           </div>
         </div>
         <div class="kpf-content-block__actions">
-          {$donate_paypal}
+          {$donate_btn}
         </div>
       </div>
       <div class="kpf-events-partner__paths kpf-donate__list">

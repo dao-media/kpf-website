@@ -7,8 +7,8 @@ namespace KPF\Core\Stylesheet;
 /**
  * WPGraphQL exposure for the managed global stylesheet.
  *
- * Faust injects `kpfStylesheet` (String). `kpfStylesheetInfo` adds layered
- * foundation / pages CSS plus revision metadata for cache busting.
+ * Faust should query revision/href only. Requesting css/foundation/pages
+ * serializes megabytes into Apollo + __NEXT_DATA__.
  */
 final class GraphQL {
 	public static function register(): void {
@@ -52,6 +52,10 @@ final class GraphQL {
 					'updatedAt'     => array(
 						'type'        => 'String',
 						'description' => 'GMT modified datetime of the stylesheet CPT, when available.',
+					),
+					'href'          => array(
+						'type'        => 'String',
+						'description' => 'Public CSS URL. Faust should link this instead of inlining css into Apollo state.',
 					),
 				),
 			)
@@ -100,7 +104,8 @@ final class GraphQL {
 	 *   revision: string,
 	 *   hasPagesLayer: bool,
 	 *   byteLength: int,
-	 *   updatedAt: string|null
+	 *   updatedAt: string|null,
+	 *   href: string
 	 * }
 	 */
 	public static function resolve_info(): array {
@@ -116,6 +121,7 @@ final class GraphQL {
 			'hasPagesLayer' => '' !== $pages && str_contains( $css, Defaults::PAGES_MARKER ),
 			'byteLength'    => strlen( $css ),
 			'updatedAt'     => self::updated_at(),
+			'href'          => Rest::public_url(),
 		);
 	}
 

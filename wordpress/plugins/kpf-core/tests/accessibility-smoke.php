@@ -25,10 +25,14 @@ $assert   = static function ( bool $condition, string $message ) use ( &$failure
 wp_set_current_user( 1 );
 
 Settings::ensure_defaults();
-$defaults = Settings::get();
+$defaults = Settings::defaults();
 $assert( 'recommended' === $defaults['preset'], 'Default preset is recommended' );
 $assert( ! empty( $defaults['navigation']['skip_link'] ), 'Recommended enables skip link' );
+$assert( ! empty( $defaults['navigation']['skip_footer'] ), 'Recommended enables skip to footer' );
 $assert( ! empty( $defaults['motion']['honor_prefers_reduced_motion'] ), 'Recommended honors reduced motion' );
+$assert( 'aa' === $defaults['display']['min_target_size'], 'Recommended uses AA target size' );
+$assert( ! empty( $defaults['forms']['focus_first_error'] ), 'Recommended focuses first form error' );
+$assert( ! empty( $defaults['content']['announce_new_windows'] ), 'Recommended announces new windows' );
 
 $assert( 'kpf-accessibility' === Admin::menu_slug_for_tab( 'overview' ), 'Overview uses parent menu slug' );
 $assert( 'kpf-accessibility-navigation' === Admin::menu_slug_for_tab( 'navigation' ), 'Navigation submenu slug is namespaced' );
@@ -47,6 +51,10 @@ $dirty = Sanitizer::sanitize_settings(
 		'content'    => array(
 			'language' => '!!!',
 		),
+		'display'    => array(
+			'text_scale'      => 9,
+			'min_target_size' => 'huge',
+		),
 		'advanced'   => array(
 			'custom_css' => '@import "x.css"; .x { color: red; }',
 		),
@@ -56,6 +64,8 @@ $assert( '#main' === $dirty['navigation']['skip_target'], 'Invalid skip targets 
 $assert( '#2271b1' === $dirty['navigation']['focus_ring_color'], 'Invalid colors fall back to default' );
 $assert( 8 === $dirty['navigation']['focus_ring_width'], 'Focus ring width is capped' );
 $assert( 'en' === $dirty['content']['language'], 'Invalid language falls back to en' );
+$assert( 100 === $dirty['display']['text_scale'], 'Text scale is floored at 100' );
+$assert( 'aa' === $dirty['display']['min_target_size'], 'Invalid target size falls back to aa' );
 $assert( ! str_contains( $dirty['advanced']['custom_css'], '@import' ), 'CSS imports are stripped' );
 
 $applied = Presets::apply( 'essential', Settings::get() );
@@ -67,6 +77,8 @@ Settings::update( $applied );
 $public = Settings::public_config();
 $assert( true === $public['navigation']['skipLink'], 'Public config exposes camelCase skipLink' );
 $assert( isset( $public['motion']['honorPrefersReducedMotion'] ), 'Public config includes motion flags' );
+$assert( isset( $public['display']['minTargetSize'] ), 'Public config includes display target size' );
+$assert( isset( $public['navigation']['skipLabel'] ), 'Public config includes skip label' );
 
 $request = new WP_REST_Request( 'POST' );
 $request->set_param( 'preset', 'recommended' );

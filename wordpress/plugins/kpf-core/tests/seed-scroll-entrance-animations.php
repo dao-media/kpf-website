@@ -61,7 +61,8 @@ function kpf_seed_gsap_animation( string $slug, string $title, array $config, in
 }
 
 // Hosts: every section + every hero (including home).
-$reveal_hosts = '.kpf-section, .kpf-hero';
+// Closing CTA owns its title drop + follow stagger in CtaClosingBand.
+$reveal_hosts = '.kpf-section:not(.kpf-cta-closing), .kpf-hero';
 
 /*
  * Direct content targets (avoid nesting title-group + title, body-group + body).
@@ -113,10 +114,6 @@ $content_children = implode(
 		'.kpf-hero__description',
 		'.kpf-hero__actions',
 		'.kpf-hero__media',
-		'.kpf-cta-closing .kpf-content-block__eyebrow',
-		'.kpf-cta-closing .kpf-content-block__title',
-		'.kpf-cta-closing .kpf-content-block__body',
-		'.kpf-cta-closing .kpf-content-block__actions',
 	)
 );
 

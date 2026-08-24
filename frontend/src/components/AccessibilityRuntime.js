@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useRouter } from "next/router";
 
 const {
@@ -6,9 +12,44 @@ const {
   normalizeAccessibility,
 } = require("@/lib/accessibility");
 
-export default function AccessibilityRuntime({ config: rawConfig }) {
+const AccessibilityContext = createContext(
+  normalizeAccessibility({
+    forms: {
+      enhancedFocus: true,
+      statusLiveRegion: true,
+      requiredVisible: true,
+      focusFirstError: true,
+    },
+  }),
+);
+
+export function useAccessibility() {
+  return useContext(AccessibilityContext);
+}
+
+function announceNewWindowLinks(root) {
+  if (!root) return;
+  root.querySelectorAll('a[target="_blank"]').forEach((link) => {
+    if (link.dataset.kpfNewWindow === "1") return;
+    const labelled = `${link.getAttribute("aria-label") || ""} ${link.textContent || ""}`;
+    if (/opens in a new (tab|window)/i.test(labelled)) {
+      link.dataset.kpfNewWindow = "1";
+      return;
+    }
+    const hint = document.createElement("span");
+    hint.className = "kpf-u-sr-only";
+    hint.textContent = " (opens in a new tab)";
+    link.appendChild(hint);
+    link.dataset.kpfNewWindow = "1";
+  });
+}
+
+export default function AccessibilityRuntime({ config: rawConfig, children }) {
   const router = useRouter();
-  const config = normalizeAccessibility(rawConfig);
+  const config = useMemo(
+    () => normalizeAccessibility(rawConfig),
+    [rawConfig],
+  );
   const [announcement, setAnnouncement] = useState("");
   const css = buildAccessibilityCss(config);
 
@@ -74,15 +115,36 @@ export default function AccessibilityRuntime({ config: rawConfig }) {
     router.asPath,
   ]);
 
+  useEffect(() => {
+    if (!config.content.announceNewWindows || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const root = document.querySelector(".kpf-site-chrome") || document.body;
+    announceNewWindowLinks(root);
+
+    const observer = new MutationObserver(() => {
+      announceNewWindowLinks(root);
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [config.content.announceNewWindows, router.asPath]);
+
   const showSkip = config.navigation.skipLink;
+  const showFooterSkip = showSkip && config.navigation.skipFooter;
   const showLive =
     config.content.routeAnnouncer || config.forms.statusLiveRegion;
 
-  return (
+  const runtime = (
     <>
       {showSkip ? (
         <a className="kpf-skip-link" href={config.navigation.skipTarget}>
-          Skip to content
+          {config.navigation.skipLabel}
+        </a>
+      ) : null}
+      {showFooterSkip ? (
+        <a className="kpf-skip-link kpf-skip-link--footer" href={config.navigation.footerTarget}>
+          Skip to footer
         </a>
       ) : null}
       {css ? (
@@ -94,7 +156,7 @@ export default function AccessibilityRuntime({ config: rawConfig }) {
       {showLive ? (
         <div
           id="kpf-a11y-live"
-          className="kpf-a11y-live"
+          className="kpf-a11y-live kpf-u-sr-only"
           aria-live="polite"
           aria-atomic="true"
         >
@@ -102,5 +164,20 @@ export default function AccessibilityRuntime({ config: rawConfig }) {
         </div>
       ) : null}
     </>
+  );
+
+  if (children == null) {
+    return (
+      <AccessibilityContext.Provider value={config}>
+        {runtime}
+      </AccessibilityContext.Provider>
+    );
+  }
+
+  return (
+    <AccessibilityContext.Provider value={config}>
+      {runtime}
+      {children}
+    </AccessibilityContext.Provider>
   );
 }

@@ -6,6 +6,7 @@ namespace KPF\Core\Accessibility;
 
 final class Sanitizer {
 	private const PRESETS = array( 'off', 'essential', 'recommended', 'strict', 'custom' );
+	private const TARGET_SIZES = array( 'off', 'aa', 'comfortable' );
 
 	/**
 	 * @param mixed $input
@@ -17,6 +18,7 @@ final class Sanitizer {
 
 		$navigation = is_array( $input['navigation'] ?? null ) ? $input['navigation'] : array();
 		$content    = is_array( $input['content'] ?? null ) ? $input['content'] : array();
+		$display    = is_array( $input['display'] ?? null ) ? $input['display'] : array();
 		$media      = is_array( $input['media'] ?? null ) ? $input['media'] : array();
 		$motion     = is_array( $input['motion'] ?? null ) ? $input['motion'] : array();
 		$forms      = is_array( $input['forms'] ?? null ) ? $input['forms'] : array();
@@ -27,9 +29,13 @@ final class Sanitizer {
 			$preset = 'custom';
 		}
 
-		$skip_target = sanitize_text_field( (string) ( $navigation['skip_target'] ?? $defaults['navigation']['skip_target'] ) );
-		if ( '' === $skip_target || ! preg_match( '/^#[A-Za-z][\w:-]*$/', $skip_target ) ) {
-			$skip_target = '#main';
+		$skip_target   = self::anchor_id( $navigation['skip_target'] ?? $defaults['navigation']['skip_target'], '#main' );
+		$footer_target = self::anchor_id( $navigation['footer_target'] ?? $defaults['navigation']['footer_target'], '#kpf-footer' );
+
+		$skip_label = sanitize_text_field( (string) ( $navigation['skip_label'] ?? $defaults['navigation']['skip_label'] ) );
+		$skip_label = substr( $skip_label, 0, 80 );
+		if ( '' === $skip_label ) {
+			$skip_label = 'Skip to content';
 		}
 
 		$language = sanitize_text_field( (string) ( $content['language'] ?? $defaults['content']['language'] ) );
@@ -37,20 +43,38 @@ final class Sanitizer {
 			$language = 'en';
 		}
 
+		$target_size = sanitize_key( (string) ( $display['min_target_size'] ?? $defaults['display']['min_target_size'] ) );
+		if ( ! in_array( $target_size, self::TARGET_SIZES, true ) ) {
+			$target_size = 'aa';
+		}
+
 		return array(
 			'version'    => Settings::VERSION,
 			'preset'     => $preset,
 			'navigation' => array(
-				'skip_link'        => (bool) ( $navigation['skip_link'] ?? $defaults['navigation']['skip_link'] ),
-				'skip_target'      => $skip_target,
-				'focus_ring'       => (bool) ( $navigation['focus_ring'] ?? $defaults['navigation']['focus_ring'] ),
-				'focus_ring_color' => self::hex_color( $navigation['focus_ring_color'] ?? $defaults['navigation']['focus_ring_color'] ),
-				'focus_ring_width' => min( 8, max( 1, absint( $navigation['focus_ring_width'] ?? $defaults['navigation']['focus_ring_width'] ) ) ),
+				'skip_link'           => (bool) ( $navigation['skip_link'] ?? $defaults['navigation']['skip_link'] ),
+				'skip_target'         => $skip_target,
+				'skip_label'          => $skip_label,
+				'skip_footer'         => (bool) ( $navigation['skip_footer'] ?? $defaults['navigation']['skip_footer'] ),
+				'footer_target'       => $footer_target,
+				'focus_ring'          => (bool) ( $navigation['focus_ring'] ?? $defaults['navigation']['focus_ring'] ),
+				'focus_ring_color'    => self::hex_color( $navigation['focus_ring_color'] ?? $defaults['navigation']['focus_ring_color'] ),
+				'focus_ring_width'    => min( 8, max( 1, absint( $navigation['focus_ring_width'] ?? $defaults['navigation']['focus_ring_width'] ) ) ),
+				'focus_not_obscured'  => (bool) ( $navigation['focus_not_obscured'] ?? $defaults['navigation']['focus_not_obscured'] ),
+				'focus_scroll_margin' => min( 240, max( 0, absint( $navigation['focus_scroll_margin'] ?? $defaults['navigation']['focus_scroll_margin'] ) ) ),
 			),
 			'content'    => array(
-				'language'        => strtolower( $language ),
-				'underline_links' => (bool) ( $content['underline_links'] ?? $defaults['content']['underline_links'] ),
-				'route_announcer' => (bool) ( $content['route_announcer'] ?? $defaults['content']['route_announcer'] ),
+				'language'             => strtolower( $language ),
+				'underline_links'      => (bool) ( $content['underline_links'] ?? $defaults['content']['underline_links'] ),
+				'route_announcer'      => (bool) ( $content['route_announcer'] ?? $defaults['content']['route_announcer'] ),
+				'announce_new_windows' => (bool) ( $content['announce_new_windows'] ?? $defaults['content']['announce_new_windows'] ),
+				'readable_measure'     => (bool) ( $content['readable_measure'] ?? $defaults['content']['readable_measure'] ),
+			),
+			'display'    => array(
+				'text_scale'             => min( 200, max( 100, absint( $display['text_scale'] ?? $defaults['display']['text_scale'] ) ) ),
+				'contrast_boost'         => (bool) ( $display['contrast_boost'] ?? false ),
+				'honor_prefers_contrast' => (bool) ( $display['honor_prefers_contrast'] ?? $defaults['display']['honor_prefers_contrast'] ),
+				'min_target_size'        => $target_size,
 			),
 			'media'      => array(
 				'block_autoplay_reduced_motion' => (bool) ( $media['block_autoplay_reduced_motion'] ?? $defaults['media']['block_autoplay_reduced_motion'] ),
@@ -62,12 +86,25 @@ final class Sanitizer {
 			'forms'      => array(
 				'enhanced_focus'     => (bool) ( $forms['enhanced_focus'] ?? $defaults['forms']['enhanced_focus'] ),
 				'status_live_region' => (bool) ( $forms['status_live_region'] ?? $defaults['forms']['status_live_region'] ),
+				'required_visible'   => (bool) ( $forms['required_visible'] ?? $defaults['forms']['required_visible'] ),
+				'focus_first_error'  => (bool) ( $forms['focus_first_error'] ?? $defaults['forms']['focus_first_error'] ),
 			),
 			'advanced'   => array(
 				'custom_css'     => self::css( $advanced['custom_css'] ?? '' ),
 				'debug_outlines' => (bool) ( $advanced['debug_outlines'] ?? false ),
 			),
 		);
+	}
+
+	/**
+	 * @param mixed $value
+	 */
+	private static function anchor_id( $value, string $fallback ): string {
+		$target = sanitize_text_field( (string) $value );
+		if ( '' === $target || ! preg_match( '/^#[A-Za-z][\w:-]*$/', $target ) ) {
+			return $fallback;
+		}
+		return $target;
 	}
 
 	/**

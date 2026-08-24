@@ -1,0 +1,925 @@
+{
+    "kind": "kpf-content-pack",
+    "version": 1,
+    "media": {
+        "388": {
+            "file": "388-SFHF.png",
+            "title": "Southeastern Florida High Flyers \u2014 Kevin Popke Foundation grantee",
+            "alt": "Southeastern Florida High Flyers logo, Kevin Popke Foundation grantee",
+            "url": "/media/content/388-SFHF.png"
+        },
+        "523": {
+            "file": "523-WoundedWarriorsAbilitiesRanch.jpg",
+            "title": "Wounded Warriors Abilities Ranch \u2014 Kevin Popke Foundation grantee",
+            "alt": "Wounded Warriors Abilities Ranch, Kevin Popke Foundation grantee",
+            "url": "/media/content/523-WoundedWarriorsAbilitiesRanch.jpg"
+        },
+        "463": {
+            "file": "463-OtherSideoftheDunes-1.jpg",
+            "title": "Other Side of the Dunes \u2014 Kevin Popke Foundation grantee",
+            "alt": "Other Side of the Dunes, Kevin Popke Foundation grantee",
+            "url": "/media/content/463-OtherSideoftheDunes-1.jpg"
+        },
+        "445": {
+            "file": "445-13c789_d173c6faa0394916ace0cecdb1ba684amv2.jpg",
+            "title": "My Warrior\u2019s Place \u2014 Kevin Popke Foundation grantee",
+            "alt": "My Warrior\u2019s Place, Kevin Popke Foundation grantee",
+            "url": "/media/content/445-13c789_d173c6faa0394916ace0cecdb1ba684amv2.jpg"
+        },
+        "467": {
+            "file": "467-FreedomRidingAcademy.jpg",
+            "title": "Freedom Riding Academy \u2014 Kevin Popke Foundation grantee",
+            "alt": "Freedom Riding Academy, Kevin Popke Foundation grantee",
+            "url": "/media/content/467-FreedomRidingAcademy.jpg"
+        },
+        "453": {
+            "file": "453-Stano-color1.png",
+            "title": "The STANO Foundation \u2014 Kevin Popke Foundation grantee",
+            "alt": "The STANO Foundation logo, Kevin Popke Foundation grantee",
+            "url": "/media/content/453-Stano-color1.png"
+        },
+        "504": {
+            "file": "504-images-16.jpg",
+            "title": "Wounded Veterans Relief Fund \u2014 Kevin Popke Foundation grantee",
+            "alt": "Wounded Veterans Relief Fund, Kevin Popke Foundation grantee",
+            "url": "/media/content/504-images-16.jpg"
+        },
+        "515": {
+            "file": "515-FreedomRidingAcademy.png",
+            "title": "Freedom Riding Academy grant mark \u2014 Kevin Popke Foundation",
+            "alt": "Freedom Riding Academy logo, Kevin Popke Foundation grantee",
+            "url": "/media/content/515-FreedomRidingAcademy.png"
+        },
+        "511": {
+            "file": "511-MyWarriorsPlace_11-2023.png",
+            "title": "My Warrior\u2019s Place grant \u2014 November 2023",
+            "alt": "My Warrior\u2019s Place, Kevin Popke Foundation grantee, November 2023",
+            "url": "/media/content/511-MyWarriorsPlace_11-2023.png"
+        },
+        "513": {
+            "file": "513-MyWarriorsPlace_03-2025.png",
+            "title": "My Warrior\u2019s Place grant \u2014 March 2025",
+            "alt": "My Warrior\u2019s Place, Kevin Popke Foundation grantee, March 2025",
+            "url": "/media/content/513-MyWarriorsPlace_03-2025.png"
+        },
+        "508": {
+            "file": "508-OtherSideoftheDunes.png",
+            "title": "Other Side of the Dunes grant mark \u2014 Kevin Popke Foundation",
+            "alt": "Other Side of the Dunes logo, Kevin Popke Foundation grantee",
+            "url": "/media/content/508-OtherSideoftheDunes.png"
+        },
+        "701": {
+            "file": "701-SEFloridaHighFlyers_08-2026.jpg",
+            "title": "SEFloridaHighFlyers_08-2026",
+            "alt": "",
+            "url": "/media/content/701-SEFloridaHighFlyers_08-2026.jpg"
+        },
+        "519": {
+            "file": "519-StanoFoundation_12-2023.png",
+            "title": "The STANO Foundation grant \u2014 December 2023",
+            "alt": "The STANO Foundation, Kevin Popke Foundation grantee, December 2023",
+            "url": "/media/content/519-StanoFoundation_12-2023.png"
+        },
+        "506": {
+            "file": "506-WoundedWarriors_09-2018.png",
+            "title": "Wounded Warriors Abilities Ranch grant \u2014 September 2018",
+            "alt": "Wounded Warriors Abilities Ranch, Kevin Popke Foundation grantee, September 2018",
+            "url": "/media/content/506-WoundedWarriors_09-2018.png"
+        },
+        "517": {
+            "file": "517-WoundedWarriors_12-2023-1.png",
+            "title": "Wounded Warriors Abilities Ranch grant \u2014 December 2023",
+            "alt": "Wounded Warriors Abilities Ranch, Kevin Popke Foundation grantee, December 2023",
+            "url": "/media/content/517-WoundedWarriors_12-2023-1.png"
+        },
+        "795": {
+            "file": "795-Kevin_porkbutts.jpeg",
+            "title": "Kevin Popke roasts pork butts",
+            "alt": "Kevin Popke roasts pork butts",
+            "url": "/media/content/795-Kevin_porkbutts.jpeg"
+        },
+        "594": {
+            "file": "594-programs-collage-bbq.jpg",
+            "title": "Kevin Popke Foundation BBQ tents \u2014 programs collage",
+            "alt": "BBQ tents at a Kevin Popke Foundation outdoor fundraiser",
+            "url": "/media/content/594-programs-collage-bbq.jpg"
+        },
+        "541": {
+            "file": "541-hero.jpg",
+            "title": "Kevin Popke Foundation event crowd \u2014 homepage hero",
+            "alt": "Crowd gathered at a Kevin Popke Foundation fundraising event",
+            "url": "/media/content/541-hero.jpg"
+        },
+        "543": {
+            "file": "543-programs.jpg",
+            "title": "Kevin Popke Foundation programs and grant events",
+            "alt": "Atmosphere at a Kevin Popke Foundation community program event",
+            "url": "/media/content/543-programs.jpg"
+        },
+        "705": {
+            "file": "705-Beach-wheelchair.png",
+            "title": "Beach wheelchair",
+            "alt": "",
+            "url": "/media/content/705-Beach-wheelchair.png"
+        },
+        "800": {
+            "file": "800-OtherSideofDunes-check.jpeg",
+            "title": "Other Side of the Dunes Grant Ceremony",
+            "alt": "Other Side of the Dunes logo, Kevin Popke Foundation grantee",
+            "url": "/media/content/800-OtherSideofDunes-check.jpeg"
+        },
+        "803": {
+            "file": "803-6.jpg",
+            "title": "6",
+            "alt": "",
+            "url": "/media/content/803-6.jpg"
+        },
+        "807": {
+            "file": "807-Beach-wheelchair-race_0.jpg",
+            "title": "Beach wheelchair race_0",
+            "alt": "",
+            "url": "/media/content/807-Beach-wheelchair-race_0.jpg"
+        },
+        "809": {
+            "file": "809-7.jpg",
+            "title": "7",
+            "alt": "",
+            "url": "/media/content/809-7.jpg"
+        },
+        "670": {
+            "file": "670-kevin-army_1120x1296.png",
+            "title": "Kevin Popke in Army uniform \u2014 history slide",
+            "alt": "Donald \u201cKevin\u201d Popke in U.S. Army uniform",
+            "url": "/media/content/670-kevin-army_1120x1296.png"
+        },
+        "548": {
+            "file": "548-history-1.png",
+            "title": "Kevin and Michelle Popke \u2014 Who Kevin was carousel",
+            "alt": "Donald \u201cKevin\u201d Popke with his wife Michelle",
+            "url": "/media/content/548-history-1.png"
+        },
+        "667": {
+            "file": "667-kevin-alumni_1120x1296.png",
+            "title": "Kevin Popke alumni portrait \u2014 history slide",
+            "alt": "Donald \u201cKevin\u201d Popke alumni portrait for history carousel",
+            "url": "/media/content/667-kevin-alumni_1120x1296.png"
+        },
+        "671": {
+            "file": "671-kevin-runner_1120x1296.png",
+            "title": "Kevin Popke running \u2014 history slide",
+            "alt": "Donald \u201cKevin\u201d Popke running",
+            "url": "/media/content/671-kevin-runner_1120x1296.png"
+        },
+        "668": {
+            "file": "668-kevin-and-dad_1120x1296.png",
+            "title": "Kevin Popke with his father \u2014 history slide",
+            "alt": "Donald \u201cKevin\u201d Popke with his father",
+            "url": "/media/content/668-kevin-and-dad_1120x1296.png"
+        },
+        "790": {
+            "file": "790-KPF-favicon-1.png",
+            "title": "Kevin Popke Foundation icon",
+            "alt": "Kevin Popke Foundation icon",
+            "url": "/media/content/790-KPF-favicon-1.png"
+        },
+        "743": {
+            "file": "743-v21_gold-HDR_2.jpg",
+            "title": "Songwriters 4 Vets, KPF Partner",
+            "alt": "Songwriters 4 Vets, KPF Partner",
+            "url": "/media/content/743-v21_gold-HDR_2.jpg"
+        },
+        "301": {
+            "file": "301-KP_helicopter.png",
+            "title": "Kevin Popke in flight gear aboard a helicopter",
+            "alt": "Kevin Popke in flight gear aboard a helicopter",
+            "url": "/media/content/301-KP_helicopter.png"
+        }
+    },
+    "forms": [
+        {
+            "title": "Contact",
+            "slug": "contact",
+            "definition": {
+                "version": 1,
+                "status": "active",
+                "settings": {
+                    "submitLabel": "Send message",
+                    "successMessage": "Thanks \u2014 we\u2019ve got it. Someone will get back to you within a few days.",
+                    "successDisplay": "inline",
+                    "redirectUrl": "",
+                    "inboxFormName": "Contact form",
+                    "notificationEmails": [],
+                    "notifications": {
+                        "enabled": true,
+                        "emails": [],
+                        "subject": ""
+                    },
+                    "receipt": {
+                        "enabled": false,
+                        "subject": "",
+                        "message": "Thank you for contacting us. We received your message and will get back to you soon.\n\n\u2014 {site}"
+                    },
+                    "webhooks": [],
+                    "captchaMode": "honeypot",
+                    "analytics": {
+                        "eventName": "kpf_form_submit",
+                        "formTag": ""
+                    }
+                },
+                "fields": {
+                    "fld_name": {
+                        "id": "fld_name",
+                        "type": "short_text",
+                        "label": "Name",
+                        "name": "name",
+                        "placeholder": "",
+                        "help": "",
+                        "required": true,
+                        "width": "half",
+                        "options": [],
+                        "validation": {
+                            "min": null,
+                            "max": null,
+                            "pattern": "",
+                            "minLength": null,
+                            "maxLength": null
+                        },
+                        "analyticsTag": "",
+                        "defaultValue": "",
+                        "html": "",
+                        "accept": "",
+                        "platform": "x",
+                        "countryDefault": "US",
+                        "conditions": []
+                    },
+                    "fld_email": {
+                        "id": "fld_email",
+                        "type": "email",
+                        "label": "Email",
+                        "name": "email",
+                        "placeholder": "",
+                        "help": "",
+                        "required": true,
+                        "width": "half",
+                        "options": [],
+                        "validation": {
+                            "min": null,
+                            "max": null,
+                            "pattern": "",
+                            "minLength": null,
+                            "maxLength": null
+                        },
+                        "analyticsTag": "",
+                        "defaultValue": "",
+                        "html": "",
+                        "accept": "",
+                        "platform": "x",
+                        "countryDefault": "US",
+                        "conditions": []
+                    },
+                    "fld_phone": {
+                        "id": "fld_phone",
+                        "type": "tel",
+                        "label": "Phone",
+                        "name": "phone",
+                        "placeholder": "",
+                        "help": "",
+                        "required": false,
+                        "width": "half",
+                        "options": [],
+                        "validation": {
+                            "min": null,
+                            "max": null,
+                            "pattern": "",
+                            "minLength": null,
+                            "maxLength": null
+                        },
+                        "analyticsTag": "",
+                        "defaultValue": "",
+                        "html": "",
+                        "accept": "",
+                        "platform": "x",
+                        "countryDefault": "US",
+                        "conditions": []
+                    },
+                    "fld_inquiry": {
+                        "id": "fld_inquiry",
+                        "type": "select",
+                        "label": "What\u2019s this about?",
+                        "name": "inquiry",
+                        "placeholder": "",
+                        "help": "",
+                        "required": true,
+                        "width": "half",
+                        "options": [
+                            {
+                                "label": "Volunteering",
+                                "value": "volunteer"
+                            },
+                            {
+                                "label": "Sponsorship or partnership",
+                                "value": "partnership"
+                            },
+                            {
+                                "label": "Donation question",
+                                "value": "donation"
+                            },
+                            {
+                                "label": "Grant inquiry",
+                                "value": "grant"
+                            },
+                            {
+                                "label": "Press or media",
+                                "value": "press"
+                            },
+                            {
+                                "label": "Something else",
+                                "value": "other"
+                            }
+                        ],
+                        "validation": {
+                            "min": null,
+                            "max": null,
+                            "pattern": "",
+                            "minLength": null,
+                            "maxLength": null
+                        },
+                        "analyticsTag": "",
+                        "defaultValue": "",
+                        "html": "",
+                        "accept": "",
+                        "platform": "x",
+                        "countryDefault": "US",
+                        "conditions": []
+                    },
+                    "fld_message": {
+                        "id": "fld_message",
+                        "type": "long_text",
+                        "label": "Message",
+                        "name": "message",
+                        "placeholder": "",
+                        "help": "",
+                        "required": true,
+                        "width": "full",
+                        "options": [],
+                        "validation": {
+                            "min": null,
+                            "max": null,
+                            "pattern": "",
+                            "minLength": null,
+                            "maxLength": null
+                        },
+                        "analyticsTag": "",
+                        "defaultValue": "",
+                        "html": "",
+                        "accept": "",
+                        "platform": "x",
+                        "countryDefault": "US",
+                        "conditions": []
+                    },
+                    "fld_hear": {
+                        "id": "fld_hear",
+                        "type": "select",
+                        "label": "How did you hear about us?",
+                        "name": "hear",
+                        "placeholder": "",
+                        "help": "",
+                        "required": false,
+                        "width": "full",
+                        "options": [
+                            {
+                                "label": "Songwriters for Vets",
+                                "value": "sfv"
+                            },
+                            {
+                                "label": "Social media",
+                                "value": "social"
+                            },
+                            {
+                                "label": "A friend",
+                                "value": "friend"
+                            },
+                            {
+                                "label": "Search",
+                                "value": "search"
+                            },
+                            {
+                                "label": "Other",
+                                "value": "other"
+                            }
+                        ],
+                        "validation": {
+                            "min": null,
+                            "max": null,
+                            "pattern": "",
+                            "minLength": null,
+                            "maxLength": null
+                        },
+                        "analyticsTag": "",
+                        "defaultValue": "",
+                        "html": "",
+                        "accept": "",
+                        "platform": "x",
+                        "countryDefault": "US",
+                        "conditions": []
+                    }
+                },
+                "rows": [
+                    {
+                        "id": "row_1",
+                        "columns": 2,
+                        "slots": [
+                            [
+                                "fld_name"
+                            ],
+                            [
+                                "fld_email"
+                            ]
+                        ],
+                        "fields": [
+                            "fld_name",
+                            "fld_email"
+                        ]
+                    },
+                    {
+                        "id": "row_2",
+                        "columns": 2,
+                        "slots": [
+                            [
+                                "fld_phone"
+                            ],
+                            [
+                                "fld_inquiry"
+                            ]
+                        ],
+                        "fields": [
+                            "fld_phone",
+                            "fld_inquiry"
+                        ]
+                    },
+                    {
+                        "id": "row_3",
+                        "columns": 1,
+                        "slots": [
+                            [
+                                "fld_message"
+                            ]
+                        ],
+                        "fields": [
+                            "fld_message"
+                        ]
+                    },
+                    {
+                        "id": "row_4",
+                        "columns": 1,
+                        "slots": [
+                            [
+                                "fld_hear"
+                            ]
+                        ],
+                        "fields": [
+                            "fld_hear"
+                        ]
+                    }
+                ],
+                "conditions": []
+            }
+        }
+    ],
+    "grantees": [
+        {
+            "title": "Southeastern Florida Honor Flight",
+            "slug": "southeastern-florida-honor-flight",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 388,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "https://honorflightsefl.org/",
+                "blurb": "Flies WWII, Korean, and Vietnam War veterans to Washington, D.C., to visit the memorials dedicated to honoring their service and ultimate sacrifices."
+            }
+        },
+        {
+            "title": "Wounded Warriors Abilities Ranch",
+            "slug": "wounded-warriors-abilities-ranch",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 523,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "https://woundedwarriorsabilitiesranch.org/",
+                "blurb": "Inspires and empowers injured veterans and adaptive athletes to stay active through specialized sports facilities, recreational clinics, adaptive equipment, and peer support."
+            }
+        },
+        {
+            "title": "Other Side of the Dunes",
+            "slug": "other-side-of-the-dunes",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 463,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "",
+                "blurb": "A patriotic Florida initiative using golf events and outings to raise support, honor service members, and foster community connection for veterans and first responders."
+            }
+        },
+        {
+            "title": "My Warrior&#8217;s Place",
+            "slug": "my-warriors-place",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 445,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "https://mywarriorsplace.org/",
+                "blurb": "Provides a peaceful retreat center and supportive programs to promote healing, hope, and community for military members, veterans, first responders, and Gold Star families."
+            }
+        },
+        {
+            "title": "Freedom Riding Academy",
+            "slug": "freedom-riding-academy",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 467,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "https://freedomridingacademy.org/",
+                "blurb": "Reduces injuries among military service members, veterans, and first responders by providing access to advanced motorcycle skills training and safe riding programs."
+            }
+        },
+        {
+            "title": "The Stano Foundation",
+            "slug": "the-stano-foundation",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 453,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "",
+                "blurb": "Supported active-duty military and veterans through community projects, care packages, and initiatives to enhance their quality of life and keep them connected to home."
+            }
+        },
+        {
+            "title": "Wounded Veterans Relief Fund",
+            "slug": "wounded-veterans-relief-fund",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 504,
+            "meta": {
+                "version": 2,
+                "contact_name": "",
+                "website": "https://wvrf.org/",
+                "blurb": "Provides emergency financial assistance and critical dental care to eligible disabled Florida veterans, preventing homelessness and relieving financial hardship to restore stability and peace of mind."
+            }
+        }
+    ],
+    "grants": [
+        {
+            "title": "Freedom Riding Academy \u00b7 Apr 2024 \u00b7 $5,000",
+            "slug": "freedom-riding-academy-%c2%b7-apr-2024-%c2%b7-5000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "freedom-riding-academy",
+            "meta": {
+                "version": 1,
+                "grantee_id": 449,
+                "recipient_name": "Freedom Riding Academy",
+                "grant_amount": 5000,
+                "check_photo_id": 515,
+                "awarded_month": 4,
+                "awarded_year": 2024
+            }
+        },
+        {
+            "title": "My Warrior&#8217;s Place \u00b7 Nov 2023 \u00b7 $10,000",
+            "slug": "my-warriors-place-%c2%b7-nov-2023-%c2%b7-10000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "my-warriors-place",
+            "meta": {
+                "version": 1,
+                "grantee_id": 444,
+                "recipient_name": "My Warrior's Place",
+                "grant_amount": 10000,
+                "check_photo_id": 511,
+                "awarded_month": 11,
+                "awarded_year": 2023
+            }
+        },
+        {
+            "title": "My Warrior&#8217;s Place \u00b7 Mar 2025 \u00b7 $5,000",
+            "slug": "my-warriors-place-%c2%b7-mar-2025-%c2%b7-5000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "my-warriors-place",
+            "meta": {
+                "version": 1,
+                "grantee_id": 444,
+                "recipient_name": "My Warrior's Place",
+                "grant_amount": 5000,
+                "check_photo_id": 513,
+                "awarded_month": 3,
+                "awarded_year": 2025
+            }
+        },
+        {
+            "title": "Other Side of the Dunes \u00b7 Sep 2018 \u00b7 $11,000",
+            "slug": "other-side-of-the-dunes-%c2%b7-sep-2018-%c2%b7-11000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "other-side-of-the-dunes",
+            "meta": {
+                "version": 1,
+                "grantee_id": 439,
+                "recipient_name": "Other Side of the Dunes",
+                "grant_amount": 11000,
+                "check_photo_id": 508,
+                "awarded_month": 9,
+                "awarded_year": 2018
+            }
+        },
+        {
+            "title": "Southeastern Florida Honor Flight \u00b7 Aug 2026 \u00b7 $10,000",
+            "slug": "southeastern-florida-honor-flight-%c2%b7-aug-2026",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "southeastern-florida-honor-flight",
+            "meta": {
+                "version": 1,
+                "grantee_id": 385,
+                "recipient_name": "Southeastern Florida Honor Flight",
+                "grant_amount": 10000,
+                "check_photo_id": 701,
+                "awarded_month": 8,
+                "awarded_year": 2026
+            }
+        },
+        {
+            "title": "The Stano Foundation \u00b7 Dec 2023 \u00b7 $5,000",
+            "slug": "the-stano-foundation-%c2%b7-dec-2023-%c2%b7-5000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "the-stano-foundation",
+            "meta": {
+                "version": 1,
+                "grantee_id": 452,
+                "recipient_name": "The Stano Foundation",
+                "grant_amount": 5000,
+                "check_photo_id": 519,
+                "awarded_month": 12,
+                "awarded_year": 2023
+            }
+        },
+        {
+            "title": "Wounded Warriors Abilities Ranch \u00b7 Sep 2018 \u00b7 $20,000",
+            "slug": "wounded-warriors-abilities-ranch-%c2%b7-sep-2018-%c2%b7-20000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "wounded-warriors-abilities-ranch",
+            "meta": {
+                "version": 1,
+                "grantee_id": 434,
+                "recipient_name": "Wounded Warriors Abilities Ranch",
+                "grant_amount": 20000,
+                "check_photo_id": 506,
+                "awarded_month": 9,
+                "awarded_year": 2018
+            }
+        },
+        {
+            "title": "Wounded Warriors Abilities Ranch \u00b7 Dec 2023 \u00b7 $10,000",
+            "slug": "wounded-warriors-abilities-ranch-%c2%b7-dec-2023-%c2%b7-10000",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "grantee_slug": "wounded-warriors-abilities-ranch",
+            "meta": {
+                "version": 1,
+                "grantee_id": 434,
+                "recipient_name": "Wounded Warriors Abilities Ranch",
+                "grant_amount": 10000,
+                "check_photo_id": 517,
+                "awarded_month": 12,
+                "awarded_year": 2023
+            }
+        }
+    ],
+    "scrapbook": [
+        {
+            "title": "Kevin Popke roasts pork butts",
+            "slug": "kevin-popke-roasts-pork-butts",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 795,
+            "meta": {
+                "version": 1,
+                "entry_type": "story",
+                "event_date": "",
+                "date_precision": "unknown",
+                "location": "",
+                "photographer": "",
+                "source": "",
+                "historical_notes": "",
+                "featured": false,
+                "display_order": 0,
+                "images": [
+                    {
+                        "attachment_id": 795,
+                        "alt_text": "Kevin Popke roasts pork butts",
+                        "caption": "The Kevin Popke Foundation traces its origins back to when Kevin himself would roast pork butts and give out pulled pork sandwiches to fellow veterans... for free. It's a tradition he maintained for several years before his untimely passing."
+                    },
+                    {
+                        "attachment_id": 594,
+                        "alt_text": "",
+                        "caption": "The Kevin Popke Foundation traces its origins back to when Kevin himself would roast pork butts and give out pulled pork sandwiches to fellow veterans... for free. It's a tradition he maintained for several years before his untimely passing."
+                    }
+                ]
+            }
+        },
+        {
+            "title": "Other Side of the Dunes",
+            "slug": "other-side-of-the-dunes",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 541,
+            "meta": {
+                "version": 1,
+                "entry_type": "story",
+                "event_date": "2018-09-01",
+                "date_precision": "exact",
+                "location": "",
+                "photographer": "",
+                "source": "",
+                "historical_notes": "",
+                "featured": false,
+                "display_order": 0,
+                "images": [
+                    {
+                        "attachment_id": 541,
+                        "alt_text": "Group photo taken at the Other Side of the Dunes KPF event",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 543,
+                        "alt_text": "Group photo taken at the Other Side of the Dunes KPF event",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 705,
+                        "alt_text": "Grantee and recipient of a beach wheelchair, provided for free by the Kevin Popke Foundation",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 800,
+                        "alt_text": "",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 508,
+                        "alt_text": "",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 803,
+                        "alt_text": "",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 807,
+                        "alt_text": "",
+                        "caption": ""
+                    },
+                    {
+                        "attachment_id": 809,
+                        "alt_text": "",
+                        "caption": ""
+                    }
+                ]
+            }
+        }
+    ],
+    "kevin": [
+        {
+            "title": "U.S. Army First Sergeant &amp; Airborne Ranger",
+            "slug": "u-s-army-first-sergeant-airborne-ranger",
+            "content": "<!-- wp:paragraph -->\n<p>As a teen, Kevin enlisted in the U.S. Army where he served his country for 22 years before retiring as a First Sergeant (1SG).</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>During his military career, he was assigned to the 504th Parachute Infantry Regiment as Jump Master for the Airborne Rangers. Kevin took immense pride in not only keeping his soldiers safe but providing real mentorship.</p>\n<!-- /wp:paragraph -->",
+            "menu_order": 1,
+            "thumbnail_id": 670
+        },
+        {
+            "title": "Kevin &amp; Michelle Popke",
+            "slug": "kevin-michelle-popke",
+            "content": "<!-- wp:paragraph -->\n<p>In addition to his decorated military career, Kevin raised 4 lovely children with Michelle, his wife of 27 years. Among family and friends, he was known for his fondness for cigars, wine, and motorcycle rides.</p>\n<!-- /wp:paragraph -->",
+            "menu_order": 2,
+            "thumbnail_id": 548
+        },
+        {
+            "title": "Department of Defense &amp; Civilian Tech Contractor",
+            "slug": "department-of-defense-civilian-tech-contractor",
+            "content": "<!-- wp:paragraph -->\n<p>Following his time in the army, Kevin would become a contractor in civilian tech for organizations like the U.S. Department of Defense.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p></p>\n<!-- /wp:paragraph -->",
+            "menu_order": 3,
+            "thumbnail_id": 667
+        },
+        {
+            "title": "A Champion for His Community",
+            "slug": "a-champion-for-his-community",
+            "content": "<!-- wp:paragraph -->\n<p>Kevin adored his community and would advocate not only for veterans but also the families of military service members.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>When he wasn't providing a beacon of hope, he was involved with the Brandon High School wrestling team where he took wrestlers under his continued mentorship.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p></p>\n<!-- /wp:paragraph -->",
+            "menu_order": 4,
+            "thumbnail_id": 671
+        },
+        {
+            "title": "A Loss, a Legacy",
+            "slug": "a-loss-a-legacy",
+            "content": "<!-- wp:paragraph -->\n<p>Kevin's roots go back to Sandusky, Ohio, where he was born in October 1959.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>In 2016, Kevin was killed when he was struck by a distracted driver. For 10 years, his friends, family, and community have served the Kevin Popke Foundation in his name.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p></p>\n<!-- /wp:paragraph -->",
+            "menu_order": 5,
+            "thumbnail_id": 668
+        }
+    ],
+    "hosts": [
+        {
+            "name": "Kevin Popke Foundation",
+            "slug": "kpf",
+            "description": "Horing Army 1SG Kevin Popke\u2019s legacy by raising funds to empower youth wrestling programs and to support veteran-focused charities and community initiatives.",
+            "logo_id": 790
+        },
+        {
+            "name": "Songwriters 4 Vets",
+            "slug": "songwriters4vets",
+            "description": "Hosts high-impact live music events featuring Nashville hitmakers to raise funds, drive awareness, and directly support partner veteran organizations and initiatives.",
+            "logo_id": 743
+        }
+    ],
+    "events": [
+        {
+            "title": "Songwriters 4 Vets \u00d7 KPF",
+            "slug": "songwriters-4-vets-x-kpf",
+            "content": "",
+            "menu_order": 0,
+            "thumbnail_id": 0,
+            "host_slugs": [
+                "kpf",
+                "songwriters4vets"
+            ],
+            "meta": {
+                "version": 2,
+                "logline": "Raising awareness and donations to support military veterans and related organizations through events, songwriters, music, sponsors, good food, and great times.",
+                "description": "Songwriters 4 Vets brings together 6 Nashville hitmakers together with local favorite Ben Allen to perform their top songs (and share some of the stories behind them). Created to honor military servicemen and servicewomen while delivering high-impact entertainment, 100% of the event proceeds directly benefit the Kevin Popke Foundation, which carries the legacy of Army 1SG Kevin Popke.\nWhat began as a mission to support youth athletics in memory of Popke's dedication to his son has expanded into a broader effort to empower our nation\u2019s heroes. All funds raised through this event will directly support vital veteran-focused charities.",
+                "featured": true,
+                "contact_email": "",
+                "contact_phone": "",
+                "website": "https://www.songwriters4vets.com/post/the-story-behind-songwriters-4-vets",
+                "ticketing_link": "https://www.songwriters4vets.com/event-details/songwriters-4-vets-naples-2026",
+                "location": {
+                    "mode": "directions",
+                    "label": "Hyatt Regency Resort \u2014 Coconut Point",
+                    "line1": "",
+                    "line2": "",
+                    "city": "",
+                    "state": "",
+                    "postal_code": "",
+                    "url": "https://www.google.com/travel/search?ts=CAEaSQopEicyJTB4ODhkYjE3OTYxM2RmN2E3NToweGM4M2NkNDM3NWY4YjM3MTgSHBIUCgcI6g8QCBgeEgcI6g8QCBgfGAEyBAgAEAAqBwoFOgNVU0Q&qs=CAEyFENnc0ltTzZzX1BXR3RaN0lBUkFCOAJCCQkYN4tfN9Q8yEIJCRg3i1831DzI&utm_campaign=sharing&utm_medium=link_btn&utm_source=htls"
+                },
+                "frequency": "annually",
+                "duration_days": 1,
+                "schedule": {
+                    "start_date": "",
+                    "start_time": "19:00",
+                    "by_weekday": [],
+                    "monthly_mode": "day_of_month",
+                    "by_monthday": 0,
+                    "nth_weekday": {
+                        "n": 1,
+                        "day": "MO"
+                    },
+                    "by_month": [],
+                    "anchors": [
+                        {
+                            "month": 8,
+                            "day": 29,
+                            "day_mode": "exact"
+                        }
+                    ]
+                },
+                "host_term_ids": [
+                    53,
+                    52
+                ]
+            }
+        }
+    ],
+    "posts": [
+        {
+            "title": "Honoring a Legacy, Helping Our Veterans",
+            "slug": "veteran-legacy",
+            "content": "<!-- wp:paragraph -->\n<p>At the Kevin Popke Foundation, we are a dedicated team of volunteers united by a single purpose: turning our convictions into action to help others.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>Our foundation was established to honor the life, ideals, and values of our namesake, Donald \u201cKevin\u201d Popke, who was tragically killed by a distracted driver in 2016. Known affectionately as \u201c50\u201d to his friends, Kevin dedicated his entire adult life to serving our country. He retired as a US Army First Sergeant and continued his service as a Department of Defense contractor. We created this foundation to ensure that Kevin's spirit of service and dedication to his fellow service members lives on.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">What We Do</h2>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Our mission is simple: <em>Helping our Veterans.</em></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>We recognize the immense sacrifices made by the men and women who have defended our Nation, and we are committed to giving back to them. The Kevin Popke Foundation supports Veteran-focused charities in the Tampa Bay area and throughout other cities in Florida. By providing targeted grants, we help fund the vital resources and support systems necessary to meet the needs of our local Veterans.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading {\"level\":3} -->\n<h3 class=\"wp-block-heading\">What you can do</h3>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Show up for a Saturday event, share a story from the community, or point us toward an organization that deserves a closer look. Small actions keep Kevin\u2019s mission moving.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading {\"level\":3} -->\n<h3 class=\"wp-block-heading\">How to help</h3>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Volunteer with the team, nominate a Veteran-focused charity for a grant, or give \u2014 every gift becomes support in Kevin\u2019s name.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">Together We Can</h2>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>We believe that when we come together, we can make a profound difference in the lives of those who have served. Whether you are interested in joining our amazing team of volunteers or supporting our mission through a donation, your contribution helps us improve conditions for Veterans and keep Kevin\u2019s legacy alive.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>To learn more about our upcoming events, get in touch, or find out how you can help, please explore our website. Together, we can.</p>\n<!-- /wp:paragraph -->\n",
+            "excerpt": "",
+            "date": "2026-07-19 22:26:06",
+            "thumbnail_id": 301
+        }
+    ]
+}

@@ -181,11 +181,11 @@ final class Schema {
 		$name   = (string) ($schema['organization_name'] ?: get_bloginfo('name'));
 		$url    = (string) ($schema['organization_url'] ?: Resolver::frontend_url($settings, '/'));
 		$logo   = ! empty($schema['organization_logo'])
-			? (string) wp_get_attachment_image_url((int) $schema['organization_logo'], 'full')
+			? \KPF\Core\Media\PublicUrls::image_url((int) $schema['organization_logo'], 'full')
 			: '';
 
 		$node = array(
-			'@type' => 'Organization',
+			'@type' => array( 'NGO', 'NonprofitOrganization' ),
 			'@id'   => $org_id,
 			'name'  => $name,
 			'url'   => $url,
@@ -206,13 +206,23 @@ final class Schema {
 	 * @return array<string, mixed>
 	 */
 	private static function website_node(array $settings, string $web_id, string $org_id): array {
+		$search = rtrim(Resolver::frontend_url($settings, '/search'), '/');
+
 		return array(
-			'@type'     => 'WebSite',
-			'@id'       => $web_id,
-			'url'       => Resolver::frontend_url($settings, '/'),
-			'name'      => (string) ($settings['global']['site_title'] ?: get_bloginfo('name')),
-			'publisher' => array( '@id' => $org_id ),
-			'inLanguage'=> get_bloginfo('language'),
+			'@type'          => 'WebSite',
+			'@id'            => $web_id,
+			'url'            => Resolver::frontend_url($settings, '/'),
+			'name'           => (string) ($settings['global']['site_title'] ?: get_bloginfo('name')),
+			'publisher'      => array( '@id' => $org_id ),
+			'inLanguage'     => get_bloginfo('language'),
+			'potentialAction'=> array(
+				'@type'       => 'SearchAction',
+				'target'      => array(
+					'@type'        => 'EntryPoint',
+					'urlTemplate'  => $search . '?q={search_term_string}',
+				),
+				'query-input' => 'required name=search_term_string',
+			),
 		);
 	}
 

@@ -1021,37 +1021,61 @@ button.kpf-btn {
 }
 
 .kpf-btn {
+	--kpf-btn-echo-ms: 300ms;
+	--kpf-btn-echo-stagger: 90ms;
+	--kpf-btn-echo-layer-ms: calc(var(--kpf-btn-echo-ms) - var(--kpf-btn-echo-stagger));
+	--kpf-btn-echo-ease: linear;
+	--kpf-btn-echo-spread: 0.5rem;
+	--kpf-btn-pulse: var(--kpf-color-action-primary-hover);
+	--kpf-btn-radius: var(--kpf-radius-md);
+	--kpf-btn-pad-x: var(--kpf-space-button-x);
 	align-items: center;
 	border: var(--kpf-stroke-strong) solid transparent;
-	border-radius: var(--kpf-radius-md);
+	border-radius: var(--kpf-btn-radius);
 	cursor: pointer;
 	display: inline-flex;
 	font-family: var(--kpf-font-ui);
 	font-size: var(--kpf-text-ui);
 	font-weight: var(--kpf-weight-btn);
 	gap: var(--kpf-space-tight);
+	isolation: isolate;
 	justify-content: center;
 	letter-spacing: var(--kpf-tracking-ui);
 	line-height: 1.1;
 	min-height: var(--kpf-control-height);
+	overflow: visible;
 	padding: var(--kpf-space-field) var(--kpf-space-button-x);
+	position: relative;
 	text-decoration: none;
 	transition:
 		background-color var(--kpf-transition),
 		border-color var(--kpf-transition),
 		color var(--kpf-transition),
-		box-shadow var(--kpf-transition),
-		transform var(--kpf-transition);
+		box-shadow var(--kpf-transition);
 	user-select: none;
 }
 
+.kpf-btn::before,
+.kpf-btn::after {
+	border: 0.125rem solid var(--kpf-btn-pulse);
+	border-radius: var(--kpf-btn-radius) / var(--kpf-btn-radius);
+	content: "";
+	inset: 0;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: -1;
+}
+
 .kpf-btn:hover {
-	transform: translateY(-0.125rem);
 	text-decoration: none;
 }
 
-.kpf-btn:active {
-	transform: translateY(0);
+button.kpf-btn:hover,
+button.kpf-btn:active,
+a.kpf-btn:hover,
+a.kpf-btn:active {
+	transform: none;
 }
 
 .kpf-btn:focus-visible {
@@ -1066,11 +1090,66 @@ button.kpf-btn {
 	cursor: not-allowed;
 	opacity: 0.45;
 	pointer-events: none;
-	transform: none;
+}
+
+.kpf-btn:disabled::before,
+.kpf-btn:disabled::after,
+.kpf-btn[aria-disabled="true"]::before,
+.kpf-btn[aria-disabled="true"]::after,
+.kpf-btn.is-disabled::before,
+.kpf-btn.is-disabled::after {
+	content: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	@media (prefers-reduced-motion: no-preference) {
+		.kpf-btn:hover::after,
+		button.kpf-btn:hover::after,
+		a.kpf-btn:hover::after {
+			animation: kpf-btn-echo-omni var(--kpf-btn-echo-layer-ms) var(--kpf-btn-echo-ease);
+		}
+
+		.kpf-btn:hover::before,
+		button.kpf-btn:hover::before,
+		a.kpf-btn:hover::before {
+			animation: kpf-btn-echo-omni var(--kpf-btn-echo-layer-ms) var(--kpf-btn-echo-ease)
+				var(--kpf-btn-echo-stagger);
+		}
+	}
+}
+
+@keyframes kpf-btn-echo-omni {
+	0% {
+		border-radius: var(--kpf-btn-radius) / var(--kpf-btn-radius);
+		inset: 0;
+		opacity: 0.7;
+	}
+
+	28% {
+		border-radius: calc(var(--kpf-btn-radius) + var(--kpf-btn-echo-spread) * 0.58) /
+			calc(var(--kpf-btn-radius) + var(--kpf-btn-echo-spread) * 0.58);
+		inset: calc(var(--kpf-btn-echo-spread) * -0.58);
+		opacity: 0.48;
+	}
+
+	62% {
+		border-radius: calc(var(--kpf-btn-radius) + var(--kpf-btn-echo-spread) * 0.86) /
+			calc(var(--kpf-btn-radius) + var(--kpf-btn-echo-spread) * 0.86);
+		inset: calc(var(--kpf-btn-echo-spread) * -0.86);
+		opacity: 0.22;
+	}
+
+	100% {
+		border-radius: calc(var(--kpf-btn-radius) + var(--kpf-btn-echo-spread)) /
+			calc(var(--kpf-btn-radius) + var(--kpf-btn-echo-spread));
+		inset: calc(var(--kpf-btn-echo-spread) * -1);
+		opacity: 0;
+	}
 }
 
 /* Primary — Ember */
 .kpf-btn--primary {
+	--kpf-btn-pulse: var(--kpf-deep);
 	background: var(--kpf-ember);
 	border-color: var(--kpf-ember);
 	color: var(--kpf-white);
@@ -1094,6 +1173,7 @@ button.kpf-btn {
 
 /* Secondary — solid ink fill (distinct from primary ember) */
 .kpf-btn--secondary {
+	--kpf-btn-pulse: var(--kpf-ink-soft);
 	background: var(--kpf-color-action-secondary);
 	border-color: var(--kpf-color-action-secondary);
 	color: var(--kpf-parchment);
@@ -1121,6 +1201,7 @@ button.kpf-btn {
 
 /* Outline — transparent with ink border */
 .kpf-btn--outline {
+	--kpf-btn-pulse: var(--kpf-ink);
 	background: transparent;
 	border-color: var(--kpf-ink);
 	color: var(--kpf-ink);
@@ -1148,6 +1229,7 @@ button.kpf-btn {
 
 /* Brass / honor accent */
 .kpf-btn--brass {
+	--kpf-btn-pulse: var(--kpf-brass-600);
 	background: var(--kpf-brass);
 	border-color: var(--kpf-brass);
 	color: var(--kpf-ink);
@@ -1171,6 +1253,7 @@ button.kpf-btn {
 
 /* Ghost / text */
 .kpf-btn--ghost {
+	--kpf-btn-pulse: var(--kpf-ember);
 	background: transparent;
 	border-color: transparent;
 	color: var(--kpf-ember);
@@ -1194,15 +1277,191 @@ button.kpf-btn {
 
 /* Sizes */
 .kpf-btn--sm {
+	--kpf-btn-pad-x: 1rem; /* 16 */
 	font-size: var(--kpf-text-ui-s);
 	min-height: var(--kpf-control-height-sm);
-	padding: 0.55rem 1rem;
+	padding: 0.55rem var(--kpf-btn-pad-x);
 }
 
 .kpf-btn--lg {
+	--kpf-btn-pad-x: 1.75rem; /* 28 */
 	font-size: 1.0625rem;
 	min-height: 3.25rem;
-	padding: 0.95rem 1.75rem;
+	padding: 0.95rem var(--kpf-btn-pad-x);
+}
+
+/* Donate — trailing PayPal mark. Touch: always on. Mouse desktop: hover/focus reveal. */
+.kpf-btn--donate,
+button.kpf-btn--donate,
+a.kpf-btn--donate {
+	--kpf-paypal-h: 1.25rem;
+	--kpf-paypal-w: calc(1.25rem * 122 / 150);
+	/* Back ease is for the button container (padding) only — not the icon. */
+	--kpf-paypal-reveal: cubic-bezier(0.34, 1.56, 0.64, 1);
+	--kpf-paypal-icon-ease: cubic-bezier(0.33, 1, 0.68, 1); /* ease-out */
+	--kpf-paypal-pad-end: calc(var(--kpf-btn-pad-x) * 5 / 7); /* 20px on md; scales with size */
+	--kpf-paypal-gap: 0.375rem; /* 6px between label and mark */
+	gap: 0;
+	justify-content: center;
+	padding-inline-end: var(--kpf-paypal-pad-end);
+	position: relative;
+	transition:
+		background-color var(--kpf-transition),
+		border-color var(--kpf-transition),
+		color var(--kpf-transition),
+		box-shadow var(--kpf-transition),
+		padding-inline-end 200ms var(--kpf-paypal-reveal);
+}
+
+.kpf-btn--donate .kpf-btn__cluster,
+button.kpf-btn--donate .kpf-btn__cluster,
+a.kpf-btn--donate .kpf-btn__cluster {
+	align-items: center;
+	display: inline-flex;
+	flex: 0 0 auto;
+	justify-content: center;
+	max-width: none;
+	min-width: min-content;
+	width: max-content;
+}
+
+.kpf-btn--donate .kpf-btn__label,
+button.kpf-btn--donate .kpf-btn__label,
+a.kpf-btn--donate .kpf-btn__label {
+	display: inline-block;
+	flex: 0 0 auto;
+	min-width: min-content;
+	overflow: visible;
+	text-overflow: clip;
+	white-space: nowrap;
+}
+
+/*
+ * Clip owns used size. The mark keeps its intrinsic box; collapsing the clip
+ * (not the img width) is what recenters the label when the icon is invisible.
+ */
+.kpf-btn--donate .kpf-btn__paypal-clip {
+	display: grid;
+	flex: 0 0 auto;
+	grid-template-columns: 1fr;
+	margin-inline-start: var(--kpf-paypal-gap);
+	max-width: var(--kpf-paypal-w);
+	min-width: 0;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+.kpf-btn--donate .kpf-btn__paypal-clip > * {
+	min-width: 0;
+}
+
+.kpf-btn--donate .kpf-btn__icon--paypal {
+	align-items: center;
+	display: inline-flex;
+	flex-shrink: 1;
+	height: var(--kpf-paypal-h);
+	justify-content: center;
+	margin: 0;
+	min-width: 0;
+	overflow: hidden;
+	transform: none;
+	transform-origin: 100% 50%;
+	width: var(--kpf-paypal-w);
+}
+
+.kpf-btn--donate .kpf-btn__paypal {
+	display: block;
+	flex-shrink: 1;
+	height: var(--kpf-paypal-h);
+	max-width: 100%;
+	min-width: 0;
+	object-fit: contain;
+	width: var(--kpf-paypal-w);
+}
+
+.kpf-btn--sm.kpf-btn--donate,
+button.kpf-btn--sm.kpf-btn--donate,
+a.kpf-btn--sm.kpf-btn--donate {
+	--kpf-paypal-h: 1rem;
+	--kpf-paypal-w: calc(1rem * 122 / 150);
+	--kpf-paypal-pad-end: calc(var(--kpf-btn-pad-x) * 5 / 7); /* ~11.5px from 16px rest */
+}
+
+.kpf-btn--lg.kpf-btn--donate,
+button.kpf-btn--lg.kpf-btn--donate,
+a.kpf-btn--lg.kpf-btn--donate {
+	--kpf-paypal-pad-end: calc(var(--kpf-btn-pad-x) * 5 / 7);
+}
+
+/*
+ * Mouse-only desktop: clip used-size is 0 so the label is the cluster.
+ * Any coarse/touch pointer (phones, tablets, hybrids) keeps the mark static.
+ */
+@media (hover: hover) and (pointer: fine) and (not (any-pointer: coarse)) {
+	@media (prefers-reduced-motion: no-preference) {
+		.kpf-btn--donate .kpf-btn__paypal-clip {
+			flex-basis: 0;
+			grid-template-columns: 0fr;
+			margin-inline-start: 0;
+			max-width: 0;
+			opacity: 0;
+			transition:
+				flex-basis 200ms var(--kpf-paypal-icon-ease),
+				grid-template-columns 200ms var(--kpf-paypal-icon-ease),
+				margin-inline-start 200ms var(--kpf-paypal-icon-ease),
+				max-width 200ms var(--kpf-paypal-icon-ease),
+				opacity 200ms var(--kpf-paypal-icon-ease);
+			width: 0;
+		}
+
+		.kpf-btn--donate .kpf-btn__icon--paypal {
+			transform: scale(0.45);
+			transition: transform 200ms var(--kpf-paypal-icon-ease);
+		}
+
+		.kpf-btn--donate:hover .kpf-btn__paypal-clip,
+		.kpf-btn--donate:focus-visible .kpf-btn__paypal-clip {
+			flex-basis: var(--kpf-paypal-w);
+			grid-template-columns: 1fr;
+			margin-inline-start: var(--kpf-paypal-gap);
+			max-width: var(--kpf-paypal-w);
+			opacity: 1;
+			width: var(--kpf-paypal-w);
+		}
+
+		.kpf-btn--donate:hover .kpf-btn__icon--paypal,
+		.kpf-btn--donate:focus-visible .kpf-btn__icon--paypal {
+			transform: scale(1);
+		}
+	}
+}
+
+/* Desktop mouse: full end padding at rest; size-scaled when the mark comes in. */
+@media (hover: hover) and (pointer: fine) and (not (any-pointer: coarse)) and (min-width: 64rem) {
+	@media (prefers-reduced-motion: no-preference) {
+		.kpf-btn--donate,
+		button.kpf-btn--donate,
+		a.kpf-btn--donate,
+		.kpf-btn--sm.kpf-btn--donate,
+		button.kpf-btn--sm.kpf-btn--donate,
+		a.kpf-btn--sm.kpf-btn--donate,
+		.kpf-btn--lg.kpf-btn--donate,
+		button.kpf-btn--lg.kpf-btn--donate,
+		a.kpf-btn--lg.kpf-btn--donate {
+			padding-inline-end: var(--kpf-btn-pad-x);
+		}
+
+		.kpf-btn--donate:hover,
+		.kpf-btn--donate:focus-visible,
+		button.kpf-btn--donate:hover,
+		button.kpf-btn--donate:focus-visible,
+		.kpf-btn--sm.kpf-btn--donate:hover,
+		.kpf-btn--sm.kpf-btn--donate:focus-visible,
+		button.kpf-btn--sm.kpf-btn--donate:hover,
+		button.kpf-btn--sm.kpf-btn--donate:focus-visible {
+			padding-inline-end: var(--kpf-paypal-pad-end);
+		}
+	}
 }
 
 /* Bridge existing Gutenberg button block classes to foundation tokens */
@@ -2104,6 +2363,21 @@ details.kpf-accordion > summary::-webkit-details-marker {
 	gap: 0.75rem;
 }
 
+.kpf-btn__icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	height: 1.25rem;
+	overflow: clip;
+	width: 1.25rem;
+}
+
+.kpf-btn__icon img {
+	display: block;
+	height: 100%;
+	object-fit: contain;
+	width: 100%;
+}
+
 .kpf-form__status {
 	font-family: var(--kpf-font-ui);
 	font-size: var(--kpf-text-ui);
@@ -2444,7 +2718,7 @@ details.kpf-accordion > summary::-webkit-details-marker {
 		transition-duration: 0.01ms !important;
 	}
 
-	.kpf-btn:hover {
-		transform: none;
+	.kpf-btn:hover::after {
+		animation: none;
 	}
 }

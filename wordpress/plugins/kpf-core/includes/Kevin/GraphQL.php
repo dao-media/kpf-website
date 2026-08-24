@@ -100,7 +100,7 @@ final class GraphQL {
 		}
 
 		$attachment_id = (int) get_post_thumbnail_id( $post );
-		$image_url     = $attachment_id > 0 ? (string) wp_get_attachment_image_url( $attachment_id, 'full' ) : '';
+		$image_url     = \KPF\Core\Media\PublicUrls::image_url( $attachment_id, 'full' );
 		if ( '' === $image_url ) {
 			return null;
 		}

@@ -8,7 +8,7 @@ namespace KPF\Core\Stylesheet;
  * Enqueue shipped foundation + pages stylesheets for classic WP
  * (blank theme, block editor canvas) so markup using .kpf-* classes
  * previews correctly. Faust/Next receives the same CSS via GraphQL
- * (Defaults seed → GlobalStylesheet) and a frontend mirror import.
+ * (Defaults seed → public CSS URL) and a frontend mirror import.
  */
 final class Assets {
 	public const FOUNDATION_HANDLE = 'kpf-foundation';

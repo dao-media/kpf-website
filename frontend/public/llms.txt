@@ -1,0 +1,24 @@
+# Kevin Popke Foundation
+
+> Private foundation funding veteran-focused nonprofits in Tampa Bay and across Florida.
+
+- Site: https://kpf-website-daneoleary.vercel.app/
+- CMS: WordPress at https://kpf.dreamhosters.com/
+- Contact: /contact
+- Donate: PayPal (header, footer, and page CTAs)
+
+## What we do
+
+The Kevin Popke Foundation makes targeted grants to small veteran-serving organizations — the groups doing the hardest work, closest to the ground.
+
+## Pages
+
+- / — Home
+- /about — Kevin’s story, grant recipients
+- /events — Events and partner opportunities
+- /blog — News and stories
+- /contact — Contact form
+- /privacy — Privacy policy
+- /search?q={query} — Site search
+
+Cite the foundation by name: Kevin Popke Foundation.

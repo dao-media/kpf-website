@@ -9,7 +9,9 @@ use WP_REST_Request;
 use WP_REST_Response;
 
 final class Rest {
-	public const NAMESPACE = 'kpf-interactions/v1';
+	public const NAMESPACE      = 'kpf-interactions/v1';
+	public const EXPORT_KIND    = 'kpf-gsap-animations';
+	public const EXPORT_VERSION = 1;
 
 	public static function register(): void {
 		add_action( 'rest_api_init', array( self::class, 'routes' ) );
@@ -30,6 +32,26 @@ final class Rest {
 					'callback'            => array( self::class, 'create' ),
 					'permission_callback' => static fn(): bool => current_user_can( 'edit_pages' ),
 				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/export',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'export' ),
+				'permission_callback' => static fn(): bool => current_user_can( 'edit_pages' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/import',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( self::class, 'import' ),
+				'permission_callback' => static fn(): bool => current_user_can( 'edit_pages' ),
 			)
 		);
 
@@ -60,18 +82,9 @@ final class Rest {
 	}
 
 	public static function index(): WP_REST_Response {
-		$posts = get_posts(
-			array(
-				'post_type'      => ContentType::POST_TYPE,
-				'post_status'    => array( 'publish', 'draft' ),
-				'posts_per_page' => -1,
-				'orderby'        => array( 'menu_order' => 'ASC', 'modified' => 'DESC' ),
-			)
-		);
-
 		return new WP_REST_Response(
 			array(
-				'animations' => array_map( array( self::class, 'payload' ), $posts ),
+				'animations' => array_map( array( self::class, 'payload' ), self::animation_posts() ),
 			)
 		);
 	}
@@ -135,6 +148,121 @@ final class Rest {
 		return new WP_REST_Response( self::payload( get_post( $post->ID ) ) );
 	}
 
+	public static function export( WP_REST_Request $request ): WP_REST_Response {
+		$ids = self::requested_ids( $request );
+		$posts = self::animation_posts();
+		if ( $ids ) {
+			$posts = array_values(
+				array_filter(
+					$posts,
+					static fn( \WP_Post $post ): bool => in_array( (int) $post->ID, $ids, true )
+				)
+			);
+		}
+
+		$animations = array();
+		foreach ( $posts as $post ) {
+			$payload       = self::payload( $post );
+			$animations[] = array(
+				'name'   => (string) $payload['name'],
+				'config' => $payload['config'],
+			);
+		}
+
+		return new WP_REST_Response( self::export_document( $animations ) );
+	}
+
+	/**
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function import( WP_REST_Request $request ) {
+		$body = $request->get_json_params();
+		if ( ! is_array( $body ) ) {
+			$body = $request->get_params();
+		}
+		if ( ! is_array( $body ) ) {
+			return new WP_Error(
+				'kpf_gsap_import_invalid',
+				__( 'That file is not a valid GSAP animation export.', 'kpf-core' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$list = array();
+		$kind = (string) ( $body['kind'] ?? '' );
+		if ( isset( $body['animations'] ) && is_array( $body['animations'] ) ) {
+			if ( '' !== $kind && self::EXPORT_KIND !== $kind ) {
+				return new WP_Error(
+					'kpf_gsap_import_kind',
+					__( 'That file is not a KPF GSAP animation export.', 'kpf-core' ),
+					array( 'status' => 400 )
+				);
+			}
+			$list = $body['animations'];
+		} elseif ( array_is_list( $body ) ) {
+			$list = $body;
+		} else {
+			return new WP_Error(
+				'kpf_gsap_import_invalid',
+				__( 'That file is not a valid GSAP animation export.', 'kpf-core' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$created = 0;
+		$updated = 0;
+		$items   = array();
+		foreach ( $list as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$config = Meta::sanitize( $row['config'] ?? $row );
+			$name   = sanitize_text_field( (string) ( $row['name'] ?? '' ) );
+			if ( '' === $name ) {
+				$name = __( 'Untitled animation', 'kpf-core' );
+			}
+
+			$existing = self::find_by_name_and_selector( $name, (string) $config['selector'] );
+			if ( $existing ) {
+				wp_update_post(
+					array(
+						'ID'         => $existing->ID,
+						'post_title' => $name,
+					)
+				);
+				update_post_meta( $existing->ID, Meta::META_KEY, $config );
+				wp_save_post_revision( $existing->ID );
+				++$updated;
+				$items[] = self::payload( get_post( $existing->ID ) );
+				continue;
+			}
+
+			$id = wp_insert_post(
+				array(
+					'post_type'   => ContentType::POST_TYPE,
+					'post_status' => 'publish',
+					'post_title'  => $name,
+				),
+				true
+			);
+			if ( is_wp_error( $id ) ) {
+				return $id;
+			}
+			update_post_meta( (int) $id, Meta::META_KEY, $config );
+			wp_save_post_revision( (int) $id );
+			++$created;
+			$items[] = self::payload( get_post( (int) $id ) );
+		}
+
+		return new WP_REST_Response(
+			array(
+				'created'    => $created,
+				'updated'    => $updated,
+				'animations' => $items,
+			)
+		);
+	}
+
 	/**
 	 * @return WP_REST_Response|WP_Error
 	 */
@@ -190,5 +318,62 @@ final class Rest {
 			'config'   => $config,
 			'modified' => mysql_to_rfc3339( (string) $post->post_modified ),
 		);
+	}
+
+	/**
+	 * @return array<int, \WP_Post>
+	 */
+	private static function animation_posts(): array {
+		return get_posts(
+			array(
+				'post_type'      => ContentType::POST_TYPE,
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => -1,
+				'orderby'        => array( 'menu_order' => 'ASC', 'modified' => 'DESC' ),
+			)
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function export_document( array $animations ): array {
+		return array(
+			'kind'       => self::EXPORT_KIND,
+			'version'    => self::EXPORT_VERSION,
+			'exportedAt' => gmdate( 'c' ),
+			'animations' => $animations,
+		);
+	}
+
+	/**
+	 * @return array<int, int>
+	 */
+	private static function requested_ids( WP_REST_Request $request ): array {
+		$ids = $request->get_param( 'ids' );
+		if ( is_string( $ids ) && '' !== $ids ) {
+			$ids = explode( ',', $ids );
+		}
+		if ( ! is_array( $ids ) ) {
+			return array();
+		}
+
+		return array_values(
+			array_unique(
+				array_filter(
+					array_map( 'absint', $ids )
+				)
+			)
+		);
+	}
+
+	private static function find_by_name_and_selector( string $name, string $selector ): ?\WP_Post {
+		foreach ( self::animation_posts() as $post ) {
+			$config = Meta::get( (int) $post->ID );
+			if ( get_the_title( $post ) === $name && (string) $config['selector'] === $selector ) {
+				return $post;
+			}
+		}
+		return null;
 	}
 }

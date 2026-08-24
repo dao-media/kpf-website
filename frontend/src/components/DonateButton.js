@@ -13,6 +13,29 @@ export function isDonateAction(action) {
   return Boolean(action.href && action.href === KPF_DONATE_HREF);
 }
 
+function withDonateClass(className) {
+  const tokens = String(className || "")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!tokens.includes("kpf-btn--donate")) tokens.push("kpf-btn--donate");
+  return tokens.join(" ");
+}
+
+/** Official 2014 PayPal monogram — baked white + alpha, do not tint. */
+export function PayPalMark() {
+  return (
+    <img
+      className="kpf-btn__paypal"
+      src="/media/brand/paypal-icon.png"
+      alt=""
+      width={16}
+      height={20}
+      decoding="async"
+      draggable={false}
+    />
+  );
+}
+
 /**
  * PayPal donation CTA. Destination is always {@link KPF_DONATE_HREF}.
  */
@@ -27,12 +50,21 @@ export default function DonateButton({
   return (
     <KpfButton
       href={KPF_DONATE_HREF}
-      className={className}
+      className={withDonateClass(className)}
       variant={variant}
       size={size}
+      data-kpf-track="donate_clicked"
+      data-kpf-track-component="donate"
       {...rest}
     >
-      {children ?? label}
+      <span className="kpf-btn__cluster">
+        <span className="kpf-btn__label">{children ?? label}</span>
+        <span className="kpf-btn__paypal-clip">
+          <span className="kpf-btn__icon kpf-btn__icon--trailing kpf-btn__icon--paypal" aria-hidden="true">
+            <PayPalMark />
+          </span>
+        </span>
+      </span>
     </KpfButton>
   );
 }

@@ -22,7 +22,7 @@ final class AdminSrcset {
 	}
 
 	/**
-	 * Apply Faust's default (media on the WP domain) when the setting key is missing.
+	 * Keep Faust media URLs on the WordPress domain (Next does not serve uploads).
 	 */
 	public static function ensure_faust_media_domain(): void {
 		if ( ! function_exists( 'WPE\\FaustWP\\Settings\\faustwp_update_setting' ) ) {
@@ -30,7 +30,8 @@ final class AdminSrcset {
 		}
 
 		$settings = get_option( 'faustwp_settings', array() );
-		if ( ! is_array( $settings ) || array_key_exists( 'enable_image_source', $settings ) ) {
+		$current  = is_array( $settings ) ? (string) ( $settings['enable_image_source'] ?? '' ) : '';
+		if ( '1' === $current ) {
 			return;
 		}
 

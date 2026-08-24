@@ -20,6 +20,7 @@ final class Admin {
 			'overview'    => __( 'Overview', 'kpf-core' ),
 			'navigation'  => __( 'Navigation', 'kpf-core' ),
 			'content'     => __( 'Content', 'kpf-core' ),
+			'display'     => __( 'Display', 'kpf-core' ),
 			'media'       => __( 'Media', 'kpf-core' ),
 			'motion'      => __( 'Motion', 'kpf-core' ),
 			'forms'       => __( 'Forms', 'kpf-core' ),

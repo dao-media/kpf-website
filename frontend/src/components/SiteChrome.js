@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import AccessibilityRuntime from "@/components/AccessibilityRuntime";
 import KpfChromeRuntime from "@/components/KpfChromeRuntime";
 import KpfFooter from "@/components/KpfFooter";
 import KpfHeader from "@/components/KpfHeader";
 import LinkArrowRuntime from "@/components/LinkArrowRuntime";
 import ScrollSmootherRuntime from "@/components/ScrollSmootherRuntime";
 import AnalyticsRuntime from "@/components/AnalyticsRuntime";
+import CodeSnippetsRuntime from "@/components/CodeSnippetsRuntime";
 import { SiteDateTimeProvider } from "@/components/SiteDateTimeProvider";
 
 const {
@@ -176,6 +178,7 @@ function ChromeFooter({ component, useScaffold }) {
   // CMS HTML already includes <footer class="kpf-footer"> — wrap in a div.
   return (
     <div
+      id="kpf-footer"
       className={className}
       data-kpf-chrome-role="footer"
       data-kpf-chrome-id={component.databaseId}
@@ -185,7 +188,12 @@ function ChromeFooter({ component, useScaffold }) {
   );
 }
 
-export default function SiteChrome({ chrome, children }) {
+export default function SiteChrome({
+  chrome,
+  snippets = [],
+  accessibility = null,
+  children,
+}) {
   const cmsHeader = chrome?.header || null;
   const cmsFooter = chrome?.footer || null;
   // Prefer React header so the Figma Nav (desktop + mobile) always ships; CMS header stays seeded for Components.
@@ -220,12 +228,14 @@ export default function SiteChrome({ chrome, children }) {
 
   return (
     <SiteDateTimeProvider value={chrome?.dateTime || null}>
+      <AccessibilityRuntime config={accessibility}>
       <div className={shellClass}>
         <ChromeHeader component={header} useScaffold={useHeaderScaffold} />
         <KpfChromeRuntime enabled={!useHeaderScaffold} />
         <LinkArrowRuntime />
         <ScrollSmootherRuntime />
         <AnalyticsRuntime />
+        <CodeSnippetsRuntime snippets={snippets} slot="header" />
         <div id="smooth-wrapper" className="kpf-smooth-wrapper">
           <div id="smooth-content" className="kpf-smooth-content">
             <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
@@ -234,9 +244,11 @@ export default function SiteChrome({ chrome, children }) {
             {footer ? (
               <ChromeFooter component={footer} useScaffold={useFooterScaffold} />
             ) : null}
+            <CodeSnippetsRuntime snippets={snippets} slot="footer" />
           </div>
         </div>
       </div>
+      </AccessibilityRuntime>
     </SiteDateTimeProvider>
   );
 }

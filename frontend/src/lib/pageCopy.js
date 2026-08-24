@@ -10,7 +10,7 @@ const HOME = {
     body: "The Kevin Popke Foundation makes targeted grants to veteran-focused nonprofits in Tampa Bay and across Florida — the small organizations doing the hardest work, closest to the ground.",
     primaryCta: { donate: true, label: "Donate" },
     secondaryCta: { href: "/#programs", label: "Where your donations go" },
-    /* Solid ink stage + cutouts only — Figma 616:1060 (no beach hero.jpg). */
+    /* Solid ink stage + cutouts only — Figma 1101:3435 (no beach hero.jpg). */
     media: {
       key: "",
       src: "",
@@ -48,14 +48,14 @@ const HOME = {
       "The Kevin Popke Foundation serves in tribute of Kevin as a veteran-focused organization providing fundraising opportunities to other veteran-focused charities in the Tampa Bay Area and surrounding. Through targeted grants in Kevin’s honor, we support people like him who have served and sacrificed to protect us.",
     ],
     actions: [
-      { donate: true, label: "Donate $50 for ‘50’", variant: "primary" },
+      { donate: true, label: "Donate", variant: "primary" },
       { href: "/about/", label: "Kevin’s story", variant: "ink" },
       { href: "/#programs", label: "Where your donation goes", variant: "link" },
     ],
     media: {
       key: "home.kevinDoubleExposure",
-      src: "/media/home/kevin-double-exposure.png",
-      alt: "Double-exposure portrait of Kevin Popke with a parachutist silhouette",
+      src: "/media/home/kevin-double-exposure-cutout.webp",
+      alt: "Double-exposure portrait of Kevin Popke with parachutists",
     },
   },
   values: {
@@ -142,7 +142,7 @@ const HOME = {
     titleEmphasized: "vetted",
     titleAfter: " organizations helping veterans.",
     body: "Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.",
-    primaryCta: { donate: true, label: "Donate via PayPal" },
+    primaryCta: { donate: true, label: "Donate" },
     secondaryCta: { href: "/about/", label: "Learn about our work" },
     note: "A 501(c)(3) nonprofit organization",
     impactTitle: "How your donations are used",
@@ -374,43 +374,37 @@ const ABOUT = {
 
 const CONTACT = {
   hero: {
-    eyebrow: "Contact",
-    title: "Get in touch",
-    body: "A nonprofit is only as strong as the community holding it up. Whatever you have in mind, start here.",
-  },
-  ways: {
-    eyebrow: "Community",
-    title: "Ways to help",
-    cards: [
-      {
-        title: "Volunteer",
-        body: "Events need hands, and so does the work between them. Tell us what you’re good at.",
-      },
-      {
-        title: "Sponsor an event",
-        body: "Put your business behind a night that funds grants for Florida veterans.",
-      },
-      {
-        title: "Partner with us",
-        body: "Corporate matching, a fundraiser of your own, or an idea we haven’t thought of yet.",
-      },
-      {
-        title: "Spread the word",
-        body: "Share what we do with people who’d want to know. It costs nothing and it works.",
-      },
-    ],
+    eyebrow: "Let’s Connect",
+    title: "Contact us",
+    body: "Questions about a grant, an event, or how to help? We read every message.",
+    primaryCta: { href: "#message", label: "Send a message", variant: "primary" },
+    secondaryCta: { donate: true, label: "Donate", variant: "secondary" },
+    media: {
+      key: "contact.hero",
+      src: "/media/contact/hero-bridge.webp",
+      alt: "Sunshine Skyway Bridge spanning Tampa Bay under a clear sky",
+    },
   },
   form: {
-    eyebrow: "Message",
-    title: "Send us a message",
-    body: "We’ll get back within a few days.",
+    id: "message",
+    title: "We’d love to hear from you",
+    body: [
+      "Whether you’re asking about a grant, an upcoming event, a partnership idea, or how to support the foundation — this form is the right place to start.",
+      "A real person on our small team reads every message and will follow up as soon as we can.",
+    ],
   },
-  aside: {
-    eyebrow: "Direct",
-    title: "Or reach us directly",
-    org: "The Kevin Popke Foundation, Inc.",
-    note: "A 501(c)(3) nonprofit organization",
-    donate: { donate: true, label: "Donate" },
+  cta: {
+    title: "There's more than one way to make a difference.",
+    body: "Volunteer a Saturday. Point us toward an org that deserves a look. Or give — every gift becomes a grant in Kevin's name.",
+    actions: [
+      { donate: true, label: "Donate", variant: "primary" },
+      { href: "/", label: "Back home", variant: "outline" },
+    ],
+    media: {
+      key: "cta.flag",
+      src: "/media/brand/kpf-flag.mp4",
+      alt: "",
+    },
   },
 };
 
@@ -458,7 +452,7 @@ const EVENTS = {
       "Our events happen because businesses and individuals decide to put their name behind them. Sponsorship puts your business in front of a room that cares who's in it, and it funds grants directly.",
       "There's also room for other ideas. If you want to run a fundraiser, host a collection, or partner on an event of your own, we'd like to hear it.",
     ],
-    cta: { donate: true, label: "Donate via PayPal" },
+    cta: { donate: true, label: "Donate" },
     paths: [
       {
         id: "sponsor",
@@ -492,7 +486,7 @@ const EVENTS = {
       {
         key: "events.featured1",
         src: "/media/events/featured-1.webp",
-        alt: "",
+        alt: "Songwriters for Vets performers on stage with an American flag",
       },
       {
         key: "events.featured2",

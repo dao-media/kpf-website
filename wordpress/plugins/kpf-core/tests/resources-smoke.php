@@ -24,8 +24,13 @@ wp_set_current_user( 1 );
 
 $data = Resources::data();
 kpf_resources_assert( ! empty( $data['title'] ), 'Resources data includes a title' );
+kpf_resources_assert( is_array( $data['postTypeKey'] ) && count( $data['postTypeKey'] ) >= 5, 'Resources includes a post type key' );
+$key_labels = array_map( static fn( array $row ): string => (string) ( $row['label'] ?? '' ), $data['postTypeKey'] );
+foreach ( array( 'Scrapbook', 'Events', 'Hosts', 'Grants', 'Grantees' ) as $expected_label ) {
+	kpf_resources_assert( in_array( $expected_label, $key_labels, true ), "Post type key includes {$expected_label}" );
+}
 kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 2, 'Resources includes at least two topic groups' );
-kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 3, 'Resources includes at least three cards' );
+kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 4, 'Resources includes at least four cards' );
 
 $group_ids = array_map( static fn( array $group ): string => (string) ( $group['id'] ?? '' ), $data['groups'] );
 kpf_resources_assert( in_array( 'kevin-stories', $group_ids, true ), 'Resources includes Kevin’s Stories topic' );
@@ -35,6 +40,7 @@ $ids = array_map( static fn( array $card ): string => (string) ( $card['id'] ?? 
 kpf_resources_assert( in_array( 'kevin-story', $ids, true ), 'Resources includes Kevin’s Story card' );
 kpf_resources_assert( in_array( 'kevin-story-edit', $ids, true ), 'Resources includes Editing Kevin’s Stories card' );
 kpf_resources_assert( in_array( 'grantee', $ids, true ), 'Resources includes Grantee card' );
+kpf_resources_assert( in_array( 'grant', $ids, true ), 'Resources includes Adding a Grant card' );
 
 foreach ( $data['groups'] as $group ) {
 	kpf_resources_assert( ! empty( $group['title'] ), 'Each topic group has a title' );
@@ -46,6 +52,13 @@ foreach ( $data['cards'] as $card ) {
 	kpf_resources_assert( ! empty( $card['sections'] ), 'Each card has instruction sections' );
 	kpf_resources_assert( ! empty( $card['actions'] ), 'Each card has actions' );
 	kpf_resources_assert( ! empty( $card['groupId'] ), 'Each flat card carries a groupId' );
+	kpf_resources_assert( is_array( $card['screenshot'] ?? null ), 'Each card has a screenshot' );
+	kpf_resources_assert( ! empty( $card['screenshot']['src'] ), 'Each screenshot has a src' );
+	kpf_resources_assert( ! empty( $card['screenshot']['alt'] ), 'Each screenshot has alt text' );
+	kpf_resources_assert(
+		false !== strpos( (string) $card['screenshot']['src'], 'assets/media/resources/' ),
+		'Each screenshot is served from plugin resources media'
+	);
 }
 
 $kevin = null;
@@ -69,6 +82,20 @@ $edit_blob = wp_json_encode( $kevin_edit );
 kpf_resources_assert( false !== stripos( (string) $edit_blob, 'Scrapbook' ), 'Edit card points editors to Scrapbook → Kevin' );
 kpf_resources_assert( false !== stripos( (string) $edit_blob, 'Order' ), 'Edit card mentions order' );
 kpf_resources_assert( false !== stripos( (string) $edit_blob, 'Draft' ), 'Edit card mentions draft/publish' );
+
+$grant = null;
+foreach ( $data['cards'] as $card ) {
+	if ( 'grant' === ( $card['id'] ?? '' ) ) {
+		$grant = $card;
+		break;
+	}
+}
+kpf_resources_assert( is_array( $grant ), 'Adding a Grant card resolved' );
+$grant_blob = wp_json_encode( $grant );
+kpf_resources_assert( false !== stripos( (string) $grant_blob, 'Recipient' ), 'Grant card mentions recipient' );
+kpf_resources_assert( false !== stripos( (string) $grant_blob, 'check' ), 'Grant card mentions check photo' );
+kpf_resources_assert( false !== stripos( (string) $grant_blob, 'Grantee' ), 'Grant card requires a Grantee first' );
+kpf_resources_assert( is_array( $grant['screenshots'] ?? null ) && count( $grant['screenshots'] ) >= 2, 'Grant card includes two screenshots' );
 
 require_once ABSPATH . 'wp-admin/includes/admin.php';
 

@@ -89,7 +89,7 @@ final class GraphQL {
 	public static function details( int $post_id ): array {
 		$meta      = Meta::get( $post_id );
 		$check_id  = (int) ( $meta['check_photo_id'] ?? 0 );
-		$check_url = $check_id > 0 ? (string) wp_get_attachment_image_url( $check_id, 'full' ) : '';
+		$check_url = \KPF\Core\Media\PublicUrls::image_url( $check_id, 'full' );
 
 		return array(
 			'granteeId'              => (int) ( $meta['grantee_id'] ?? 0 ),

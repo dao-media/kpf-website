@@ -44,10 +44,35 @@ export default function KpfMobileNav({
   useEffect(() => {
     if (!open) return undefined;
 
+    const root = rootRef.current;
+    const focusables = () =>
+      Array.from(
+        root?.querySelectorAll(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) || [],
+      ).filter((el) => el.offsetParent !== null || el === toggleRef.current);
+
+    const items = focusables();
+    const firstLink = items.find((el) => el !== toggleRef.current);
+    (firstLink || toggleRef.current)?.focus();
+
     function onKeyDown(event) {
       if (event.key === "Escape") {
         onOpenChange?.(false);
         toggleRef.current?.focus();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const cycle = focusables();
+      if (cycle.length < 2) return;
+      const first = cycle[0];
+      const last = cycle[cycle.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     }
 
@@ -97,9 +122,12 @@ export default function KpfMobileNav({
       <div
         id={panelId}
         className="kpf-mobile-nav__panel"
+        role="dialog"
+        aria-modal={open ? "true" : undefined}
+        aria-label="Site menu"
         aria-hidden={!open}
       >
-        <nav className="kpf-mobile-nav__links" aria-label="Mobile">
+        <nav className="kpf-mobile-nav__links" aria-label="Site">
           {items.map((item) => {
             const current = isCurrentPath(pathname, item.href);
             return (

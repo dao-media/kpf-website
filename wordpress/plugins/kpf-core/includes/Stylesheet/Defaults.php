@@ -124,6 +124,14 @@ final class Defaults {
 	}
 
 	/**
+	 * CSS without the pages layer (Faust already imports pages.css via webpack).
+	 */
+	public static function strip_pages_layer( string $css ): string {
+		$pos = strpos( $css, self::PAGES_MARKER );
+		return trim( false === $pos ? $css : substr( $css, 0, $pos ) );
+	}
+
+	/**
 	 * Replace an existing pages layer block (from marker to EOF or next ship marker).
 	 */
 	public static function replace_pages_layer( string $current, string $pages ): string {

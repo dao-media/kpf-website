@@ -6,6 +6,7 @@ import CtaClosingBand, {
 } from "@/components/CtaClosingBand";
 import KpfButton from "@/components/KpfButton";
 import PostTocNav from "@/components/PostTocNav";
+import { useStickyPostSidebar } from "@/hooks/useStickyPostSidebar";
 import { normalizeBlogPosts } from "@/lib/blogPosts";
 import { normalizeBlogPostPage } from "@/lib/blogPost";
 
@@ -186,6 +187,8 @@ export default function BlogPostScaffold({
     CTA_CLOSING_DEFAULTS.media.key,
     CTA_CLOSING_DEFAULTS.media,
   );
+
+  useStickyPostSidebar([post?.uri, post?.html]);
 
   if (!post) {
     return (

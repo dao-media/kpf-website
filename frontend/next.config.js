@@ -6,6 +6,11 @@ const { withFaust, getWpHostname } = require('@faustwp/core');
  **/
 module.exports = withFaust({
 	reactStrictMode: true,
+	env: {
+		// Inlined at build time. Set to "1" on Vercel while DreamHost is missing
+		// WPGraphQL Content Blocks so Faust prerender can skip editorBlocks.
+		KPF_SKIP_EDITOR_BLOCKS: process.env.KPF_SKIP_EDITOR_BLOCKS || "",
+	},
 	sassOptions: {
 		loadPaths: ['node_modules'],
 	},
@@ -27,6 +32,10 @@ module.exports = withFaust({
 			{
 				source: '/robots.txt',
 				destination: '/api/seo/robots',
+			},
+			{
+				source: '/kpf-stylesheet.css',
+				destination: '/api/kpf-stylesheet',
 			},
 			{
 				source: '/sitemap.xml',

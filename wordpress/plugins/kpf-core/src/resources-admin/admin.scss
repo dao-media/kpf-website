@@ -75,6 +75,74 @@
 	margin: 0;
 }
 
+.kpf-resources-key {
+	background: var(--kpf-resources-surface);
+	border: 1px solid var(--kpf-resources-line);
+	border-radius: 14px;
+	margin-bottom: 36px;
+	overflow: hidden;
+	padding: 20px 22px 18px;
+}
+
+.kpf-resources-key__header {
+	margin-bottom: 16px;
+	max-width: 40rem;
+}
+
+.kpf-resources-key__header h2 {
+	color: var(--kpf-resources-ink);
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	line-height: 1.25;
+	margin: 0 0 6px;
+}
+
+.kpf-resources-key__header p {
+	color: var(--kpf-resources-muted);
+	font-size: 13px;
+	line-height: 1.45;
+	margin: 0;
+}
+
+.kpf-resources-key__list {
+	display: grid;
+	gap: 0;
+	margin: 0;
+}
+
+.kpf-resources-key__row {
+	border-top: 1px solid var(--kpf-resources-line);
+	display: grid;
+	gap: 8px 20px;
+	grid-template-columns: minmax(7.5rem, 9rem) minmax(0, 1fr);
+	padding: 12px 0;
+}
+
+.kpf-resources-key__row:first-child {
+	border-top: 0;
+	padding-top: 0;
+}
+
+.kpf-resources-key__row:last-child {
+	padding-bottom: 0;
+}
+
+.kpf-resources-key__row dt {
+	color: var(--kpf-resources-ink);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.45;
+	margin: 0;
+}
+
+.kpf-resources-key__row dd {
+	color: #334155;
+	font-size: 13px;
+	line-height: 1.5;
+	margin: 0;
+}
+
 .kpf-resources-topics {
 	display: grid;
 	gap: 36px;
@@ -115,6 +183,29 @@
 	flex-direction: column;
 	min-width: 0;
 	overflow: hidden;
+}
+
+.kpf-resources-card__media {
+	background: #e8edf3;
+	border-bottom: 1px solid var(--kpf-resources-line);
+	margin: 0;
+}
+
+.kpf-resources-card__media figure {
+	margin: 0;
+}
+
+.kpf-resources-card__media--stack figure + figure {
+	border-top: 1px solid var(--kpf-resources-line);
+}
+
+.kpf-resources-card__media img {
+	aspect-ratio: 2 / 1;
+	display: block;
+	height: auto;
+	object-fit: cover;
+	object-position: center;
+	width: 100%;
 }
 
 .kpf-resources-card__header {
@@ -260,5 +351,10 @@
 
 	.kpf-resources-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.kpf-resources-key__row {
+		grid-template-columns: 1fr;
+		gap: 4px;
 	}
 }

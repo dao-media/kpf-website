@@ -3,6 +3,7 @@ import { ArrowUpRight, FileText, Newspaper, Search, X } from "lucide-react";
 import MiniSearch from "minisearch";
 import { useSiteDateTime } from "@/components/SiteDateTimeProvider";
 import { formatSiteDate } from "@/lib/siteDateTime";
+import { pushAnalyticsEvent } from "@/lib/analyticsUi";
 
 const INDEX_OPTIONS = {
   fields: ["title", "excerpt", "body", "terms"],
@@ -87,6 +88,18 @@ export default function SearchPage({ initialQuery = "", onQueryChange }) {
       .slice(0, RESULT_LIMIT);
   }, [index, normalizedQuery]);
 
+  useEffect(() => {
+    if (status !== "ready" || normalizedQuery.length < 2) return undefined;
+    const timer = window.setTimeout(() => {
+      pushAnalyticsEvent("search_submitted", {
+        search_term: normalizedQuery.slice(0, 80),
+        result_count: results.length,
+        page_path: "/search",
+      });
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [status, normalizedQuery, results.length]);
+
   function updateQuery(value) {
     setQuery(value);
     onQueryChange?.(value);
@@ -104,7 +117,7 @@ export default function SearchPage({ initialQuery = "", onQueryChange }) {
   }
 
   return (
-    <main className="kpf-page kpf-search">
+    <div className="kpf-page kpf-search">
       <article className="kpf-page__article kpf-search__article">
         <header className="kpf-search__header">
           <span className="kpf-search__eyebrow">Explore the foundation</span>
@@ -128,6 +141,7 @@ export default function SearchPage({ initialQuery = "", onQueryChange }) {
               spellCheck="false"
               value={query}
               placeholder="Try a name, place, event, or topic"
+              aria-describedby="search-status"
               onChange={(event) => updateQuery(event.target.value)}
             />
             {query ? (
@@ -144,7 +158,7 @@ export default function SearchPage({ initialQuery = "", onQueryChange }) {
               </button>
             ) : null}
           </div>
-          <p className="kpf-search__status" role="status" aria-live="polite">
+          <p id="search-status" className="kpf-search__status" role="status" aria-live="polite">
             {resultMessage}
           </p>
         </section>
@@ -190,6 +204,6 @@ export default function SearchPage({ initialQuery = "", onQueryChange }) {
           )
         ) : null}
       </article>
-    </main>
+    </div>
   );
 }

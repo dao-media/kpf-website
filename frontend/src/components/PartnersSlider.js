@@ -210,7 +210,11 @@ export default function PartnersSlider({
               <button
                 key={dotIndex}
                 type="button"
-                className={dotIndex === index ? "is-active" : undefined}
+                className={
+                  dotIndex === index
+                    ? "kpf-partners__dot is-active"
+                    : "kpf-partners__dot"
+                }
                 aria-label={`Show grantee ${dotIndex + 1} of ${slideCount}`}
                 aria-current={dotIndex === index ? "true" : undefined}
                 onClick={() => setIndex(dotIndex)}

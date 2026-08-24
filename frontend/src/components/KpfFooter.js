@@ -17,7 +17,7 @@ export default function KpfFooter({
   const year = new Date().getFullYear();
 
   return (
-    <footer className="kpf-footer">
+    <footer className="kpf-footer" id="kpf-footer">
       <div className="kpf-footer__body kpf-u-container">
         <blockquote className="kpf-footer__tagline">{tagline}</blockquote>
         <div className="kpf-footer__grid">
@@ -53,6 +53,7 @@ export default function KpfFooter({
                           rel="noopener noreferrer"
                         >
                           {item.label}
+                          <span className="kpf-u-sr-only"> (opens in a new tab)</span>
                         </a>
                       ) : (
                         <Link href={item.href}>{item.label}</Link>
@@ -71,7 +72,8 @@ export default function KpfFooter({
             </p>
             <DonateButton
               className="kpf-btn kpf-btn--primary kpf-btn--sm"
-              data-kpf-track="donate_footer_clicked"
+              data-kpf-track="donate_clicked"
+              data-kpf-track-component="footer_donate"
             />
           </div>
         </div>

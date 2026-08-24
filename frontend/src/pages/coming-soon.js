@@ -3,6 +3,7 @@ import PageDesignRenderer from "@/components/PageDesignRenderer";
 
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
+const { KPF_STYLESHEET_QUERY } = require("@/lib/globalStylesheet");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
@@ -12,16 +13,7 @@ const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
 
 const MAINTENANCE_QUERY = `
   query MaintenancePage {
-    kpfStylesheet
-    kpfStylesheetInfo {
-      css
-      foundation
-      pages
-      revision
-      hasPagesLayer
-      byteLength
-      updatedAt
-    }
+    ${KPF_STYLESHEET_QUERY}
     ${KPF_SITE_CHROME_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}
@@ -42,10 +34,10 @@ const MAINTENANCE_QUERY = `
 
 function MaintenanceFallback() {
   return (
-    <main style={{ margin: "4rem auto", maxWidth: "40rem", padding: "0 1.5rem" }}>
+    <div style={{ margin: "4rem auto", maxWidth: "40rem", padding: "0 1.5rem" }}>
       <h1>Coming soon</h1>
       <p>This site is temporarily unavailable. Please check back shortly.</p>
-    </main>
+    </div>
   );
 }
 
@@ -79,7 +71,6 @@ export async function getServerSideProps() {
       props: {
         design: null,
         mode: { enabled: false, path: "/coming-soon/", ready: false },
-        kpfStylesheet: "",
         kpfStylesheetInfo: null,
         kpfSiteChrome: null,
         kpfAccessibility: null,
@@ -103,7 +94,6 @@ export async function getServerSideProps() {
         props: {
           design: null,
           mode: null,
-          kpfStylesheet: "",
           kpfStylesheetInfo: null,
           kpfSiteChrome: null,
           kpfAccessibility: null,
@@ -117,7 +107,6 @@ export async function getServerSideProps() {
       props: {
         design: payload?.data?.kpfMaintenanceDesign || null,
         mode: payload?.data?.kpfMaintenanceMode || null,
-        kpfStylesheet: payload?.data?.kpfStylesheet || "",
         kpfStylesheetInfo: payload?.data?.kpfStylesheetInfo || null,
         kpfSiteChrome: payload?.data?.kpfSiteChrome || null,
         kpfAccessibility: payload?.data?.kpfAccessibility || null,
@@ -129,7 +118,6 @@ export async function getServerSideProps() {
       props: {
         design: null,
         mode: null,
-        kpfStylesheet: "",
         kpfStylesheetInfo: null,
         kpfSiteChrome: null,
         kpfAccessibility: null,

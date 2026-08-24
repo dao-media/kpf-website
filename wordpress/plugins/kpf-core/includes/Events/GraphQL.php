@@ -159,7 +159,7 @@ final class GraphQL {
 				'name'    => $term->name,
 				'slug'    => $term->slug,
 				'logoId'  => $logo_id,
-				'logoUrl' => $logo_id > 0 ? (string) wp_get_attachment_image_url( $logo_id, 'medium' ) : '',
+				'logoUrl' => \KPF\Core\Media\PublicUrls::image_url( $logo_id, 'medium' ),
 			);
 		}
 

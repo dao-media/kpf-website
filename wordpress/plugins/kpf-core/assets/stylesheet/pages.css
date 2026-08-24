@@ -474,23 +474,42 @@ html {
 	width: 100%;
 }
 
-/* Skip link — first focusable in document */
+/* Skip link — first focusable in document (WCAG 2.4.1) */
 .kpf-skip-link {
-	background: var(--kpf-color-bg-inverse);
-	color: var(--kpf-color-text-on-brand);
+	background: var(--kpf-color-bg-inverse, #12090a);
+	color: var(--kpf-color-text-on-brand, #f4efea);
 	font-family: var(--kpf-font-ui);
-	font-size: var(--kpf-text-ui-m);
+	font-size: var(--kpf-text-ui-m, 1rem);
 	font-weight: 700;
-	left: var(--kpf-page-gutter);
-	padding: var(--kpf-space-sm) var(--kpf-space-md);
-	position: absolute;
-	top: -100%;
-	z-index: calc(var(--kpf-z-menu) + 1);
+	left: var(--kpf-page-gutter, 1.25rem);
+	padding: var(--kpf-space-sm, 0.5rem) var(--kpf-space-md, 0.75rem);
+	position: fixed;
+	top: 0;
+	transform: translateY(-120%);
+	z-index: 10000;
 }
 
 .kpf-skip-link:focus,
 .kpf-skip-link:focus-visible {
-	top: var(--kpf-space-md);
+	transform: translateY(var(--kpf-space-md, 0.75rem));
+}
+
+.kpf-skip-link--footer:focus,
+.kpf-skip-link--footer:focus-visible {
+	left: auto;
+	right: var(--kpf-page-gutter, 1.25rem);
+}
+
+.kpf-a11y-live {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
 }
 
 /* @spec [SHIPPED] Floating sticky header — Figma Nav 616:1061 */
@@ -532,7 +551,8 @@ html {
 }
 
 /* Badge slot — 86×177 with 48px top pad; image fills remaining height, overhangs bar */
-.kpf-header__badge {
+.kpf-header__badge,
+[data-kpf-badge] {
 	align-self: center;
 	box-sizing: border-box;
 	display: block;
@@ -543,12 +563,12 @@ html {
 	max-width: 86px;
 	min-height: 177px;
 	min-width: 86px;
-	opacity: 1;
+	opacity: 1 !important;
 	overflow: visible;
 	padding-top: 48px;
 	position: relative;
 	transform-origin: 50% 0%;
-	visibility: visible;
+	visibility: visible !important;
 	width: 86px;
 }
 
@@ -580,6 +600,21 @@ html {
 	fill: color-mix(in srgb, var(--kpf-ink, #12090a) 55%, #8a7358 20%);
 }
 
+/*
+ * First load: park the badge above the viewport (scripting only) so the
+ * entrance is a drop. `.kpf-nav-entered` is set when the timeline settles.
+ */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+	html:not(.kpf-nav-entered) .kpf-header {
+		opacity: 0;
+		transform: translate3d(0, -8px, 0);
+	}
+
+	html:not(.kpf-nav-entered) .kpf-header [data-kpf-badge] {
+		transform: translate3d(0, -8.75rem, 0);
+	}
+}
+
 .kpf-header__badge .kpf-header__mark,
 .kpf-header__mark {
 	display: block;
@@ -607,34 +642,55 @@ html {
 
 .kpf-header__brand-text {
 	color: var(--kpf-nav, #12090a);
-	flex: 1 1 auto;
+	flex: 0 1 auto;
 	font-family: var(--kpf-font-ui);
-	font-size: 0.9375rem; /* 15 — match .kpf-nav-link */
+	font-size: 0.9375rem; /* 15 — match .kpf-nav-link; mobile baseline */
 	font-weight: 700;
 	letter-spacing: normal;
-	line-height: 1.125rem; /* 18 — match .kpf-nav-link */
+	line-height: 1.15;
 	min-width: 0;
-	overflow: hidden;
+	overflow: visible;
 	position: relative;
 }
 
 .kpf-header__brand-text-label {
-	display: block;
-	overflow: hidden;
-	white-space: nowrap;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	white-space: normal;
 }
 
-/* Off-flow full-name probe — ResizeObserver compares slot vs this width. */
-.kpf-header__brand-text-measure {
-	font: inherit;
-	left: 0;
-	letter-spacing: inherit;
-	line-height: inherit;
-	pointer-events: none;
-	position: absolute;
-	top: 0;
-	visibility: hidden;
-	white-space: nowrap;
+.kpf-header__brand-line {
+	display: block;
+}
+
+/* Tablet+: one-line wordmark — real space between lines (flex gap alone can collapse) */
+@media (min-width: 48rem) {
+	.kpf-header__brand-text-label {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		white-space: nowrap;
+	}
+
+	.kpf-header__brand-line + .kpf-header__brand-line::before {
+		content: "\00a0";
+	}
+}
+
+/* Tablet: one-line wordmark · 1.5× mobile size */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+	.kpf-header__brand-text {
+		font-size: 1.40625rem; /* 22.5 — 1.5 × 15 */
+		line-height: 1.125;
+	}
+}
+
+/* Desktop: one-line wordmark · 80% of prior 2× mobile (30 → 24) */
+@media (min-width: 64rem) {
+	.kpf-header__brand-text {
+		font-size: 1.5rem; /* 24 — 20% below 1.875rem / 30 */
+		line-height: 1.125;
+	}
 }
 
 .kpf-header__spacer {
@@ -650,6 +706,12 @@ html {
 	flex-wrap: nowrap;
 	gap: 2rem; /* 32 — desktop nav links */
 	justify-content: flex-end;
+}
+
+.kpf-header__nav ul {
+	align-items: inherit;
+	display: contents;
+	gap: inherit;
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -767,6 +829,23 @@ html {
 	transform: none;
 }
 
+.kpf-header__actions .kpf-btn--donate {
+	padding-inline-end: var(--kpf-paypal-pad-end, 1.25rem);
+}
+
+@media (hover: hover) and (pointer: fine) and (not (any-pointer: coarse)) and (min-width: 64rem) {
+	@media (prefers-reduced-motion: no-preference) {
+		.kpf-header__actions .kpf-btn--donate {
+			padding-inline-end: var(--kpf-space-button-x);
+		}
+
+		.kpf-header__actions .kpf-btn--donate:hover,
+		.kpf-header__actions .kpf-btn--donate:focus-visible {
+			padding-inline-end: var(--kpf-paypal-pad-end, 1.25rem);
+		}
+	}
+}
+
 .kpf-header__menu-slot {
 	flex: 0 0 auto;
 	height: 2.75rem; /* 44 — Menu button */
@@ -781,6 +860,18 @@ html {
 
 	.kpf-header__menu-slot {
 		display: none;
+	}
+}
+
+/* Tablet and below: tighter badge↔name and Donate↔menu */
+@media (max-width: 63.99rem) {
+	.kpf-header__brand {
+		gap: calc(1rem / 3); /* 16 → ~5.3 — cut by 2/3 */
+	}
+
+	/* Header flex gap is 24px; leave 8px between Donate and the menu control */
+	.kpf-header__menu-slot {
+		margin-inline-start: -1rem;
 	}
 }
 
@@ -1325,9 +1416,9 @@ html {
  * --------------------------------------------------------------------------
  * CONTACT  Desktop 956:2439 · Tablet 956:2802 · Mobile 956:3045
  * --------------------------------------------------------------------------
- *   .kpf-hero--contact           bridge/photo + gradient
- *   .kpf-contact                 form + sidebar copy (.kpf-u-split)
- *   .kpf-cta-closing
+ *   .kpf-hero--contact           parchment + bridge photo (right copy desktop)
+ *   .kpf-contact                 intro + form split (stack below 64rem)
+ *   .kpf-cta-closing             shared pre-footer flag band
  *   .kpf-footer
  */
 
@@ -1404,13 +1495,15 @@ html {
 	width: auto;
 }
 
-/* Home: dark stage — Figma 616:1060 */
+/* Home: dark stage — Figma 1101:3435 (1440 × 540) */
 .kpf-hero--home {
 	--kpf-hero-bg: var(--kpf-ink, #12090a);
+	--kpf-hero-copy-max: 33.75rem; /* 540 — Hero copy width */
 	align-items: start;
 	background: var(--kpf-hero-bg);
 	color: var(--kpf-parchment, #f4efea);
-	min-height: 40rem;
+	/* 540px artboard; fluid between tablet and desktop */
+	min-height: clamp(30rem, 37.5vw, 33.75rem);
 	padding-block: var(--kpf-hero-copy-top) 3rem;
 	padding-inline: 0;
 }
@@ -1432,18 +1525,18 @@ html {
 
 @media (min-width: 64rem) {
 	.kpf-hero--home .kpf-hero__layout {
-		grid-template-columns: minmax(0, 1fr) minmax(16rem, 26.25rem);
+		grid-template-columns: minmax(0, 1fr) minmax(18rem, var(--kpf-hero-copy-max));
 		justify-items: end;
 	}
 
 	.kpf-hero--home .kpf-hero__content {
 		grid-column: 2;
-		max-width: 26.25rem;
+		max-width: var(--kpf-hero-copy-max);
 	}
 }
 
 .kpf-hero--home .kpf-hero__content {
-	max-width: 26.25rem;
+	max-width: min(100%, var(--kpf-hero-copy-max));
 }
 
 .kpf-hero--home .kpf-content-block__eyebrow {
@@ -1534,13 +1627,17 @@ html {
 		opacity: 1;
 	}
 
-	/* Figma 616:1060 — bottom-anchored (was top-%); stays grounded if hero grows */
+	/*
+	 * Figma 1101:3435 — % of 1440×540 artboard, bottom-anchored so
+	 * cutouts stay grounded when hero height flexes.
+	 * dad 529×473 @ (-77, 106) · alumni 418×345 @ (421, 196) · runner 444×653 @ (238, 35)
+	 */
 	.kpf-hero__cutout--dad {
 		--kpf-cutout-fade-mid: 65%; /* back layer */
-		bottom: -8.9%;
-		height: 89.84%;
+		bottom: -7.22%;
+		height: 87.59%;
 		left: -5.35%;
-		width: 44.72%;
+		width: 36.74%;
 		z-index: 1;
 	}
 
@@ -1570,9 +1667,9 @@ html {
 	.kpf-hero__cutout--alumni {
 		--kpf-cutout-fade-mid: 50%; /* middle layer */
 		bottom: 0;
-		height: 65.63%;
-		left: 36.74%;
-		width: 35.35%;
+		height: 63.89%;
+		left: 29.24%;
+		width: 29.03%;
 		z-index: 2;
 	}
 
@@ -1601,10 +1698,10 @@ html {
 
 	.kpf-hero__cutout--runner {
 		--kpf-cutout-fade-mid: 35%; /* front layer */
-		bottom: -29.69%;
-		height: 124.22%;
-		left: 21.32%;
-		width: 37.5%;
+		bottom: -27.41%;
+		height: 120.93%;
+		left: 16.53%;
+		width: 30.83%;
 		z-index: 3;
 	}
 
@@ -1743,32 +1840,68 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	min-height: 0.75rem;
 }
 
-.kpf-partners__dots button {
+/*
+ * Square slot + circular paint. Idle/active size change must not reflow
+ * the row (active used to grow 0.5rem → 0.75rem).
+ */
+button.kpf-partners__dot {
+	--kpf-partners-dot-size: 0.75rem;
 	appearance: none;
-	background: color-mix(in srgb, var(--kpf-ink) 28%, transparent);
+	aspect-ratio: 1 / 1;
+	background: transparent;
 	border: 0;
-	border-radius: 999px;
+	border-radius: 0;
+	box-sizing: border-box;
 	cursor: pointer;
 	display: block;
-	height: 0.5rem;
+	flex: 0 0 var(--kpf-partners-dot-size);
+	font-size: 0;
+	height: var(--kpf-partners-dot-size);
+	line-height: 0;
+	margin: 0;
+	max-height: var(--kpf-partners-dot-size);
+	max-width: var(--kpf-partners-dot-size);
+	min-height: var(--kpf-partners-dot-size);
+	min-width: var(--kpf-partners-dot-size);
+	overflow: visible;
 	padding: 0;
+	position: relative;
+	width: var(--kpf-partners-dot-size);
+}
+
+button.kpf-partners__dot::after {
+	aspect-ratio: 1 / 1;
+	background: color-mix(in srgb, var(--kpf-ink) 28%, transparent);
+	border-radius: 50%;
+	content: "";
+	display: block;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	transform: scale(0.6667); /* ~0.5rem visual inside 0.75rem slot */
+	transform-origin: center;
 	transition:
 		background-color 0.2s ease,
-		transform 0.2s ease,
-		width 0.2s ease,
-		height 0.2s ease;
-	width: 0.5rem;
+		transform 0.2s ease;
+	width: 100%;
 }
 
-.kpf-partners__dots button.is-active {
+button.kpf-partners__dot[aria-current="true"]::after,
+button.kpf-partners__dot.is-active::after {
 	background: var(--kpf-ember, #bb0d0d);
-	height: 0.75rem;
-	width: 0.75rem;
+	transform: scale(1);
 }
 
-.kpf-partners__dots button:focus-visible {
+button.kpf-partners__dot:focus-visible {
 	outline: 0.125rem solid var(--kpf-brass, #c4a35a);
 	outline-offset: 0.15rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button.kpf-partners__dot::after {
+		transition: none;
+	}
 }
 
 /* Mobile: full-bleed rail so neighbor chips overhang the screen edge. */
@@ -2224,8 +2357,10 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 @media (min-width: 1201px) {
 	.kpf-archive__thumb {
+		flex: 0 0 40%;
 		max-height: none;
-		width: 12.5rem;
+		min-height: 256px;
+		width: 40%;
 	}
 }
 
@@ -2358,7 +2493,25 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	padding-right: 1rem;
 }
 
+.kpf-donate--band .kpf-content-block__actions .kpf-btn--primary {
+	--kpf-btn-pulse: var(--kpf-ink, #12090a);
+}
+
+.kpf-donate--band .kpf-content-block__actions .kpf-btn--primary:hover,
+.kpf-donate--band .kpf-content-block__actions .kpf-btn--primary:focus-visible {
+	background: var(--kpf-ink, #12090a);
+	border-color: var(--kpf-ink, #12090a);
+	color: var(--kpf-white, #fff);
+}
+
+.kpf-donate--band .kpf-content-block__actions .kpf-btn--primary:active {
+	background: var(--kpf-ink-900, #0c0606);
+	border-color: var(--kpf-ink-900, #0c0606);
+	color: var(--kpf-white, #fff);
+}
+
 .kpf-donate--band .kpf-btn--secondary {
+	--kpf-btn-pulse: var(--kpf-parchment, #f4efea);
 	background: transparent;
 	border-color: var(--kpf-parchment, #f4efea);
 	color: var(--kpf-parchment, #f4efea);
@@ -2539,9 +2692,8 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	}
 }
 
-/* Events / Contact: dark photographic heroes */
-.kpf-hero--events,
-.kpf-hero--contact {
+/* Events: dark photographic hero */
+.kpf-hero--events {
 	background: var(--kpf-color-bg-inverse);
 	color: var(--kpf-color-text-on-brand);
 }
@@ -2657,18 +2809,175 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	);
 }
 
-.kpf-hero--contact .kpf-hero__scrim {
-	background:
-		radial-gradient(ellipse at 68% 45%, transparent 0%, color-mix(in srgb, var(--kpf-ink) 55%, transparent) 42%, var(--kpf-ink) 78%),
-		linear-gradient(90deg, var(--kpf-ink) 0%, color-mix(in srgb, var(--kpf-ink) 72%, transparent) 42%, transparent 72%);
-}
-
 .kpf-hero--events .kpf-content-block__eyebrow {
 	color: var(--kpf-ember);
 }
 
+/* Contact: parchment hero + bridge photo (Figma 956:2439 / 2802 / 3045) */
+.kpf-hero--contact {
+	background: var(--kpf-parchment-deep, #dfd6cc);
+	color: var(--kpf-ink, #12090a);
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	min-height: unset;
+	padding-block: var(--kpf-hero-copy-top) 3rem;
+	padding-inline: 0;
+	position: relative;
+}
+
+.kpf-hero--contact .kpf-hero__layout {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+}
+
+.kpf-hero--contact .kpf-hero__content {
+	margin-inline: 0;
+	max-width: 100%;
+	width: 100%;
+}
+
+.kpf-hero--contact .kpf-hero__media-frame {
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	position: absolute;
+	z-index: 0;
+}
+
+.kpf-hero--contact .kpf-hero__media-host {
+	display: block;
+	height: 100%;
+	position: relative;
+	width: 100%;
+}
+
+.kpf-hero--contact .kpf-hero__media {
+	display: block;
+	height: 100%;
+	/* 20% less wide; left edge starts 20% offscreen */
+	left: -20%;
+	max-height: none;
+	max-width: none;
+	object-fit: cover;
+	object-position: left center;
+	position: absolute;
+	top: 0;
+	width: 80%;
+	/* Fade out the rightmost 20% of the photo into parchment */
+	-webkit-mask-image: linear-gradient(90deg, #000 0%, #000 80%, transparent 100%);
+	mask-image: linear-gradient(90deg, #000 0%, #000 80%, transparent 100%);
+}
+
+.kpf-hero--contact .kpf-hero__scrim {
+	/* Fade photo into parchment toward the copy */
+	background:
+		linear-gradient(
+			90deg,
+			transparent 0%,
+			color-mix(in srgb, var(--kpf-parchment-deep, #dfd6cc) 35%, transparent) 42%,
+			var(--kpf-parchment-deep, #dfd6cc) 72%
+		),
+		radial-gradient(
+			ellipse 70% 90% at 12% 70%,
+			transparent 0%,
+			color-mix(in srgb, var(--kpf-parchment-deep, #dfd6cc) 55%, transparent) 55%,
+			var(--kpf-parchment-deep, #dfd6cc) 100%
+		);
+	inset: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: 0;
+}
+
 .kpf-hero--contact .kpf-content-block__eyebrow {
-	color: var(--kpf-brass);
+	color: var(--kpf-ember);
+}
+
+.kpf-hero--contact .kpf-hero__actions {
+	gap: 0.75rem;
+}
+
+/* Mobile port + land: no hero photo; parchment only */
+@media (max-width: 47.99rem) {
+	.kpf-hero--contact .kpf-hero__content {
+		max-width: 100%;
+	}
+
+	.kpf-hero--contact .kpf-hero__media-frame,
+	.kpf-hero--contact .kpf-hero__media {
+		display: none;
+	}
+
+	.kpf-hero--contact .kpf-hero__scrim {
+		display: none;
+	}
+
+	.kpf-hero--contact .kpf-hero__actions {
+		align-items: stretch;
+		flex-wrap: wrap;
+		width: 100%;
+	}
+
+	.kpf-hero--contact .kpf-hero__actions .kpf-btn {
+		flex: 1 1 calc(50% - 0.4rem);
+		justify-content: center;
+		min-width: 8rem;
+	}
+}
+
+/* Tablet: keep left shift; pin photo to bottom of hero */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+	.kpf-hero--contact .kpf-hero__content {
+		max-width: 28.75rem; /* 460 */
+	}
+
+	.kpf-hero--contact .kpf-hero__media {
+		bottom: 0;
+		height: 100%;
+		left: -20%;
+		opacity: 1;
+		object-position: left bottom;
+		top: auto;
+		width: 80%;
+	}
+
+	.kpf-hero--contact .kpf-hero__scrim {
+		background:
+			linear-gradient(
+				90deg,
+				transparent 0%,
+				color-mix(in srgb, var(--kpf-parchment-deep, #dfd6cc) 35%, transparent) 42%,
+				var(--kpf-parchment-deep, #dfd6cc) 72%
+			);
+	}
+}
+
+/* Desktop: right-aligned copy beside bridge fade */
+@media (min-width: 64rem) {
+	.kpf-hero--contact {
+		min-height: 28.75rem; /* 460 */
+		padding-block: var(--kpf-hero-copy-top) 3rem;
+	}
+
+	.kpf-hero--contact .kpf-hero__layout {
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.kpf-hero--contact .kpf-hero__content {
+		max-width: 33.75rem; /* 540 */
+	}
+
+	.kpf-hero--contact .kpf-hero__media {
+		bottom: auto;
+		left: -20%;
+		opacity: 1;
+		object-position: left center;
+		top: 0;
+		width: 80%;
+	}
 }
 
 .kpf-hero--events .kpf-hero__actions {
@@ -2831,7 +3140,7 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 
 @media (min-width: 64rem) {
 	.kpf-history {
-		/* Keep photo < stack so front can sit right-aligned and trail fans left. */
+		/* Keep photo under stack so front can sit right-aligned and trail fans left. */
 		--kpf-history-photo-width: 78%;
 		/* Desktop fan: rear clips more; front nudged toward copy (see carousel JS). */
 		--kpf-history-fan: -28%;
@@ -3700,6 +4009,12 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	width: 100%;
 }
 
+.kpf-cta-closing__block .kpf-content-block__title-group {
+	perspective: 60rem;
+	perspective-origin: 50% 0%;
+	transform-style: preserve-3d;
+}
+
 .kpf-cta-closing__block .kpf-content-block__copy {
 	margin-inline: auto;
 	max-width: 640px;
@@ -3709,6 +4024,8 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	font-size: clamp(2rem, 5vw, 3rem);
 	letter-spacing: -0.022em;
 	line-height: 1.14;
+	transform-origin: 50% 0%;
+	transform-style: preserve-3d;
 }
 
 /* —— Donate accordions —— */
@@ -3966,16 +4283,42 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 .kpf-event-card--placeholder {
 	align-items: center;
 	background: transparent;
-	border: 3px dashed var(--kpf-ink-100, #908585);
+	border: 0;
 	box-sizing: border-box;
 	justify-content: center;
 	min-height: 100%;
 	overflow: hidden;
 	padding: 2.625rem; /* 42 — nearest intentional pad (space-3xl is 40) */
+	position: relative;
 }
 
-.kpf-event-card--placeholder-quiet {
-	border-color: color-mix(
+.kpf-event-card__ants {
+	display: block;
+	height: 100%;
+	inset: 0;
+	overflow: visible;
+	pointer-events: none;
+	position: absolute;
+	width: 100%;
+}
+
+.kpf-event-card__ants-path {
+	fill: none;
+	height: calc(100% - 3px);
+	rx: calc(var(--kpf-radius-lg, 1rem) - 1.5px);
+	ry: calc(var(--kpf-radius-lg, 1rem) - 1.5px);
+	stroke: var(--kpf-ink-100, #908585);
+	stroke-dasharray: 14 10;
+	stroke-linecap: butt;
+	stroke-width: 3;
+	vector-effect: non-scaling-stroke;
+	width: calc(100% - 3px);
+	x: 1.5px;
+	y: 1.5px;
+}
+
+.kpf-event-card--placeholder-quiet .kpf-event-card__ants-path {
+	stroke: color-mix(
 		in srgb,
 		var(--kpf-ink-100, #908585) 50%,
 		transparent
@@ -4416,8 +4759,16 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	min-width: 0;
 }
 
+/* Desktop only — sticky TOC + activity (ScrollSmoother pins via JS when active) */
+@media (max-width: 63.99rem) {
+	.kpf-page--post .kpf-post-sidebar {
+		position: static;
+	}
+}
+
 @media (min-width: 64rem) {
 	.kpf-post-sidebar {
+		align-self: start;
 		position: sticky;
 		top: calc(var(--kpf-header-offset, 5.5rem) + 1rem);
 	}
@@ -4893,16 +5244,61 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 
 /* —— Contact —— */
 .kpf-contact {
+	background: var(--kpf-parchment, #f4efea);
+	min-width: 0;
+}
+
+.kpf-contact__inner {
 	display: grid;
-	gap: var(--kpf-space-xl);
+	gap: 2rem;
 	grid-template-columns: 1fr;
 	min-width: 0;
 }
 
-@media (min-width: 48rem) {
-	.kpf-contact {
-		gap: var(--kpf-space-2xl);
-		grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+.kpf-contact__intro {
+	max-width: 35rem;
+	min-width: 0;
+}
+
+.kpf-contact__form {
+	min-width: 0;
+	width: 100%;
+}
+
+.kpf-contact .kpf-form__actions {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.kpf-contact .kpf-form__actions .kpf-btn {
+	width: auto;
+}
+
+/* Mobile: single-column fields + full-width actions */
+@media (max-width: 47.99rem) {
+	.kpf-contact .kpf-form__row--cols-2 {
+		grid-template-columns: 1fr;
+	}
+
+	.kpf-contact .kpf-form__actions {
+		width: 100%;
+	}
+
+	.kpf-contact .kpf-form__actions .kpf-btn {
+		flex: 1 1 calc(50% - 0.4rem);
+		justify-content: center;
+		min-width: 0;
+	}
+}
+
+/* Tablet: intro above form; keep paired fields */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+	.kpf-contact__inner {
+		gap: 2rem;
+	}
+
+	.kpf-contact__intro {
+		max-width: 35rem;
 	}
 
 	.kpf-contact .kpf-form__row--cols-2 {
@@ -4910,11 +5306,21 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	}
 }
 
-.kpf-contact__aside {
-	display: flex;
-	flex-direction: column;
-	gap: var(--kpf-space-md);
-	min-width: 0;
+/* Desktop: intro left / form right */
+@media (min-width: 64rem) {
+	.kpf-contact__inner {
+		align-items: start;
+		gap: 4rem;
+		grid-template-columns: minmax(15rem, 28.75rem) minmax(0, 1fr);
+	}
+
+	.kpf-contact__intro {
+		max-width: 28.75rem; /* 460 */
+	}
+
+	.kpf-contact .kpf-form__row--cols-2 {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }
 
 /* —— Closing CTA —— */
@@ -4922,7 +5328,8 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	/* Flag video fills the band; deep is the preload/fallback */
 	background: var(--kpf-deep, #640f0e);
 	isolation: isolate;
-	overflow: clip;
+	/* Visible so the title can drop in from a parallel plane (3D). Video is clipped on __media. */
+	overflow: visible;
 	padding-block: 6rem;
 	padding-inline: var(--kpf-page-gutter);
 	position: relative;
@@ -4977,6 +5384,42 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 
 .kpf-cta-closing .kpf-content-block__actions .kpf-btn {
 	width: auto;
+}
+
+@media (max-width: 47.99rem) {
+	.kpf-cta-closing__block {
+		align-items: flex-start;
+		text-align: left;
+	}
+
+	.kpf-cta-closing__block .kpf-content-block__copy,
+	.kpf-cta-closing__block .kpf-content-block__title-group,
+	.kpf-cta-closing__block .kpf-content-block__body-group {
+		align-items: flex-start;
+		text-align: left;
+	}
+
+	.kpf-cta-closing__block .kpf-content-block__title-group {
+		perspective-origin: 0% 0%;
+	}
+
+	.kpf-cta-closing__block .kpf-content-block__copy {
+		margin-inline: 0;
+		max-width: none;
+	}
+
+	.kpf-cta-closing__block .kpf-content-block__title {
+		transform-origin: 0% 0%;
+	}
+
+	.kpf-cta-closing .kpf-content-block,
+	.kpf-cta-closing .kpf-content-block--inverse {
+		margin-inline: 0;
+	}
+
+	.kpf-cta-closing .kpf-content-block__actions {
+		justify-content: flex-start;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5070,8 +5513,7 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 		grid-template-columns: 1fr;
 	}
 
-	.kpf-contact {
-		/* Form + aside side-by-side already from 48rem; keep readable */
+	.kpf-contact__inner {
 		gap: var(--kpf-space-xl);
 	}
 }

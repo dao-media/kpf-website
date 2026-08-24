@@ -6,6 +6,7 @@ const { stripHtml } = require("./searchDocuments");
 const {
   estimateReadTime,
   formatPostDate,
+  isDefaultWordPressPost,
 } = require("./latestBlogPost");
 
 const BLOG_CARD_MAX_WORDS = 40;
@@ -18,6 +19,7 @@ const KPF_BLOG_POSTS_QUERY = `
     nodes {
       databaseId
       title
+      slug
       uri
       date
       excerpt
@@ -127,6 +129,7 @@ function normalizeBlogPosts(source, options = {}) {
       : [];
 
   return nodes
+    .filter((node) => !isDefaultWordPressPost(node))
     .map((node) => normalizeBlogPost(node, options))
     .filter(Boolean);
 }

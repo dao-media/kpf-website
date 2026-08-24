@@ -251,8 +251,8 @@ final class Resolver {
 			);
 		}
 
-		$check_url = (string) ( $details['checkPhotoUrl'] ?? '' );
-		$logo_url  = (string) ( $grantee['logoUrl'] ?? '' );
+		$check_url = \KPF\Core\Media\PublicUrls::to_wp_host( (string) ( $details['checkPhotoUrl'] ?? '' ) );
+		$logo_url  = \KPF\Core\Media\PublicUrls::to_wp_host( (string) ( $grantee['logoUrl'] ?? '' ) );
 		$image     = array(
 			'url' => $check_url !== '' ? $check_url : $logo_url,
 			'alt' => $recipient,

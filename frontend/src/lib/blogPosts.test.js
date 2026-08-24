@@ -65,4 +65,27 @@ describe("blogPosts", () => {
   it("returns null for incomplete nodes", () => {
     assert.equal(normalizeBlogPost({ title: "No uri" }), null);
   });
+
+  it("omits WordPress’s default Hello world post", () => {
+    const posts = normalizeBlogPosts({
+      nodes: [
+        {
+          title: "Hello world!",
+          slug: "hello-world",
+          uri: "/hello-world/",
+          date: "2026-08-24T12:00:00",
+          content: "<p>Welcome.</p>",
+        },
+        {
+          title: "Honoring a Legacy",
+          slug: "veteran-legacy",
+          uri: "/veteran-legacy/",
+          date: "2026-07-19T22:26:06",
+          content: "<p>Story.</p>",
+        },
+      ],
+    });
+    assert.equal(posts.length, 1);
+    assert.equal(posts[0].title, "Honoring a Legacy");
+  });
 });

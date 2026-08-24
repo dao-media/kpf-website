@@ -32,7 +32,21 @@ final class ChromeHtml {
 	 * PayPal donate CTA — same destination as Faust DonateButton.
 	 */
 	public static function donate_button( string $label = 'Donate', string $classes = 'kpf-btn kpf-btn--primary' ): string {
-		return self::action_button( $label, self::donate_href(), $classes, true );
+		if ( ! str_contains( $classes, 'kpf-btn--donate' ) ) {
+			$classes .= ' kpf-btn--donate';
+		}
+
+		$ext_attr = ' data-kpf-external="true"';
+		$onclick  = '(function(el){var h=el.getAttribute("data-kpf-href");if(!h)return;if(el.getAttribute("data-kpf-external")==="true"&&!/^mailto:|^tel:/i.test(h)){window.open(h,"_blank","noopener,noreferrer");return;}location.assign(h);})(this)';
+
+		return '<button type="button" class="' . esc_attr( $classes ) . '" data-kpf-href="' . esc_url( self::donate_href() ) . '"' . $ext_attr . ' onclick="' . esc_attr( $onclick ) . '"><span class="kpf-btn__cluster"><span class="kpf-btn__label">' . esc_html( $label ) . '</span><span class="kpf-btn__paypal-clip"><span class="kpf-btn__icon kpf-btn__icon--trailing kpf-btn__icon--paypal" aria-hidden="true">' . self::paypal_mark_html() . '</span></span></span></button>';
+	}
+
+	/** Official 2014 PayPal monogram (baked white + alpha — do not tint). */
+	public static function paypal_mark_html(): string {
+		$src = FrontendUrl::base() . 'media/brand/paypal-icon.png';
+
+		return '<img class="kpf-btn__paypal" src="' . esc_url( $src ) . '" alt="" width="16" height="20" decoding="async" draggable="false" />';
 	}
 
 	public static function brandmark_html(): string {
@@ -85,9 +99,11 @@ final class ChromeHtml {
 		$html  = '<header class="kpf-header" data-kpf-header="float">';
 		$html .= '<a class="kpf-header__brand" href="/" aria-label="' . esc_attr( $brand ) . '">';
 		$html .= self::brandmark_html();
-		$html .= '<span class="kpf-header__brand-text" data-full="' . esc_attr( $brand ) . '" data-short="KPF">';
-		$html .= '<span class="kpf-header__brand-text-label">' . esc_html( $brand ) . '</span>';
-		$html .= '<span class="kpf-header__brand-text-measure" aria-hidden="true">' . esc_html( $brand ) . '</span>';
+		$html .= '<span class="kpf-header__brand-text">';
+		$html .= '<span class="kpf-header__brand-text-label">';
+		$html .= '<span class="kpf-header__brand-line">Kevin Popke</span>';
+		$html .= '<span class="kpf-header__brand-line">Foundation</span>';
+		$html .= '</span>';
 		$html .= '</span>';
 		$html .= '</a>';
 		$html .= '<div class="kpf-header__spacer" aria-hidden="true"></div>';

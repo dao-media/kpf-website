@@ -65,7 +65,7 @@ final class Meta {
 				'webhooks'           => array(),
 				'captchaMode'        => 'honeypot',
 				'analytics'          => array(
-					'eventName' => 'kpf_form_submit',
+					'eventName' => 'form_submitted',
 					'formTag'   => '',
 				),
 			),

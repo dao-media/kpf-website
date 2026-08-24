@@ -19,11 +19,16 @@ final class GraphQL {
 			array(
 				'description' => 'Navigation accessibility utilities.',
 				'fields'      => array(
-					'skipLink'       => array( 'type' => 'Boolean' ),
-					'skipTarget'     => array( 'type' => 'String' ),
-					'focusRing'      => array( 'type' => 'Boolean' ),
-					'focusRingColor' => array( 'type' => 'String' ),
-					'focusRingWidth' => array( 'type' => 'Int' ),
+					'skipLink'          => array( 'type' => 'Boolean' ),
+					'skipTarget'        => array( 'type' => 'String' ),
+					'skipLabel'         => array( 'type' => 'String' ),
+					'skipFooter'        => array( 'type' => 'Boolean' ),
+					'footerTarget'      => array( 'type' => 'String' ),
+					'focusRing'         => array( 'type' => 'Boolean' ),
+					'focusRingColor'    => array( 'type' => 'String' ),
+					'focusRingWidth'    => array( 'type' => 'Int' ),
+					'focusNotObscured'  => array( 'type' => 'Boolean' ),
+					'focusScrollMargin' => array( 'type' => 'Int' ),
 				),
 			)
 		);
@@ -33,9 +38,24 @@ final class GraphQL {
 			array(
 				'description' => 'Content accessibility utilities.',
 				'fields'      => array(
-					'language'       => array( 'type' => 'String' ),
-					'underlineLinks' => array( 'type' => 'Boolean' ),
-					'routeAnnouncer' => array( 'type' => 'Boolean' ),
+					'language'           => array( 'type' => 'String' ),
+					'underlineLinks'     => array( 'type' => 'Boolean' ),
+					'routeAnnouncer'     => array( 'type' => 'Boolean' ),
+					'announceNewWindows' => array( 'type' => 'Boolean' ),
+					'readableMeasure'    => array( 'type' => 'Boolean' ),
+				),
+			)
+		);
+
+		register_graphql_object_type(
+			'KpfAccessibilityDisplay',
+			array(
+				'description' => 'Display accessibility utilities (contrast, type scale, target size).',
+				'fields'      => array(
+					'textScale'            => array( 'type' => 'Int' ),
+					'contrastBoost'        => array( 'type' => 'Boolean' ),
+					'honorPrefersContrast' => array( 'type' => 'Boolean' ),
+					'minTargetSize'        => array( 'type' => 'String' ),
 				),
 			)
 		);
@@ -68,6 +88,8 @@ final class GraphQL {
 				'fields'      => array(
 					'enhancedFocus'    => array( 'type' => 'Boolean' ),
 					'statusLiveRegion' => array( 'type' => 'Boolean' ),
+					'requiredVisible'  => array( 'type' => 'Boolean' ),
+					'focusFirstError'  => array( 'type' => 'Boolean' ),
 				),
 			)
 		);
@@ -91,6 +113,7 @@ final class GraphQL {
 					'preset'     => array( 'type' => 'String' ),
 					'navigation' => array( 'type' => 'KpfAccessibilityNavigation' ),
 					'content'    => array( 'type' => 'KpfAccessibilityContent' ),
+					'display'    => array( 'type' => 'KpfAccessibilityDisplay' ),
 					'media'      => array( 'type' => 'KpfAccessibilityMedia' ),
 					'motion'     => array( 'type' => 'KpfAccessibilityMotion' ),
 					'forms'      => array( 'type' => 'KpfAccessibilityForms' ),
@@ -104,7 +127,7 @@ final class GraphQL {
 			'kpfAccessibility',
 			array(
 				'type'        => 'KpfAccessibility',
-				'description' => 'Accessibility utilities configured under Utilities → Accessibility.',
+				'description' => 'Accessibility utilities configured under Accessibility.',
 				'resolve'     => static fn(): array => Settings::public_config(),
 			)
 		);

@@ -217,10 +217,10 @@
 	border: 0;
 	border-bottom: 1px solid var(--line);
 	color: var(--ink);
-	cursor: pointer;
+	cursor: default;
 	display: grid;
 	gap: 10px;
-	grid-template-columns: 9px minmax(0, 1fr) auto;
+	grid-template-columns: 18px 9px minmax(0, 1fr) auto;
 	padding: 0.85rem 1rem;
 	text-align: left;
 	width: 100%;
@@ -247,11 +247,18 @@
 	box-shadow: 0 0 0 3px rgb(47 125 86 / 12%);
 }
 
-.kpf-animation-list-item > span:nth-child(2) {
+.kpf-animation-list-item > button {
+	background: transparent;
+	border: 0;
+	color: inherit;
+	cursor: pointer;
 	display: flex;
 	flex-direction: column;
 	gap: 3px;
 	min-width: 0;
+	padding: 0;
+	text-align: left;
+	width: 100%;
 }
 
 .kpf-animation-list-item strong,
@@ -273,12 +280,46 @@
 
 .kpf-animation-list-item input {
 	accent-color: var(--navy);
+	margin: 0;
+}
+
+.kpf-animation-export-check {
+	height: 14px;
+	width: 14px;
 }
 
 .kpf-animation-empty {
 	color: var(--muted);
 	padding: 1.5rem 1rem;
 	text-align: center;
+}
+
+.kpf-animation-transfer {
+	border-top: 1px solid var(--line);
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+	padding: 0.85rem 1rem;
+}
+
+.kpf-animation-select-all {
+	align-items: center;
+	color: var(--muted);
+	display: inline-flex;
+	font-size: 0.72rem;
+	font-weight: 600;
+	gap: 0.4rem;
+}
+
+.kpf-animation-select-all input {
+	accent-color: var(--navy);
+	margin: 0;
+}
+
+.kpf-animation-transfer-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
 }
 
 .kpf-animation-sidebar footer {

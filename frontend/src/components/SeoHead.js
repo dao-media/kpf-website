@@ -90,6 +90,12 @@ export default function SeoHead({ seo }) {
       ) : null}
       {canonical ? <link rel="canonical" href={canonical} key="canonical" /> : null}
       <meta name="robots" content={robotsContent(robots)} key="robots" />
+      <meta property="og:locale" content="en_US" key="og:locale" />
+      <meta
+        property="og:site_name"
+        content="The Kevin Popke Foundation"
+        key="og:site_name"
+      />
 
       {openGraph?.title ? (
         <meta property="og:title" content={openGraph.title} key="og:title" />

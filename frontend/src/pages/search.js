@@ -4,6 +4,7 @@ import SearchPage from "@/components/SearchPage";
 
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
+const { KPF_STYLESHEET_QUERY } = require("@/lib/globalStylesheet");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
@@ -13,7 +14,7 @@ const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
 
 const SEARCH_SHELL_QUERY = `
   query SearchShellChrome {
-    kpfStylesheet
+    ${KPF_STYLESHEET_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}
     ${KPF_SITE_CHROME_QUERY}
@@ -51,7 +52,7 @@ export default function SearchRoute() {
 }
 
 export async function getStaticProps() {
-  let kpfStylesheet = "";
+  let kpfStylesheetInfo = null;
   let kpfSiteChrome = null;
   let kpfAccessibility = null;
   let kpfCodeSnippets = [];
@@ -68,7 +69,7 @@ export async function getStaticProps() {
       });
       if (response.ok) {
         const payload = await response.json();
-        kpfStylesheet = payload?.data?.kpfStylesheet || "";
+        kpfStylesheetInfo = payload?.data?.kpfStylesheetInfo || null;
         kpfSiteChrome = payload?.data?.kpfSiteChrome || null;
         kpfAccessibility = payload?.data?.kpfAccessibility || null;
         kpfCodeSnippets = payload?.data?.kpfCodeSnippets || [];
@@ -80,7 +81,7 @@ export async function getStaticProps() {
 
   return {
     props: {
-      kpfStylesheet,
+      kpfStylesheetInfo,
       kpfSiteChrome,
       kpfAccessibility,
       kpfCodeSnippets,

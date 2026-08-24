@@ -222,6 +222,8 @@ export default function BlogPageScaffold({ media = {}, posts: postSource = null 
                     type="button"
                     className={`kpf-blog-filters__chip${active ? " is-active" : ""}`}
                     aria-pressed={active}
+                    data-kpf-track="filter_selected"
+                    data-kpf-track-component="blog_filter"
                     onClick={() => setTopic(item.slug)}
                   >
                     {item.label}

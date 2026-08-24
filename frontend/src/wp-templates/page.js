@@ -18,6 +18,14 @@ const {
 } = require("@/lib/scaffoldMedia");
 const { KPF_EVENTS_QUERY } = require("@/lib/eventsQuery");
 const { KPF_BLOG_POSTS_QUERY } = require("@/lib/blogPosts");
+const {
+  fallbackForm,
+  fallbackGrants,
+  fallbackGrantsTotal,
+  fallbackScrapbook,
+  fallbackKevin,
+  fallbackEvents,
+} = require("@/lib/wpContentFallback");
 
 const KPF_CONTACT_FORM_QUERY = `
   kpfForm(slug: "contact") {
@@ -31,12 +39,16 @@ const KPF_CONTACT_FORM_QUERY = `
 export default function PageTemplate(props) {
   const page = props?.data?.page;
   const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
-  const contactForm = props?.data?.kpfForm || null;
-  const kevinSlides = props?.data?.kpfKevinSlides || [];
-  const grants = normalizeGrantQueryItems(props?.data?.kpfQuery);
-  const grantsTotal = String(props?.data?.kpfGrantsTotal?.label || "").trim();
-  const scrapbookTiles = normalizeScrapbookTiles(props?.data?.kpfScrapbookTiles);
-  const events = props?.data?.foundationEvents?.nodes || [];
+  const contactForm = fallbackForm(props?.data?.kpfForm || null);
+  const kevinSlides = fallbackKevin(props?.data?.kpfKevinSlides || []);
+  const grants = fallbackGrants(normalizeGrantQueryItems(props?.data?.kpfQuery));
+  const grantsTotal = fallbackGrantsTotal(
+    String(props?.data?.kpfGrantsTotal?.label || "").trim()
+  );
+  const scrapbookTiles = fallbackScrapbook(
+    normalizeScrapbookTiles(props?.data?.kpfScrapbookTiles)
+  );
+  const events = fallbackEvents(props?.data?.foundationEvents?.nodes || []);
   const posts = props?.data?.kpfBlogPosts || null;
 
   return (

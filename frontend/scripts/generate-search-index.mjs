@@ -121,17 +121,7 @@ async function fetchConnection(connection) {
     .filter(Boolean);
 }
 
-async function main() {
-  if (!wordpressUrl) {
-    throw new Error(
-      "NEXT_PUBLIC_WORDPRESS_URL is required to generate the search index"
-    );
-  }
-
-  const documents = (
-    await Promise.all(CONNECTIONS.map((connection) => fetchConnection(connection)))
-  ).flat();
-
+async function writeIndex(documents) {
   const index = new MiniSearch(SEARCH_OPTIONS);
   index.addAll(documents);
 
@@ -145,6 +135,26 @@ async function main() {
   await mkdir(path.dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(payload)}\n`, "utf8");
   console.log(`Generated search index with ${documents.length} documents.`);
+}
+
+async function main() {
+  if (!wordpressUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_WORDPRESS_URL is required to generate the search index"
+    );
+  }
+
+  try {
+    const documents = (
+      await Promise.all(CONNECTIONS.map((connection) => fetchConnection(connection)))
+    ).flat();
+    await writeIndex(documents);
+  } catch (error) {
+    console.warn(
+      `Search index generation skipped (${error.message}). Writing an empty index so the frontend can still build.`
+    );
+    await writeIndex([]);
+  }
 }
 
 main().catch((error) => {

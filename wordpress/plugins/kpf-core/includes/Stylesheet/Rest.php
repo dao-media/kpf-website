@@ -19,6 +19,16 @@ final class Rest {
 	public static function routes(): void {
 		register_rest_route(
 			self::NAMESPACE,
+			'/public',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( self::class, 'public_css' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/stylesheet',
 			array(
 				array(
@@ -77,6 +87,26 @@ final class Rest {
 				),
 			)
 		);
+	}
+
+	public static function public_url(): string {
+		return rest_url( self::NAMESPACE . '/public' );
+	}
+
+	/**
+	 * Raw CSS for the Faust <link> (no JSON wrapper, no Apollo payload).
+	 */
+	public static function public_css(): void {
+		$css      = Defaults::strip_pages_layer( GraphQL::resolve_css() );
+		$revision = Meta::revision( $css );
+
+		status_header( 200 );
+		header( 'Content-Type: text/css; charset=utf-8' );
+		header( 'Cache-Control: public, max-age=300, stale-while-revalidate=86400' );
+		header( 'ETag: "' . $revision . '"' );
+		header( 'X-Content-Type-Options: nosniff' );
+		echo $css;
+		exit;
 	}
 
 	/**

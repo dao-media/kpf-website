@@ -701,14 +701,51 @@ function EffectsEditor({ value, onChange }) {
 	);
 }
 
-function Sidebar({ animations, selectedId, filter, onFilter, onSelect, onCreate, onToggle }) {
+function downloadJson(payload, filename) {
+	const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], {
+		type: 'application/json',
+	});
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = filename;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	URL.revokeObjectURL(url);
+}
+
+function exportStamp() {
+	return new Date().toISOString().slice(0, 10);
+}
+
+function Sidebar({
+	animations,
+	selectedId,
+	filter,
+	exportIds = new Set(),
+	busy = false,
+	onFilter,
+	onSelect,
+	onCreate,
+	onToggle,
+	onExportToggle,
+	onExportSelectAll,
+	onExportSelected,
+	onExportAll,
+	onImportFile,
+}) {
 	const [query, setQuery] = useState('');
+	const fileRef = useRef(null);
 	const visible = animations.filter((animation) => {
 		if (filter === 'active' && !animation.active) return false;
 		if (filter === 'inactive' && animation.active) return false;
 		const needle = query.trim().toLowerCase();
 		return !needle || `${animation.name} ${animation.selector}`.toLowerCase().includes(needle);
 	});
+	const savedVisible = visible.filter((animation) => animation.id > 0);
+	const selectedCount = savedVisible.filter((animation) => exportIds.has(animation.id)).length;
+	const allVisibleSelected = savedVisible.length > 0 && selectedCount === savedVisible.length;
 
 	return (
 		<aside className="kpf-animation-sidebar">
@@ -753,26 +790,70 @@ function Sidebar({ animations, selectedId, filter, onFilter, onSelect, onCreate,
 					<p className="kpf-animation-empty">{__('No animations in this view.', 'kpf-core')}</p>
 				) : null}
 				{visible.map((animation) => (
-					<button
-						type="button"
+					<div
 						className={`kpf-animation-list-item ${selectedId === animation.id ? 'is-selected' : ''}`}
-						onClick={() => onSelect(animation)}
-						key={animation.id}
+						key={animation.id || `new-${animation.name}`}
 					>
+						<input
+							type="checkbox"
+							className="kpf-animation-export-check"
+							checked={animation.id > 0 && exportIds.has(animation.id)}
+							disabled={!animation.id || busy}
+							onChange={(event) => onExportToggle(animation.id, event.target.checked)}
+							aria-label={sprintf(__('Include %s in export', 'kpf-core'), animation.name)}
+						/>
 						<span className={`kpf-animation-status-dot ${animation.active ? 'is-active' : ''}`} />
-						<span>
+						<button type="button" onClick={() => onSelect(animation)}>
 							<strong>{animation.name}</strong>
 							<code>{animation.selector || __('No selector', 'kpf-core')}</code>
-						</span>
+						</button>
 						<input
 							type="checkbox"
 							checked={animation.active}
 							onChange={(event) => onToggle(animation, event.target.checked)}
-							onClick={(event) => event.stopPropagation()}
 							aria-label={sprintf(__('Toggle %s', 'kpf-core'), animation.name)}
 						/>
-					</button>
+					</div>
 				))}
+			</div>
+			<div className="kpf-animation-transfer">
+				<label className="kpf-animation-select-all">
+					<input
+						type="checkbox"
+						checked={allVisibleSelected}
+						disabled={!savedVisible.length || busy}
+						onChange={(event) => onExportSelectAll(savedVisible.map((item) => item.id), event.target.checked)}
+					/>
+					{__('Select visible', 'kpf-core')}
+				</label>
+				<div className="kpf-animation-transfer-actions">
+					<Button
+						variant="secondary"
+						disabled={!selectedCount || busy}
+						onClick={onExportSelected}
+					>
+						{selectedCount
+							? sprintf(__('Export selected (%d)', 'kpf-core'), selectedCount)
+							: __('Export selected', 'kpf-core')}
+					</Button>
+					<Button variant="secondary" disabled={!animations.some((item) => item.id > 0) || busy} onClick={onExportAll}>
+						{__('Export all', 'kpf-core')}
+					</Button>
+					<Button variant="tertiary" disabled={busy} onClick={() => fileRef.current?.click()}>
+						{__('Import', 'kpf-core')}
+					</Button>
+					<input
+						ref={fileRef}
+						type="file"
+						accept="application/json,.json"
+						hidden
+						onChange={(event) => {
+							const file = event.target.files?.[0];
+							event.target.value = '';
+							if (file) onImportFile(file);
+						}}
+					/>
+				</div>
 			</div>
 			<footer>
 				<span><i className="is-live" /> {animations.filter((item) => item.active).length} {__('active', 'kpf-core')}</span>
@@ -1506,8 +1587,11 @@ function App() {
 	const [animations, setAnimations] = useState([]);
 	const [selected, setSelected] = useState(null);
 	const [filter, setFilter] = useState('all');
+	const [exportIds, setExportIds] = useState(() => new Set());
 	const [loading, setLoading] = useState(true);
+	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
+	const [notice, setNotice] = useState('');
 
 	useEffect(() => {
 		apiFetch({ url: `${REST_BASE}/animations` })
@@ -1530,6 +1614,12 @@ function App() {
 		setSelected(animation);
 	}
 
+	function replaceLibrary(items) {
+		setAnimations(items);
+		setExportIds(new Set());
+		setSelected(items[0] || newAnimation());
+	}
+
 	async function toggle(animation, active) {
 		const optimistic = { ...animation, active, config: { ...animation.config, active } };
 		upsert(optimistic);
@@ -1546,6 +1636,79 @@ function App() {
 		}
 	}
 
+	function toggleExport(id, checked) {
+		if (!id) return;
+		setExportIds((current) => {
+			const next = new Set(current);
+			if (checked) next.add(id);
+			else next.delete(id);
+			return next;
+		});
+	}
+
+	function selectAllExport(ids, checked) {
+		setExportIds((current) => {
+			const next = new Set(current);
+			ids.forEach((id) => {
+				if (checked) next.add(id);
+				else next.delete(id);
+			});
+			return next;
+		});
+	}
+
+	async function exportAnimations(ids) {
+		setBusy(true);
+		setError('');
+		try {
+			const query = ids?.length ? `?ids=${ids.join(',')}` : '';
+			const payload = await apiFetch({ url: `${REST_BASE}/export${query}` });
+			const count = payload?.animations?.length || 0;
+			downloadJson(
+				payload,
+				`kpf-gsap-animations-${exportStamp()}${ids?.length ? '-selected' : ''}.json`
+			);
+			setNotice(
+				count === 1
+					? __('Exported 1 animation.', 'kpf-core')
+					: sprintf(__('Exported %d animations.', 'kpf-core'), count)
+			);
+		} catch (err) {
+			setError(err?.message || __('Could not export animations.', 'kpf-core'));
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	async function importFile(file) {
+		setBusy(true);
+		setError('');
+		setNotice('');
+		try {
+			const parsed = JSON.parse(await file.text());
+			const result = await apiFetch({
+				url: `${REST_BASE}/import`,
+				method: 'POST',
+				data: parsed,
+			});
+			const library = await apiFetch({ url: `${REST_BASE}/animations` });
+			replaceLibrary(library.animations || []);
+			const created = Number(result.created) || 0;
+			const updated = Number(result.updated) || 0;
+			setNotice(
+				sprintf(
+					__('Imported animations: %d created, %d updated.', 'kpf-core'),
+					created,
+					updated
+				)
+			);
+		} catch (err) {
+			setError(err?.message || __('Could not import that file.', 'kpf-core'));
+		} finally {
+			setBusy(false);
+		}
+	}
+
 	if (loading) return <div className="kpf-gsap-loading"><Spinner /></div>;
 
 	return (
@@ -1558,15 +1721,23 @@ function App() {
 				<span>{__('GSAP installed', 'kpf-core')} <i /></span>
 			</div>
 			{error ? <Notice status="error" onRemove={() => setError('')}>{error}</Notice> : null}
+			{notice ? <Notice status="success" onRemove={() => setNotice('')}>{notice}</Notice> : null}
 			<div className="kpf-gsap-workspace">
 				<Sidebar
 					animations={animations}
 					selectedId={selected?.id}
 					filter={filter}
+					exportIds={exportIds}
+					busy={busy}
 					onFilter={setFilter}
 					onSelect={setSelected}
 					onCreate={() => setSelected(newAnimation())}
 					onToggle={toggle}
+					onExportToggle={toggleExport}
+					onExportSelectAll={selectAllExport}
+					onExportSelected={() => exportAnimations([...exportIds])}
+					onExportAll={() => exportAnimations([])}
+					onImportFile={importFile}
 				/>
 				{selected ? (
 					<Builder
@@ -1576,6 +1747,11 @@ function App() {
 						onDeleted={(id) => {
 							const remaining = animations.filter((item) => item.id !== id);
 							setAnimations(remaining);
+							setExportIds((current) => {
+								const next = new Set(current);
+								next.delete(id);
+								return next;
+							});
 							setSelected(remaining[0] || newAnimation());
 						}}
 					/>

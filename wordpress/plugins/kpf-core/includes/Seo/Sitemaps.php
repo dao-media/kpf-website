@@ -89,10 +89,11 @@ final class Sitemaps {
 	 */
 	public static function included_post_types(array $settings): array {
 		$excluded = array_map('strval', (array) ($settings['sitemaps']['exclude_post_types'] ?? array()));
+		$allow    = array( 'page', 'post' );
 		$types    = array();
 
 		foreach (get_post_types(array( 'public' => true ), 'names') as $post_type) {
-			if ('attachment' === $post_type) {
+			if (! in_array($post_type, $allow, true)) {
 				continue;
 			}
 			if (in_array($post_type, $excluded, true)) {
@@ -181,6 +182,9 @@ final class Sitemaps {
 
 		if (! empty($settings['sitemaps']['enabled'])) {
 			$lines[] = 'Sitemap: ' . Resolver::frontend_url($settings, '/sitemap.xml');
+			$lines[] = '';
+			$lines[] = '# AI context';
+			$lines[] = '# Llms: ' . Resolver::frontend_url($settings, '/llms.txt');
 		}
 
 		$body = implode("\n", $lines);

@@ -280,9 +280,8 @@ function formatNationalTel(digits, countryCode = "US") {
 }
 
 function pushDataLayerEvent(eventName, payload = {}) {
-  if (!eventName || typeof window === "undefined") return;
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event: eventName, ...payload });
+  const { pushAnalyticsEvent } = require("@/lib/analyticsUi");
+  pushAnalyticsEvent(eventName, payload);
 }
 
 module.exports = {

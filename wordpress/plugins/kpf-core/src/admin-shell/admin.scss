@@ -402,23 +402,28 @@ body.kpf-admin-theme:not(.folded) #adminmenu li.kpf-submenu-expanded > .wp-subme
 	background: rgb(255 255 255 / 78%) !important;
 }
 
+body.kpf-admin-theme #adminmenu .wp-submenu a.kpf-lucide-submenu-link,
 body.kpf-admin-theme #menu-tools .wp-submenu a.kpf-scf-submenu-link {
 	align-items: center;
 	display: flex;
 	gap: 6px;
 }
 
+body.kpf-admin-theme #adminmenu .kpf-lucide-submenu-icon,
 body.kpf-admin-theme #menu-tools .kpf-scf-submenu-icon {
 	align-items: center;
 	color: #8793a6;
 	display: inline-flex;
-	flex: 0 0 13px;
+	flex: 0 0 14px;
 	justify-content: center;
 	transition:
 		color var(--kpf-sidebar-duration-fast) var(--kpf-sidebar-ease-color),
 		transform var(--kpf-sidebar-duration) var(--kpf-sidebar-ease);
 }
 
+body.kpf-admin-theme #adminmenu .kpf-lucide-submenu-link:hover .kpf-lucide-submenu-icon,
+body.kpf-admin-theme #adminmenu .kpf-lucide-submenu-link:focus .kpf-lucide-submenu-icon,
+body.kpf-admin-theme #adminmenu .wp-submenu li.current .kpf-lucide-submenu-icon,
 body.kpf-admin-theme #menu-tools .kpf-scf-submenu-link:hover .kpf-scf-submenu-icon,
 body.kpf-admin-theme #menu-tools .kpf-scf-submenu-link:focus .kpf-scf-submenu-icon,
 body.kpf-admin-theme #menu-tools .current .kpf-scf-submenu-icon {

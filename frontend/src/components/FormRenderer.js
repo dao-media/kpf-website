@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { submitForm } from "@/lib/forms";
+import { useAccessibility } from "@/components/AccessibilityRuntime";
 
 const {
   buildFormContext,
@@ -124,6 +125,7 @@ function FieldControl({ field, value, onChange, required, error }) {
     "aria-describedby": describedBy,
     required,
     placeholder: field.placeholder || undefined,
+    "aria-required": required ? "true" : undefined,
   };
 
   switch (field.type) {
@@ -549,6 +551,9 @@ export default function FormRenderer({
   const [context, setContext] = useState(null);
   const [captchaToken, setCaptchaToken] = useState("");
   const captchaRef = useRef(null);
+  const formRef = useRef(null);
+  const modalCloseRef = useRef(null);
+  const a11y = useAccessibility();
 
   const captchaMode = settings.captchaMode || settings.captcha?.mode || "honeypot";
   const captchaSiteKey = settings.captcha?.siteKey || "";
@@ -714,7 +719,17 @@ export default function FormRenderer({
       }
     }
     setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    const firstId = Object.keys(nextErrors)[0];
+    if (firstId) {
+      setStatus("error");
+      setMessage("Please fix the highlighted fields.");
+      if (a11y.forms.focusFirstError) {
+        window.requestAnimationFrame(() => {
+          document.getElementById(`kpf-field-${firstId}`)?.focus();
+        });
+      }
+    }
+    return !firstId;
   }
 
   async function onSubmit(event) {
@@ -811,11 +826,21 @@ export default function FormRenderer({
 
       setStatus("success");
       setMessage(result.message || settings.successMessage || "Thank you.");
-      pushDataLayerEvent(settings.analytics?.eventName || "kpf_form_submit", {
+      const eventName =
+        settings.analytics?.eventName &&
+        settings.analytics.eventName !== "kpf_form_submit"
+          ? settings.analytics.eventName
+          : "form_submitted";
+      const formParams = {
         form_slug: slug,
         form_tag: settings.analytics?.formTag || "",
         form_id: formId || undefined,
-      });
+        page_path: typeof window !== "undefined" ? window.location.pathname : "",
+      };
+      pushDataLayerEvent(eventName, formParams);
+      if (String(slug || "") === "contact") {
+        pushDataLayerEvent("generate_lead", formParams);
+      }
 
       if (settings.redirectUrl) {
         const delay =
@@ -827,6 +852,12 @@ export default function FormRenderer({
     } catch (error) {
       setStatus("error");
       setMessage(error?.message || "Your message could not be sent.");
+      pushDataLayerEvent("form_error", {
+        form_slug: slug,
+        form_tag: settings.analytics?.formTag || "",
+        form_id: formId || undefined,
+        page_path: typeof window !== "undefined" ? window.location.pathname : "",
+      });
       if (error?.field) {
         const match = Object.values(fields).find(
           (field) => field.name === error.field || field.id === error.field,
@@ -851,12 +882,34 @@ export default function FormRenderer({
   const showModal =
     Boolean(message) && status === "success" && successDisplay === "modal";
 
+  useEffect(() => {
+    if (!showModal) return undefined;
+    const previouslyFocused = document.activeElement;
+    modalCloseRef.current?.focus();
+
+    function onKeyDown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMessage("");
+        previouslyFocused?.focus?.();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [showModal]);
+
   return (
     <form
+      ref={formRef}
       className="kpf-form"
       data-form-slug={slug || undefined}
       onSubmit={onSubmit}
       noValidate
+      aria-busy={status === "submitting" ? "true" : undefined}
     >
       <div className="kpf-form__rows">
         {rows.map((row) => {
@@ -923,7 +976,14 @@ export default function FormRenderer({
                               id={`kpf-field-${field.id}-label`}
                             >
                               {field.label}
-                              {state.required ? " *" : ""}
+                              {state.required ? (
+                                <>
+                                  {a11y.forms.requiredVisible ? (
+                                    <span aria-hidden="true"> *</span>
+                                  ) : null}
+                                  <span className="kpf-u-sr-only"> required</span>
+                                </>
+                              ) : null}
                             </label>
                           ) : null}
                           <FieldControl
@@ -945,6 +1005,7 @@ export default function FormRenderer({
                             <p
                               className="kpf-field__error"
                               id={`kpf-field-${field.id}-error`}
+                              role="alert"
                             >
                               {errors[fieldId]}
                             </p>
@@ -998,8 +1059,8 @@ export default function FormRenderer({
       {showInlineStatus ? (
         <p
           className={`kpf-form__status kpf-form__status--${status}`}
-          role="status"
-          aria-live="polite"
+          role={status === "error" ? "alert" : "status"}
+          aria-live={status === "error" ? "assertive" : "polite"}
         >
           {message}
         </p>
@@ -1016,10 +1077,21 @@ export default function FormRenderer({
       ) : null}
 
       {showModal ? (
-        <div className="kpf-form__modal" role="dialog" aria-modal="true" aria-live="polite">
+        <div
+          className="kpf-form__modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="kpf-form-modal-title"
+        >
           <div className="kpf-form__modal-card">
-            <p className={`kpf-form__status kpf-form__status--${status}`}>{message}</p>
+            <p
+              id="kpf-form-modal-title"
+              className={`kpf-form__status kpf-form__status--${status}`}
+            >
+              {message}
+            </p>
             <button
+              ref={modalCloseRef}
               type="button"
               className="kpf-btn kpf-btn--primary"
               onClick={() => {
@@ -1036,14 +1108,52 @@ export default function FormRenderer({
       ) : null}
 
       <div className="kpf-form__actions">
+        {settings.showReset || settings.resetLabel ? (
+          <button
+            type="button"
+            className="kpf-btn kpf-btn--outline"
+            disabled={status === "submitting"}
+            onClick={() => {
+              setValues(initialValues(fields));
+              setErrors({});
+              setStatus("idle");
+              setMessage("");
+              setHoneypot("");
+              setCaptchaToken("");
+            }}
+          >
+            {settings.showResetIcon !== false ? (
+              <span className="kpf-btn__icon kpf-btn__icon--leading" aria-hidden="true">
+                <img
+                  src="/media/contact/icons/rotate-ccw.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                />
+              </span>
+            ) : null}
+            {settings.resetLabel || "Start over"}
+          </button>
+        ) : null}
         <button
           type="submit"
           className="kpf-btn kpf-btn--primary"
           disabled={status === "submitting" || status === "success"}
+          aria-disabled={status === "submitting" || status === "success" ? "true" : undefined}
         >
           {status === "submitting"
             ? "Sending…"
             : settings.submitLabel || "Send"}
+          {status !== "submitting" && settings.showSubmitIcon ? (
+            <span className="kpf-btn__icon kpf-btn__icon--trailing" aria-hidden="true">
+              <img
+                src="/media/contact/icons/send.svg"
+                alt=""
+                width={20}
+                height={20}
+              />
+            </span>
+          ) : null}
         </button>
       </div>
     </form>

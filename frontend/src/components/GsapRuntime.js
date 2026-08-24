@@ -21,6 +21,7 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { TextPlugin } from "gsap/TextPlugin";
+import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
 
 gsap.registerPlugin(
   CSSRulePlugin,
@@ -129,10 +130,21 @@ function resolveTweenTargets(triggerTargets, config) {
   });
 }
 
+function stripHideProps(vars) {
+  if (!vars || typeof vars !== "object" || Array.isArray(vars)) return vars;
+  const next = { ...vars };
+  delete next.autoAlpha;
+  delete next.opacity;
+  delete next.visibility;
+  return next;
+}
+
 function createTween(targets, animation, extra = {}) {
   const { config } = animation;
   const tweenTargets = resolveTweenTargets(targets, config);
-  if (!gsap.utils.toArray(tweenTargets).length) return null;
+  const nodes = gsap.utils.toArray(tweenTargets);
+  if (!nodes.length) return null;
+  const protectBadge = nodes.some(isHeaderBadgeNode);
   const ease = resolveEase(config, animation.databaseId);
   const method = animation.method || config.method || "from";
   const origin =
@@ -149,10 +161,11 @@ function createTween(targets, animation, extra = {}) {
     // (autoAlpha/y) and leave the anniversary mark stuck invisible.
     const setProps = { transformOrigin: origin, overwrite: false };
     if (extra.paused && config.from && typeof config.from === "object") {
-      Object.assign(setProps, config.from);
+      Object.assign(setProps, stripHideProps(config.from));
     }
     gsap.set(tweenTargets, setProps);
   }
+  const overwrite = extra.overwrite ?? (extra.paused || protectBadge ? false : "auto");
   const common = {
     duration: config.duration,
     delay: config.delay,
@@ -160,10 +173,9 @@ function createTween(targets, animation, extra = {}) {
     stagger: config.stagger || 0,
     repeat: config.repeat || 0,
     yoyo: Boolean(config.yoyo),
-    // Paused hover tweens: don't clobber concurrent page entrances (badge drop).
-    // Active/load tweens keep overwrite:auto so staggered entrances still compose.
-    overwrite: extra.paused ? false : "auto",
+    overwrite,
     ...extra,
+    overwrite,
   };
   const svg = config.svg || {};
   const effect = svg.effect || "none";
@@ -207,8 +219,9 @@ function createTween(targets, animation, extra = {}) {
     );
     const animateKey = svg.splitAnimate || "chars";
     const parts = splits.flatMap((split) => split[animateKey] || split.chars || []);
+    const splitFrom = config.from || { y: 24, autoAlpha: 0 };
     const tween = gsap.from(parts, {
-      ...(config.from || { y: 24, autoAlpha: 0 }),
+      ...(protectBadge ? stripHideProps(splitFrom) : splitFrom),
       ...common,
       stagger: Number(svg.splitStagger ?? config.stagger) || 0.03,
     });
@@ -256,30 +269,33 @@ function createTween(targets, animation, extra = {}) {
     });
   }
 
+  const fromVars = protectBadge ? stripHideProps(config.from) : config.from;
+  const toVars = protectBadge ? stripHideProps(config.to) : config.to;
+
   if (method === "to") {
-    return gsap.to(tweenTargets, { ...(config.to || {}), ...common });
+    return gsap.to(tweenTargets, { ...(toVars || {}), ...common });
   }
   if (method === "fromTo") {
-    return gsap.fromTo(tweenTargets, config.from || {}, {
-      ...(config.to || {}),
+    return gsap.fromTo(tweenTargets, fromVars || {}, {
+      ...(toVars || {}),
       ...common,
     });
   }
   if (method === "keyframes") {
     return gsap.to(tweenTargets, {
       keyframes: (config.keyframes || []).map((frame) => ({
-        ...(frame.props || {}),
+        ...((protectBadge ? stripHideProps(frame.props) : frame.props) || {}),
         duration: frame.duration,
         ease: frame.ease,
       })),
       repeat: common.repeat,
       yoyo: common.yoyo,
       stagger: common.stagger,
-      overwrite: "auto",
       ...extra,
+      overwrite,
     });
   }
-  return gsap.from(tweenTargets, { ...(config.from || {}), ...common });
+  return gsap.from(tweenTargets, { ...(fromVars || {}), ...common });
 }
 
 
@@ -309,6 +325,14 @@ export default function GsapRuntime({ animations = [] }) {
 
           if (animation.trigger === "in-view") {
             targets.forEach((target, index) => {
+              // Components that own their entrance (e.g. closing CTA drop).
+              if (
+                target &&
+                typeof target.matches === "function" &&
+                target.matches("[data-kpf-gsap-own]")
+              ) {
+                return;
+              }
               const scroll = animation.config.scroll || {};
               const scrub = Number(scroll.scrub) || false;
               const once = scroll.once !== false;
@@ -439,7 +463,11 @@ export default function GsapRuntime({ animations = [] }) {
         });
     }, document.body);
 
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    requestAnimationFrame(() => {
+      // Visibility only — do not kill the header entrance's y drop.
+      restoreHeaderBadge({ resetY: false });
+      ScrollTrigger.refresh();
+    });
 
     return () => {
       listeners.forEach(([target, event, handler]) =>
@@ -447,6 +475,7 @@ export default function GsapRuntime({ animations = [] }) {
       );
       cleanups.forEach((cleanup) => cleanup());
       context.revert();
+      restoreHeaderBadge({ resetY: true });
     };
   }, [animations, router.asPath]);
 

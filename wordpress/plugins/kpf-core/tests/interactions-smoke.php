@@ -97,10 +97,74 @@ $assert(
 	'Inactive animation is excluded from the frontend'
 );
 
+$export_one = new WP_REST_Request( 'GET' );
+$export_one->set_param( 'ids', (string) $id );
+$one_doc = Rest::export( $export_one )->get_data();
+$assert( Rest::EXPORT_KIND === ( $one_doc['kind'] ?? '' ), 'Export document uses the GSAP kind' );
+$assert( 1 === Rest::EXPORT_VERSION, 'Export version constant is 1' );
+$assert( 1 === count( $one_doc['animations'] ?? array() ), 'Export by id returns one animation' );
+$assert( 'Hero entrance' === ( $one_doc['animations'][0]['name'] ?? '' ), 'Exported animation keeps its name' );
+
+$export_all = Rest::export( new WP_REST_Request( 'GET' ) )->get_data();
+$assert( is_array( $export_all['animations'] ?? null ), 'Export all returns an animations list' );
+$assert(
+	1 === count(
+		array_filter(
+			$export_all['animations'],
+			static fn( array $item ): bool => ( $item['name'] ?? '' ) === 'Hero entrance'
+		)
+	),
+	'Export all includes the created animation'
+);
+
+$import_name = 'Imported fade ' . wp_generate_uuid4();
+$import_body = array(
+	'kind'       => Rest::EXPORT_KIND,
+	'version'    => Rest::EXPORT_VERSION,
+	'animations' => array(
+		array(
+			'name'   => $import_name,
+			'config' => array(
+				'active'   => true,
+				'selector' => '.kpf-import-smoke',
+				'trigger'  => 'in-view',
+				'method'   => 'to',
+				'to'       => array( 'opacity' => 1 ),
+			),
+		),
+	),
+);
+$import_create = new WP_REST_Request( 'POST' );
+$import_create->set_param( 'kind', $import_body['kind'] );
+$import_create->set_param( 'version', $import_body['version'] );
+$import_create->set_param( 'animations', $import_body['animations'] );
+$created_import = Rest::import( $import_create )->get_data();
+$imported_id    = (int) ( $created_import['animations'][0]['id'] ?? 0 );
+$assert( 1 === (int) ( $created_import['created'] ?? 0 ), 'Import creates a new animation' );
+$assert( 0 === (int) ( $created_import['updated'] ?? 0 ), 'First import does not update' );
+$assert( $imported_id > 0, 'Imported animation has an id' );
+
+$import_update = new WP_REST_Request( 'POST' );
+$import_update->set_param( 'kind', $import_body['kind'] );
+$import_update->set_param( 'version', $import_body['version'] );
+$import_update->set_param( 'animations', $import_body['animations'] );
+$updated_import = Rest::import( $import_update )->get_data();
+$assert( 0 === (int) ( $updated_import['created'] ?? -1 ), 'Re-import does not create a duplicate' );
+$assert( 1 === (int) ( $updated_import['updated'] ?? 0 ), 'Re-import updates the matching animation' );
+$assert(
+	$imported_id === (int) ( $updated_import['animations'][0]['id'] ?? 0 ),
+	'Re-import targets the same animation'
+);
+
 $delete = new WP_REST_Request( 'DELETE' );
 $delete->set_param( 'id', $id );
 Rest::delete( $delete );
 $assert( null === get_post( $id ), 'Animation can be deleted' );
+
+$delete_import = new WP_REST_Request( 'DELETE' );
+$delete_import->set_param( 'id', $imported_id );
+Rest::delete( $delete_import );
+$assert( null === get_post( $imported_id ), 'Imported animation can be deleted' );
 
 if ( $failures > 0 ) {
 	echo "Completed with {$failures} failure(s).\n";

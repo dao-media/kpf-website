@@ -6,7 +6,7 @@ namespace KPF\Core\Accessibility;
 
 final class Settings {
 	public const OPTION_KEY = 'kpf_accessibility_settings';
-	public const VERSION    = 1;
+	public const VERSION    = 2;
 
 	public static function register(): void {
 		add_action(
@@ -30,6 +30,12 @@ final class Settings {
 		$current = get_option( self::OPTION_KEY, null );
 		if ( ! is_array( $current ) ) {
 			update_option( self::OPTION_KEY, self::defaults(), false );
+			return;
+		}
+
+		$merged = self::merge_defaults( $current );
+		if ( (int) ( $current['version'] ?? 0 ) < self::VERSION ) {
+			update_option( self::OPTION_KEY, $merged, false );
 		}
 	}
 
@@ -81,16 +87,29 @@ final class Settings {
 		return array(
 			'preset'     => $settings['preset'],
 			'navigation' => array(
-				'skipLink'       => (bool) $settings['navigation']['skip_link'],
-				'skipTarget'     => (string) $settings['navigation']['skip_target'],
-				'focusRing'      => (bool) $settings['navigation']['focus_ring'],
-				'focusRingColor' => (string) $settings['navigation']['focus_ring_color'],
-				'focusRingWidth' => (int) $settings['navigation']['focus_ring_width'],
+				'skipLink'           => (bool) $settings['navigation']['skip_link'],
+				'skipTarget'         => (string) $settings['navigation']['skip_target'],
+				'skipLabel'          => (string) $settings['navigation']['skip_label'],
+				'skipFooter'         => (bool) $settings['navigation']['skip_footer'],
+				'footerTarget'       => (string) $settings['navigation']['footer_target'],
+				'focusRing'          => (bool) $settings['navigation']['focus_ring'],
+				'focusRingColor'     => (string) $settings['navigation']['focus_ring_color'],
+				'focusRingWidth'     => (int) $settings['navigation']['focus_ring_width'],
+				'focusNotObscured'   => (bool) $settings['navigation']['focus_not_obscured'],
+				'focusScrollMargin'  => (int) $settings['navigation']['focus_scroll_margin'],
 			),
 			'content'    => array(
-				'language'       => (string) $settings['content']['language'],
-				'underlineLinks' => (bool) $settings['content']['underline_links'],
-				'routeAnnouncer' => (bool) $settings['content']['route_announcer'],
+				'language'           => (string) $settings['content']['language'],
+				'underlineLinks'     => (bool) $settings['content']['underline_links'],
+				'routeAnnouncer'     => (bool) $settings['content']['route_announcer'],
+				'announceNewWindows' => (bool) $settings['content']['announce_new_windows'],
+				'readableMeasure'    => (bool) $settings['content']['readable_measure'],
+			),
+			'display'    => array(
+				'textScale'            => (int) $settings['display']['text_scale'],
+				'contrastBoost'        => (bool) $settings['display']['contrast_boost'],
+				'honorPrefersContrast' => (bool) $settings['display']['honor_prefers_contrast'],
+				'minTargetSize'        => (string) $settings['display']['min_target_size'],
 			),
 			'media'      => array(
 				'blockAutoplayReducedMotion' => (bool) $settings['media']['block_autoplay_reduced_motion'],
@@ -102,6 +121,8 @@ final class Settings {
 			'forms'      => array(
 				'enhancedFocus'    => (bool) $settings['forms']['enhanced_focus'],
 				'statusLiveRegion' => (bool) $settings['forms']['status_live_region'],
+				'requiredVisible'  => (bool) $settings['forms']['required_visible'],
+				'focusFirstError'  => (bool) $settings['forms']['focus_first_error'],
 			),
 			'advanced'   => array(
 				'customCss'     => (string) $settings['advanced']['custom_css'],
@@ -122,6 +143,7 @@ final class Settings {
 			'preset'     => sanitize_key( (string) ( $stored['preset'] ?? $defaults['preset'] ) ),
 			'navigation' => array_merge( $defaults['navigation'], is_array( $stored['navigation'] ?? null ) ? $stored['navigation'] : array() ),
 			'content'    => array_merge( $defaults['content'], is_array( $stored['content'] ?? null ) ? $stored['content'] : array() ),
+			'display'    => array_merge( $defaults['display'], is_array( $stored['display'] ?? null ) ? $stored['display'] : array() ),
 			'media'      => array_merge( $defaults['media'], is_array( $stored['media'] ?? null ) ? $stored['media'] : array() ),
 			'motion'     => array_merge( $defaults['motion'], is_array( $stored['motion'] ?? null ) ? $stored['motion'] : array() ),
 			'forms'      => array_merge( $defaults['forms'], is_array( $stored['forms'] ?? null ) ? $stored['forms'] : array() ),

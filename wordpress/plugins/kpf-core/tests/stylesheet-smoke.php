@@ -80,7 +80,9 @@ $assert( str_contains( GraphQL::resolve_css(), '#654321' ), 'GraphQL exposes the
 
 $info = GraphQL::resolve_info();
 $assert( is_array( $info ), 'GraphQL stylesheet info resolves to an array' );
-$assert( isset( $info['css'], $info['foundation'], $info['pages'], $info['revision'], $info['hasPagesLayer'], $info['byteLength'] ), 'GraphQL stylesheet info includes layer fields' );
+$assert( isset( $info['css'], $info['foundation'], $info['pages'], $info['revision'], $info['hasPagesLayer'], $info['byteLength'], $info['href'] ), 'GraphQL stylesheet info includes layer fields' );
+$assert( is_string( $info['href'] ) && str_contains( (string) $info['href'], '/kpf-stylesheet/v1/public' ), 'GraphQL stylesheet info exposes a public CSS href' );
+$assert( Defaults::strip_pages_layer( (string) $info['css'] ) === Defaults::strip_pages_layer( GraphQL::resolve_css() ), 'Pages layer can be stripped for Faust delivery' );
 $assert( str_contains( (string) $info['foundation'], '.kpf-btn--primary' ), 'GraphQL foundation layer ships component classes' );
 $assert( str_contains( (string) $info['pages'], Defaults::PAGES_MARKER ), 'GraphQL pages layer includes pages marker' );
 $assert( str_contains( (string) $info['pages'], '.kpf-header' ), 'GraphQL pages layer includes header contract' );

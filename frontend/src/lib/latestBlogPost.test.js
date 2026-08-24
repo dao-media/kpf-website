@@ -56,4 +56,29 @@ describe("latestBlogPost", () => {
     assert.deepEqual(normalizeLatestBlogPost({ nodes: [] }, fallback), fallback);
     assert.equal(normalizeLatestBlogPost(null), null);
   });
+
+  it("skips WordPress’s default Hello world post", () => {
+    const card = normalizeLatestBlogPost({
+      nodes: [
+        {
+          title: "Hello world!",
+          slug: "hello-world",
+          uri: "/hello-world/",
+          date: "2026-08-24T12:00:00",
+          content: "<p>Welcome.</p>",
+        },
+        {
+          title: "Honoring a Legacy, Helping Our Veterans",
+          slug: "veteran-legacy",
+          uri: "/2026/07/19/veteran-legacy/",
+          date: "2026-07-19T22:26:06",
+          content: "<p>" + "word ".repeat(200) + "</p>",
+          categories: { nodes: [{ name: "Announcements" }] },
+        },
+      ],
+    });
+
+    assert.equal(card.href, "/2026/07/19/veteran-legacy/");
+    assert.equal(card.title, "Honoring a Legacy, Helping Our Veterans");
+  });
 });

@@ -21,7 +21,7 @@ final class Media {
 			'home.kevinDad'       => 'kevin-with-dad.png',
 			'home.kevinRunner'    => 'kevin-runner.png',
 			'home.kevinAlumni'    => 'kevin-alumni.png',
-			'home.kevinDoubleExposure' => 'kevin-double-exposure.png',
+			'home.kevinDoubleExposure' => 'kevin-double-exposure-cutout.png',
 			'home.programs'       => 'programs.jpg',
 			'home.dunes'          => 'dunes.png',
 			'home.programsCollageBeach' => 'programs-collage-beach.jpg',
@@ -61,7 +61,8 @@ final class Media {
 	 */
 	public static function filename_aliases(): array {
 		return array(
-			'home.kevinDoubleExposure' => array( 'kevin-double-exposure.webp', 'kevin-double-exposure.png' ),
+			/* Prefer PNG cutout: WP WebP thumbs often flatten alpha to opaque black. */
+			'home.kevinDoubleExposure' => array( 'kevin-double-exposure-cutout.png', 'kevin-double-exposure.png', 'kevin-double-exposure-cutout.webp' ),
 			'events.hero'  => array( 'hero-1.jpg', 'hero.jpg', 'hero.webp' ),
 			'events.featured1' => array( 'featured-1.webp', 'featured-1.jpg' ),
 			'events.featured2' => array( 'featured-2.webp', 'featured-2.jpg' ),

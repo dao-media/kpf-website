@@ -32,7 +32,9 @@ const ACCORDION_HOLD_MS = 180;
 
 /** Library grid columns: desktop 3 · tablet/mob-land 2 · mob-portrait 1 (no pads). */
 function useEventLibraryColumns() {
-  const [columns, setColumns] = useState(1);
+  // Desktop-first so Coming Soon pads exist in SSR HTML; CSS hides them
+  // under 30rem, and this hook reconciles 2-col / 3-col after hydrate.
+  const [columns, setColumns] = useState(3);
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return undefined;
@@ -355,17 +357,12 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
     });
   }
 
-  const liveEvents = normalizeEventNodes(eventNodes);
-  const events =
-    liveEvents.length > 0
-      ? liveEvents
-      : Array.isArray(copy.library.items)
-        ? copy.library.items
-        : [];
+  const events = normalizeEventNodes(eventNodes);
   const libraryPlaceholders = eventLibraryPlaceholderCount(
     events.length,
     libraryColumns,
   );
+  const showLibraryGrid = events.length > 0 || libraryPlaceholders > 0;
 
   return (
     <div className="kpf-page-events" data-kpf-scaffold="events">
@@ -620,7 +617,7 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
             </div>
           </div>
 
-          {events.length > 0 ? (
+          {showLibraryGrid ? (
             <div className="kpf-event-library__grid">
               {events.map((event) => (
                 <EventCard

@@ -8,7 +8,7 @@ const {
   safeUrl,
 } = require("./blockData");
 
-export const KPF_EDITOR_BLOCKS_QUERY = `
+const KPF_EDITOR_BLOCKS_QUERY_BODY = `
   editorBlocks(flat: true) {
     __typename
     clientId
@@ -151,6 +151,13 @@ export const KPF_EDITOR_BLOCKS_QUERY = `
     }
   }
 `;
+
+// DreamHost staging is missing WPGraphQL Content Blocks; skip this field
+// there so Faust can build. Local wp-env still queries editorBlocks.
+export const KPF_EDITOR_BLOCKS_QUERY =
+  process.env.KPF_SKIP_EDITOR_BLOCKS === "1"
+    ? ""
+    : KPF_EDITOR_BLOCKS_QUERY_BODY;
 
 function RichText({ as = "span", className, html }) {
   const Element = as;

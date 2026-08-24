@@ -251,10 +251,8 @@ final class GraphQL {
 		$logo_alt      = '';
 
 		if ( $attachment_id > 0 ) {
-			$logo_url = (string) (
-				wp_get_attachment_image_url( $attachment_id, 'medium' )
-				?: wp_get_attachment_image_url( $attachment_id, 'full' )
-			);
+			$logo_url = \KPF\Core\Media\PublicUrls::image_url( $attachment_id, 'medium' )
+				?: \KPF\Core\Media\PublicUrls::image_url( $attachment_id, 'full' );
 			$logo_alt = (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
 			if ( '' === $logo_alt ) {
 				$logo_alt = get_the_title( $post_id ) ?: '';

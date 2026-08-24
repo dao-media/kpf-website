@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from '@wordpress/element';
 import {
 	Button,
 	Notice,
+	RangeControl,
+	SelectControl,
 	Spinner,
 	TextControl,
 	TextareaControl,
@@ -34,7 +36,7 @@ const SECTION_COPY = {
 	overview: {
 		title: __('Accessibility', 'kpf-core'),
 		description: __(
-			'Apply a profile, then fine-tune navigation, content, media, motion, and forms for the public site.',
+			'Apply a profile, then fine-tune navigation, content, display, media, motion, and forms for the public site.',
 			'kpf-core'
 		),
 	},
@@ -44,7 +46,11 @@ const SECTION_COPY = {
 	},
 	content: {
 		title: __('Content', 'kpf-core'),
-		description: __('Document language, link underlines, and SPA route announcements.', 'kpf-core'),
+		description: __('Document language, link underlines, new-window announcements, and SPA route announcements.', 'kpf-core'),
+	},
+	display: {
+		title: __('Display', 'kpf-core'),
+		description: __('Text size, contrast, and minimum touch/click target size.', 'kpf-core'),
 	},
 	media: {
 		title: __('Media', 'kpf-core'),
@@ -193,7 +199,7 @@ export default function App() {
 			...current,
 			preset: 'custom',
 			[section]: {
-				...current[section],
+				...(current[section] || {}),
 				[key]: value,
 			},
 		}));
@@ -259,11 +265,15 @@ export default function App() {
 
 	const checklist = [
 		{ label: __('Skip link', 'kpf-core'), on: status?.skip_link },
+		{ label: __('Skip to footer', 'kpf-core'), on: status?.skip_footer },
 		{ label: __('Focus ring', 'kpf-core'), on: status?.focus_ring },
+		{ label: __('Focus not obscured', 'kpf-core'), on: status?.focus_not_obscured },
 		{ label: __('Route announcer', 'kpf-core'), on: status?.route_announcer },
 		{ label: __('Underline links', 'kpf-core'), on: status?.underline_links },
+		{ label: __('New-window labels', 'kpf-core'), on: status?.announce_new_windows },
 		{ label: __('Reduced motion', 'kpf-core'), on: status?.reduced_motion },
 		{ label: __('Form focus', 'kpf-core'), on: status?.forms_focus },
+		{ label: __('Focus first error', 'kpf-core'), on: status?.focus_first_error },
 	];
 
 	return (
@@ -346,6 +356,16 @@ export default function App() {
 									label={__('Reduced motion', 'kpf-core')}
 									value={yesNo(status?.reduced_motion)}
 								/>
+								<Stat
+									label={__('Target size', 'kpf-core')}
+									value={
+										status?.min_target_size === 'comfortable'
+											? __('44px', 'kpf-core')
+											: status?.min_target_size === 'aa'
+												? __('24px', 'kpf-core')
+												: yesNo(false)
+									}
+								/>
 							</div>
 							<ul className="kpf-a11y-checklist">
 								{checklist.map((item) => (
@@ -387,6 +407,27 @@ export default function App() {
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 							/>
+							<TextControl
+								label={__('Skip link label', 'kpf-core')}
+								value={settings.navigation.skip_label || __('Skip to content', 'kpf-core')}
+								onChange={(value) => patch('navigation', 'skip_label', value)}
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
+							<ToggleControl
+								label={__('Also skip to footer', 'kpf-core')}
+								checked={Boolean(settings.navigation.skip_footer)}
+								onChange={(value) => patch('navigation', 'skip_footer', value)}
+								__nextHasNoMarginBottom
+							/>
+							<TextControl
+								label={__('Footer target', 'kpf-core')}
+								help={__('CSS id selector for the site footer, e.g. #kpf-footer', 'kpf-core')}
+								value={settings.navigation.footer_target || '#kpf-footer'}
+								onChange={(value) => patch('navigation', 'footer_target', value)}
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
 						</FieldGroup>
 						<FieldGroup
 							title={__('Focus ring', 'kpf-core')}
@@ -414,6 +455,32 @@ export default function App() {
 								onChange={(value) =>
 									patch('navigation', 'focus_ring_width', Number(value) || 3)
 								}
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
+						</FieldGroup>
+						<FieldGroup
+							title={__('Focus not obscured', 'kpf-core')}
+							help={__(
+								'Adds scroll margin so focused controls are not hidden under the sticky header (WCAG 2.4.11).',
+								'kpf-core'
+							)}
+						>
+							<ToggleControl
+								label={__('Keep focused elements in view', 'kpf-core')}
+								checked={Boolean(settings.navigation.focus_not_obscured)}
+								onChange={(value) => patch('navigation', 'focus_not_obscured', value)}
+								__nextHasNoMarginBottom
+							/>
+							<RangeControl
+								label={__('Header clearance (px)', 'kpf-core')}
+								value={Number(settings.navigation.focus_scroll_margin || 96)}
+								onChange={(value) =>
+									patch('navigation', 'focus_scroll_margin', Number(value) || 96)
+								}
+								min={48}
+								max={240}
+								step={8}
 								__nextHasNoMarginBottom
 								__next40pxDefaultSize
 							/>
@@ -453,6 +520,84 @@ export default function App() {
 								checked={Boolean(settings.content.route_announcer)}
 								onChange={(value) => patch('content', 'route_announcer', value)}
 								__nextHasNoMarginBottom
+							/>
+						</FieldGroup>
+						<FieldGroup
+							title={__('New windows', 'kpf-core')}
+							help={__(
+								'Adds a screen-reader hint when a link opens in a new tab.',
+								'kpf-core'
+							)}
+						>
+							<ToggleControl
+								label={__('Announce links that open in a new tab', 'kpf-core')}
+								checked={Boolean(settings.content.announce_new_windows)}
+								onChange={(value) => patch('content', 'announce_new_windows', value)}
+								__nextHasNoMarginBottom
+							/>
+						</FieldGroup>
+						<FieldGroup
+							title={__('Readable line length', 'kpf-core')}
+							help={__('Limits article paragraphs to about 65 characters for easier reading.', 'kpf-core')}
+						>
+							<ToggleControl
+								label={__('Cap body measure at 65ch', 'kpf-core')}
+								checked={Boolean(settings.content.readable_measure)}
+								onChange={(value) => patch('content', 'readable_measure', value)}
+								__nextHasNoMarginBottom
+							/>
+						</FieldGroup>
+					</Section>
+				) : null}
+
+				{activeTab === 'display' ? (
+					<Section title={__('Contrast, type, and targets', 'kpf-core')}>
+						<FieldGroup
+							title={__('Text size', 'kpf-core')}
+							help={__('Scales the root font size for the public site. 100% is the brand default.', 'kpf-core')}
+						>
+							<RangeControl
+								label={__('Text scale', 'kpf-core')}
+								value={Number(settings.display?.text_scale || 100)}
+								onChange={(value) => patch('display', 'text_scale', Number(value) || 100)}
+								min={100}
+								max={150}
+								step={5}
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
+							/>
+						</FieldGroup>
+						<FieldGroup title={__('Contrast', 'kpf-core')}>
+							<ToggleControl
+								label={__('Boost body contrast', 'kpf-core')}
+								help={__('Darkens muted text so it meets WCAG AA against parchment backgrounds.', 'kpf-core')}
+								checked={Boolean(settings.display?.contrast_boost)}
+								onChange={(value) => patch('display', 'contrast_boost', value)}
+								__nextHasNoMarginBottom
+							/>
+							<ToggleControl
+								label={__('Honor prefers-contrast', 'kpf-core')}
+								help={__('When the OS asks for more contrast, strengthen borders and muted text.', 'kpf-core')}
+								checked={Boolean(settings.display?.honor_prefers_contrast)}
+								onChange={(value) => patch('display', 'honor_prefers_contrast', value)}
+								__nextHasNoMarginBottom
+							/>
+						</FieldGroup>
+						<FieldGroup
+							title={__('Target size', 'kpf-core')}
+							help={__('WCAG 2.2 AA requires 24×24px. Comfortable size is 44×44px for touch.', 'kpf-core')}
+						>
+							<SelectControl
+								label={__('Minimum control size', 'kpf-core')}
+								value={settings.display?.min_target_size || 'off'}
+								options={[
+									{ label: __('Off', 'kpf-core'), value: 'off' },
+									{ label: __('AA (24px)', 'kpf-core'), value: 'aa' },
+									{ label: __('Comfortable (44px)', 'kpf-core'), value: 'comfortable' },
+								]}
+								onChange={(value) => patch('display', 'min_target_size', value)}
+								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 							/>
 						</FieldGroup>
 					</Section>
@@ -524,6 +669,20 @@ export default function App() {
 								)}
 								checked={Boolean(settings.forms.status_live_region)}
 								onChange={(value) => patch('forms', 'status_live_region', value)}
+								__nextHasNoMarginBottom
+							/>
+							<ToggleControl
+								label={__('Visible required markers', 'kpf-core')}
+								help={__('Shows a star next to required labels. Screen readers always hear “required”.', 'kpf-core')}
+								checked={Boolean(settings.forms.required_visible)}
+								onChange={(value) => patch('forms', 'required_visible', value)}
+								__nextHasNoMarginBottom
+							/>
+							<ToggleControl
+								label={__('Focus first error on submit', 'kpf-core')}
+								help={__('Moves keyboard focus to the first invalid field and announces a summary.', 'kpf-core')}
+								checked={Boolean(settings.forms.focus_first_error)}
+								onChange={(value) => patch('forms', 'focus_first_error', value)}
 								__nextHasNoMarginBottom
 							/>
 						</FieldGroup>

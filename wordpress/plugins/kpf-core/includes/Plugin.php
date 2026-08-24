@@ -22,6 +22,7 @@ use KPF\Core\Code\Admin as CodeAdmin;
 use KPF\Core\Code\ContentType as CodeContentType;
 use KPF\Core\Code\GraphQL as CodeGraphQL;
 use KPF\Core\Code\Meta as CodeMeta;
+use KPF\Core\ContentPack\Seeder as ContentPackSeeder;
 use KPF\Core\Blocks\Admin as BlocksAdmin;
 use KPF\Core\Blocks\Globals as BlockGlobals;
 use KPF\Core\Blocks\GraphQL as BlocksGraphQL;
@@ -160,6 +161,7 @@ final class Plugin {
 		StylesheetDefaults::seed_if_empty();
 		StylesheetDefaults::ensure_pages_layer();
 		QueriesDefaults::ensure_kevin_query();
+		ContentPackSeeder::maybe_seed();
 		InboxForms::register_content();
 		RedirectsTable::install();
 		Settings::ensure_defaults();
@@ -196,6 +198,7 @@ final class Plugin {
 		QueriesContentType::register();
 		QueriesMeta::register();
 		QueriesDefaults::register();
+		ContentPackSeeder::register();
 		QueriesAdmin::register();
 		QueriesRest::register();
 		QueriesGraphQL::register();

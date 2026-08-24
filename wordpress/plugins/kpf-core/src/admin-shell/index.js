@@ -16,6 +16,7 @@ import {
 	Images,
 	Inbox,
 	LayoutDashboard,
+	Library,
 	Menu,
 	MessageSquare,
 	Newspaper,
@@ -70,6 +71,13 @@ const adminBarIcons = {
 	'wp-admin-bar-kpf-performance': Gauge,
 	'wp-admin-bar-archive': Globe,
 };
+
+/** Dashboard (and similar) submenu rows — WP has no .wp-menu-image here. */
+const submenuIcons = [
+	{ selector: '#menu-dashboard .wp-submenu a[href="index.php"]', Icon: House },
+	{ selector: '#menu-dashboard .wp-submenu a[href*="page=kpf-resources"]', Icon: Library },
+	{ selector: '#menu-dashboard .wp-submenu a[href="update-core.php"]', Icon: ArrowDownToLine },
+];
 
 const ADMIN_BAR_SKIP = new Set([
 	'wp-admin-bar-wp-logo',
@@ -212,6 +220,25 @@ function decorateAdminBar() {
 	});
 }
 
+function decorateSubmenuIcons() {
+	submenuIcons.forEach(({ selector, Icon }) => {
+		document.querySelectorAll(selector).forEach((link) => {
+			if (link.dataset.kpfSubmenuIcon === 'true') return;
+
+			link.dataset.kpfSubmenuIcon = 'true';
+			link.classList.add('kpf-lucide-submenu-link');
+
+			const host = document.createElement('span');
+			host.className = 'kpf-lucide-submenu-icon';
+			host.setAttribute('aria-hidden', 'true');
+			link.prepend(host);
+			createRoot(host).render(
+				<Icon aria-hidden="true" size={14} strokeWidth={1.8} />
+			);
+		});
+	});
+}
+
 function decorateScfSubmenu() {
 	// Skip the main SCF (Field Groups) link; only nest under Tools children.
 	const links = document.querySelectorAll(
@@ -257,6 +284,7 @@ function addGlassTracking() {
 
 decorateMenu();
 decorateAdminBar();
+decorateSubmenuIcons();
 decorateScfSubmenu();
 ensureExpandedActiveSubmenus();
 addGlassTracking();
@@ -266,6 +294,7 @@ const menu = document.getElementById('adminmenu');
 if (menu) {
 	new MutationObserver(() => {
 		decorateMenu();
+		decorateSubmenuIcons();
 		decorateScfSubmenu();
 		ensureExpandedActiveSubmenus();
 	}).observe(menu, { childList: true, subtree: true });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KPF\Core\Admin;
 
 use KPF\Core\Grantees\ContentType as GranteesContentType;
+use KPF\Core\Grants\ContentType as GrantsContentType;
 use KPF\Core\Kevin\ContentType as KevinContentType;
 
 /**
@@ -142,9 +143,55 @@ final class Resources {
 				'Short how-tos for common Kevin Popke Foundation CMS tasks. Open a card when you need the checklist.',
 				'kpf-core'
 			),
+			'postTypeKey' => self::post_type_key(),
 			'groups'      => $groups,
 			// Flat list kept for smoke tests and older consumers.
 			'cards'       => self::flatten_cards( $groups ),
+		);
+	}
+
+	/**
+	 * Legend for the main editorial post types / taxonomies.
+	 *
+	 * @return list<array{label: string, description: string}>
+	 */
+	public static function post_type_key(): array {
+		return array(
+			array(
+				'label'       => __( 'Scrapbook', 'kpf-core' ),
+				'description' => __(
+					'Largely About page items managed via photo groups (by event or occasion), all pooled into one infinite-load wall/mosaic.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Events', 'kpf-core' ),
+				'description' => __(
+					'Songwriters 4 Vets has a built-in feature section on the Events page; then all events (including S4V) appear as cards below.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Hosts', 'kpf-core' ),
+				'description' => __(
+					'Under Events — includes business name and logo.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Grants', 'kpf-core' ),
+				'description' => __(
+					'Checks awarded to grantees. Should include a ceremony image, and requires a Grantee to be added first.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Grantees', 'kpf-core' ),
+				'description' => __(
+					'Appears under Grants — the company, organization, or individual receiving the grant.',
+					'kpf-core'
+				),
+			),
 		);
 	}
 
@@ -158,6 +205,8 @@ final class Resources {
 		$kevin_new    = admin_url( 'post-new.php?post_type=' . KevinContentType::POST_TYPE );
 		$grantee_list = admin_url( 'edit.php?post_type=' . GranteesContentType::POST_TYPE );
 		$grantee_new  = admin_url( 'post-new.php?post_type=' . GranteesContentType::POST_TYPE );
+		$grant_list   = admin_url( 'edit.php?post_type=' . GrantsContentType::POST_TYPE );
+		$grant_new    = admin_url( 'post-new.php?post_type=' . GrantsContentType::POST_TYPE );
 
 		return array(
 			array(
@@ -176,11 +225,12 @@ final class Resources {
 				'id'          => 'grants-partners',
 				'title'       => __( 'Grants & partners', 'kpf-core' ),
 				'description' => __(
-					'Organizations that receive grants and appear in the partners slider.',
+					'Add the organization first, then each award. Grantees appear in the partners slider; grants appear as About page cards.',
 					'kpf-core'
 				),
 				'cards'       => array(
 					self::card_adding_grantee( $grantee_new, $grantee_list ),
+					self::card_adding_grant( $grant_new, $grant_list ),
 				),
 			),
 		);
@@ -213,16 +263,43 @@ final class Resources {
 	}
 
 	/**
+	 * Screenshot shown at the top of a how-to card.
+	 *
+	 * @return array{src: string, alt: string, objectPosition?: string}|null
+	 */
+	private static function screenshot( string $filename, string $alt, string $object_position = '' ): ?array {
+		$relative = 'assets/media/resources/' . ltrim( $filename, '/' );
+		$path     = KPF_CORE_PATH . $relative;
+		if ( ! is_readable( $path ) ) {
+			return null;
+		}
+
+		$shot = array(
+			'src' => add_query_arg( 'ver', (string) filemtime( $path ), KPF_CORE_URL . $relative ),
+			'alt' => $alt,
+		);
+		if ( '' !== $object_position ) {
+			$shot['objectPosition'] = $object_position;
+		}
+		return $shot;
+	}
+
+	/**
 	 * @return array<string, mixed>
 	 */
 	private static function card_adding_kevin_story( string $kevin_new, string $kevin_list ): array {
 		return array(
-			'id'       => 'kevin-story',
-			'icon'     => 'BookHeart',
-			'title'    => __( 'Adding to Kevin’s Story', 'kpf-core' ),
-			'summary'  => __(
+			'id'         => 'kevin-story',
+			'icon'       => 'BookHeart',
+			'title'      => __( 'Adding to Kevin’s Story', 'kpf-core' ),
+			'summary'    => __(
 				'Create a new photo + header + body slide for the About page stack.',
 				'kpf-core'
+			),
+			'screenshot' => self::screenshot(
+				'kevin-story.webp',
+				__( 'About page “Who Kevin was” stack: portrait slides beside the story card.', 'kpf-core' ),
+				'center 58%'
 			),
 			'sections' => array(
 				array(
@@ -270,12 +347,17 @@ final class Resources {
 	 */
 	private static function card_editing_kevin_stories( string $kevin_list ): array {
 		return array(
-			'id'       => 'kevin-story-edit',
-			'icon'     => 'PencilLine',
-			'title'    => __( 'Editing Kevin’s Stories', 'kpf-core' ),
-			'summary'  => __(
+			'id'         => 'kevin-story-edit',
+			'icon'       => 'PencilLine',
+			'title'      => __( 'Editing Kevin’s Stories', 'kpf-core' ),
+			'summary'    => __(
 				'Update an existing About-page slide: photo, copy, order, or publish state.',
 				'kpf-core'
+			),
+			'screenshot' => self::screenshot(
+				'kevin-story-edit.webp',
+				__( 'Scrapbook → Kevin list with Photo and Order columns for each slide.', 'kpf-core' ),
+				'left top'
 			),
 			'sections' => array(
 				array(
@@ -318,12 +400,17 @@ final class Resources {
 	 */
 	private static function card_adding_grantee( string $grantee_new, string $grantee_list ): array {
 		return array(
-			'id'       => 'grantee',
-			'icon'     => 'Users',
-			'title'    => __( 'Adding a Grantee', 'kpf-core' ),
-			'summary'  => __(
+			'id'         => 'grantee',
+			'icon'       => 'Users',
+			'title'      => __( 'Adding a Grantee', 'kpf-core' ),
+			'summary'    => __(
 				'Organizations that receive grants and appear in the partners slider (Grants → Grantees).',
 				'kpf-core'
+			),
+			'screenshot' => self::screenshot(
+				'grantee.webp',
+				__( 'Homepage grantee partners slider with organization logos and names.', 'kpf-core' ),
+				'center 28%'
 			),
 			'sections' => array(
 				array(
@@ -358,6 +445,80 @@ final class Resources {
 				array(
 					'label'   => __( 'All grantees', 'kpf-core' ),
 					'url'     => $grantee_list,
+					'primary' => false,
+				),
+			),
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_adding_grant( string $grant_new, string $grant_list ): array {
+		$about = self::screenshot(
+			'grant.webp',
+			__( 'About page grant cards: ceremony photos of oversized checks presented to recipients.', 'kpf-core' ),
+			'center 42%'
+		);
+		$editor = self::screenshot(
+			'grant-editor.webp',
+			__( 'Grant details editor: recipient, amount, month and year awarded, and check presentation photo.', 'kpf-core' ),
+			'center top'
+		);
+		$shots  = array_values( array_filter( array( $about, $editor ) ) );
+
+		return array(
+			'id'          => 'grant',
+			'icon'        => 'HandCoins',
+			'title'       => __( 'Adding a Grant', 'kpf-core' ),
+			'summary'     => __(
+				'Record one award to a Grantee — amount, date, and check presentation photo (Grants).',
+				'kpf-core'
+			),
+			'screenshot'  => $about,
+			'screenshots' => $shots,
+			'sections'    => array(
+				array(
+					'title' => __( 'Before you start', 'kpf-core' ),
+					'items' => array(
+						__( 'The recipient organization must already exist under <strong>Grants → Grantees</strong>.', 'kpf-core' ),
+						__( '<strong>Recipient</strong> is required — you cannot publish a grant without selecting a Grantee.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Award details', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Recipient</strong> → choose the Grantee from the dropdown.', 'kpf-core' ),
+						__( '<strong>Grant amount</strong> → optional USD awarded (numbers only; the $ is added for you).', 'kpf-core' ),
+						__( '<strong>Month awarded</strong> and <strong>Year awarded</strong> → preferred. The Grants list sorts newest first from this date.', 'kpf-core' ),
+						__( 'The grant <strong>title is generated automatically</strong> from recipient, date, and amount — you do not type it.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Check presentation photo', 'kpf-core' ),
+					'items' => array(
+						__( 'Optional but expected: a photo of someone from KPF presenting the <strong>oversized grant check</strong> to the recipient.', 'kpf-core' ),
+						__( 'This image is the <strong>front of the grant card</strong> on the About page (“Making an impact”).', 'kpf-core' ),
+						__( 'Prefer a clear landscape JPEG, PNG, or WebP of the ceremony — faces and the check should both read.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Publish', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Publish</strong> when the award should appear on About and in the site-wide grants total.', 'kpf-core' ),
+						__( 'Save as <strong>Draft</strong> if the photo or amount is still coming.', 'kpf-core' ),
+					),
+				),
+			),
+			'actions'     => array(
+				array(
+					'label'   => __( 'Add grant', 'kpf-core' ),
+					'url'     => $grant_new,
+					'primary' => true,
+				),
+				array(
+					'label'   => __( 'All grants', 'kpf-core' ),
+					'url'     => $grant_list,
 					'primary' => false,
 				),
 			),

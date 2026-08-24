@@ -14,12 +14,13 @@ const {
   KPF_SCAFFOLD_MEDIA_QUERY,
   scaffoldMediaMap,
 } = require("@/lib/scaffoldMedia");
+const { fallbackPartners } = require("@/lib/wpContentFallback");
 
 export default function FrontPageTemplate(props) {
   const seo = props?.data?.kpfSeoHome;
   const page = props?.data?.home;
   const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
-  const partnerGrantees = props?.data?.kpfPartnerGrantees || [];
+  const partnerGrantees = fallbackPartners(props?.data?.kpfPartnerGrantees || []);
   const latestBlogPost = props?.data?.kpfLatestBlogPost || null;
   // Prefer the React scaffold (Figma 414:532) over CMS design HTML. Seeded
   // design markup was fighting hydrate via dangerouslySetInnerHTML islands.

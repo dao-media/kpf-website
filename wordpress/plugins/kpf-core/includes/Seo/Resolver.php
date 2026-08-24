@@ -68,7 +68,7 @@ final class Resolver {
 		}
 
 		$image_id  = $entity['og_image_id'] ?: $featured_id ?: (int) $global['og_default_image_id'];
-		$image_url = $image_id ? (string) wp_get_attachment_image_url($image_id, 'full') : '';
+		$image_url = $image_id ? \KPF\Core\Media\PublicUrls::image_url($image_id, 'full') : '';
 
 		$twitter_title = Engine::render(
 			self::first_string($entity['twitter_title'] ?? null, $entity['og_title'] ?? null, $title_tpl),
@@ -79,7 +79,7 @@ final class Resolver {
 			$context
 		);
 		$twitter_image_id  = $entity['twitter_image_id'] ?: $image_id;
-		$twitter_image_url = $twitter_image_id ? (string) wp_get_attachment_image_url((int) $twitter_image_id, 'full') : $image_url;
+		$twitter_image_url = $twitter_image_id ? \KPF\Core\Media\PublicUrls::image_url((int) $twitter_image_id, 'full') : $image_url;
 
 		$custom_meta = array_merge(
 			(array) ($global['custom_meta'] ?? array()),
@@ -104,6 +104,14 @@ final class Resolver {
 			(bool) ($type['show_in_sitemap'] ?? true),
 			true
 		);
+
+		$front_id = (int) get_option('page_on_front');
+		if ($front_id > 0 && (int) $post->ID === $front_id) {
+			$show_in_sitemap = false;
+		}
+		if ('page' === $post->post_type && 'home' === $post->post_name) {
+			$show_in_sitemap = false;
+		}
 
 		$primary_category = PrimaryTerms::resolve(
 			$post,
@@ -169,15 +177,20 @@ final class Resolver {
 		$context['title']   = $context['sitename'];
 		$context['excerpt'] = $context['sitedesc'];
 
-		// Homepage has no content title distinct from the site name.
-		$title       = Engine::render('%%sitename%%', $context);
+		$tagline = trim((string) $context['sitedesc']);
+		$title   = $tagline !== ''
+			? Engine::render('%%sitename%% %%sep%% %%sitedesc%%', $context)
+			: Engine::render('%%sitename%%', $context);
 		$description = Engine::render(
 			(string) ($global['description_template'] ?: '%%sitedesc%%'),
 			$context
 		);
+		if ('' === trim($description) && $tagline !== '') {
+			$description = $tagline;
+		}
 		$canonical   = self::frontend_url($settings, '/');
 		$image_id    = (int) $global['og_default_image_id'];
-		$image_url   = $image_id ? (string) wp_get_attachment_image_url($image_id, 'full') : '';
+		$image_url   = $image_id ? \KPF\Core\Media\PublicUrls::image_url($image_id, 'full') : '';
 
 		$robots = array(
 			'index'     => (bool) $global['robots_index'],
@@ -351,12 +364,36 @@ final class Resolver {
 	 * @param array<string, mixed> $settings
 	 */
 	public static function frontend_url(array $settings, string $path = '/'): string {
-		$base = rtrim((string) ($settings['global']['frontend_url'] ?: home_url('/')), '/');
-		$path = '/' . ltrim($path, '/');
+		$configured = rtrim((string) ($settings['global']['frontend_url'] ?? ''), '/');
+		$faust      = \KPF\Core\Support\FrontendUrl::faust_uri();
+		$base       = self::usable_frontend_base($configured, $faust);
+		$path       = '/' . ltrim($path, '/');
 		if ($path === '/') {
 			return $base . '/';
 		}
 		return $base . $path;
+	}
+
+	private static function usable_frontend_base(string $configured, string $faust): string {
+		if (self::is_placeholder_frontend($configured)) {
+			if ('' !== $faust) {
+				return rtrim($faust, '/');
+			}
+
+			return rtrim((string) home_url('/'), '/');
+		}
+
+		return $configured;
+	}
+
+	private static function is_placeholder_frontend(string $url): bool {
+		if ('' === $url) {
+			return true;
+		}
+
+		$host = (string) wp_parse_url($url, PHP_URL_HOST);
+
+		return in_array($host, array( 'localhost', '127.0.0.1' ), true);
 	}
 
 	/**

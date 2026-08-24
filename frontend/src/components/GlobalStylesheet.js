@@ -1,24 +1,20 @@
-export const KPF_STYLESHEET_QUERY = `
-  kpfStylesheet
-  kpfStylesheetInfo {
-    css
-    foundation
-    pages
-    revision
-    hasPagesLayer
-    byteLength
-    updatedAt
-  }
-`;
+const {
+  KPF_STYLESHEET_QUERY,
+  stylesheetHref,
+} = require("@/lib/globalStylesheet");
 
-export default function GlobalStylesheet({ css, revision }) {
-  if (!css) return null;
+export { KPF_STYLESHEET_QUERY };
+
+export default function GlobalStylesheet({ href, revision }) {
+  const src = href || stylesheetHref(revision);
+  if (!src) return null;
 
   return (
-    <style
-      data-kpf-global-stylesheet
+    <link
+      rel="stylesheet"
+      href={src}
+      data-kpf-global-stylesheet=""
       data-kpf-stylesheet-revision={revision || undefined}
-      dangerouslySetInnerHTML={{ __html: css }}
     />
   );
 }

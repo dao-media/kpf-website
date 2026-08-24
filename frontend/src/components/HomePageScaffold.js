@@ -158,16 +158,13 @@ export default function HomePageScaffold({
         <div className="kpf-story__media">
           {kevin.src ? (
             <picture>
+              {/* Hand-authored alpha WebP only — never rely on WP auto WebP thumbs (they flatten alpha). */}
               <source
                 type="image/webp"
-                srcSet={
-                  kevin.src.endsWith(".webp")
-                    ? kevin.src
-                    : kevin.src.replace(/\.(png|jpe?g)$/i, ".webp")
-                }
+                srcSet={kevin.src.replace(/\.(png|jpe?g)$/i, ".webp")}
               />
               <img
-                src={kevin.src.replace(/\.webp$/i, ".png")}
+                src={kevin.src.replace(/\.(webp|jpe?g)$/i, ".png")}
                 alt={kevin.alt}
                 loading="lazy"
                 decoding="async"

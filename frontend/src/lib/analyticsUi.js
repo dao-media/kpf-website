@@ -42,6 +42,30 @@ export const ANALYTICS_UI_RULES = /** @type {AnalyticsUiRule[]} */ ([
     priority: 40,
   },
   {
+    event: "event_card_clicked",
+    component: "event_card",
+    selector: ".kpf-event-card, .kpf-featured-event",
+    priority: 40,
+  },
+  {
+    event: "event_chip_clicked",
+    component: "event_chip",
+    selector: ".kpf-event-card a, .kpf-featured-event a, .kpf-event-card [href], .kpf-grantee-card__chip--link, .kpf-grantee-card__chip--action",
+    priority: 35,
+  },
+  {
+    event: "filter_selected",
+    component: "blog_filter",
+    selector: ".kpf-blog-filters__chip",
+    priority: 35,
+  },
+  {
+    event: "search_result_clicked",
+    component: "search_result",
+    selector: "a.kpf-search-result",
+    priority: 35,
+  },
+  {
     event: "partner_chip_clicked",
     component: "partners_chip",
     selector: "a.kpf-partners__chip, .kpf-partners__chip[href]",
@@ -51,7 +75,7 @@ export const ANALYTICS_UI_RULES = /** @type {AnalyticsUiRule[]} */ ([
     event: "carousel_control_clicked",
     component: "carousel_dots",
     selector:
-      ".kpf-partners__dots button, .kpf-history__dot, .kpf-history__dots button",
+      ".kpf-partners__dots button, .kpf-history__dot, .kpf-history__dots button, .kpf-history__control, .kpf-stacked-slider__card, [data-kpf-kevin-carousel] button",
     priority: 50,
   },
   {

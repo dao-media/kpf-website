@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { gsap } from "gsap";
@@ -8,107 +8,51 @@ import {
   KPF_PRIMARY_NAV,
   isCurrentPath,
 } from "@/lib/navigation";
+import { restoreHeaderBadge } from "@/lib/headerBadge";
 
 const BRAND_BADGE_SRC = "/media/brand/50-badge.png";
 const BRAND_LABEL_FULL = "Kevin Popke Foundation";
-const BRAND_LABEL_SHORT = "KPF";
-
-/** Survives SPA remounts within one full document load; resets on hard refresh. */
-let navEntrancePlayed = false;
+/** Joint starts off-page here, then drops to y:0. Same cord length. */
+const BADGE_DROP_FROM_Y = -140;
 
 /**
- * Wordmark that matches nav-link type, swapping to a short label when the
- * flex slot is narrower than the full name (no ellipsis).
+ * Two-line wordmark — keeps the full name readable in the compact nav bar
+ * (no “KPF” truncation).
  */
-function BrandText({
-  full = BRAND_LABEL_FULL,
-  short = BRAND_LABEL_SHORT,
-}) {
-  const slotRef = useRef(null);
-  const measureRef = useRef(null);
-  const [compact, setCompact] = useState(false);
+function brandLines(full = BRAND_LABEL_FULL) {
+  const label = String(full || BRAND_LABEL_FULL).trim();
+  if (!label || label === BRAND_LABEL_FULL) {
+    return ["Kevin Popke", "Foundation"];
+  }
+  const parts = label.split(/\s+/);
+  if (parts.length < 2) return [label];
+  return [parts.slice(0, -1).join(" "), parts[parts.length - 1]];
+}
 
-  useEffect(() => {
-    const slot = slotRef.current;
-    const measure = measureRef.current;
-    if (!slot || !measure || typeof ResizeObserver === "undefined") {
-      return undefined;
-    }
-
-    const brand = slot.closest(".kpf-header__brand");
-    const header = brand?.closest(".kpf-header") || brand?.parentElement;
-    if (!brand || !header) return undefined;
-
-    const sync = () => {
-      const needed = measure.offsetWidth;
-      if (needed <= 0) return;
-
-      const badge = brand.querySelector(".kpf-header__badge");
-      const brandCs = getComputedStyle(brand);
-      const gap = parseFloat(brandCs.gap) || 0;
-      const brandPad =
-        (parseFloat(brandCs.paddingLeft) || 0) +
-        (parseFloat(brandCs.paddingRight) || 0);
-      const fullBrandW =
-        (badge?.offsetWidth || 0) + gap + needed + brandPad;
-
-      const headerCs = getComputedStyle(header);
-      const headerPad =
-        (parseFloat(headerCs.paddingLeft) || 0) +
-        (parseFloat(headerCs.paddingRight) || 0);
-      const headerGap = parseFloat(headerCs.gap) || 0;
-      const spacer = header.querySelector(".kpf-header__spacer");
-      const spacerMin = spacer
-        ? parseFloat(getComputedStyle(spacer).minWidth) || 0
-        : 0;
-      // Spacer flex-grows into leftover space — exclude it or available
-      // collapses to the brand's *current* width and KPF never expands back.
-      let fixed = 0;
-      for (const child of header.children) {
-        if (child === brand || child === spacer) continue;
-        fixed += child.offsetWidth;
-      }
-      const availableForBrand =
-        header.clientWidth -
-        headerPad -
-        fixed -
-        spacerMin -
-        headerGap * Math.max(0, header.children.length - 1);
-
-      setCompact((prev) => {
-        if (prev) return availableForBrand < fullBrandW + 4;
-        return availableForBrand < fullBrandW;
-      });
-    };
-
-    const ro = new ResizeObserver(sync);
-    ro.observe(header);
-    ro.observe(brand);
-    sync();
-    return () => ro.disconnect();
-  }, [full]);
-
+function BrandText({ full = BRAND_LABEL_FULL }) {
+  const lines = brandLines(full);
   return (
-    <span
-      ref={slotRef}
-      className="kpf-header__brand-text"
-      data-compact={compact ? "true" : undefined}
-    >
-      <span className="kpf-header__brand-text-label">{compact ? short : full}</span>
-      <span
-        ref={measureRef}
-        className="kpf-header__brand-text-measure"
-        aria-hidden="true"
-      >
-        {full}
+    <span className="kpf-header__brand-text">
+      <span className="kpf-header__brand-text-label">
+        {lines.map((line) => (
+          <span key={line} className="kpf-header__brand-line">
+            {line}
+          </span>
+        ))}
       </span>
     </span>
   );
 }
 
+/** Survives SPA remounts within one full document load; resets on hard refresh. */
+let navEntrancePlayed = false;
+
 /** Force badge/header to resting visibility — clears GSAP inline hide only. */
 function settleHeaderEntrance(header, badge) {
   if (!header) return;
+  if (typeof document !== "undefined") {
+    document.documentElement.classList.add("kpf-nav-entered");
+  }
   // overwrite:"auto" only interrupts conflicting props (opacity/y), so CMS
   // badge-swing rotation and ribbon breeze tweens keep running.
   gsap.set(header, {
@@ -118,14 +62,16 @@ function settleHeaderEntrance(header, badge) {
     clearProps: "transform",
   });
   if (badge) {
+    gsap.killTweensOf(badge, "autoAlpha,opacity,visibility,y");
     gsap.set(badge, {
       autoAlpha: 1,
       y: 0,
-      overwrite: "auto",
+      overwrite: false,
     });
-    // Prefer stylesheet as source of truth after entrance.
     badge.style.opacity = "";
     badge.style.visibility = "";
+  } else {
+    restoreHeaderBadge();
   }
   navEntrancePlayed = true;
 }
@@ -458,9 +404,9 @@ export default function KpfHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef(null);
 
-  // useEffect (not useLayoutEffect): keep first client paint identical to SSR,
-  // then run the entrance after hydrate so React does not see a DOM mismatch.
-  useEffect(() => {
+  // useLayoutEffect: park the badge above the viewport before paint so the
+  // first frame is not the resting hang (which read as a lift into place).
+  useLayoutEffect(() => {
     const header = headerRef.current;
     if (!header) return undefined;
 
@@ -479,13 +425,11 @@ export default function KpfHeader({
 
     const badge = badgeEl();
 
-    // Hide, then enter — after hydration has committed matching markup.
-    // Opacity + slight y only — never scale the header (scale reflows Donate
-    // ~1–2px on both axes and reads as a persistent “proportion shift”).
-    // overwrite:false so CMS hover / transformOrigin seeds cannot kill this
-    // mid-flight and leave autoAlpha stuck at 0.
+    // Hide-then-enter uses translate only. Never autoAlpha — CMS hover
+    // keyframes (overwrite:auto) and SPA context.revert() were restoring
+    // autoAlpha:0 and parking the anniversary mark invisible.
     gsap.set(header, { autoAlpha: 0, y: -8, overwrite: false });
-    if (badge) gsap.set(badge, { autoAlpha: 0, y: -140, overwrite: false });
+    if (badge) gsap.set(badge, { y: BADGE_DROP_FROM_Y, overwrite: false });
 
     let settled = false;
     const settleOnce = () => {
@@ -517,7 +461,6 @@ export default function KpfHeader({
         tl.to(
           badge,
           {
-            autoAlpha: 1,
             y: 0,
             duration: 0.7,
             ease: "power3.out",
@@ -536,6 +479,12 @@ export default function KpfHeader({
     };
   }, []);
 
+  useEffect(() => {
+    if (!navEntrancePlayed) return undefined;
+    restoreHeaderBadge({ resetY: true });
+    return undefined;
+  }, [pathname]);
+
   return (
     <header
       ref={headerRef}
@@ -549,30 +498,33 @@ export default function KpfHeader({
 
       <div className="kpf-header__spacer" aria-hidden="true" />
 
-      <ul className="kpf-header__nav" aria-label="Primary">
-        {navItems.map((item) => {
-          const current = isCurrentPath(pathname, item.href);
-          return (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className="kpf-nav-link"
-                data-label={item.label}
-                aria-current={current ? "page" : undefined}
-              >
-                <span className="kpf-nav-link__label">{item.label}</span>
-                <span className="kpf-nav-link__line" aria-hidden="true" />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <nav className="kpf-header__nav" aria-label="Primary">
+        <ul>
+          {navItems.map((item) => {
+            const current = isCurrentPath(pathname, item.href);
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="kpf-nav-link"
+                  data-label={item.label}
+                  aria-current={current ? "page" : undefined}
+                >
+                  <span className="kpf-nav-link__label">{item.label}</span>
+                  <span className="kpf-nav-link__line" aria-hidden="true" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
       <div className="kpf-header__actions">
         <DonateButton
           label={donateLabel}
           className="kpf-btn kpf-btn--primary"
-          data-kpf-track="donate_header_clicked"
+          data-kpf-track="donate_clicked"
+          data-kpf-track-component="header_donate"
         />
       </div>
 

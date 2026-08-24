@@ -60,7 +60,7 @@ export default function PageScaffold({
   }
 
   if (slug === "contact" || slug === "contact-2") {
-    return <ContactPageScaffold form={contactForm} />;
+    return <ContactPageScaffold form={contactForm} media={media} />;
   }
 
   if (page?.kpfPageDesign?.html) {

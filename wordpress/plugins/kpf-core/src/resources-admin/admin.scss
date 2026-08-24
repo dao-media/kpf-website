@@ -170,17 +170,20 @@
 }
 
 .kpf-resources-grid {
+	align-items: start;
 	display: grid;
 	gap: 18px;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .kpf-resources-card {
+	align-self: start;
 	background: var(--kpf-resources-surface);
 	border: 1px solid var(--kpf-resources-line);
 	border-radius: 14px;
 	display: flex;
 	flex-direction: column;
+	height: auto;
 	min-width: 0;
 	overflow: hidden;
 }
@@ -246,7 +249,7 @@
 
 .kpf-resources-card__body {
 	display: grid;
-	flex: 1 1 auto;
+	flex: 0 0 auto;
 	gap: 18px;
 	padding: 18px 20px 8px;
 }
@@ -301,7 +304,6 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 10px;
-	margin-top: auto;
 	padding: 16px 20px 18px;
 }
 

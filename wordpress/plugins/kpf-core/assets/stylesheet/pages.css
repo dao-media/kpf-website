@@ -4895,7 +4895,8 @@ a.kpf-blog-row:focus-visible {
 	min-width: 0;
 }
 
-/* Desktop only — sticky TOC + activity (ScrollSmoother pins via JS when active) */
+/* Desktop only — sticky TOC + activity (pinned top-mounted; clipped as the
+ * article section leaves so it never docks to the bottom of the column). */
 @media (max-width: 63.99rem) {
 	.kpf-page--post .kpf-post-sidebar {
 		position: static;
@@ -4903,6 +4904,10 @@ a.kpf-blog-row:focus-visible {
 }
 
 @media (min-width: 64rem) {
+	.kpf-page--post .kpf-post-body {
+		overflow: clip;
+	}
+
 	.kpf-post-sidebar {
 		align-self: start;
 		position: sticky;

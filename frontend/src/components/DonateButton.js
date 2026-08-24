@@ -1,3 +1,4 @@
+import { SquareArrowOutUpRight } from "lucide-react";
 import KpfButton from "@/components/KpfButton";
 import { KPF_DONATE_HREF } from "@/lib/navigation";
 
@@ -64,6 +65,9 @@ export default function DonateButton({
             <PayPalMark />
           </span>
         </span>
+      </span>
+      <span className="kpf-btn__ext-tip" aria-hidden="true">
+        <SquareArrowOutUpRight size={16} strokeWidth={2} absoluteStrokeWidth />
       </span>
     </KpfButton>
   );

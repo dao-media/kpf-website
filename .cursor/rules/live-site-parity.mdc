@@ -1,0 +1,23 @@
+---
+description: Site requests mean live Vercel + DreamHost; keep the local repo identical
+alwaysApply: true
+---
+
+# Live site is the target; local stays in parity
+
+When the user talks about the site, pages, Dashboard, Resources, chrome, or “make this live,” they mean **production**:
+
+- **Frontend:** Vercel project `kpf-website` → https://kpf-website-daneoleary.vercel.app (push `main`; root `frontend/`)
+- **WordPress / CMS / plugin / theme / admin screens:** DreamHost → https://kpf.dreamhosters.com
+
+Local (`frontend/` on :3010, wp-env on :8888) is a **copy of live**, not the place the user is looking.
+
+## Required loop for any site change
+
+1. **Edit locally** in this repo (`frontend/` and/or `wordpress/plugins/kpf-core`, `wordpress/themes/kpf-blank`). Never patch production without the same files on disk here.
+2. **Ship live** in the same turn — do not stop at local:
+   - Faust/Next UI: commit if asked, **push `main`** so Vercel deploys.
+   - Plugin/theme/admin CSS/JS: `DH_SSH_KEY_FILE=…/.tmp/kpf-dreamhost-deploy scripts/deploy-dreamhost-wp.sh` (rsync). Rebuild `kpf-core` webpack assets before sync when SCSS/JS changed.
+3. **Done** only when live shows the change **and** the local tree matches what was deployed (same source + built CSS/JS). Hard-refresh / cache-bust if WP admin CSS looks stale.
+
+Do not leave local-only diffs for UI the user will check on DreamHost or Vercel. Do not change live without writing it locally first.

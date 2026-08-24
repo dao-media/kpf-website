@@ -1464,6 +1464,77 @@ a.kpf-btn--lg.kpf-btn--donate {
 	}
 }
 
+/* Desktop pointer hover: icon-only external tooltip. Off on every touch breakpoint. */
+.kpf-btn--donate .kpf-btn__ext-tip {
+	display: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 64rem) {
+	.kpf-btn--donate .kpf-btn__ext-tip {
+		align-items: center;
+		background: var(--kpf-deep);
+		border: 1px solid color-mix(in srgb, var(--kpf-parchment) 32%, transparent);
+		border-radius: var(--kpf-radius-sm);
+		bottom: calc(100% + 0.4rem);
+		box-shadow: 0 8px 24px color-mix(in srgb, var(--kpf-ink) 18%, transparent);
+		color: var(--kpf-parchment);
+		display: inline-flex;
+		height: 1.75rem;
+		justify-content: center;
+		left: 50%;
+		opacity: 0;
+		pointer-events: none;
+		position: absolute;
+		transform: translateX(-50%) translateY(0.2rem);
+		transition:
+			opacity 160ms ease,
+			transform 160ms ease,
+			visibility 160ms ease;
+		visibility: hidden;
+		width: 1.75rem;
+		z-index: 4;
+	}
+
+	.kpf-btn--donate .kpf-btn__ext-tip svg {
+		display: block;
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
+	/* Floating header has no room above the control. */
+	.kpf-header__actions .kpf-btn--donate .kpf-btn__ext-tip {
+		bottom: auto;
+		top: calc(100% + 0.4rem);
+		transform: translateX(-50%) translateY(-0.2rem);
+	}
+
+	.kpf-btn--donate:hover,
+	.kpf-btn--donate:focus-visible {
+		z-index: 4;
+	}
+
+	.kpf-btn--donate:hover .kpf-btn__ext-tip,
+	.kpf-btn--donate:focus-visible .kpf-btn__ext-tip {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0);
+		visibility: visible;
+	}
+
+	.kpf-header__actions .kpf-btn--donate:hover .kpf-btn__ext-tip,
+	.kpf-header__actions .kpf-btn--donate:focus-visible .kpf-btn__ext-tip {
+		transform: translateX(-50%) translateY(0);
+	}
+}
+
+@media (hover: hover) and (pointer: fine) and (min-width: 64rem) and (prefers-reduced-motion: reduce) {
+	.kpf-btn--donate .kpf-btn__ext-tip,
+	.kpf-header__actions .kpf-btn--donate .kpf-btn__ext-tip {
+		transform: translateX(-50%);
+		transition: opacity 160ms ease, visibility 160ms ease;
+	}
+}
+
 /* Bridge existing Gutenberg button block classes to foundation tokens */
 button.kpf-button__link {
 	appearance: none;

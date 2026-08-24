@@ -1,18 +1,30 @@
 import { useEffect } from "react";
 import { gsap } from "gsap";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const DESKTOP_MQ = "(min-width: 64rem)";
 const SIDEBAR_SEL = ".kpf-page--post .kpf-post-sidebar";
-const MAIN_SEL = ".kpf-page--post .kpf-post-main";
+const CONTAINER_SEL = ".kpf-page--post .kpf-post-body";
+
+function headerOffsetPx() {
+  const header = document.querySelector(
+    ".kpf-site-chrome__header-bar, .kpf-header",
+  );
+  const gap = 16;
+  return header
+    ? Math.ceil(header.getBoundingClientRect().bottom) + gap
+    : 104;
+}
 
 /**
- * Sticky blog-post sidebar on desktop only.
- * CSS `position: sticky` works when ScrollSmoother is off (reduced motion);
- * with ScrollSmoother active, pin via ScrollTrigger instead.
+ * Desktop blog-post sidebar: stay top-mounted under the header while the
+ * article is in view, then leave with the section (still top-aligned — never
+ * docked to the bottom of the column). CSS sticky is cleared before pinning
+ * so GSAP's pin-spacer does not inherit `top` and shift the column down.
+ * `overflow: clip` on `.kpf-post-body` hides the pinned sidebar as the
+ * section scrolls away.
  */
 export function useStickyPostSidebar(deps = []) {
   useEffect(() => {
@@ -28,35 +40,30 @@ export function useStickyPostSidebar(deps = []) {
         const mm = gsap.matchMedia();
         mm.add(DESKTOP_MQ, () => {
           const sidebar = document.querySelector(SIDEBAR_SEL);
-          const main = document.querySelector(MAIN_SEL);
-          if (!sidebar || !main) return undefined;
+          const container = document.querySelector(CONTAINER_SEL);
+          if (!sidebar || !container) return undefined;
 
-          // Without ScrollSmoother, pages.css sticky is enough.
-          if (!ScrollSmoother.get()) return undefined;
+          gsap.set(sidebar, { position: "relative", top: 0 });
 
           const st = ScrollTrigger.create({
             trigger: sidebar,
-            start: () => {
-              const header = document.querySelector(
-                ".kpf-site-chrome__header-bar, .kpf-header",
-              );
-              const gap = 16;
-              const offset = header
-                ? Math.ceil(header.getBoundingClientRect().bottom) + gap
-                : 104;
-              return `top top+=${offset}`;
-            },
-            endTrigger: main,
-            end: "bottom bottom",
+            start: () => `top top+=${headerOffsetPx()}`,
+            endTrigger: container,
+            end: "bottom top",
             pin: true,
             pinSpacing: false,
+            pinType: "transform",
             anticipatePin: 1,
             invalidateOnRefresh: true,
           });
 
-          requestAnimationFrame(() => ScrollTrigger.refresh());
+          const featured = container.querySelector(".kpf-post-featured img");
+          const refresh = () => ScrollTrigger.refresh();
+          featured?.addEventListener("load", refresh);
+          requestAnimationFrame(refresh);
 
           return () => {
+            featured?.removeEventListener("load", refresh);
             st.kill();
           };
         });

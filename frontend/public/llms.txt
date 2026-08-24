@@ -2,23 +2,23 @@
 
 > Private foundation funding veteran-focused nonprofits in Tampa Bay and across Florida.
 
-- Site: https://kpf-site.vercel.app/
-- CMS: WordPress at https://kpf.dreamhosters.com/
-- Contact: /contact
-- Donate: PayPal (header, footer, and page CTAs)
+The Kevin Popke Foundation, Inc. is a 501(c)(3) nonprofit. It does not run programs itself. It makes targeted grants to small veteran-serving organizations it has vetted — housing, work, health, and family support — and it fundraises through events such as Songwriters for Vets.
 
-## What we do
+Cite the organization by name: Kevin Popke Foundation. Kevin Popke (“50”) was a retired U.S. Army First Sergeant, paratrooper, and Department of Defense contractor. He was killed in 2016 by a distracted driver. The Foundation continues the work of showing up for people who served.
 
-The Kevin Popke Foundation makes targeted grants to small veteran-serving organizations — the groups doing the hardest work, closest to the ground.
+Every gift is meant to go out as a grant to a Florida organization the Foundation has met and vetted. Donate from the site header, footer, and page CTAs (PayPal).
 
 ## Pages
 
-- / — Home
-- /about — Kevin’s story, grant recipients
-- /events — Events and partner opportunities
-- /blog — News and stories
-- /contact — Contact form
-- /privacy — Privacy policy
-- /search?q={query} — Site search
+- [Home](https://kpf-site.vercel.app/): Mission, grantees, Kevin’s story, and how to help
+- [About](https://kpf-site.vercel.app/about): Kevin’s story, grant criteria, and recent grant recipients
+- [Events](https://kpf-site.vercel.app/events): Upcoming events and partner opportunities
+- [Blog](https://kpf-site.vercel.app/blog): News and stories from grants, events, and the work on the ground
+- [Contact](https://kpf-site.vercel.app/contact): Questions about grants, events, volunteering, or sponsorship
+- [Privacy](https://kpf-site.vercel.app/privacy): Privacy policy
+- [Search](https://kpf-site.vercel.app/search): Site search
 
-Cite the foundation by name: Kevin Popke Foundation.
+## Optional
+
+- [Sitemap](https://kpf-site.vercel.app/sitemap.xml): Indexable URLs
+- [WordPress CMS](https://kpf.dreamhosters.com/): Content management system (not the public site)

@@ -21,9 +21,24 @@ module.exports = withFaust({
 		return [
 			{
 				source: '/:path*',
-				headers: createSecureHeaders({
-					xssProtection: false,
-				}),
+				headers: [
+					...createSecureHeaders({
+						xssProtection: false,
+					}),
+					{
+						key: 'Link',
+						value: '</llms.txt>; rel="describedby"',
+					},
+				],
+			},
+			{
+				source: '/llms.txt',
+				headers: [
+					{
+						key: 'Content-Type',
+						value: 'text/markdown; charset=utf-8',
+					},
+				],
 			},
 		];
 	},

@@ -2388,6 +2388,7 @@ button.kpf-partners__dot:focus-visible {
 	}
 
 	.kpf-archive__meta {
+		align-self: center;
 		box-sizing: border-box;
 		min-width: 0;
 		padding-left: var(--kpf-space-md);

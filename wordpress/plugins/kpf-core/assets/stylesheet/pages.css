@@ -2348,7 +2348,9 @@ button.kpf-partners__dot:focus-visible {
 }
 
 .kpf-archive__media {
+	border-radius: var(--kpf-radius-md);
 	min-width: 0;
+	overflow: hidden;
 	width: 100%;
 }
 
@@ -2364,18 +2366,24 @@ button.kpf-partners__dot:focus-visible {
 
 @media (min-width: 1201px) {
 	.kpf-archive__media {
+		align-self: stretch;
 		box-sizing: border-box;
 		height: 100%;
 		min-height: 256px;
+		overflow: hidden;
+		position: relative;
 	}
 
-	.kpf-archive__thumb {
+	.kpf-archive__card--media .kpf-archive__thumb {
 		height: 100%;
+		inset: 0;
 		max-height: none;
 		max-width: none;
 		min-height: 256px;
 		min-width: 0;
 		object-fit: cover;
+		object-position: center;
+		position: absolute;
 		width: 100%;
 	}
 

@@ -4623,12 +4623,25 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	box-shadow: none;
 	color: inherit;
 	display: grid;
+	font-weight: inherit;
 	gap: var(--kpf-space-lg);
 	grid-template-columns: 1fr;
+	letter-spacing: inherit;
 	min-width: 0;
 	padding: var(--kpf-space-lg);
 	text-decoration: none;
 	transition: box-shadow 200ms ease-out;
+}
+
+a.kpf-blog-row:link,
+a.kpf-blog-row:visited,
+a.kpf-blog-row:hover,
+a.kpf-blog-row:active,
+a.kpf-blog-row:focus-visible {
+	color: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+	text-decoration: none;
 }
 
 .kpf-blog-featured:hover,
@@ -4649,7 +4662,8 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 }
 
 .kpf-blog-row--featured .kpf-blog-row__copy {
-	gap: 1.25rem;
+	align-self: center;
+	gap: 1rem;
 	padding: var(--kpf-space-xl);
 }
 
@@ -4674,11 +4688,6 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 
 .kpf-blog-row--featured .kpf-blog-row__thumb--empty {
 	position: absolute;
-}
-
-.kpf-blog-row--featured .kpf-blog-row__excerpt {
-	font-size: var(--kpf-text-body-lg, 1.125rem);
-	line-height: 1.55;
 }
 
 /* Mobile-land + tablet: 3/5 copy · 2/5 image */
@@ -4711,8 +4720,7 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	}
 
 	.kpf-blog-row--featured .kpf-blog-row__copy {
-		min-height: 460px;
-		padding: 2rem 3rem 2rem 2rem;
+		padding: 2rem 2.5rem 2rem 2rem;
 	}
 }
 
@@ -4773,12 +4781,41 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	margin: 0;
 }
 
+.kpf-blog-row .kpf-content-block__title,
+.kpf-blog-row__excerpt,
+.kpf-blog-row__meta,
+.kpf-blog-row__category,
+.kpf-blog-row__chip,
+.kpf-blog-row__date,
+.kpf-blog-row__read {
+	text-decoration: none;
+}
+
+.kpf-blog-row .kpf-content-block__title {
+	color: var(--kpf-color-text-primary, var(--kpf-ink, #12090a));
+}
+
 .kpf-blog-row__cta {
 	align-items: center;
 	display: inline-flex;
 	gap: 0.375rem;
-	margin-top: auto;
+	margin-top: 0.25rem;
 	width: fit-content;
+}
+
+/* Only the CTA reads as a hyperlink; the rest of the card copy stays body/heading. */
+.kpf-blog-row .kpf-link {
+	color: var(--kpf-color-text-link);
+	font-weight: var(--kpf-weight-link);
+	letter-spacing: var(--kpf-tracking-link);
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, var(--kpf-color-text-link) 45%, transparent);
+}
+
+.kpf-blog-row:hover .kpf-link,
+.kpf-blog-row:focus-visible .kpf-link {
+	color: var(--kpf-ember, #bb0d0d);
+	text-decoration-color: var(--kpf-ember, #bb0d0d);
 }
 
 .kpf-blog-row__thumb {

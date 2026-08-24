@@ -89,7 +89,7 @@ function BlogCard({ post, featured = false }) {
         <h3
           className={`kpf-content-block__title ${
             featured
-              ? "kpf-content-block__title--h1"
+              ? "kpf-content-block__title--h2"
               : "kpf-content-block__title--h3"
           }`}
         >

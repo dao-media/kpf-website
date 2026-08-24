@@ -229,11 +229,12 @@ function buildAccessibilityCss(config) {
 
   if (content.underlineLinks) {
     parts.push(`
-.kpf-site-chrome__main a:not(.kpf-button):not(.kpf-button__link):not(.kpf-btn):not([class*="btn"]):not(.kpf-archive__card) {
+.kpf-site-chrome__main a:not(.kpf-button):not(.kpf-button__link):not(.kpf-btn):not([class*="btn"]):not(.kpf-archive__card):not(.kpf-blog-row) {
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
-.kpf-site-chrome__main a.kpf-archive__card .kpf-link {
+.kpf-site-chrome__main a.kpf-archive__card .kpf-link,
+.kpf-site-chrome__main a.kpf-blog-row .kpf-link {
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }

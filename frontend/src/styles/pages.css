@@ -5149,17 +5149,17 @@ a.kpf-blog-row:focus-visible {
 .kpf-post-toc__sublist {
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
+	gap: 0.125rem;
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-/* Figma child Sidebar: 14px medium, 32px gap after arrow column */
+/* Child links share the parent arrow column; keep the extra indent modest. */
 .kpf-post-toc__item--h3 a {
 	font-size: 0.875rem;
 	font-weight: 500;
-	gap: 2rem; /* 32 */
+	gap: 0.5rem;
 }
 
 /* Lucide ArrowRight — only rendered for the active TOC item. */
@@ -5184,9 +5184,13 @@ a.kpf-blog-row:focus-visible {
 	min-width: 0;
 }
 
-.kpf-post-toc__item.is-active a,
-.kpf-post-toc__item a:hover,
-.kpf-post-toc__item a:focus-visible {
+.kpf-post-toc__item.is-active > a,
+.kpf-post-toc__item > a[aria-current="true"] {
+	color: var(--kpf-ember);
+}
+
+.kpf-post-toc__item > a:hover,
+.kpf-post-toc__item > a:focus-visible {
 	color: var(--kpf-ember);
 }
 

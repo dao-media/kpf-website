@@ -1,6 +1,6 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
-const { pickTocActiveId } = require("./useTocActiveId");
+const { honorClickedTocId, pickTocActiveId, tocIdFromHref } = require("./useTocActiveId");
 
 describe("pickTocActiveId", () => {
   const headings = [
@@ -28,5 +28,21 @@ describe("pickTocActiveId", () => {
 
   it("returns empty for no headings", () => {
     assert.equal(pickTocActiveId([], 80), "");
+  });
+});
+
+describe("honorClickedTocId", () => {
+  it("keeps the clicked id until the spy catches up", () => {
+    assert.equal(honorClickedTocId("c", "a"), "c");
+  });
+
+  it("falls back to the spy when nothing was clicked", () => {
+    assert.equal(honorClickedTocId("", "b"), "b");
+  });
+});
+
+describe("tocIdFromHref", () => {
+  it("reads a hash href", () => {
+    assert.equal(tocIdFromHref("#together-we-can"), "together-we-can");
   });
 });

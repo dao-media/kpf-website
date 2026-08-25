@@ -8,7 +8,7 @@ const { buildTocTree } = require("@/lib/blogPost");
 function TocLink({ item, activeId }) {
   const isActive = activeId === item.id;
   return (
-    <a href={`#${item.id}`}>
+    <a href={`#${item.id}`} aria-current={isActive ? "true" : undefined}>
       <span className="kpf-post-toc__arrow" aria-hidden="true">
         {isActive ? (
           <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />

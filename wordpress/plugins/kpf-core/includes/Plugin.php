@@ -117,6 +117,7 @@ use KPF\Core\Seo\Editor;
 use KPF\Core\Seo\GraphQL;
 use KPF\Core\Seo\MetaRepository;
 use KPF\Core\Seo\Redirects\Table as RedirectsTable;
+use KPF\Core\Seo\Redirects\Legacy as RedirectsLegacy;
 use KPF\Core\Seo\Rest;
 use KPF\Core\Seo\Settings;
 use KPF\Core\Seo\Sitemaps;
@@ -166,6 +167,7 @@ final class Plugin {
 		ContentPackSeeder::maybe_seed();
 		InboxForms::register_content();
 		RedirectsTable::install();
+		RedirectsLegacy::ensure();
 		Settings::ensure_defaults();
 		InboxSettings::ensure_defaults();
 		FormsSettings::ensure_defaults();
@@ -337,5 +339,6 @@ final class Plugin {
 		if (get_option('kpf_seo_db_version') !== RedirectsTable::DB_VERSION) {
 			RedirectsTable::install();
 		}
+		RedirectsLegacy::ensure();
 	}
 }

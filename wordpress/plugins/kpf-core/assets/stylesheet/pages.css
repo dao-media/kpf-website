@@ -1311,6 +1311,13 @@ html.kpf-scroll-smoothed body {
 	text-decoration-color: var(--kpf-color-text-link-hover, var(--kpf-ember, #bb0d0d));
 }
 
+.kpf-footer__detail {
+	display: block;
+	font-weight: 500;
+	margin-top: 0.2em;
+	overflow-wrap: anywhere;
+}
+
 /* Subfooter — Figma 416:175 (mute caption on ink; beat global `p` ink color) */
 .kpf-footer__bar {
 	align-items: flex-start;

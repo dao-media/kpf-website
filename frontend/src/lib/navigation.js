@@ -16,17 +16,19 @@ const KPF_PRIMARY_NAV = [
 const KPF_DONATE_HREF =
   "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kevinpopke.foundation%40gmail.com&item_name=The%20Kevin%20Popke%20Foundation&currency_code=USD";
 
+const KPF_CONTACT_EMAIL = "kevinpopke.foundation@gmail.com";
+
 const KPF_FOOTER_EXPLORE = [
   { href: "/about/", label: "About" },
+  { href: "/about/#history", label: "Kevin’s story" },
+  { href: "/about/#grantees", label: "Grants" },
   { href: "/events/", label: "Events" },
-  { href: "/blog/", label: "Blog" },
 ];
 
 const KPF_FOOTER_CONNECT = [
   { href: "/contact/", label: "Contact" },
-  { href: "https://www.facebook.com/kevinpopkefoundation", label: "Facebook" },
-  { href: "https://www.instagram.com/kevinpopkefoundation", label: "Instagram" },
-  { href: KPF_DONATE_HREF, label: "Donate" },
+  { href: "/blog/", label: "Blog" },
+  { href: `mailto:${KPF_CONTACT_EMAIL}`, label: "Email us", detail: KPF_CONTACT_EMAIL },
 ];
 
 function normalizePath(path) {
@@ -51,6 +53,7 @@ function htmlIncludesChromeClass(html, className) {
 }
 
 module.exports = {
+  KPF_CONTACT_EMAIL,
   KPF_DONATE_HREF,
   KPF_FOOTER_CONNECT,
   KPF_FOOTER_EXPLORE,

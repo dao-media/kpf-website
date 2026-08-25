@@ -45,10 +45,11 @@ export default function KpfFooter({
               <p className="kpf-footer__heading">Connect</p>
               <ul className="kpf-footer__list">
                 {connect.map((item) => {
-                  const external = /^(https?:|mailto:|tel:)/i.test(item.href);
+                  const http = /^https?:/i.test(item.href);
+                  const mailOrTel = /^(mailto:|tel:)/i.test(item.href);
                   return (
-                    <li key={item.href}>
-                      {external ? (
+                    <li key={`${item.href}-${item.label}`}>
+                      {http ? (
                         <a
                           href={item.href}
                           target="_blank"
@@ -56,6 +57,16 @@ export default function KpfFooter({
                         >
                           {item.label}
                           <span className="kpf-u-sr-only"> (opens in a new tab)</span>
+                        </a>
+                      ) : mailOrTel ? (
+                        <a href={item.href}>
+                          {item.label}
+                          {item.detail ? (
+                            <span className="kpf-footer__detail">
+                              {" "}
+                              ({item.detail})
+                            </span>
+                          ) : null}
                         </a>
                       ) : (
                         <Link href={item.href}>{item.label}</Link>

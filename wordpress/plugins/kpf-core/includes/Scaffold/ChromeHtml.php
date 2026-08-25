@@ -135,17 +135,20 @@ final class ChromeHtml {
 	public static function footer_html(): string {
 		$brand   = 'The Kevin Popke Foundation, Inc.';
 		$year    = (int) gmdate( 'Y' );
-		$donate  = self::donate_href();
 		$explore = array(
 			array( 'href' => '/about/', 'label' => 'About' ),
+			array( 'href' => '/about/#history', 'label' => 'Kevin’s story' ),
+			array( 'href' => '/about/#grantees', 'label' => 'Grants' ),
 			array( 'href' => '/events/', 'label' => 'Events' ),
-			array( 'href' => '/blog/', 'label' => 'Blog' ),
 		);
 		$connect = array(
 			array( 'href' => '/contact/', 'label' => 'Contact' ),
-			array( 'href' => 'https://www.facebook.com/kevinpopkefoundation', 'label' => 'Facebook' ),
-			array( 'href' => 'https://www.instagram.com/kevinpopkefoundation', 'label' => 'Instagram' ),
-			array( 'href' => $donate, 'label' => 'Donate' ),
+			array( 'href' => '/blog/', 'label' => 'Blog' ),
+			array(
+				'href'  => 'mailto:kevinpopke.foundation@gmail.com',
+				'label' => 'Email us',
+				'detail' => 'kevinpopke.foundation@gmail.com',
+			),
 		);
 
 		$explore_lis = '';
@@ -154,11 +157,16 @@ final class ChromeHtml {
 		}
 		$connect_lis = '';
 		foreach ( $connect as $item ) {
-			$is_external = (bool) preg_match( '#^(https?:|mailto:|tel:)#i', $item['href'] );
-			if ( $is_external ) {
-				$connect_lis .= '<li><a href="' . esc_url( $item['href'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $item['label'] ) . '</a></li>';
+			$href    = esc_url( $item['href'] );
+			$label   = esc_html( $item['label'] );
+			$detail  = isset( $item['detail'] ) && '' !== (string) $item['detail']
+				? ' <span class="kpf-footer__detail">(' . esc_html( (string) $item['detail'] ) . ')</span>'
+				: '';
+			$is_http = (bool) preg_match( '#^https?:#i', $item['href'] );
+			if ( $is_http ) {
+				$connect_lis .= '<li><a href="' . $href . '" target="_blank" rel="noopener noreferrer">' . $label . '</a></li>';
 			} else {
-				$connect_lis .= '<li><a href="' . esc_url( $item['href'] ) . '">' . esc_html( $item['label'] ) . '</a></li>';
+				$connect_lis .= '<li><a href="' . $href . '">' . $label . $detail . '</a></li>';
 			}
 		}
 

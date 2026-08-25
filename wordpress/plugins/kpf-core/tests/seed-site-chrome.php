@@ -11,7 +11,7 @@ use KPF\Core\Scaffold\ChromeHtml;
 
 wp_set_current_user( 1 );
 
-const KPF_CHROME_SEED_VERSION = '2026-08-13-footer-privacy-2';
+const KPF_CHROME_SEED_VERSION = '2026-08-25-footer-nav';
 
 $foundation = term_exists( 'foundation-components', Groups::TAXONOMY );
 $parent_id  = is_array( $foundation ) ? (int) $foundation['term_id'] : 0;

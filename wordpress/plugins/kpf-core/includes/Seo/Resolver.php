@@ -47,6 +47,12 @@ final class Resolver {
 		if ($defaults && ! PageDefaults::is_usable_description($description)) {
 			$description = $defaults['description'];
 		}
+		if ('post' === $post->post_type) {
+			$headline = trim(html_entity_decode(wp_strip_all_tags(get_the_title($post)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+			if ($headline !== '') {
+				$title = $headline . ' | Kevin Popke Foundation';
+			}
+		}
 		$canonical   = \KPF\Core\Support\FrontendUrl::to_public(
 			$entity['canonical'] ?: self::frontend_url($settings, $context['permalink'])
 		);
@@ -101,6 +107,10 @@ final class Resolver {
 		}
 		if (! PageDefaults::is_usable_description($twitter_description)) {
 			$twitter_description = $description;
+		}
+		if ('post' === $post->post_type && $title !== '') {
+			$og_title = $title;
+			$twitter_title = $title;
 		}
 
 		$custom_meta = array_merge(

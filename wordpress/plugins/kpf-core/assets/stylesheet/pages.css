@@ -5146,6 +5146,10 @@ a.kpf-blog-row:focus-visible {
 	text-decoration: none;
 }
 
+.kpf-post-toc__item:has(> .kpf-post-toc__sublist) > a {
+	margin-bottom: 6px;
+}
+
 .kpf-post-toc__sublist {
 	display: flex;
 	flex-direction: column;
@@ -5155,11 +5159,11 @@ a.kpf-blog-row:focus-visible {
 	padding: 0;
 }
 
-/* Child links share the parent arrow column; keep the extra indent modest. */
+/* Child label sits inset from the parent (Figma 32px after the arrow column). */
 .kpf-post-toc__item--h3 a {
 	font-size: 0.875rem;
 	font-weight: 500;
-	gap: 0.5rem;
+	gap: 2rem;
 }
 
 /* Lucide ArrowRight — only rendered for the active TOC item. */

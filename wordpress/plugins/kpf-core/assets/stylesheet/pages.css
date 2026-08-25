@@ -1300,13 +1300,15 @@ html.kpf-scroll-smoothed body {
 	font-size: 0.9375rem; /* 15 */
 	font-weight: 700;
 	line-height: 1.2;
-	text-decoration: underline;
+	text-decoration-line: underline;
+	text-decoration-color: currentColor;
 	text-underline-offset: 0.12em;
 }
 
 .kpf-footer__list a:hover,
 .kpf-footer__list a:focus-visible {
 	color: var(--kpf-parchment, #f4efea);
+	text-decoration-color: var(--kpf-color-text-link-hover, var(--kpf-ember, #bb0d0d));
 }
 
 /* Subfooter — Figma 416:175 (mute caption on ink; beat global `p` ink color) */

@@ -68,9 +68,13 @@ export default function KpfFooter({
           </div>
 
           <div className="kpf-footer__cta-card">
-            <p className="kpf-footer__cta-title">Prefer to just give?</p>
+            <h5 className="kpf-footer__cta-title">
+              Your donations support our nation’s protectors.
+            </h5>
             <p className="kpf-footer__cta-body">
-              Every gift becomes a grant in Kevin’s name.
+              Every gift provided to the Kevin Popke Foundation is invested back
+              into organizations doing incredible work for vets and their
+              families.
             </p>
             <DonateButton
               className="kpf-btn kpf-btn--primary kpf-btn--sm"

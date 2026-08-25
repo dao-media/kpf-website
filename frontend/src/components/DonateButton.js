@@ -1,3 +1,4 @@
+import { SquareArrowOutUpRight } from "lucide-react";
 import ChipCursorTooltip from "@/components/ChipCursorTooltip";
 import KpfButton from "@/components/KpfButton";
 import { KPF_DONATE_HREF } from "@/lib/navigation";
@@ -54,6 +55,7 @@ export default function DonateButton({
       label={DONATE_TOOLTIP_LABEL}
       className="kpf-donate-tip"
       desktopOnly
+      icon={<SquareArrowOutUpRight size={18} strokeWidth={2} />}
     >
       <KpfButton
         href={KPF_DONATE_HREF}

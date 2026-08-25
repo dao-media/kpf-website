@@ -4015,6 +4015,18 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	display: block;
 }
 
+.kpf-chip-tip--icon {
+	align-items: center;
+	display: inline-flex;
+	justify-content: center;
+	line-height: 0;
+	padding: 0.5rem;
+}
+
+.kpf-chip-tip__icon {
+	display: flex;
+}
+
 .kpf-chip-tip__soft {
 	font-weight: 400;
 }

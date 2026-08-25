@@ -64,6 +64,7 @@ function prefersReducedMotion() {
  *   style?: import("react").CSSProperties,
  *   desktopOnly?: boolean,
  *   labelSoft?: string,
+ *   icon?: import("react").ReactNode,
  * }} props
  */
 export default function ChipCursorTooltip({
@@ -73,6 +74,7 @@ export default function ChipCursorTooltip({
   style,
   desktopOnly = false,
   labelSoft = "",
+  icon = null,
 }) {
   const hostRef = useRef(null);
   const tipRef = useRef(null);
@@ -318,7 +320,7 @@ export default function ChipCursorTooltip({
       yToRef.current = null;
       visibleRef.current = false;
     };
-  }, [desktopOnly, label, labelSoft, mounted, tipId]);
+  }, [desktopOnly, icon, label, labelSoft, mounted, tipId]);
 
   const tipText = labelSoft ? `${label} | ${labelSoft}` : label;
 
@@ -336,14 +338,27 @@ export default function ChipCursorTooltip({
             <span
               ref={tipRef}
               id={tipId}
-              className="kpf-chip-tip"
+              className={["kpf-chip-tip", icon ? "kpf-chip-tip--icon" : ""]
+                .filter(Boolean)
+                .join(" ")}
               role="tooltip"
             >
               <span className="kpf-chip-tip__label">
-                {label}
-                {labelSoft ? (
-                  <span className="kpf-chip-tip__soft">{` | ${labelSoft}`}</span>
-                ) : null}
+                {icon ? (
+                  <>
+                    <span className="kpf-chip-tip__icon" aria-hidden="true">
+                      {icon}
+                    </span>
+                    <span className="kpf-u-sr-only">{tipText}</span>
+                  </>
+                ) : (
+                  <>
+                    {label}
+                    {labelSoft ? (
+                      <span className="kpf-chip-tip__soft">{` | ${labelSoft}`}</span>
+                    ) : null}
+                  </>
+                )}
               </span>
               <span className="kpf-chip-tip__carrot" aria-hidden="true" />
             </span>,

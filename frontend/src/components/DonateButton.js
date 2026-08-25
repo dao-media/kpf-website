@@ -1,8 +1,9 @@
-import { SquareArrowOutUpRight } from "lucide-react";
+import ChipCursorTooltip from "@/components/ChipCursorTooltip";
 import KpfButton from "@/components/KpfButton";
 import { KPF_DONATE_HREF } from "@/lib/navigation";
 
 export const DONATE_BUTTON_DEFAULT_LABEL = "Donate";
+export const DONATE_TOOLTIP_LABEL = "Opens PayPal";
 
 /**
  * True when copy/action config should render {@link DonateButton}
@@ -49,26 +50,29 @@ export default function DonateButton({
   ...rest
 }) {
   return (
-    <KpfButton
-      href={KPF_DONATE_HREF}
-      className={withDonateClass(className)}
-      variant={variant}
-      size={size}
-      data-kpf-track="donate_clicked"
-      data-kpf-track-component="donate"
-      {...rest}
+    <ChipCursorTooltip
+      label={DONATE_TOOLTIP_LABEL}
+      className="kpf-donate-tip"
+      desktopOnly
     >
-      <span className="kpf-btn__cluster">
-        <span className="kpf-btn__label">{children ?? label}</span>
-        <span className="kpf-btn__paypal-clip">
-          <span className="kpf-btn__icon kpf-btn__icon--trailing kpf-btn__icon--paypal" aria-hidden="true">
-            <PayPalMark />
+      <KpfButton
+        href={KPF_DONATE_HREF}
+        className={withDonateClass(className)}
+        variant={variant}
+        size={size}
+        data-kpf-track="donate_clicked"
+        data-kpf-track-component="donate"
+        {...rest}
+      >
+        <span className="kpf-btn__cluster">
+          <span className="kpf-btn__label">{children ?? label}</span>
+          <span className="kpf-btn__paypal-clip">
+            <span className="kpf-btn__icon kpf-btn__icon--trailing kpf-btn__icon--paypal" aria-hidden="true">
+              <PayPalMark />
+            </span>
           </span>
         </span>
-      </span>
-      <span className="kpf-btn__ext-tip" aria-hidden="true">
-        <SquareArrowOutUpRight size={16} strokeWidth={2} absoluteStrokeWidth />
-      </span>
-    </KpfButton>
+      </KpfButton>
+    </ChipCursorTooltip>
   );
 }

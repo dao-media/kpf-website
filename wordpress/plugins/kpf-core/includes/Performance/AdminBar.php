@@ -148,11 +148,13 @@ final class AdminBar {
 				pointer-events: none;
 			}
 			.kpf-perf-ab-toast {
+				align-items: center;
 				background: #1d2327;
 				border-radius: 6px;
 				bottom: 24px;
 				box-shadow: 0 8px 24px rgba(0,0,0,.2);
 				color: #fff;
+				display: flex;
 				font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 				padding: 12px 16px;
 				position: fixed;

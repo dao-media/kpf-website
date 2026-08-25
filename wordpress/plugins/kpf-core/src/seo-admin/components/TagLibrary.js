@@ -1,4 +1,4 @@
-import { useMemo, useState } from '@wordpress/element';
+import { createPortal, useMemo, useState } from '@wordpress/element';
 import { Button, SearchControl, Snackbar } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -96,11 +96,16 @@ export default function TagLibrary({ tags = [], compact = false }) {
 					) : null}
 				</div>
 			</section>
-			{copied ? (
-				<Snackbar>
-					{__('Copied', 'kpf-core')}: {copied}
-				</Snackbar>
-			) : null}
+			{copied
+				? createPortal(
+						<div className="kpf-admin-toast" role="presentation">
+							<Snackbar>
+								{__('Copied', 'kpf-core')}: {copied}
+							</Snackbar>
+						</div>,
+						document.body
+					)
+				: null}
 		</div>
 	);
 }

@@ -227,7 +227,9 @@ function UrlRow({ row, onUpdated, onEdit, onSettings }) {
 						{isSystemRow(row)
 							? row.role === 'maintenance'
 								? __('Maintenance', 'kpf-core')
-								: __('Fallback', 'kpf-core')
+								: row.role === 'notfound'
+									? __('404', 'kpf-core')
+									: __('Fallback', 'kpf-core')
 							: isTemplateRow(row)
 								? row.view === 'archive'
 									? __('Archive', 'kpf-core')
@@ -939,7 +941,7 @@ function DesignsAdminApp() {
 					</>
 				) : (
 					<span className="kpf-designs-toolbar-label">
-						{__('Fallback and coming soon / maintenance designs', 'kpf-core')}
+						{__('Fallback, 404, and coming soon / maintenance designs', 'kpf-core')}
 					</span>
 				)}
 				<div className="kpf-history-setting">
@@ -982,7 +984,7 @@ function DesignsAdminApp() {
 				<div className="kpf-designs-site-panel">
 					<p className="kpf-designs-tab-note">
 						{__(
-							'Fallback applies to any page without its own design. Maintenance redirects every public URL to the coming soon page while it is on.',
+							'Fallback applies to any page without its own design. 404 applies to missing URLs. Maintenance redirects every public URL to the coming soon page while it is on.',
 							'kpf-core'
 						)}
 					</p>

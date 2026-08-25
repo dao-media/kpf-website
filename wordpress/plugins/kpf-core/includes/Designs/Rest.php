@@ -150,7 +150,7 @@ final class Rest {
 		);
 
 		$template_item = '(?P<post_type>[a-z0-9_-]+)/(?P<view>singular|archive)';
-		$system_item   = '(?P<role>fallback|maintenance)';
+		$system_item   = '(?P<role>fallback|notfound|maintenance)';
 
 		register_rest_route(
 			self::NAMESPACE,

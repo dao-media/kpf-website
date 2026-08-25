@@ -5,6 +5,7 @@ import gsap from "gsap";
 const DURATION = 0.2;
 const TRAVEL = 16;
 const TIP_GAP = 12;
+const VIEWPORT_PAD = 8;
 const HIDE_GRACE_MS = 80;
 const MOBILE_HOLD = 2;
 const MOBILE_STAGGER = 1;
@@ -116,6 +117,20 @@ export default function ChipCursorTooltip({
       overwrite: "auto",
     });
 
+    let belowCursor = false;
+
+    const applySide = (nextBelow) => {
+      if (belowCursor === nextBelow) return;
+      belowCursor = nextBelow;
+      gsap.set(tip, {
+        yPercent: nextBelow ? 0 : -100,
+        transformOrigin: nextBelow ? "50% 0%" : "50% 100%",
+      });
+      tip.classList.toggle("kpf-chip-tip--below", nextBelow);
+    };
+
+    const travelY = () => (belowCursor ? -TRAVEL : TRAVEL);
+
     const clearHideTimer = () => {
       if (hideTimerRef.current != null) {
         window.clearTimeout(hideTimerRef.current);
@@ -124,8 +139,10 @@ export default function ChipCursorTooltip({
     };
 
     const place = (clientX, clientY) => {
+      const tipH = tip.offsetHeight || 40;
+      applySide(clientY - TIP_GAP - tipH < VIEWPORT_PAD);
       const left = clientX;
-      const top = clientY - TIP_GAP;
+      const top = belowCursor ? clientY + TIP_GAP : clientY - TIP_GAP;
       if (xToRef.current && yToRef.current && visibleRef.current) {
         xToRef.current(left);
         yToRef.current(top);
@@ -136,9 +153,11 @@ export default function ChipCursorTooltip({
 
     const placeOverHost = () => {
       const rect = host.getBoundingClientRect();
+      const tipH = tip.offsetHeight || 40;
+      applySide(rect.top - TIP_GAP - tipH < VIEWPORT_PAD);
       gsap.set(tip, {
         left: rect.left + rect.width / 2,
-        top: rect.top - TIP_GAP,
+        top: belowCursor ? rect.bottom + TIP_GAP : rect.top - TIP_GAP,
       });
     };
 
@@ -147,7 +166,7 @@ export default function ChipCursorTooltip({
       gsap.killTweensOf(tip, "autoAlpha,y,scale");
       gsap.fromTo(
         tip,
-        { autoAlpha: 0, y: TRAVEL, scale: 0.92 },
+        { autoAlpha: 0, y: travelY(), scale: 0.92 },
         {
           autoAlpha: 1,
           y: 0,
@@ -164,7 +183,7 @@ export default function ChipCursorTooltip({
       gsap.killTweensOf(tip, "autoAlpha,y,scale");
       gsap.to(tip, {
         autoAlpha: 0,
-        y: TRAVEL,
+        y: travelY(),
         scale: 0.92,
         duration: dur,
         ease: "power2.in",

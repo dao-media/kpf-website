@@ -158,6 +158,13 @@ final class Resources {
 	public static function post_type_key(): array {
 		return array(
 			array(
+				'label'       => __( 'Pages', 'kpf-core' ),
+				'description' => __(
+					'Public site pages. HTML copy is edited under Pages → Designs (Edit code & copy). Home, About, Events, Blog, Contact, and Privacy use built-in layouts, so their headlines and body copy do not come from that editor.',
+					'kpf-core'
+				),
+			),
+			array(
 				'label'       => __( 'Scrapbook', 'kpf-core' ),
 				'description' => __(
 					'Largely About page items managed via photo groups (by event or occasion), all pooled into one infinite-load wall/mosaic.',
@@ -209,6 +216,17 @@ final class Resources {
 		$grant_new    = admin_url( 'post-new.php?post_type=' . GrantsContentType::POST_TYPE );
 
 		return array(
+			array(
+				'id'          => 'page-content',
+				'title'       => __( 'Page content', 'kpf-core' ),
+				'description' => __(
+					'Change the text on HTML page designs. Built-in layouts (Home, About, Events, Blog, Contact, Privacy) do not use this editor.',
+					'kpf-core'
+				),
+				'cards'       => array(
+					self::card_editing_page_content(),
+				),
+			),
 			array(
 				'id'          => 'kevin-stories',
 				'title'       => __( 'Kevin’s Stories', 'kpf-core' ),
@@ -267,7 +285,7 @@ final class Resources {
 	 *
 	 * @return array{src: string, alt: string, objectPosition?: string}|null
 	 */
-	private static function screenshot( string $filename, string $alt, string $object_position = '' ): ?array {
+	private static function screenshot( string $filename, string $alt, string $object_position = '', string $caption = '' ): ?array {
 		$relative = 'assets/media/resources/' . ltrim( $filename, '/' );
 		$path     = KPF_CORE_PATH . $relative;
 		if ( ! is_readable( $path ) ) {
@@ -281,7 +299,90 @@ final class Resources {
 		if ( '' !== $object_position ) {
 			$shot['objectPosition'] = $object_position;
 		}
+		if ( '' !== $caption ) {
+			$shot['caption'] = $caption;
+		}
 		return $shot;
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_editing_page_content(): array {
+		$designs_url = admin_url( 'edit.php?post_type=page&page=kpf-designs' );
+		$pages_url   = admin_url( 'edit.php?post_type=page' );
+		$list        = self::screenshot(
+			'page-designs-list.webp',
+			__( 'Pages → Designs list. Open a Ready row with Edit code & copy.', 'kpf-core' ),
+			'left top',
+			__( '1. Pages → Designs, then Edit code & copy', 'kpf-core' )
+		);
+		$editor      = self::screenshot(
+			'page-designs-editor.webp',
+			__( 'Design editor: Page copy fields on the left, Save design at the top right.', 'kpf-core' ),
+			'left top',
+			__( '2. Edit the left-hand Page copy fields, then Save design', 'kpf-core' )
+		);
+		$shots       = array_values( array_filter( array( $list, $editor ) ) );
+
+		return array(
+			'id'          => 'page-copy',
+			'icon'        => 'FilePenLine',
+			'title'       => __( 'Editing page content', 'kpf-core' ),
+			'summary'     => __(
+				'Open the page’s HTML design and change the text fields on the left. Save design when you are done.',
+				'kpf-core'
+			),
+			'screenshot'  => $list,
+			'screenshots' => $shots,
+			'sections'    => array(
+				array(
+					'title' => __( 'Open the design', 'kpf-core' ),
+					'items' => array(
+						__( 'In the admin menu, go to <strong>Pages → Designs</strong> (not All Pages).', 'kpf-core' ),
+						__( 'Stay on the <strong>Pages</strong> tab and find the page you want.', 'kpf-core' ),
+						__( 'The row must say <strong>Ready</strong>. Then click <strong>Edit code & copy</strong>.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Edit the text', 'kpf-core' ),
+					'items' => array(
+						__( 'The left column is <strong>Page copy</strong>. Each field is one heading, paragraph, link, or button from the page.', 'kpf-core' ),
+						__( 'Change those fields. You usually do not need the HTML or CSS on the right.', 'kpf-core' ),
+						__( 'Use <strong>Find copy…</strong> if the list is long.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Save', 'kpf-core' ),
+					'items' => array(
+						__( 'Click <strong>Save design</strong> at the top right.', 'kpf-core' ),
+						__( 'Wait until the status says <strong>All changes saved</strong> (it reads Unsaved changes until you save).', 'kpf-core' ),
+						__( 'Hard-refresh the public page if you still see old copy.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'What this does not change', 'kpf-core' ),
+					'items' => array(
+						__( 'Even if <strong>Home, About, Events, Blog, Contact, or Privacy</strong> show as Ready, the public page still uses a built-in layout. Copy you save here will not appear on those live pages.', 'kpf-core' ),
+						__( 'For those pages, use the other Resources cards (Kevin slides, grants, events) or ask a developer to change template copy.', 'kpf-core' ),
+						__( 'If a row says <strong>No design</strong>, <strong>Edit code & copy</strong> is not available until an HTML design is applied.', 'kpf-core' ),
+						__( 'Page title, slug, and SEO live on the page itself: <strong>Pages → All Pages</strong> → open the page → <strong>Save page</strong>.', 'kpf-core' ),
+					),
+				),
+			),
+			'actions'     => array(
+				array(
+					'label'   => __( 'Open Designs', 'kpf-core' ),
+					'url'     => $designs_url,
+					'primary' => true,
+				),
+				array(
+					'label'   => __( 'All Pages', 'kpf-core' ),
+					'url'     => $pages_url,
+					'primary' => false,
+				),
+			),
+		);
 	}
 
 	/**
@@ -458,12 +559,14 @@ final class Resources {
 		$about = self::screenshot(
 			'grant.webp',
 			__( 'About page grant cards: ceremony photos of oversized checks presented to recipients.', 'kpf-core' ),
-			'center 42%'
+			'center 42%',
+			__( 'About page grant cards', 'kpf-core' )
 		);
 		$editor = self::screenshot(
 			'grant-editor.webp',
 			__( 'Grant details editor: recipient, amount, month and year awarded, and check presentation photo.', 'kpf-core' ),
-			'center top'
+			'center top',
+			__( 'Grant details in the editor', 'kpf-core' )
 		);
 		$shots  = array_values( array_filter( array( $about, $editor ) ) );
 

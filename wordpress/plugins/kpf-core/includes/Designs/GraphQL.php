@@ -125,6 +125,16 @@ final class GraphQL {
 
 		register_graphql_field(
 			'RootQuery',
+			'kpfNotFoundDesign',
+			array(
+				'type'        => 'KpfPageDesign',
+				'description' => '404 / not found page design used for missing URLs.',
+				'resolve'     => static fn(): ?array => self::resolve_notfound_design(),
+			)
+		);
+
+		register_graphql_field(
+			'RootQuery',
 			'kpfMaintenanceDesign',
 			array(
 				'type'        => 'KpfPageDesign',
@@ -188,6 +198,20 @@ final class GraphQL {
 		}
 
 		$resolved['source'] = 'fallback';
+		return $resolved;
+	}
+
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	public static function resolve_notfound_design(): ?array {
+		$design_id = Settings::design_id_for_role( Settings::ROLE_NOTFOUND );
+		$resolved  = Meta::resolve_published_design( $design_id );
+		if ( ! $resolved ) {
+			return null;
+		}
+
+		$resolved['source'] = 'notfound';
 		return $resolved;
 	}
 

@@ -343,11 +343,33 @@ kpf_design_assert(
 	'Maintenance design resolves over GraphQL'
 );
 
+$notfound_id = Meta::ensure_system_design( Settings::ROLE_NOTFOUND );
+kpf_design_assert( $notfound_id > 0, 'ensure_system_design creates a 404 design' );
+update_post_meta( $notfound_id, Meta::DESIGN_META, $clean );
+wp_update_post( array( 'ID' => $notfound_id, 'post_status' => 'publish' ) );
+
+$notfound_design = GraphQL::resolve_notfound_design();
+kpf_design_assert(
+	is_array( $notfound_design ) && $notfound_design['databaseId'] === $notfound_id,
+	'404 design resolves over GraphQL'
+);
+
+$system_payload = Settings::admin_payload();
+kpf_design_assert(
+	isset( $system_payload['system'][0]['role'], $system_payload['system'][1]['role'], $system_payload['system'][2]['role'] ) &&
+	Settings::ROLE_FALLBACK === $system_payload['system'][0]['role'] &&
+	Settings::ROLE_NOTFOUND === $system_payload['system'][1]['role'] &&
+	Settings::ROLE_MAINTENANCE === $system_payload['system'][2]['role'],
+	'Site tab lists fallback, 404, and maintenance slots'
+);
+
 Settings::update( array( 'maintenance_enabled' => false ) );
 Settings::set_design_id_for_role( Settings::ROLE_FALLBACK, 0 );
+Settings::set_design_id_for_role( Settings::ROLE_NOTFOUND, 0 );
 Settings::set_design_id_for_role( Settings::ROLE_MAINTENANCE, 0 );
 wp_delete_post( $bare_page_id, true );
 wp_delete_post( $fallback_id, true );
+wp_delete_post( $notfound_id, true );
 wp_delete_post( $maintenance_id, true );
 
 if ( null === $original_history_limit ) {

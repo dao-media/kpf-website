@@ -163,7 +163,7 @@ function prefersContrastCss() {
 function targetSizeCss(size) {
   if (size === "aa") {
     return `
-.kpf-site-chrome :is(button, [role="button"], .kpf-btn, .kpf-mobile-nav__toggle, .kpf-mobile-nav__item, .kpf-partners__dot, .kpf-history__dots button, input:not([type="hidden"]), select, textarea) {
+.kpf-site-chrome :is(button, [role="button"], .kpf-btn, .kpf-mobile-nav__toggle, .kpf-mobile-nav__item, input:not([type="hidden"]), select, textarea):not(.kpf-partners__dot):not(.kpf-history__dot) {
   min-height: 24px;
   min-width: 24px;
 }
@@ -171,7 +171,7 @@ function targetSizeCss(size) {
   }
   if (size === "comfortable") {
     return `
-.kpf-site-chrome :is(button, [role="button"], .kpf-btn, .kpf-mobile-nav__toggle, .kpf-mobile-nav__item, .kpf-partners__dot, .kpf-history__dots button, input:not([type="hidden"]), select, textarea) {
+.kpf-site-chrome :is(button, [role="button"], .kpf-btn, .kpf-mobile-nav__toggle, .kpf-mobile-nav__item, input:not([type="hidden"]), select, textarea):not(.kpf-partners__dot):not(.kpf-history__dot) {
   min-height: 44px;
   min-width: 44px;
 }

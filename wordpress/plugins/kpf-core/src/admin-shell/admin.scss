@@ -665,6 +665,54 @@ body.kpf-admin-theme .components-button.is-primary:focus {
 	color: #fff;
 }
 
+body.kpf-admin-theme .components-snackbar,
+body.kpf-admin-theme .components-snackbar__content,
+body.kpf-admin-theme .components-snackbar .components-snackbar__content-with-icon {
+	align-items: center;
+}
+
+body.kpf-admin-theme .components-snackbar {
+	display: flex;
+}
+
+body.kpf-admin-theme .components-snackbar .components-snackbar__content-with-icon {
+	display: flex;
+	gap: 8px;
+	padding-left: 0;
+}
+
+body.kpf-admin-theme .components-snackbar .components-snackbar__icon {
+	left: auto;
+	position: static;
+	top: auto;
+}
+
+body.kpf-admin-theme .components-snackbar .components-button:not(.is-primary, .is-destructive),
+body.kpf-admin-theme .components-snackbar .components-button:not(.is-primary, .is-destructive):hover,
+body.kpf-admin-theme .components-snackbar .components-button:not(.is-primary, .is-destructive):focus {
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	color: #fff;
+	height: auto;
+	min-height: 0;
+	padding: 0;
+}
+
+body.kpf-admin-theme .kpf-admin-toast {
+	align-items: center;
+	display: flex;
+	inset: 0;
+	justify-content: center;
+	pointer-events: none;
+	position: fixed;
+	z-index: 100100;
+}
+
+body.kpf-admin-theme .kpf-admin-toast .components-snackbar {
+	pointer-events: auto;
+}
+
 /*
  * Block editor back-to-dashboard control: WP logo sits on a dark tile and
  * must stay light. Generic .components-button theming above would force navy.

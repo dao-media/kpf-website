@@ -282,7 +282,7 @@ final class Meta {
 	}
 
 	/**
-	 * Create or return the design record for a system role (fallback / maintenance).
+	 * Create or return the design record for a system role (fallback / 404 / maintenance).
 	 */
 	public static function ensure_system_design( string $role ): int {
 		$role = sanitize_key( $role );
@@ -296,9 +296,7 @@ final class Meta {
 			return $existing;
 		}
 
-		$title = Settings::ROLE_MAINTENANCE === $role
-			? __( 'Coming soon / maintenance design', 'kpf-core' )
-			: __( 'Fallback page design', 'kpf-core' );
+		$title = Settings::role_design_title( $role );
 
 		$design_id = wp_insert_post(
 			array(

@@ -346,7 +346,7 @@ HTML;
     </div>
   </section>
 
-  <section class="kpf-grantees kpf-section kpf-section--page" aria-labelledby="kpf-about-grantees-title">
+  <section id="grantees" class="kpf-grantees kpf-section kpf-section--page" aria-labelledby="kpf-about-grantees-title">
     <div class="kpf-u-container">
       <div class="kpf-content-block">
           <div class="kpf-content-block__copy">
@@ -761,7 +761,6 @@ HTML;
 		foreach ( $items as $item ) {
 			$name = (string) ( $item['name'] ?? '' );
 			$logo = (string) ( $item['logoUrl'] ?? '' );
-			$url  = (string) ( $item['website'] ?? '' );
 			if ( '' === $name || '' === $logo ) {
 				continue;
 			}
@@ -770,16 +769,11 @@ HTML;
 				esc_url( $logo ),
 				esc_html( $name )
 			);
-			if ( '' !== $url ) {
-				$html .= sprintf(
-					'<a class="kpf-partners__chip" href="%s" target="_blank" rel="noopener noreferrer" aria-label="%s">%s</a>',
-					esc_url( $url ),
-					esc_attr( sprintf( '%s (opens in a new tab)', $name ) ),
-					$inner
-				);
-			} else {
-				$html .= '<div class="kpf-partners__chip">' . $inner . '</div>';
-			}
+			$html .= sprintf(
+				'<a class="kpf-partners__chip" href="%s">%s</a>',
+				esc_url( '/about/#grantees' ),
+				$inner
+			);
 		}
 		return $html;
 	}

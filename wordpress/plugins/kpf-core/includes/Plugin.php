@@ -13,6 +13,7 @@ use KPF\Core\Backups\AdminBar as BackupsAdminBar;
 use KPF\Core\Backups\Rest as BackupsRest;
 use KPF\Core\Backups\Scheduler as BackupsScheduler;
 use KPF\Core\Backups\Settings as BackupsSettings;
+use KPF\Core\Admin\AdminHost;
 use KPF\Core\Admin\Dashboard as AdminDashboard;
 use KPF\Core\Admin\HeadlessAppearance;
 use KPF\Core\Admin\MenuOrganizer;
@@ -139,6 +140,7 @@ final class Plugin {
 	}
 
 	public function boot(): void {
+		AdminHost::register();
 		add_action('plugins_loaded', array( $this, 'init' ));
 	}
 

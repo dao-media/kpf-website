@@ -24,19 +24,21 @@ wp_set_current_user( 1 );
 
 $data = Resources::data();
 kpf_resources_assert( ! empty( $data['title'] ), 'Resources data includes a title' );
-kpf_resources_assert( is_array( $data['postTypeKey'] ) && count( $data['postTypeKey'] ) >= 5, 'Resources includes a post type key' );
+kpf_resources_assert( is_array( $data['postTypeKey'] ) && count( $data['postTypeKey'] ) >= 6, 'Resources includes a post type key' );
 $key_labels = array_map( static fn( array $row ): string => (string) ( $row['label'] ?? '' ), $data['postTypeKey'] );
-foreach ( array( 'Scrapbook', 'Events', 'Hosts', 'Grants', 'Grantees' ) as $expected_label ) {
+foreach ( array( 'Pages', 'Scrapbook', 'Events', 'Hosts', 'Grants', 'Grantees' ) as $expected_label ) {
 	kpf_resources_assert( in_array( $expected_label, $key_labels, true ), "Post type key includes {$expected_label}" );
 }
-kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 2, 'Resources includes at least two topic groups' );
-kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 4, 'Resources includes at least four cards' );
+kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 3, 'Resources includes at least three topic groups' );
+kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 5, 'Resources includes at least five cards' );
 
 $group_ids = array_map( static fn( array $group ): string => (string) ( $group['id'] ?? '' ), $data['groups'] );
+kpf_resources_assert( in_array( 'page-content', $group_ids, true ), 'Resources includes Page content topic' );
 kpf_resources_assert( in_array( 'kevin-stories', $group_ids, true ), 'Resources includes Kevin’s Stories topic' );
 kpf_resources_assert( in_array( 'grants-partners', $group_ids, true ), 'Resources includes Grants & partners topic' );
 
 $ids = array_map( static fn( array $card ): string => (string) ( $card['id'] ?? '' ), $data['cards'] );
+kpf_resources_assert( in_array( 'page-copy', $ids, true ), 'Resources includes Editing page content card' );
 kpf_resources_assert( in_array( 'kevin-story', $ids, true ), 'Resources includes Kevin’s Story card' );
 kpf_resources_assert( in_array( 'kevin-story-edit', $ids, true ), 'Resources includes Editing Kevin’s Stories card' );
 kpf_resources_assert( in_array( 'grantee', $ids, true ), 'Resources includes Grantee card' );
@@ -96,6 +98,21 @@ kpf_resources_assert( false !== stripos( (string) $grant_blob, 'Recipient' ), 'G
 kpf_resources_assert( false !== stripos( (string) $grant_blob, 'check' ), 'Grant card mentions check photo' );
 kpf_resources_assert( false !== stripos( (string) $grant_blob, 'Grantee' ), 'Grant card requires a Grantee first' );
 kpf_resources_assert( is_array( $grant['screenshots'] ?? null ) && count( $grant['screenshots'] ) >= 2, 'Grant card includes two screenshots' );
+
+$page_copy = null;
+foreach ( $data['cards'] as $card ) {
+	if ( 'page-copy' === ( $card['id'] ?? '' ) ) {
+		$page_copy = $card;
+		break;
+	}
+}
+kpf_resources_assert( is_array( $page_copy ), 'Editing page content card resolved' );
+$page_blob = wp_json_encode( $page_copy );
+kpf_resources_assert( false !== stripos( (string) $page_blob, 'Edit code & copy' ), 'Page content card names Edit code & copy' );
+kpf_resources_assert( false !== stripos( (string) $page_blob, 'Save design' ), 'Page content card names Save design' );
+kpf_resources_assert( false !== stripos( (string) $page_blob, 'Page copy' ), 'Page content card names the Page copy column' );
+kpf_resources_assert( false !== stripos( (string) $page_blob, 'built-in' ), 'Page content card warns about built-in layouts' );
+kpf_resources_assert( is_array( $page_copy['screenshots'] ?? null ) && count( $page_copy['screenshots'] ) >= 2, 'Page content card includes two screenshots' );
 
 require_once ABSPATH . 'wp-admin/includes/admin.php';
 

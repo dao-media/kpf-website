@@ -9,6 +9,7 @@ final class Settings {
 	public const VERSION    = 1;
 
 	public const ROLE_FALLBACK     = 'fallback';
+	public const ROLE_NOTFOUND     = 'notfound';
 	public const ROLE_MAINTENANCE  = 'maintenance';
 	public const DEFAULT_PATH      = '/coming-soon/';
 
@@ -44,6 +45,7 @@ final class Settings {
 		return array(
 			'version'               => self::VERSION,
 			'fallback_design_id'    => 0,
+			'notfound_design_id'    => 0,
 			'maintenance_enabled'   => false,
 			'maintenance_design_id' => 0,
 			'maintenance_path'      => self::DEFAULT_PATH,
@@ -69,7 +71,7 @@ final class Settings {
 	 * @return array<int, string>
 	 */
 	public static function roles(): array {
-		return array( self::ROLE_FALLBACK, self::ROLE_MAINTENANCE );
+		return array( self::ROLE_FALLBACK, self::ROLE_NOTFOUND, self::ROLE_MAINTENANCE );
 	}
 
 	public static function is_valid_role( string $role ): bool {
@@ -110,6 +112,9 @@ final class Settings {
 		if ( self::ROLE_FALLBACK === $role ) {
 			return (int) $settings['fallback_design_id'];
 		}
+		if ( self::ROLE_NOTFOUND === $role ) {
+			return (int) $settings['notfound_design_id'];
+		}
 		if ( self::ROLE_MAINTENANCE === $role ) {
 			return (int) $settings['maintenance_design_id'];
 		}
@@ -120,6 +125,8 @@ final class Settings {
 		$settings = self::get();
 		if ( self::ROLE_FALLBACK === $role ) {
 			$settings['fallback_design_id'] = max( 0, $design_id );
+		} elseif ( self::ROLE_NOTFOUND === $role ) {
+			$settings['notfound_design_id'] = max( 0, $design_id );
 		} elseif ( self::ROLE_MAINTENANCE === $role ) {
 			$settings['maintenance_design_id'] = max( 0, $design_id );
 			if ( $design_id < 1 ) {
@@ -130,6 +137,28 @@ final class Settings {
 		}
 
 		update_option( self::OPTION_KEY, self::sanitize( $settings ), false );
+	}
+
+	public static function role_label( string $role ): string {
+		if ( self::ROLE_MAINTENANCE === $role ) {
+			return __( 'Coming soon / maintenance', 'kpf-core' );
+		}
+		if ( self::ROLE_NOTFOUND === $role ) {
+			return __( '404 / not found', 'kpf-core' );
+		}
+
+		return __( 'Fallback page design', 'kpf-core' );
+	}
+
+	public static function role_design_title( string $role ): string {
+		if ( self::ROLE_MAINTENANCE === $role ) {
+			return __( 'Coming soon / maintenance design', 'kpf-core' );
+		}
+		if ( self::ROLE_NOTFOUND === $role ) {
+			return __( '404 / not found design', 'kpf-core' );
+		}
+
+		return __( 'Fallback page design', 'kpf-core' );
 	}
 
 	/**
@@ -173,12 +202,14 @@ final class Settings {
 			'minimum'              => Meta::HISTORY_MIN,
 			'maximum'              => Meta::HISTORY_MAX,
 			'fallbackDesignId'     => (int) $settings['fallback_design_id'],
+			'notfoundDesignId'     => (int) $settings['notfound_design_id'],
 			'maintenanceEnabled'   => (bool) $settings['maintenance_enabled'],
 			'maintenanceDesignId'  => (int) $settings['maintenance_design_id'],
 			'maintenancePath'      => self::normalize_path( (string) $settings['maintenance_path'] ),
 			'maintenanceAllowlist' => array_values( (array) $settings['maintenance_allowlist'] ),
 			'system'               => array(
 				self::system_row( self::ROLE_FALLBACK ),
+				self::system_row( self::ROLE_NOTFOUND ),
 				self::system_row( self::ROLE_MAINTENANCE ),
 			),
 		);
@@ -191,12 +222,14 @@ final class Settings {
 		$design_id = self::design_id_for_role( $role );
 		$design    = $design_id > 0 ? Meta::get_design( $design_id ) : Meta::design_defaults();
 		$ready     = Meta::design_is_ready( $design_id );
-		$title     = self::ROLE_MAINTENANCE === $role
-			? __( 'Coming soon / maintenance', 'kpf-core' )
-			: __( 'Fallback page design', 'kpf-core' );
-		$path      = self::ROLE_MAINTENANCE === $role
-			? self::normalize_path( (string) self::get()['maintenance_path'] )
-			: __( 'Any page without its own design', 'kpf-core' );
+		$title     = self::role_label( $role );
+		if ( self::ROLE_MAINTENANCE === $role ) {
+			$path = self::normalize_path( (string) self::get()['maintenance_path'] );
+		} elseif ( self::ROLE_NOTFOUND === $role ) {
+			$path = __( 'Missing URLs', 'kpf-core' );
+		} else {
+			$path = __( 'Any page without its own design', 'kpf-core' );
+		}
 
 		return array(
 			'kind'         => 'system',
@@ -222,6 +255,7 @@ final class Settings {
 		$defaults = self::defaults();
 
 		$fallback_id    = Meta::sanitize_page_design_id( $value['fallback_design_id'] ?? 0 );
+		$notfound_id    = Meta::sanitize_page_design_id( $value['notfound_design_id'] ?? 0 );
 		$maintenance_id = Meta::sanitize_page_design_id( $value['maintenance_design_id'] ?? 0 );
 		$path           = self::normalize_path( (string) ( $value['maintenance_path'] ?? $defaults['maintenance_path'] ) );
 		if ( '' === $path || '/' === $path ) {
@@ -243,6 +277,7 @@ final class Settings {
 		return array(
 			'version'               => self::VERSION,
 			'fallback_design_id'    => $fallback_id,
+			'notfound_design_id'    => $notfound_id,
 			'maintenance_enabled'   => ! empty( $value['maintenance_enabled'] ),
 			'maintenance_design_id' => $maintenance_id,
 			'maintenance_path'      => $path,

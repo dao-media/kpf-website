@@ -93,19 +93,29 @@ final class Settings {
 	}
 
 	/**
-	 * @return array<string, mixed>
+	 * Grant / grantee / scrapbook / Kevin / event (and other kpf_* types)
+	 * are CMS records, not public URLs. Never index or sitemap them.
 	 */
+	public static function is_internal_post_type(string $post_type): bool {
+		if (in_array($post_type, array( 'page', 'post' ), true)) {
+			return false;
+		}
+
+		return str_starts_with($post_type, 'kpf_');
+	}
+
 	public static function default_post_type(string $post_type): array {
-		$is_page = 'page' === $post_type;
-		$is_post = 'post' === $post_type;
+		$is_page   = 'page' === $post_type;
+		$is_post   = 'post' === $post_type;
+		$internal  = self::is_internal_post_type($post_type);
 
 		return array(
 			'title_template'       => $is_post ? '%%title%% %%sep%% Kevin Popke Foundation' : null,
 			'description_template' => null,
 			'slug_prefix'          => '',
-			'robots_index'         => null,
-			'robots_follow'        => null,
-			'show_in_sitemap'      => true,
+			'robots_index'         => $internal ? false : null,
+			'robots_follow'        => $internal ? false : null,
+			'show_in_sitemap'      => ! $internal,
 			'schema_type'          => $is_page ? 'WebPage' : ( $is_post ? 'BlogPosting' : 'Article' ),
 			'og_type'              => $is_page ? 'website' : 'article',
 			'custom_meta'          => array(),
@@ -131,6 +141,12 @@ final class Settings {
 					self::default_post_type($post_type),
 					$merged['post_types'][ $post_type ]
 				);
+			}
+
+			if (self::is_internal_post_type($post_type)) {
+				$merged['post_types'][ $post_type ]['robots_index']    = false;
+				$merged['post_types'][ $post_type ]['robots_follow']   = false;
+				$merged['post_types'][ $post_type ]['show_in_sitemap'] = false;
 			}
 		}
 

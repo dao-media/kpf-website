@@ -32,6 +32,16 @@ Registry::boot();
 
 $settings = Settings::get();
 kpf_assert(isset($settings['global']['title_template']), 'settings defaults load');
+kpf_assert(Settings::is_internal_post_type('kpf_grant'), 'grant CPT is treated as internal');
+kpf_assert(Settings::is_internal_post_type('kpf_scrapbook'), 'scrapbook CPT is treated as internal');
+kpf_assert(Settings::is_internal_post_type('kpf_kevin'), 'kevin CPT is treated as internal');
+kpf_assert(! Settings::is_internal_post_type('page'), 'pages stay public SEO types');
+$grant_seo = Settings::default_post_type('kpf_grant');
+kpf_assert(false === $grant_seo['robots_index'] && false === $grant_seo['show_in_sitemap'], 'grant CPT defaults to noindex and out of the sitemap');
+$included = Sitemaps::included_post_types($settings);
+kpf_assert(! in_array('kpf_grant', $included, true), 'sitemap allowlist excludes grants');
+kpf_assert(! in_array('kpf_kevin', $included, true), 'sitemap allowlist excludes kevin slides');
+kpf_assert(! in_array('kpf_scrapbook', $included, true), 'sitemap allowlist excludes scrapbook');
 
 $rendered = Engine::render('%%sitename%% %%sep%% %%title%%', array(
 	'sitename' => 'KPF',
@@ -110,7 +120,15 @@ $crumb_names = array_map(
 	static fn( $crumb ) => (string) ( $crumb['name'] ?? '' ),
 	(array) ( $with_primary['breadcrumbs'] ?? array() )
 );
-kpf_assert(in_array('SEO Cat B', $crumb_names, true), 'breadcrumbs include primary category');
+kpf_assert(in_array('Blog', $crumb_names, true) || in_array('News & Updates', $crumb_names, true), 'post breadcrumbs trail through the blog, not a category archive');
+$crumb_urls = array_map(
+	static fn( $crumb ) => (string) ( $crumb['url'] ?? '' ),
+	(array) ( $with_primary['breadcrumbs'] ?? array() )
+);
+kpf_assert(
+	(bool) array_filter($crumb_urls, static fn( $url ) => str_contains($url, '/blog')),
+	'post breadcrumb URLs point at /blog'
+);
 kpf_assert(
 	in_array('focuskw', array_column(Registry::catalog(), 'token'), true),
 	'focuskw tag is registered'

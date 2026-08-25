@@ -44,6 +44,15 @@ describe("blogPost", () => {
     assert.equal(tree[1].children[0].id, "child");
   });
 
+  it("wraps Kevin Popke as an About link without touching the Foundation name", () => {
+    const { html } = prepareArticleHtml(
+      "<p>Kevin Popke founded the Kevin Popke Foundation to honor his service.</p>",
+    );
+    assert.match(html, /href="\/about\/">Kevin Popke</);
+    assert.match(html, /Kevin Popke Foundation/);
+    assert.equal((html.match(/href="\/about\/"/g) || []).length, 1);
+  });
+
   it("wraps known grantee names in links", () => {
     const { html } = prepareArticleHtml(
       "<h2>Grants</h2><p>A grant to My Warrior's Place funded the retreat.</p>",

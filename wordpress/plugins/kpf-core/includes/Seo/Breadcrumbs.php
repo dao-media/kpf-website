@@ -20,7 +20,7 @@ final class Breadcrumbs {
 		array $settings,
 		string $canonical,
 		string $title,
-		?WP_Term $primary_category = null
+		?WP_Term $primary_category = null // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 	): array {
 		$items = array(
 			array(
@@ -37,14 +37,14 @@ final class Breadcrumbs {
 					'url'  => Resolver::frontend_url($settings, '/' . ltrim((string) get_page_uri($ancestor_id), '/')),
 				);
 			}
-		} elseif ($primary_category instanceof WP_Term) {
-			$category_url = PrimaryTerms::term_url($primary_category, $settings);
-			if ($category_url !== '') {
-				$items[] = array(
-					'name' => (string) $primary_category->name,
-					'url'  => $category_url,
-				);
-			}
+		} elseif ('post' === $post->post_type) {
+			// Faust has no category archives; /category/… 404s. Trail through the blog.
+			$blog_id   = (int) get_option('page_for_posts');
+			$blog_name = $blog_id > 0 ? (string) get_the_title($blog_id) : '';
+			$items[]   = array(
+				'name' => $blog_name !== '' ? $blog_name : __( 'Blog', 'kpf-core' ),
+				'url'  => Resolver::frontend_url($settings, '/blog'),
+			);
 		}
 
 		$items[] = array(

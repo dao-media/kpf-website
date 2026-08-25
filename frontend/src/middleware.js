@@ -59,6 +59,16 @@ export async function middleware(request) {
     return NextResponse.redirect(dest, 301);
   }
 
+  const legacyPath = {
+    "/about-us": "/about",
+    "/contact-us": "/contact",
+  }[normalizePath(request.nextUrl.pathname)];
+  if (legacyPath) {
+    const dest = new URL(legacyPath, PRODUCTION_ORIGIN);
+    dest.search = request.nextUrl.search;
+    return NextResponse.redirect(dest, 301);
+  }
+
   if (!wordpressUrl) {
     return NextResponse.next();
   }

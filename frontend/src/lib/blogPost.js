@@ -7,6 +7,14 @@ const { formatPostDate, estimateReadTime } = require("./latestBlogPost");
 
 const STORY_LINKS = [
   {
+    pattern: /Donald\s+[“"']Kevin[”"']\s+Popke/g,
+    href: "/about/",
+  },
+  {
+    pattern: /Kevin Popke(?! Foundation)/g,
+    href: "/about/",
+  },
+  {
     pattern: /My Warrior['’]s Place/g,
     href: "https://mywarriorsplace.org",
   },

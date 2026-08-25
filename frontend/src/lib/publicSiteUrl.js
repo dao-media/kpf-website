@@ -1,5 +1,8 @@
 const PRODUCTION_ORIGIN = "https://kevinpopkefoundation.org";
 
+/** Production Vercel alias — 301 onto the custom domain. Preview hosts stay as-is. */
+const VERCEL_PRODUCTION_HOSTS = Object.freeze(["kpf-site.vercel.app"]);
+
 function publicSiteOrigin() {
   const fromEnv = String(process.env.NEXT_PUBLIC_SITE_URL || "").replace(
     /\/$/,
@@ -9,6 +12,13 @@ function publicSiteOrigin() {
     return fromEnv;
   }
   return PRODUCTION_ORIGIN;
+}
+
+function isVercelProductionAlias(host) {
+  const name = String(host || "")
+    .toLowerCase()
+    .split(":")[0];
+  return VERCEL_PRODUCTION_HOSTS.includes(name);
 }
 
 function isEphemeralHost(host) {
@@ -72,8 +82,10 @@ function rewriteSeoPublicUrls(seo) {
 
 module.exports = {
   PRODUCTION_ORIGIN,
+  VERCEL_PRODUCTION_HOSTS,
   isEphemeralHost,
   isEphemeralUrl,
+  isVercelProductionAlias,
   publicSiteOrigin,
   rewriteEphemeralHostsInText,
   rewriteSeoPublicUrls,

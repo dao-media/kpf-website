@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  PRODUCTION_ORIGIN,
+  isVercelProductionAlias,
+} from "@/lib/publicSiteUrl";
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
   /\/$/,
@@ -38,6 +42,23 @@ function shouldSkipSeoLookup(pathname) {
 }
 
 export async function middleware(request) {
+  const incomingHost = (
+    request.headers.get("x-forwarded-host") ||
+    request.headers.get("host") ||
+    request.nextUrl.hostname ||
+    ""
+  )
+    .split(":")[0]
+    .toLowerCase();
+
+  if (isVercelProductionAlias(incomingHost)) {
+    const dest = new URL(
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      PRODUCTION_ORIGIN
+    );
+    return NextResponse.redirect(dest, 301);
+  }
+
   if (!wordpressUrl) {
     return NextResponse.next();
   }

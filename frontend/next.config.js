@@ -1,5 +1,24 @@
 const { createSecureHeaders } = require('next-secure-headers');
 const { withFaust, getWpHostname } = require('@faustwp/core');
+const {
+	PRODUCTION_ORIGIN,
+	VERCEL_PRODUCTION_HOSTS,
+} = require('./src/lib/publicSiteUrl');
+
+const vercelAliasRedirects = VERCEL_PRODUCTION_HOSTS.flatMap((host) => [
+	{
+		source: '/',
+		has: [{ type: 'host', value: host }],
+		destination: `${PRODUCTION_ORIGIN}/`,
+		permanent: true,
+	},
+	{
+		source: '/:path*',
+		has: [{ type: 'host', value: host }],
+		destination: `${PRODUCTION_ORIGIN}/:path*`,
+		permanent: true,
+	},
+]);
 
 /**
  * @type {import('next').NextConfig}
@@ -44,6 +63,7 @@ module.exports = withFaust({
 	},
 	async redirects() {
 		return [
+			...vercelAliasRedirects,
 			{
 				source: '/about-us',
 				destination: '/about',

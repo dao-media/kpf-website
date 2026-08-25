@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   PRODUCTION_ORIGIN,
   isEphemeralHost,
+  isVercelProductionAlias,
   rewriteSeoPublicUrls,
   toPublicUrl,
 } = require("./publicSiteUrl");
@@ -13,6 +14,13 @@ describe("publicSiteUrl", () => {
     assert.equal(isEphemeralHost("kpf-1i3sf81rq-daneoleary.vercel.app"), true);
     assert.equal(isEphemeralHost("localhost"), true);
     assert.equal(isEphemeralHost("kevinpopkefoundation.org"), false);
+  });
+
+  it("identifies the production Vercel alias for host redirects", () => {
+    assert.equal(isVercelProductionAlias("kpf-site.vercel.app"), true);
+    assert.equal(isVercelProductionAlias("KPF-SITE.VERCEL.APP:443"), true);
+    assert.equal(isVercelProductionAlias("kpf-qt6288k1a-daneoleary.vercel.app"), false);
+    assert.equal(isVercelProductionAlias("kevinpopkefoundation.org"), false);
   });
 
   it("rewrites vercel canonicals onto the production domain", () => {

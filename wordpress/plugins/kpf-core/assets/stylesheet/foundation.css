@@ -789,10 +789,11 @@ textarea:disabled,
 }
 
 /* —— Hyperlinks (inherit body/UI size from parent; apply link chrome) ——
- * Buttons and chips/tags may be <a> for URL behavior. They are not text
- * links — never inherit hyperlink color, weight, tracking, or underline.
+ * Buttons, chips, and chrome nav may be <a> for URL behavior. They are not
+ * text links. Keep the `a:not(...)` list inside :where() so those exclusions
+ * cannot outrank .kpf-nav-link / header hover and current-page styles.
  */
-a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip),
+:where(a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):not(.kpf-nav-link):not(.kpf-mobile-nav__item):not(.kpf-header__brand)),
 .kpf-link {
 	color: var(--kpf-color-text-link);
 	font-weight: var(--kpf-weight-link);
@@ -832,25 +833,25 @@ a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-b
 	line-height: var(--kpf-leading-body-l);
 }
 
-a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):visited,
+:where(a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):not(.kpf-nav-link):not(.kpf-mobile-nav__item):not(.kpf-header__brand)):visited,
 .kpf-link:visited {
 	color: var(--kpf-mute);
 	text-decoration-color: color-mix(in srgb, var(--kpf-mute) 45%, transparent);
 }
 
-a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):hover,
+:where(a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):not(.kpf-nav-link):not(.kpf-mobile-nav__item):not(.kpf-header__brand)):hover,
 .kpf-link:hover {
 	color: var(--kpf-ember);
 	text-decoration-color: var(--kpf-ember);
 }
 
-a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):active,
+:where(a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):not(.kpf-nav-link):not(.kpf-mobile-nav__item):not(.kpf-header__brand)):active,
 .kpf-link:active {
 	color: var(--kpf-deep);
 	text-decoration-color: var(--kpf-deep);
 }
 
-a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):focus-visible,
+:where(a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):not(.kpf-nav-link):not(.kpf-mobile-nav__item):not(.kpf-header__brand)):focus-visible,
 .kpf-link:focus-visible {
 	border-radius: 0.15rem;
 	box-shadow: var(--kpf-focus-ring);

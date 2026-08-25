@@ -1959,6 +1959,12 @@ details.kpf-accordion > summary::-webkit-details-marker {
 	margin: 0;
 }
 
+.kpf-content-block__title--h0 {
+	font-size: var(--kpf-text-h0);
+	letter-spacing: var(--kpf-tracking-h0);
+	line-height: var(--kpf-leading-h0);
+}
+
 .kpf-content-block__title--h1 {
 	font-size: var(--kpf-text-h1);
 	letter-spacing: var(--kpf-tracking-display);

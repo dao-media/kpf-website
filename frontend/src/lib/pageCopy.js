@@ -622,10 +622,28 @@ const EVENTS = {
   },
 };
 
+const NOTFOUND = {
+  hero: {
+    title: "That page isn’t available right now.",
+    body: "We’re having trouble finding what you’re looking for, but we’re happy to help you get there. Here are a few helpful pages:",
+    actions: [
+      { href: "/about/", label: "About KPF", variant: "primary" },
+      { href: "/events/", label: "Our events", variant: "secondary" },
+      { href: "/about/#history", label: "Kevin’s story", variant: "outline" },
+    ],
+    media: {
+      key: "notfound.planes",
+      src: "/media/404/fighter-planes.webp",
+      alt: "",
+    },
+  },
+};
+
 module.exports = {
   ABOUT,
   BLOG,
   CONTACT,
   EVENTS,
   HOME,
+  NOTFOUND,
 };

@@ -1,6 +1,5 @@
 import Head from "next/head";
-import Link from "next/link";
-import PageDesignRenderer from "@/components/PageDesignRenderer";
+import NotFoundPageScaffold from "@/components/NotFoundPageScaffold";
 
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
@@ -21,24 +20,9 @@ const NOT_FOUND_QUERY = `
     kpfNotFoundDesign {
       databaseId
       title
-      html
-      css
-      source
     }
   }
 `;
-
-function NotFoundFallback() {
-  return (
-    <div style={{ margin: "4rem auto", maxWidth: "40rem", padding: "0 1.5rem" }}>
-      <h1>Page not found</h1>
-      <p>That URL does not exist. Check the address, or return home.</p>
-      <p>
-        <Link href="/">Back to home</Link>
-      </p>
-    </div>
-  );
-}
 
 function emptyChromeProps() {
   return {
@@ -51,20 +35,13 @@ function emptyChromeProps() {
 }
 
 export default function NotFoundPage({ design }) {
-  const page = {
-    title: design?.title || "Page not found",
-    content: "",
-    kpfPageDesign: design,
-    kpfDesignFields: [],
-  };
-
   return (
     <>
       <Head>
         <title>{design?.title || "Page not found"}</title>
         <meta name="robots" content="noindex, nofollow" />
       </Head>
-      {design?.html ? <PageDesignRenderer page={page} /> : <NotFoundFallback />}
+      <NotFoundPageScaffold />
     </>
   );
 }

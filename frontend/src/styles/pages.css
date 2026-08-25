@@ -133,7 +133,7 @@ html {
  *   .kpf-icon-text-list
  *   .kpf-content-block  --inverse
  *                       __copy __title-group __body-group
- *                       __eyebrow __title(--h1…h4)
+ *                       __eyebrow __title(--h0…h4)
  *                       __body __actions __notation
  *
  * FORMS
@@ -1483,6 +1483,13 @@ html.kpf-scroll-smoothed body {
  *   .kpf-contact                 intro + form split (stack below 64rem)
  *   .kpf-cta-closing             shared pre-footer flag band
  *   .kpf-footer
+ *
+ * --------------------------------------------------------------------------
+ * 404  Desktop 1112:2692 · Tablet 1112:3330 · Mobile 1112:3404
+ * --------------------------------------------------------------------------
+ *   .kpf-hero--404               ink stage · copy right on desktop · planes
+ *   .kpf-cta-closing             shared pre-footer flag band
+ *   .kpf-footer
  */
 
 /* =============================================================================
@@ -1617,6 +1624,94 @@ html.kpf-scroll-smoothed body {
 	font-weight: 700;
 	text-decoration: underline;
 	text-underline-offset: 0.15em;
+}
+
+/* 404 — Figma 1112:2692 / 1112:3330 / 1112:3404 */
+.kpf-hero--404 {
+	--kpf-hero-bg: var(--kpf-ink, #12090a);
+	--kpf-hero-copy-max: 40rem; /* 640 */
+	background: var(--kpf-hero-bg);
+	color: var(--kpf-parchment, #f4efea);
+	min-height: 40rem;
+	overflow: clip;
+	padding-block: var(--kpf-hero-copy-top) 16rem;
+	padding-inline: 0;
+}
+
+.kpf-hero--404 .kpf-hero__layout {
+	position: relative;
+	z-index: 1;
+}
+
+.kpf-hero--404 .kpf-hero__content,
+.kpf-hero--404 .kpf-content-block {
+	max-width: min(100%, var(--kpf-hero-copy-max));
+}
+
+.kpf-hero--404 .kpf-content-block {
+	--kpf-content-actions-gap: var(--kpf-space-sm, 0.75rem);
+}
+
+.kpf-hero--404 .kpf-content-block__body {
+	font-size: var(--kpf-text-body-l);
+	letter-spacing: var(--kpf-tracking-body-l);
+	line-height: var(--kpf-leading-body-l);
+}
+
+.kpf-hero--404__planes {
+	bottom: 0;
+	left: -0.3125rem;
+	overflow: hidden;
+	pointer-events: none;
+	position: absolute;
+	width: min(22.75rem, calc(100% + 0.625rem));
+	z-index: 0;
+}
+
+.kpf-hero--404__planes img {
+	display: block;
+	height: auto;
+	object-fit: cover;
+	object-position: left center;
+	width: 100%;
+}
+
+@media (min-width: 48rem) {
+	.kpf-hero--404 {
+		padding-block: var(--kpf-hero-copy-top) 22.75rem;
+	}
+
+	.kpf-hero--404__planes {
+		width: min(48.3125rem, calc(100% + 0.625rem));
+	}
+}
+
+@media (min-width: 64rem) {
+	.kpf-hero--404 {
+		padding-block: var(--kpf-hero-copy-top) 3rem;
+	}
+
+	.kpf-hero--404 .kpf-hero__layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(18rem, var(--kpf-hero-copy-max));
+		justify-items: end;
+	}
+
+	.kpf-hero--404 .kpf-hero__content {
+		grid-column: 2;
+	}
+
+	.kpf-hero--404__planes {
+		bottom: auto;
+		height: 30.125rem;
+		left: -7.1875rem;
+		top: 10rem;
+		width: 45rem;
+	}
+
+	.kpf-hero--404__planes img {
+		height: 100%;
+	}
 }
 
 .kpf-hero__stage {

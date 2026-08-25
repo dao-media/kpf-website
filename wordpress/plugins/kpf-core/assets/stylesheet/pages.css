@@ -2682,12 +2682,20 @@ a.kpf-archive__card:focus-visible {
 }
 
 .kpf-donate--band .kpf-accordion {
-	background: var(--kpf-color-bg-surface, #fff);
+	background: var(--kpf-parchment, #f4efea);
 	border: 1px solid var(--kpf-parchment-deep, #dfd6cc);
 	border-radius: var(--kpf-radius-md);
 	box-shadow: none; /* base accordion uses inset stroke; band uses border instead */
 	overflow: clip;
-	transition: border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+	transition:
+		background-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease),
+		border-color var(--kpf-accordion-duration, 280ms) var(--kpf-accordion-ease, ease);
+}
+
+.kpf-donate--band .kpf-accordion:hover,
+.kpf-donate--band .kpf-accordion:focus-within,
+.kpf-donate--band .kpf-accordion.is-open {
+	background: var(--kpf-ember-soft, #ebd1d1);
 }
 
 .kpf-donate--band .kpf-accordion__header {
@@ -2709,8 +2717,10 @@ a.kpf-archive__card:focus-visible {
 	width: 100%;
 }
 
-.kpf-donate--band .kpf-accordion.is-open .kpf-accordion__header {
-	background: var(--kpf-ember-soft, #ebd1d1);
+.kpf-donate--band .kpf-accordion__header:hover,
+.kpf-donate--band .kpf-accordion.is-open .kpf-accordion__header,
+.kpf-donate--band .kpf-accordion__header:focus-visible {
+	background: transparent;
 }
 
 .kpf-donate--band .kpf-accordion__body {
@@ -4081,6 +4091,14 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	display: inline-flex;
 	max-width: 100%;
 	vertical-align: top;
+}
+
+/* Pointer sits on the host; hide it so it cannot flash through the tip. */
+@media (hover: hover) and (pointer: fine) {
+	.kpf-chip-tip-host[data-kpf-tip-open],
+	.kpf-chip-tip-host[data-kpf-tip-open] * {
+		cursor: none !important;
+	}
 }
 
 .kpf-chip-tip {

@@ -255,6 +255,7 @@ export default function ChipCursorTooltip({
       claimActiveTip(host, () => {
         visibleRef.current = true;
         tip.setAttribute("data-open", "true");
+        host.setAttribute("data-kpf-tip-open", "true");
         animateIn(clientX, clientY);
       });
     };
@@ -266,6 +267,7 @@ export default function ChipCursorTooltip({
         if (!visibleRef.current) return;
         visibleRef.current = false;
         tip.removeAttribute("data-open");
+        host.removeAttribute("data-kpf-tip-open");
         releaseActiveTip(host);
         animateOut();
       };
@@ -360,6 +362,7 @@ export default function ChipCursorTooltip({
       }
       tipRegistry.delete(host);
       releaseActiveTip(host);
+      host.removeAttribute("data-kpf-tip-open");
       gsap.killTweensOf(tip);
       xToRef.current = null;
       yToRef.current = null;

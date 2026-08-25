@@ -74,7 +74,11 @@ const HOME = {
         title: "Check out our events",
         body: "Buy a ticket, bring people, have a good night out for a serious reason.",
         cta: { href: "/events/", label: "See events" },
-        media: { key: "events.featured", src: "/media/events/featured.jpg", alt: "" },
+        media: {
+          key: "events.featured1",
+          src: "/media/events/featured-1.webp",
+          alt: "Songwriters for Vets performers on stage with an American flag",
+        },
       },
       {
         eyebrow: "Who We Work With",

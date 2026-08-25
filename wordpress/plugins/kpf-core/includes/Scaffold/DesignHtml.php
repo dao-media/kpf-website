@@ -21,7 +21,7 @@ final class DesignHtml {
 		}
 		$dunes    = self::img( $media, 'home.dunes', '', 'kpf-programs__dunes' );
 		$card1    = self::img( $media, 'home.hero', '', '' );
-		$card2    = self::img( $media, 'events.featured', '', '' );
+		$card2    = self::img( $media, 'events.featured1', 'Songwriters for Vets performers on stage with an American flag', '' );
 		$card3    = self::img( $media, 'events.library1', '', '' );
 		$card4    = self::img( $media, 'home.programs', '', '' );
 		$collage1 = self::img( $media, 'home.programsCollageBeach', '', '' );

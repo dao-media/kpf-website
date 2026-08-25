@@ -4,10 +4,36 @@ import { gsap } from "gsap";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const {
-  isSameDocumentHash,
-  scrollToTarget,
-} = require("@/lib/smoothScrollTo");
+const { sameDocumentHash, scrollToTarget } = require("@/lib/smoothScrollTo");
+
+const SMOOTHED_CLASS = "kpf-scroll-smoothed";
+
+function currentPath() {
+  if (typeof window === "undefined") return "/";
+  return window.location.pathname;
+}
+
+/**
+ * Capture-phase intercept so Next.js <Link href="/#programs"> cannot native-scroll
+ * the document (that fight with ScrollSmoother leaves a huge gap under the footer).
+ * @param {MouseEvent} event
+ * @param {{ smooth: boolean }} options
+ */
+function interceptSameDocumentHashClick(event, { smooth }) {
+  if (event.defaultPrevented || event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+    return;
+  }
+  const anchor = event.target?.closest?.("a[href]");
+  if (!anchor || anchor.target === "_blank") return;
+  const hash =
+    sameDocumentHash(anchor.getAttribute("href"), currentPath()) ||
+    sameDocumentHash(anchor.href, currentPath());
+  if (!hash) return;
+  event.preventDefault();
+  event.stopPropagation();
+  scrollToTarget(hash, { smooth, updateHash: true });
+}
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
@@ -21,22 +47,16 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
  */
 export default function ScrollSmootherRuntime() {
   const router = useRouter();
+  // Hash-only URL changes must not kill/recreate the smoother — that is how
+  // `/#programs` left a huge empty gap under the footer.
+  const routePath = String(router.asPath || "/").split(/[?#]/)[0] || "/";
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       // Still intercept hashes so reduced-motion gets header-aware scrolling.
       const onClickReduced = (event) => {
-        if (event.defaultPrevented || event.button !== 0) return;
-        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-          return;
-        }
-        const anchor = event.target?.closest?.("a[href]");
-        if (!anchor || anchor.target === "_blank") return;
-        const href = anchor.getAttribute("href");
-        if (!isSameDocumentHash(href)) return;
-        event.preventDefault();
-        scrollToTarget(href, { smooth: false, updateHash: true });
+        interceptSameDocumentHashClick(event, { smooth: false });
       };
       document.addEventListener("click", onClickReduced, true);
       if (window.location.hash) {
@@ -53,6 +73,7 @@ export default function ScrollSmootherRuntime() {
     if (!wrapper || !content) return undefined;
 
     ScrollSmoother.get()?.kill();
+    document.documentElement.classList.add(SMOOTHED_CLASS);
 
     const smoother = ScrollSmoother.create({
       wrapper,
@@ -76,21 +97,11 @@ export default function ScrollSmootherRuntime() {
       // Wait a frame so layout + smoother height are settled.
       requestAnimationFrame(() => {
         scrollToTarget(hash, { smooth, updateHash: false });
-        refresh();
       });
     };
 
     const onClick = (event) => {
-      if (event.defaultPrevented || event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-        return;
-      }
-      const anchor = event.target?.closest?.("a[href]");
-      if (!anchor || anchor.target === "_blank") return;
-      const href = anchor.getAttribute("href");
-      if (!isSameDocumentHash(href)) return;
-      event.preventDefault();
-      scrollToTarget(href, { smooth: true, updateHash: true });
+      interceptSameDocumentHashClick(event, { smooth: true });
     };
 
     const onHashChange = () => {
@@ -113,9 +124,10 @@ export default function ScrollSmootherRuntime() {
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("hashchange", onHashChange);
       router.events?.off("routeChangeComplete", onRouteComplete);
+      document.documentElement.classList.remove(SMOOTHED_CLASS);
       smoother.kill();
     };
-  }, [router.asPath, router.events]);
+  }, [routePath, router.events]);
 
   return null;
 }

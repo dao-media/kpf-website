@@ -399,7 +399,16 @@ html {
 }
 
 /* GSAP ScrollSmoother — fixed header stays outside; page + footer scroll inside.
- * ScrollSmoother sets position:fixed; inset:0; width:100%. With
+ * Native document scrolling (hash jumps, scrollIntoView) fights the smoother
+ * and leaves a huge empty gap under the footer. Lock the document scroller
+ * while the runtime is active; in-page hashes go through scrollToTarget(). */
+html.kpf-scroll-smoothed,
+html.kpf-scroll-smoothed body {
+	height: 100%;
+	overflow: hidden;
+}
+
+/* ScrollSmoother sets position:fixed; inset:0; width:100%. With
  * scrollbar-gutter:stable that 100% is narrower than 100vw, so vw-based
  * full-bleeds (e.g. About 120vw hero) clip to the guttered box and look
  * like width:100%. Force the wrapper to the true visual viewport. */

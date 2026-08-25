@@ -143,7 +143,11 @@ export default function HomePageScaffold({
                     {copy.hero.primaryCta.label}
                   </KpfButton>
                 )}
-                <Link href={copy.hero.secondaryCta.href} className="kpf-link kpf-hero__text-link">
+                <Link
+                  href={copy.hero.secondaryCta.href}
+                  scroll={false}
+                  className="kpf-link kpf-hero__text-link"
+                >
                   {copy.hero.secondaryCta.label}
                 </Link>
               </div>
@@ -201,7 +205,12 @@ export default function HomePageScaffold({
                 {copy.story.actions.map((action) => {
                   if (action.variant === "link") {
                     return (
-                      <Link key={action.href + action.label} href={action.href} className="kpf-link">
+                      <Link
+                        key={action.href + action.label}
+                        href={action.href}
+                        scroll={false}
+                        className="kpf-link"
+                      >
                         {action.label}
                       </Link>
                     );

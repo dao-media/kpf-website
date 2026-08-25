@@ -2,11 +2,20 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 
+const {
+  SCALE_EXIT,
+  edgeBufferForRect,
+  edgeExitProgress,
+  poseFromProgress,
+} = require("@/lib/chipTooltipProximity");
+
 const DURATION = 0.2;
 const TRAVEL = 16;
 const TIP_GAP = 12;
 const VIEWPORT_PAD = 8;
-const HIDE_GRACE_MS = 80;
+// Leave starts the 0.2s exit immediately. An inner buffer already eases
+// scale/alpha, so a hide grace would park the tip and delay the fade.
+const HIDE_GRACE_MS = 0;
 const MOBILE_HOLD = 2;
 const MOBILE_STAGGER = 1;
 const MOBILE_MQ = "(max-width: 63.999rem)";
@@ -102,7 +111,7 @@ export default function ChipCursorTooltip({
       xPercent: -50,
       yPercent: -100,
       y: TRAVEL,
-      scale: 0.92,
+      scale: SCALE_EXIT,
       transformOrigin: "50% 100%",
       force3D: true,
       pointerEvents: "none",
@@ -140,6 +149,28 @@ export default function ChipCursorTooltip({
       }
     };
 
+    const poseForPoint = (clientX, clientY) => {
+      if (typeof clientX !== "number" || typeof clientY !== "number") {
+        return poseFromProgress(0);
+      }
+      const rect = host.getBoundingClientRect();
+      return poseFromProgress(
+        edgeExitProgress(clientX, clientY, rect, edgeBufferForRect(rect)),
+      );
+    };
+
+    const applyProximity = (clientX, clientY) => {
+      if (!visibleRef.current || prefersReducedMotion()) return;
+      const pose = poseForPoint(clientX, clientY);
+      gsap.to(tip, {
+        autoAlpha: pose.autoAlpha,
+        scale: pose.scale,
+        duration: DURATION,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    };
+
     const place = (clientX, clientY) => {
       const tipH = tip.offsetHeight || 40;
       applySide(clientY - TIP_GAP - tipH < VIEWPORT_PAD);
@@ -163,16 +194,29 @@ export default function ChipCursorTooltip({
       });
     };
 
-    const animateIn = () => {
+    /** @param {number=} clientX @param {number=} clientY */
+    const animateIn = (clientX, clientY) => {
       const dur = prefersReducedMotion() ? 0 : DURATION;
+      const pose = poseForPoint(clientX, clientY);
       gsap.killTweensOf(tip, "autoAlpha,y,scale");
+      // Keep Y on its own tween so edge-proximity can overwrite scale/alpha
+      // without parking the entrance travel.
       gsap.fromTo(
         tip,
-        { autoAlpha: 0, y: travelY(), scale: 0.92 },
+        { y: travelY() },
         {
-          autoAlpha: 1,
           y: 0,
-          scale: 1,
+          duration: dur,
+          ease: "power2.out",
+          overwrite: "auto",
+        },
+      );
+      gsap.fromTo(
+        tip,
+        { autoAlpha: 0, scale: SCALE_EXIT },
+        {
+          autoAlpha: pose.autoAlpha,
+          scale: pose.scale,
           duration: dur,
           ease: "power2.out",
           overwrite: "auto",
@@ -186,9 +230,9 @@ export default function ChipCursorTooltip({
       gsap.to(tip, {
         autoAlpha: 0,
         y: travelY(),
-        scale: 0.92,
+        scale: SCALE_EXIT,
         duration: dur,
-        ease: "power2.in",
+        ease: "power2.out",
         overwrite: "auto",
       });
     };
@@ -211,7 +255,7 @@ export default function ChipCursorTooltip({
       claimActiveTip(host, () => {
         visibleRef.current = true;
         tip.setAttribute("data-open", "true");
-        animateIn();
+        animateIn(clientX, clientY);
       });
     };
 
@@ -226,7 +270,7 @@ export default function ChipCursorTooltip({
         animateOut();
       };
 
-      if (opts.force) {
+      if (opts.force || HIDE_GRACE_MS <= 0) {
         run();
         return;
       }
@@ -264,6 +308,7 @@ export default function ChipCursorTooltip({
     const onMove = (event) => {
       if (!pointerOk() || !visibleRef.current) return;
       place(event.clientX, event.clientY);
+      applyProximity(event.clientX, event.clientY);
     };
 
     const onLeave = (event) => {

@@ -337,12 +337,12 @@ html {
 	color: var(--kpf-parchment, #f4efea);
 }
 
-.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn) {
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip) {
 	color: var(--kpf-color-text-link);
 }
 
-.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):hover,
-.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):focus-visible {
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):hover,
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):focus-visible {
 	color: var(--kpf-color-text-link-hover);
 }
 
@@ -802,6 +802,11 @@ html {
 	gap: var(--kpf-space-xs);
 }
 
+.kpf-header__actions .kpf-chip-tip-host,
+.kpf-header__actions .kpf-donate-tip {
+	flex: 0 0 auto;
+}
+
 /*
  * Header Donate — lock geometry so dual stylesheets / hover / type roles
  * cannot nudge it 1–2px. No translateY hover (that was a visible shift).
@@ -1245,13 +1250,21 @@ html {
 
 .kpf-footer__cta-title {
 	font-family: var(--kpf-font-display);
-	font-size: 1rem;
-	font-weight: 700;
+	font-size: var(--kpf-text-h5, 1rem);
+	font-weight: var(--kpf-weight-h5, 700);
+	letter-spacing: var(--kpf-tracking-h5, 0);
+	line-height: var(--kpf-leading-h5, 1.35);
 	margin: 0;
 }
 
 .kpf-footer__cta-body {
 	margin: 0;
+}
+
+.kpf-footer__cta-card .kpf-chip-tip-host,
+.kpf-footer__cta-card .kpf-btn {
+	align-self: flex-start;
+	width: auto;
 }
 
 /* Nav link labels — default + visited use link color; hover stays parchment */
@@ -1858,17 +1871,21 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 .kpf-partners__dots {
 	align-items: center;
 	display: flex;
-	gap: 0.375rem;
+	gap: 0.25rem;
 	justify-content: center;
-	min-height: 0.75rem;
+	min-height: 1.25rem;
 }
 
 /*
- * Square slot + circular paint. Idle/active size change must not reflow
- * the row (active used to grow 0.5rem → 0.75rem).
+ * Tiny painted circle inside a modest hit slot. Do not size the ::after
+ * to 100% of the button — a11y min-target CSS used to inflate that into
+ * 24–44px discs.
  */
+.kpf-site-chrome button.kpf-partners__dot,
 button.kpf-partners__dot {
-	--kpf-partners-dot-size: 0.75rem;
+	--kpf-partners-dot-visual: 0.375rem;
+	--kpf-partners-dot-visual-active: 0.5rem;
+	--kpf-partners-dot-hit: 1.25rem;
 	appearance: none;
 	aspect-ratio: 1 / 1;
 	background: transparent;
@@ -1877,43 +1894,43 @@ button.kpf-partners__dot {
 	box-sizing: border-box;
 	cursor: pointer;
 	display: block;
-	flex: 0 0 var(--kpf-partners-dot-size);
+	flex: 0 0 var(--kpf-partners-dot-hit);
 	font-size: 0;
-	height: var(--kpf-partners-dot-size);
+	height: var(--kpf-partners-dot-hit);
 	line-height: 0;
 	margin: 0;
-	max-height: var(--kpf-partners-dot-size);
-	max-width: var(--kpf-partners-dot-size);
-	min-height: var(--kpf-partners-dot-size);
-	min-width: var(--kpf-partners-dot-size);
+	max-height: var(--kpf-partners-dot-hit);
+	max-width: var(--kpf-partners-dot-hit);
+	min-height: var(--kpf-partners-dot-hit);
+	min-width: var(--kpf-partners-dot-hit);
 	overflow: visible;
 	padding: 0;
 	position: relative;
-	width: var(--kpf-partners-dot-size);
+	width: var(--kpf-partners-dot-hit);
 }
 
+.kpf-site-chrome button.kpf-partners__dot::after,
 button.kpf-partners__dot::after {
-	aspect-ratio: 1 / 1;
 	background: color-mix(in srgb, var(--kpf-ink) 28%, transparent);
 	border-radius: 50%;
 	content: "";
 	display: block;
-	height: 100%;
-	left: 0;
+	height: var(--kpf-partners-dot-visual);
+	left: 50%;
 	position: absolute;
-	top: 0;
-	transform: scale(0.6667); /* ~0.5rem visual inside 0.75rem slot */
-	transform-origin: center;
-	transition:
-		background-color 0.2s ease,
-		transform 0.2s ease;
-	width: 100%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	transition: background-color 0.2s ease, width 0.2s ease, height 0.2s ease;
+	width: var(--kpf-partners-dot-visual);
 }
 
+.kpf-site-chrome button.kpf-partners__dot[aria-current="true"]::after,
+.kpf-site-chrome button.kpf-partners__dot.is-active::after,
 button.kpf-partners__dot[aria-current="true"]::after,
 button.kpf-partners__dot.is-active::after {
 	background: var(--kpf-ember, #bb0d0d);
-	transform: scale(1);
+	height: var(--kpf-partners-dot-visual-active);
+	width: var(--kpf-partners-dot-visual-active);
 }
 
 button.kpf-partners__dot:focus-visible {
@@ -3503,9 +3520,9 @@ a.kpf-archive__card:focus-visible {
 	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.5rem;
+	gap: 0.25rem;
 	justify-content: center;
-	min-height: 0.75rem;
+	min-height: 1.25rem;
 	/* Spacing from card comes from aside gap (16px) */
 	padding: 0;
 	pointer-events: auto;
@@ -3522,11 +3539,14 @@ a.kpf-archive__card:focus-visible {
 }
 
 /*
- * Square slot + circular paint. Selector beats foundation `button:not(.kpf-btn)`
- * type metrics so empty buttons cannot inflate into ovals (Safari especially).
+ * Tiny painted circle inside a modest hit slot — same treatment as
+ * .kpf-partners__dot so a11y min-target cannot inflate the disc.
  */
+.kpf-site-chrome button.kpf-history__dot,
 button.kpf-history__dot {
-	--kpf-history-dot-size: 0.75rem;
+	--kpf-history-dot-visual: 0.375rem;
+	--kpf-history-dot-visual-active: 0.5rem;
+	--kpf-history-dot-hit: 1.25rem;
 	appearance: none;
 	aspect-ratio: 1 / 1;
 	background: transparent;
@@ -3534,47 +3554,47 @@ button.kpf-history__dot {
 	border-radius: 0;
 	box-sizing: border-box;
 	cursor: pointer;
-	flex: 0 0 var(--kpf-history-dot-size);
+	flex: 0 0 var(--kpf-history-dot-hit);
 	font-family: none;
 	font-size: 0;
 	font-weight: 400;
-	height: var(--kpf-history-dot-size);
+	height: var(--kpf-history-dot-hit);
 	letter-spacing: 0;
 	line-height: 0;
 	margin: 0;
-	max-height: var(--kpf-history-dot-size);
-	max-width: var(--kpf-history-dot-size);
-	min-height: var(--kpf-history-dot-size);
-	min-width: var(--kpf-history-dot-size);
+	max-height: var(--kpf-history-dot-hit);
+	max-width: var(--kpf-history-dot-hit);
+	min-height: var(--kpf-history-dot-hit);
+	min-width: var(--kpf-history-dot-hit);
 	overflow: visible;
 	padding: 0;
 	position: relative;
 	touch-action: manipulation;
-	width: var(--kpf-history-dot-size);
+	width: var(--kpf-history-dot-hit);
 }
 
+.kpf-site-chrome button.kpf-history__dot::after,
 button.kpf-history__dot::after {
-	aspect-ratio: 1 / 1;
 	background: color-mix(in srgb, var(--kpf-parchment, #f4efea) 45%, transparent);
 	border-radius: 50%;
 	content: "";
 	display: block;
-	height: 100%;
-	left: 0;
+	height: var(--kpf-history-dot-visual);
+	left: 50%;
 	position: absolute;
-	top: 0;
-	transform: scale(0.6667); /* ~0.5rem visual inside 0.75rem slot */
-	transform-origin: center;
-	transition:
-		background-color 200ms ease,
-		transform 200ms ease;
-	width: 100%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	transition: background-color 200ms ease, width 200ms ease, height 200ms ease;
+	width: var(--kpf-history-dot-visual);
 }
 
+.kpf-site-chrome button.kpf-history__dot[aria-current="true"]::after,
+.kpf-site-chrome button.kpf-history__dot.is-active::after,
 button.kpf-history__dot[aria-current="true"]::after,
 button.kpf-history__dot.is-active::after {
 	background: var(--kpf-color-action-primary);
-	transform: scale(1);
+	height: var(--kpf-history-dot-visual-active);
+	width: var(--kpf-history-dot-visual-active);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3982,6 +4002,11 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	position: absolute;
 	transform: translateX(-50%) rotate(45deg);
 	width: 10px;
+}
+
+.kpf-chip-tip--below .kpf-chip-tip__carrot {
+	bottom: auto;
+	top: -5px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -337,12 +337,12 @@ html {
 	color: var(--kpf-parchment, #f4efea);
 }
 
-.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn) {
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip) {
 	color: var(--kpf-color-text-link);
 }
 
-.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):hover,
-.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):focus-visible {
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):hover,
+.kpf-u-invert :is(a, .kpf-link):not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):focus-visible {
 	color: var(--kpf-color-text-link-hover);
 }
 

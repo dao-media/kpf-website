@@ -788,8 +788,11 @@ textarea:disabled,
 	padding: 0.4rem 0.65rem;
 }
 
-/* —— Hyperlinks (inherit body/UI size from parent; apply link chrome) —— */
-a,
+/* —— Hyperlinks (inherit body/UI size from parent; apply link chrome) ——
+ * Buttons and chips/tags may be <a> for URL behavior. They are not text
+ * links — never inherit hyperlink color, weight, tracking, or underline.
+ */
+a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip),
 .kpf-link {
 	color: var(--kpf-color-text-link);
 	font-weight: var(--kpf-weight-link);
@@ -829,25 +832,25 @@ a,
 	line-height: var(--kpf-leading-body-l);
 }
 
-a:visited,
+a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):visited,
 .kpf-link:visited {
 	color: var(--kpf-mute);
 	text-decoration-color: color-mix(in srgb, var(--kpf-mute) 45%, transparent);
 }
 
-a:hover,
+a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):hover,
 .kpf-link:hover {
 	color: var(--kpf-ember);
 	text-decoration-color: var(--kpf-ember);
 }
 
-a:active,
+a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):active,
 .kpf-link:active {
 	color: var(--kpf-deep);
 	text-decoration-color: var(--kpf-deep);
 }
 
-a:focus-visible,
+a:not(.kpf-btn):not(.kpf-grantee-card__chip):not(.kpf-partners__chip):not(.kpf-blog-row__chip):focus-visible,
 .kpf-link:focus-visible {
 	border-radius: 0.15rem;
 	box-shadow: var(--kpf-focus-ring);
@@ -1461,77 +1464,6 @@ a.kpf-btn--lg.kpf-btn--donate {
 		button.kpf-btn--sm.kpf-btn--donate:focus-visible {
 			padding-inline-end: var(--kpf-paypal-pad-end);
 		}
-	}
-}
-
-/* Desktop pointer hover: icon-only external tooltip. Off on every touch breakpoint. */
-.kpf-btn--donate .kpf-btn__ext-tip {
-	display: none;
-}
-
-@media (hover: hover) and (pointer: fine) and (min-width: 64rem) {
-	.kpf-btn--donate .kpf-btn__ext-tip {
-		align-items: center;
-		background: var(--kpf-deep);
-		border: 1px solid color-mix(in srgb, var(--kpf-parchment) 32%, transparent);
-		border-radius: var(--kpf-radius-sm);
-		bottom: calc(100% + 0.4rem);
-		box-shadow: 0 8px 24px color-mix(in srgb, var(--kpf-ink) 18%, transparent);
-		color: var(--kpf-parchment);
-		display: inline-flex;
-		height: 1.75rem;
-		justify-content: center;
-		left: 50%;
-		opacity: 0;
-		pointer-events: none;
-		position: absolute;
-		transform: translateX(-50%) translateY(0.2rem);
-		transition:
-			opacity 160ms ease,
-			transform 160ms ease,
-			visibility 160ms ease;
-		visibility: hidden;
-		width: 1.75rem;
-		z-index: 4;
-	}
-
-	.kpf-btn--donate .kpf-btn__ext-tip svg {
-		display: block;
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	/* Floating header has no room above the control. */
-	.kpf-header__actions .kpf-btn--donate .kpf-btn__ext-tip {
-		bottom: auto;
-		top: calc(100% + 0.4rem);
-		transform: translateX(-50%) translateY(-0.2rem);
-	}
-
-	.kpf-btn--donate:hover,
-	.kpf-btn--donate:focus-visible {
-		z-index: 4;
-	}
-
-	.kpf-btn--donate:hover .kpf-btn__ext-tip,
-	.kpf-btn--donate:focus-visible .kpf-btn__ext-tip {
-		opacity: 1;
-		transform: translateX(-50%) translateY(0);
-		visibility: visible;
-	}
-
-	.kpf-header__actions .kpf-btn--donate:hover .kpf-btn__ext-tip,
-	.kpf-header__actions .kpf-btn--donate:focus-visible .kpf-btn__ext-tip {
-		transform: translateX(-50%) translateY(0);
-	}
-}
-
-@media (hover: hover) and (pointer: fine) and (min-width: 64rem) and (prefers-reduced-motion: reduce) {
-	.kpf-btn--donate .kpf-btn__ext-tip,
-	.kpf-header__actions .kpf-btn--donate .kpf-btn__ext-tip {
-		transform: translateX(-50%);
-		transition: opacity 160ms ease, visibility 160ms ease;
 	}
 }
 

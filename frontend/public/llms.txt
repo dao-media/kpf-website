@@ -10,15 +10,15 @@ Every gift is meant to go out as a grant to a Florida organization the Foundatio
 
 ## Pages
 
-- [Home](https://kpf-site.vercel.app/): Mission, grantees, Kevin’s story, and how to help
-- [About](https://kpf-site.vercel.app/about): Kevin’s story, grant criteria, and recent grant recipients
-- [Events](https://kpf-site.vercel.app/events): Upcoming events and partner opportunities
-- [Blog](https://kpf-site.vercel.app/blog): News and stories from grants, events, and the work on the ground
-- [Contact](https://kpf-site.vercel.app/contact): Questions about grants, events, volunteering, or sponsorship
-- [Privacy](https://kpf-site.vercel.app/privacy): Privacy policy
-- [Search](https://kpf-site.vercel.app/search): Site search
+- [Home](https://kevinpopkefoundation.org/): Mission, grantees, Kevin’s story, and how to help
+- [About](https://kevinpopkefoundation.org/about): Kevin’s story, grant criteria, and recent grant recipients
+- [Events](https://kevinpopkefoundation.org/events): Upcoming events and partner opportunities
+- [Blog](https://kevinpopkefoundation.org/blog): News and stories from grants, events, and the work on the ground
+- [Contact](https://kevinpopkefoundation.org/contact): Questions about grants, events, volunteering, or sponsorship
+- [Privacy](https://kevinpopkefoundation.org/privacy): Privacy policy
+- [Search](https://kevinpopkefoundation.org/search): Site search
 
 ## Optional
 
-- [Sitemap](https://kpf-site.vercel.app/sitemap.xml): Indexable URLs
+- [Sitemap](https://kevinpopkefoundation.org/sitemap.xml): Indexable URLs
 - [WordPress CMS](https://kpf.dreamhosters.com/): Content management system (not the public site)

@@ -179,7 +179,9 @@ final class Schema {
 	private static function organization_node(array $settings, string $org_id): ?array {
 		$schema = $settings['schema'];
 		$name   = (string) ($schema['organization_name'] ?: get_bloginfo('name'));
-		$url    = (string) ($schema['organization_url'] ?: Resolver::frontend_url($settings, '/'));
+		$url    = \KPF\Core\Support\FrontendUrl::to_public(
+			(string) ($schema['organization_url'] ?: Resolver::frontend_url($settings, '/'))
+		);
 		$logo   = ! empty($schema['organization_logo'])
 			? \KPF\Core\Media\PublicUrls::image_url((int) $schema['organization_logo'], 'full')
 			: '';

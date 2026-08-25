@@ -465,7 +465,7 @@ export default function App() {
 						<TextControl
 							label={__('Public website address', 'kpf-core')}
 							help={__(
-								'The public Next.js site visitors use (not wp-admin). Use the custom domain once it is live — a vercel.app URL stays noindexed by Vercel.',
+								'The public site visitors use — https://kevinpopkefoundation.org. Do not use a vercel.app URL; those stay noindexed and must not appear in canonicals or sitemaps.',
 								'kpf-core'
 							)}
 							value={settings.global.frontend_url}

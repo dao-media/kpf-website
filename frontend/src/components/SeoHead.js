@@ -1,5 +1,7 @@
 import Head from "next/head";
 
+const { rewriteSeoPublicUrls } = require("@/lib/publicSiteUrl");
+
 function robotsContent(robots = {}) {
   const parts = [
     robots.index === false ? "noindex" : "index",
@@ -80,7 +82,7 @@ export default function SeoHead({ seo }) {
     twitter,
     customMeta = [],
     schemaJson,
-  } = seo;
+  } = rewriteSeoPublicUrls(seo);
 
   return (
     <Head>

@@ -39,7 +39,9 @@ final class Resolver {
 
 		$title       = Engine::render($title_tpl, $context);
 		$description = Engine::render($desc_tpl, $context);
-		$canonical   = $entity['canonical'] ?: self::frontend_url($settings, $context['permalink']);
+		$canonical   = \KPF\Core\Support\FrontendUrl::to_public(
+			$entity['canonical'] ?: self::frontend_url($settings, $context['permalink'])
+		);
 
 		$robots = array(
 			'index'     => self::first_bool($entity['robots_index'] ?? null, $type['robots_index'] ?? null, (bool) $global['robots_index']),
@@ -189,6 +191,7 @@ final class Resolver {
 			$description = $tagline;
 		}
 		$canonical   = self::frontend_url($settings, '/');
+		$canonical   = \KPF\Core\Support\FrontendUrl::to_public($canonical);
 		$image_id    = (int) $global['og_default_image_id'];
 		$image_url   = $image_id ? \KPF\Core\Media\PublicUrls::image_url($image_id, 'full') : '';
 
@@ -364,36 +367,13 @@ final class Resolver {
 	 * @param array<string, mixed> $settings
 	 */
 	public static function frontend_url(array $settings, string $path = '/'): string {
-		$configured = rtrim((string) ($settings['global']['frontend_url'] ?? ''), '/');
-		$faust      = \KPF\Core\Support\FrontendUrl::faust_uri();
-		$base       = self::usable_frontend_base($configured, $faust);
-		$path       = '/' . ltrim($path, '/');
+		$base = \KPF\Core\Support\FrontendUrl::public_origin();
+		$path = '/' . ltrim($path, '/');
 		if ($path === '/') {
 			return $base . '/';
 		}
+
 		return $base . $path;
-	}
-
-	private static function usable_frontend_base(string $configured, string $faust): string {
-		if (self::is_placeholder_frontend($configured)) {
-			if ('' !== $faust) {
-				return rtrim($faust, '/');
-			}
-
-			return rtrim((string) home_url('/'), '/');
-		}
-
-		return $configured;
-	}
-
-	private static function is_placeholder_frontend(string $url): bool {
-		if ('' === $url) {
-			return true;
-		}
-
-		$host = (string) wp_parse_url($url, PHP_URL_HOST);
-
-		return in_array($host, array( 'localhost', '127.0.0.1' ), true);
 	}
 
 	/**

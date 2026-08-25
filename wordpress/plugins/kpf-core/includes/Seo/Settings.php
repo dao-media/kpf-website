@@ -50,7 +50,7 @@ final class Settings {
 				'separator'            => '|',
 				'site_title'           => '',
 				'site_description'     => '',
-				'frontend_url'         => 'http://localhost:3010',
+				'frontend_url'         => 'https://kevinpopkefoundation.org',
 				'robots_index'         => true,
 				'robots_follow'        => true,
 				'robots_noarchive'     => false,

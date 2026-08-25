@@ -117,6 +117,28 @@ kpf_assert(
 
 $home = Resolver::for_home();
 kpf_assert($home['canonical'] !== '', 'home canonical present');
+kpf_assert(
+	! str_contains((string) $home['canonical'], 'vercel.app'),
+	'home canonical is not a Vercel host'
+);
+
+kpf_assert(
+	\KPF\Core\Support\FrontendUrl::is_ephemeral_host('kpf-site.vercel.app'),
+	'kpf-site.vercel.app is ephemeral'
+);
+kpf_assert(
+	\KPF\Core\Support\FrontendUrl::is_ephemeral_host('kpf-preview-daneoleary.vercel.app'),
+	'Vercel preview hosts are ephemeral'
+);
+kpf_assert(
+	! \KPF\Core\Support\FrontendUrl::is_ephemeral_host('kevinpopkefoundation.org'),
+	'custom domain is not ephemeral'
+);
+kpf_assert(
+	\KPF\Core\Support\FrontendUrl::to_public('https://kpf-site.vercel.app/about/')
+		=== \KPF\Core\Support\FrontendUrl::PRODUCTION_ORIGIN . '/about/',
+	'rewrites Vercel URLs onto the production domain'
+);
 
 $redirect = Repository::create(array(
 	'source_path' => '/old-smoke-path',

@@ -1,5 +1,7 @@
 import { escapeXml, fetchSeoPublic } from "@/lib/wordpressPublic";
 
+const { toPublicUrl } = require("@/lib/publicSiteUrl");
+
 export default async function handler(req, res) {
   const { type, page } = req.query;
 
@@ -19,7 +21,7 @@ export default async function handler(req, res) {
           .join("\n");
 
         return `  <url>
-    <loc>${escapeXml(entry.loc)}</loc>
+    <loc>${escapeXml(toPublicUrl(entry.loc) || entry.loc)}</loc>
     ${entry.lastmod ? `<lastmod>${escapeXml(entry.lastmod)}</lastmod>` : ""}
 ${images}
   </url>`;

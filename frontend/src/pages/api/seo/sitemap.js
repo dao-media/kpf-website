@@ -1,5 +1,7 @@
 import { escapeXml, fetchSeoPublic } from "@/lib/wordpressPublic";
 
+const { toPublicUrl } = require("@/lib/publicSiteUrl");
+
 export default async function handler(req, res) {
   try {
     const data = await fetchSeoPublic("/public/sitemap");
@@ -8,7 +10,7 @@ export default async function handler(req, res) {
 ${(data.sitemaps || [])
   .map(
     (entry) => `  <sitemap>
-    <loc>${escapeXml(entry.loc)}</loc>
+    <loc>${escapeXml(toPublicUrl(entry.loc) || entry.loc)}</loc>
     ${entry.lastmod ? `<lastmod>${escapeXml(entry.lastmod)}</lastmod>` : ""}
   </sitemap>`
   )

@@ -1,4 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
+import { HOME } from "@/lib/pageCopy";
 
 const AUTO_MS = 3000;
 const TRANSITION_MS = 650;
@@ -48,6 +50,7 @@ function buildOffsets(stepPx, maxOffset) {
 export default function PartnersSlider({
   items = [],
   label = "Kevin Popke Foundation Grantees",
+  href = HOME.partners.href,
 }) {
   const labelId = `kpf-partners-${useId().replace(/:/g, "")}`;
   const viewportRef = useRef(null);
@@ -180,18 +183,15 @@ export default function PartnersSlider({
                 </>
               );
 
-              if (item.website) {
+              if (href) {
                 return (
-                  <a
+                  <Link
                     key={item.id}
                     className="kpf-partners__chip"
-                    href={item.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${item.name} (opens in a new tab)`}
+                    href={href}
                   >
                     {content}
-                  </a>
+                  </Link>
                 );
               }
 

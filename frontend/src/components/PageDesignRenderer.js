@@ -154,6 +154,7 @@ function renderDesignPart(part, index, { forms, queries, partnerGrantees }) {
         key={`partners-slider-${index}`}
         items={items}
         label={HOME?.partners?.label || "Kevin Popke Foundation Grantees"}
+        href={HOME?.partners?.href || "/about/#grantees"}
       />
     );
   }

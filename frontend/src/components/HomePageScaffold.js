@@ -152,7 +152,11 @@ export default function HomePageScaffold({
         </div>
       </section>
 
-      <PartnersSlider items={partners} label={copy.partners.label} />
+      <PartnersSlider
+        items={partners}
+        label={copy.partners.label}
+        href={copy.partners.href}
+      />
 
       <section className="kpf-story kpf-section" aria-labelledby="kpf-home-story-title">
         <div className="kpf-story__media">

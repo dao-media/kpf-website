@@ -39,6 +39,7 @@ const HOME = {
   },
   partners: {
     label: "Kevin Popke Foundation Grantees",
+    href: "/about/#grantees",
   },
   story: {
     eyebrow: "Preserving His Legacy",
@@ -271,6 +272,7 @@ const ABOUT = {
     ],
   },
   grantees: {
+    id: "grantees",
     eyebrow: "Making an impact",
     // `{total}` → %%grants_total%% / {{grants.total}} / kpfGrantsTotal.label
     title: "More than {total} in grants — and counting",

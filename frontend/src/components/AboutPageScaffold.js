@@ -393,7 +393,11 @@ export default function AboutPageScaffold({
         </div>
       </section>
 
-      <section className="kpf-grantees kpf-section kpf-section--page" aria-labelledby="kpf-about-grantees-title">
+      <section
+        id={copy.grantees.id}
+        className="kpf-grantees kpf-section kpf-section--page"
+        aria-labelledby="kpf-about-grantees-title"
+      >
         <div className="kpf-u-container">
           <div className="kpf-content-block">
             <div className="kpf-content-block__copy">

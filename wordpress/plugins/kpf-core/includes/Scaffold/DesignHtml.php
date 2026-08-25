@@ -30,6 +30,7 @@ final class DesignHtml {
 
 		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
 		$donate_sm = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary kpf-btn--sm' );
+		$check = '<span class="kpf-programs__check" aria-hidden="true">' . ChromeHtml::check_svg( 28 ) . '</span>';
 
 		return <<<HTML
 <div class="kpf-page-home" data-kpf-scaffold="home">
@@ -114,9 +115,9 @@ final class DesignHtml {
           </div>
         </div>
         <ul class="kpf-programs__list">
-          <li class="kpf-programs__item"><span class="kpf-programs__check" aria-hidden="true">✓</span><div><h3 class="kpf-programs__item-title">Housing</h3><p class="kpf-programs__item-body">Transitional and permanent housing for veterans who don’t currently have any.</p></div></li>
-          <li class="kpf-programs__item"><span class="kpf-programs__check" aria-hidden="true">✓</span><div><h3 class="kpf-programs__item-title">Work</h3><p class="kpf-programs__item-body">Job training and workforce programs that turn service experience into a career.</p></div></li>
-          <li class="kpf-programs__item"><span class="kpf-programs__check" aria-hidden="true">✓</span><div><h3 class="kpf-programs__item-title">Health</h3><p class="kpf-programs__item-body">Mental health care and adaptive programs for veterans living with injury.</p></div></li>
+          <li class="kpf-programs__item">{$check}<div><h3 class="kpf-programs__item-title">Housing</h3><p class="kpf-programs__item-body">Transitional and permanent housing for veterans who don’t currently have any.</p></div></li>
+          <li class="kpf-programs__item">{$check}<div><h3 class="kpf-programs__item-title">Work</h3><p class="kpf-programs__item-body">Job training and workforce programs that turn service experience into a career.</p></div></li>
+          <li class="kpf-programs__item">{$check}<div><h3 class="kpf-programs__item-title">Health</h3><p class="kpf-programs__item-body">Mental health care and adaptive programs for veterans living with injury.</p></div></li>
         </ul>
       </div>
       <div class="kpf-programs__media">
@@ -433,6 +434,7 @@ HTML;
 		$flag      = self::cta_flag( $media );
 
 		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
+		$ticket_icon = '<span class="kpf-btn__icon kpf-btn__icon--trailing" aria-hidden="true">' . ChromeHtml::ticket_svg( 20 ) . '</span>';
 
 		return <<<HTML
 <div class="kpf-page-events" data-kpf-scaffold="events">
@@ -518,7 +520,7 @@ HTML;
           </div>
         </div>
         <div class="kpf-content-block__actions">
-          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="https://songwriters4vets.com" data-kpf-external="true" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get tickets</button>
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="https://songwriters4vets.com" data-kpf-external="true" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Get tickets{$ticket_icon}</button>
           <button type="button" class="kpf-btn kpf-btn--outline" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Become a sponsor</button>
         </div>
       </div>

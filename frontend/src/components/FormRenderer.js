@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { RotateCcw, Send } from "lucide-react";
 import { submitForm } from "@/lib/forms";
 import { useAccessibility } from "@/components/AccessibilityRuntime";
 
@@ -1124,12 +1125,7 @@ export default function FormRenderer({
           >
             {settings.showResetIcon !== false ? (
               <span className="kpf-btn__icon kpf-btn__icon--leading" aria-hidden="true">
-                <img
-                  src="/media/contact/icons/rotate-ccw.svg"
-                  alt=""
-                  width={20}
-                  height={20}
-                />
+                <RotateCcw size={20} strokeWidth={2} />
               </span>
             ) : null}
             {settings.resetLabel || "Start over"}
@@ -1146,12 +1142,7 @@ export default function FormRenderer({
             : settings.submitLabel || "Send"}
           {status !== "submitting" && settings.showSubmitIcon ? (
             <span className="kpf-btn__icon kpf-btn__icon--trailing" aria-hidden="true">
-              <img
-                src="/media/contact/icons/send.svg"
-                alt=""
-                width={20}
-                height={20}
-              />
+              <Send size={20} strokeWidth={2} />
             </span>
           ) : null}
         </button>

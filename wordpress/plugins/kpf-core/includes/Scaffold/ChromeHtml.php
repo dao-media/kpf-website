@@ -74,15 +74,25 @@ final class ChromeHtml {
 	}
 
 	public static function arrow_svg(): string {
-		return '<svg class="kpf-mobile-nav__arrow" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6.2 3.2 10.8 8l-4.6 4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+		return '<svg class="kpf-mobile-nav__arrow lucide lucide-chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6"/></svg>';
 	}
 
 	public static function menu_icon_svg(): string {
-		return '<svg class="kpf-mobile-nav__icon kpf-mobile-nav__icon--menu" viewBox="0 0 22 22" width="22" height="22" aria-hidden="true" focusable="false"><path d="M2 5h18M2 11h18M2 17h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+		return '<svg class="kpf-mobile-nav__icon kpf-mobile-nav__icon--menu lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg>';
 	}
 
 	public static function close_icon_svg(): string {
-		return '<svg class="kpf-mobile-nav__icon kpf-mobile-nav__icon--close" viewBox="0 0 22 22" width="22" height="22" aria-hidden="true" focusable="false"><path d="M5 5l12 12M17 5 5 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+		return '<svg class="kpf-mobile-nav__icon kpf-mobile-nav__icon--close lucide lucide-x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+	}
+
+	public static function check_svg( int $size = 28 ): string {
+		$size = max( 1, $size );
+		return '<svg class="lucide lucide-check" xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>';
+	}
+
+	public static function ticket_svg( int $size = 20 ): string {
+		$size = max( 1, $size );
+		return '<svg class="lucide lucide-ticket" xmlns="http://www.w3.org/2000/svg" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>';
 	}
 
 	public static function header_html(): string {

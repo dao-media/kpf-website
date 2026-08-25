@@ -536,7 +536,7 @@ const EVENTS = {
         label: "Get tickets",
         variant: "primary",
         external: true,
-        trailingIcon: "external",
+        trailingIcon: "ticket",
       },
       {
         href: "/contact/?inquiry=partnership",

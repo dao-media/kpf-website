@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import PartnersSlider from "@/components/PartnersSlider";
 import KpfButton from "@/components/KpfButton";
@@ -14,24 +14,6 @@ const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
 const ACCORDION_DURATION_MS = 280;
 const ACCORDION_SWAP_HOLD_MS = Math.round(ACCORDION_DURATION_MS * 0.65);
 
-function CheckIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
-      <path
-        d="M7.5 14.5 11.5 18.5 20.5 9.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/**
- * Home scaffold — Figma Homepage Desktop hero `1101:3435` (+ page `414:532`).
- */
 export default function HomePageScaffold({
   media = {},
   partnerGrantees = [],
@@ -313,7 +295,7 @@ export default function HomePageScaffold({
               {copy.programs.items.map((item) => (
                 <li key={item.title} className="kpf-programs__item">
                   <span className="kpf-programs__check" aria-hidden="true">
-                    <CheckIcon />
+                    <Check size={28} strokeWidth={2} />
                   </span>
                   <div>
                     <h3 className="kpf-programs__item-title">{item.title}</h3>

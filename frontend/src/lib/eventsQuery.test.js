@@ -98,7 +98,7 @@ test("featuredSectionFromEvent builds title body meta with links", () => {
           label: "Get tickets",
           variant: "primary",
           external: true,
-          trailingIcon: "external",
+          trailingIcon: "ticket",
         },
       ],
     },
@@ -114,4 +114,5 @@ test("featuredSectionFromEvent builds title body meta with links", () => {
   assert.equal(section.meta[2].href, "https://maps.example");
   assert.ok(!section.meta.some((chip) => chip.icon === "ticket"));
   assert.equal(section.actions[0].href, "https://tickets.example");
+  assert.equal(section.actions[0].trailingIcon, "ticket");
 });

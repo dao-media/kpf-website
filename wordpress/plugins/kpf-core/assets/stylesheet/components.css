@@ -2108,11 +2108,12 @@ details.kpf-accordion > summary::-webkit-details-marker {
 	display: inline-flex;
 	flex-shrink: 0;
 	height: 1.25rem;
-	overflow: clip;
+	overflow: visible;
 	width: 1.25rem;
 }
 
-.kpf-btn__icon img {
+.kpf-btn__icon img,
+.kpf-btn__icon svg {
 	display: block;
 	height: 100%;
 	object-fit: contain;

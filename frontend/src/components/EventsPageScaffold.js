@@ -65,10 +65,19 @@ function ActionLink({ action }) {
   const icons = (
     <>
       {action.trailingIcon === "arrow" ? (
-        <ArrowRight size={20} strokeWidth={2} absoluteStrokeWidth aria-hidden />
+        <span className="kpf-btn__icon kpf-btn__icon--trailing" aria-hidden="true">
+          <ArrowRight size={20} strokeWidth={2} />
+        </span>
+      ) : null}
+      {action.trailingIcon === "ticket" ? (
+        <span className="kpf-btn__icon kpf-btn__icon--trailing" aria-hidden="true">
+          <Ticket size={20} strokeWidth={2} />
+        </span>
       ) : null}
       {action.trailingIcon === "external" ? (
-        <ExternalLink size={20} strokeWidth={2} absoluteStrokeWidth aria-hidden />
+        <span className="kpf-btn__icon kpf-btn__icon--trailing" aria-hidden="true">
+          <ExternalLink size={20} strokeWidth={2} />
+        </span>
       ) : null}
     </>
   );
@@ -117,13 +126,22 @@ function GrantChip({
 
   const icon = Icon ? (
     <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
-      <Icon size={20} strokeWidth={1.75} absoluteStrokeWidth />
+      <Icon size={20} strokeWidth={2} />
     </span>
   ) : null;
 
-  const trailing = trailingIcon ? (
+  const TrailingIcon =
+    trailingIcon === "ticket"
+      ? Ticket
+      : trailingIcon === "arrow" || trailingIcon === true
+        ? ArrowRight
+        : null;
+  const trailing = TrailingIcon ? (
     <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
-      <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
+      <TrailingIcon
+        size={trailingIcon === "ticket" ? 20 : 16}
+        strokeWidth={2}
+      />
     </span>
   ) : null;
 
@@ -284,11 +302,12 @@ function EventCard({ event, fallbackMarkSrc = "", fallbackMarkAlt = "" }) {
           ) : null}
           {ticketsHref ? (
             <GrantChip
+              icon={Ticket}
               label={ticketsLabel}
               href={ticketsHref}
               external={ticketsExternal}
               variant="link"
-              trailingIcon
+              trailingIcon="ticket"
             />
           ) : (
             <GrantChip icon={Ticket} label={ticketsLabel} />

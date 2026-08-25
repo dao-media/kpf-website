@@ -208,9 +208,7 @@ function featuredSectionFromEvent(event, fallback = {}) {
             ...action,
             href: String(event.ticketsHref),
             external: Boolean(event.ticketsExternal),
-            trailingIcon: event.ticketsExternal
-              ? "external"
-              : action.trailingIcon,
+            trailingIcon: "ticket",
           };
         }
         return action;

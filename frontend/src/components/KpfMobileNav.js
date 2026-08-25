@@ -1,29 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronRight } from "lucide-react";
 import { isCurrentPath } from "@/lib/navigation";
-
-function ArrowIcon() {
-  return (
-    <svg
-      className="kpf-mobile-nav__arrow"
-      viewBox="0 0 16 16"
-      width="16"
-      height="16"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d="M6.2 3.2 10.8 8l-4.6 4.8"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 /**
  * Mobile nav panel — Figma Mobile Nav Menu `950:566`.
@@ -139,7 +117,14 @@ export default function KpfMobileNav({
                 tabIndex={open ? undefined : -1}
                 onClick={() => onOpenChange?.(false)}
               >
-                {current ? <ArrowIcon /> : null}
+                {current ? (
+                  <ChevronRight
+                    className="kpf-mobile-nav__arrow"
+                    size={16}
+                    strokeWidth={2}
+                    aria-hidden
+                  />
+                ) : null}
                 <span className="kpf-mobile-nav__label">{item.label}</span>
               </Link>
             );

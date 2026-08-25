@@ -5079,8 +5079,8 @@ a.kpf-blog-row:focus-visible {
 	min-width: 0;
 }
 
-/* Desktop only — sticky TOC + activity (pinned top-mounted; clipped as the
- * article section leaves so it never docks to the bottom of the column). */
+/* Desktop only — sticky TOC + activity. Sticks under the header, then
+ * releases when its bottom meets the article column so both leave together. */
 @media (max-width: 63.99rem) {
 	.kpf-page--post .kpf-post-sidebar {
 		position: static;
@@ -5088,14 +5088,16 @@ a.kpf-blog-row:focus-visible {
 }
 
 @media (min-width: 64rem) {
-	.kpf-page--post .kpf-post-body {
-		overflow: clip;
-	}
-
 	.kpf-post-sidebar {
 		align-self: start;
 		position: sticky;
 		top: calc(var(--kpf-header-offset, 5.5rem) + 1rem);
+	}
+
+	.kpf-page--post .kpf-post-body__inner > .pin-spacer {
+		align-self: start;
+		min-width: 0;
+		width: 100%;
 	}
 }
 

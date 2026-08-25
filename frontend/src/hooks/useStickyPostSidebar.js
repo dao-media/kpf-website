@@ -7,6 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 const DESKTOP_MQ = "(min-width: 64rem)";
 const SIDEBAR_SEL = ".kpf-page--post .kpf-post-sidebar";
 const CONTAINER_SEL = ".kpf-page--post .kpf-post-body";
+const MAIN_SEL = ".kpf-page--post .kpf-post-main";
 
 function headerOffsetPx() {
   const header = document.querySelector(
@@ -18,13 +19,16 @@ function headerOffsetPx() {
     : 104;
 }
 
+function pinDistancePx(sidebar, main) {
+  return Math.max(0, Math.round(main.offsetHeight - sidebar.offsetHeight));
+}
+
 /**
  * Desktop blog-post sidebar: stay top-mounted under the header while the
- * article is in view, then leave with the section (still top-aligned — never
- * docked to the bottom of the column). CSS sticky is cleared before pinning
- * so GSAP's pin-spacer does not inherit `top` and shift the column down.
- * `overflow: clip` on `.kpf-post-body` hides the pinned sidebar as the
- * section scrolls away.
+ * article is taller than the TOC, then release once the sidebar bottom is
+ * flush with the article column so both scroll off together at the end.
+ * CSS sticky is cleared before pinning so GSAP's pin-spacer does not inherit
+ * `top` and shift the column down.
  */
 export function useStickyPostSidebar(deps = []) {
   useEffect(() => {
@@ -41,17 +45,17 @@ export function useStickyPostSidebar(deps = []) {
         mm.add(DESKTOP_MQ, () => {
           const sidebar = document.querySelector(SIDEBAR_SEL);
           const container = document.querySelector(CONTAINER_SEL);
-          if (!sidebar || !container) return undefined;
+          const main = document.querySelector(MAIN_SEL);
+          if (!sidebar || !container || !main) return undefined;
 
-          gsap.set(sidebar, { position: "relative", top: 0 });
+          gsap.set(sidebar, { position: "relative", top: "auto", bottom: "auto" });
 
           const st = ScrollTrigger.create({
             trigger: sidebar,
             start: () => `top top+=${headerOffsetPx()}`,
-            endTrigger: container,
-            end: "bottom top",
+            end: () => `+=${pinDistancePx(sidebar, main)}`,
             pin: true,
-            pinSpacing: false,
+            pinSpacing: true,
             pinType: "transform",
             anticipatePin: 1,
             invalidateOnRefresh: true,

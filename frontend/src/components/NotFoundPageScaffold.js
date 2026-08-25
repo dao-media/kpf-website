@@ -1,12 +1,46 @@
+import { useEffect } from "react";
 import CtaClosingBand from "@/components/CtaClosingBand";
 import KpfButton from "@/components/KpfButton";
 import { NOTFOUND } from "@/lib/pageCopy";
 
 const { resolveMedia } = require("@/lib/scaffoldMedia");
 
+function isHardNavHref(href = "") {
+  if (!href || href.startsWith("#")) return false;
+  return !/^(https?:|mailto:|tel:)/i.test(href);
+}
+
 export default function NotFoundPageScaffold({ media = {} }) {
   const copy = NOTFOUND;
   const planes = resolveMedia(media, copy.hero.media.key, copy.hero.media);
+
+  // Next keeps the custom 404 tree mounted during client routing, so header
+  // links and hero buttons can change the URL without loading the destination.
+  useEffect(() => {
+    function onClick(event) {
+      if (event.defaultPrevented || event.button) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      const target =
+        event.target instanceof Element
+          ? event.target.closest("a[href], button[data-kpf-href]")
+          : null;
+      if (!target || target.getAttribute("data-kpf-external") === "true") {
+        return;
+      }
+      if (target.getAttribute("target") === "_blank") return;
+      const href =
+        target.getAttribute("href") || target.getAttribute("data-kpf-href") || "";
+      if (!isHardNavHref(href)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign(href);
+    }
+
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
 
   return (
     <div className="kpf-page-404" data-kpf-scaffold="notfound">

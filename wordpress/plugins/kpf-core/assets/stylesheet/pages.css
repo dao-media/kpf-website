@@ -1201,6 +1201,8 @@ html {
 }
 
 .kpf-footer .kpf-cigar.kpf-footer__cigar {
+	--kpf-cigar-smoke-left: 12%;
+	margin-inline-start: 60%;
 	margin-top: 1.25rem;
 	max-width: 12.5rem;
 	width: 12.5rem;

@@ -39,12 +39,9 @@ final class ChromeHtml {
 		$ext_attr = ' data-kpf-external="true"';
 		$onclick  = '(function(el){var h=el.getAttribute("data-kpf-href");if(!h)return;if(el.getAttribute("data-kpf-external")==="true"&&!/^mailto:|^tel:/i.test(h)){window.open(h,"_blank","noopener,noreferrer");return;}location.assign(h);})(this)';
 
-		return '<button type="button" class="' . esc_attr( $classes ) . '" data-kpf-href="' . esc_url( self::donate_href() ) . '"' . $ext_attr . ' onclick="' . esc_attr( $onclick ) . '"><span class="kpf-btn__cluster"><span class="kpf-btn__label">' . esc_html( $label ) . '</span><span class="kpf-btn__paypal-clip"><span class="kpf-btn__icon kpf-btn__icon--trailing kpf-btn__icon--paypal" aria-hidden="true">' . self::paypal_mark_html() . '</span></span></span><span class="kpf-btn__ext-tip" aria-hidden="true">' . self::external_arrow_svg() . '</span></button>';
-	}
+		$button = '<button type="button" class="' . esc_attr( $classes ) . '" data-kpf-href="' . esc_url( self::donate_href() ) . '"' . $ext_attr . ' onclick="' . esc_attr( $onclick ) . '"><span class="kpf-btn__cluster"><span class="kpf-btn__label">' . esc_html( $label ) . '</span><span class="kpf-btn__paypal-clip"><span class="kpf-btn__icon kpf-btn__icon--trailing kpf-btn__icon--paypal" aria-hidden="true">' . self::paypal_mark_html() . '</span></span></span></button>';
 
-	/** Lucide square-arrow-out-up-right — desktop donate hover tooltip only. */
-	public static function external_arrow_svg(): string {
-		return '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/></svg>';
+		return '<span class="kpf-chip-tip-host kpf-donate-tip" data-kpf-chip-tip="Opens PayPal" data-kpf-chip-tip-desktop="true">' . $button . '</span>';
 	}
 
 	/** Official 2014 PayPal monogram (baked white + alpha — do not tint). */
@@ -165,8 +162,8 @@ final class ChromeHtml {
 		$html .= '</div></div>';
 		$html .= '<div class="kpf-footer__columns"><div><p class="kpf-footer__heading">Explore</p><ul class="kpf-footer__list">' . $explore_lis . '</ul></div>';
 		$html .= '<div><p class="kpf-footer__heading">Connect</p><ul class="kpf-footer__list">' . $connect_lis . '</ul></div></div>';
-		$html .= '<div class="kpf-footer__cta-card"><p class="kpf-footer__cta-title">Prefer to just give?</p>';
-		$html .= '<p class="kpf-footer__cta-body">Every gift becomes a grant in Kevin’s name.</p>';
+		$html .= '<div class="kpf-footer__cta-card"><h5 class="kpf-footer__cta-title">Your donations support our nation’s protectors.</h5>';
+		$html .= '<p class="kpf-footer__cta-body kpf-body--s">Every gift provided to the Kevin Popke Foundation is invested back into organizations doing incredible work for vets and their families.</p>';
 		$html .= self::donate_button( 'Donate', 'kpf-btn kpf-btn--primary kpf-btn--sm' ) . '</div>';
 		$html .= '</div></div>';
 		$html .= '<div class="kpf-footer__bar kpf-u-container">';

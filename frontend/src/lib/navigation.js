@@ -24,6 +24,8 @@ const KPF_FOOTER_EXPLORE = [
 
 const KPF_FOOTER_CONNECT = [
   { href: "/contact/", label: "Contact" },
+  { href: "https://www.facebook.com/kevinpopkefoundation", label: "Facebook" },
+  { href: "https://www.instagram.com/kevinpopkefoundation", label: "Instagram" },
   { href: KPF_DONATE_HREF, label: "Donate" },
 ];
 

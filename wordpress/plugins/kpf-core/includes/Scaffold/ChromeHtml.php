@@ -143,6 +143,8 @@ final class ChromeHtml {
 		);
 		$connect = array(
 			array( 'href' => '/contact/', 'label' => 'Contact' ),
+			array( 'href' => 'https://www.facebook.com/kevinpopkefoundation', 'label' => 'Facebook' ),
+			array( 'href' => 'https://www.instagram.com/kevinpopkefoundation', 'label' => 'Instagram' ),
 			array( 'href' => $donate, 'label' => 'Donate' ),
 		);
 

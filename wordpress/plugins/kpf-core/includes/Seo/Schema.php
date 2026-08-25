@@ -33,9 +33,12 @@ final class Schema {
 			$graph[] = self::website_node($settings, $web_id, $org_id);
 		}
 
-		if (! empty($schema['enable_webpage']) || 'WebPage' === $schema_type) {
-			$graph[] = array(
-				'@type'       => 'WebPage',
+		if (! empty($schema['enable_webpage']) || in_array($schema_type, array( 'WebPage', 'AboutPage', 'ContactPage', 'CollectionPage' ), true)) {
+			$page_type = in_array($schema_type, array( 'AboutPage', 'ContactPage', 'CollectionPage', 'WebPage' ), true)
+				? $schema_type
+				: 'WebPage';
+			$web_page  = array(
+				'@type'       => $page_type,
 				'@id'         => $page_id,
 				'url'         => $canonical,
 				'name'        => $title,
@@ -43,6 +46,10 @@ final class Schema {
 				'isPartOf'    => array( '@id' => $web_id ),
 				'inLanguage'  => get_bloginfo('language'),
 			);
+			if ($image_url !== '') {
+				$web_page['primaryImageOfPage'] = $image_url;
+			}
+			$graph[] = $web_page;
 		}
 
 		if (! empty($schema['enable_article']) && in_array($schema_type, array( 'Article', 'NewsArticle', 'BlogPosting' ), true)) {
@@ -57,20 +64,32 @@ final class Schema {
 				isset($entity['primary_topic_id']) ? (int) $entity['primary_topic_id'] : null
 			);
 
+			$headline = get_the_title($post) ?: $title;
+			$author_name = get_the_author_meta('display_name', (int) $post->post_author);
+			$author      = array(
+				'@type' => 'Person',
+				'name'  => is_string($author_name) && $author_name !== '' && ! preg_match('/^admin$/i', $author_name)
+					? $author_name
+					: 'The KPF team',
+			);
+
 			$article = array(
 				'@type'            => $schema_type,
 				'@id'              => $canonical . '#article',
-				'headline'         => $title,
+				'headline'         => $headline,
 				'description'      => $description,
 				'datePublished'    => get_the_date('c', $post),
 				'dateModified'     => get_the_modified_date('c', $post),
 				'mainEntityOfPage' => array( '@id' => $page_id ),
-				'author'           => array(
-					'@type' => 'Person',
-					'name'  => get_the_author_meta('display_name', (int) $post->post_author),
-				),
-				'image'            => $image_url !== '' ? array( $image_url ) : array(),
+				'author'           => $author,
+				'publisher'        => array( '@id' => $org_id ),
 			);
+			if ($image_url !== '') {
+				$article['image'] = array(
+					'@type' => 'ImageObject',
+					'url'   => $image_url,
+				);
+			}
 
 			if ($primary_category) {
 				$article['articleSection'] = (string) $primary_category->name;
@@ -111,6 +130,23 @@ final class Schema {
 		$org = self::organization_node($settings, $org_id);
 		if ($org) {
 			array_unshift($graph, $org);
+		}
+
+		if ('about' === $post->post_name) {
+			$person = self::person_node($org_id, $canonical, $image_url);
+			$graph[] = $person;
+			foreach ($graph as $index => $node) {
+				if (($node['@id'] ?? '') === $page_id) {
+					$graph[ $index ]['about']      = array( '@id' => $person['@id'] );
+					$graph[ $index ]['mainEntity'] = array( '@id' => $person['@id'] );
+				}
+			}
+		}
+
+		if ('events' === $post->post_name) {
+			foreach (self::event_nodes($settings, $org_id, $canonical) as $event_node) {
+				$graph[] = $event_node;
+			}
 		}
 
 		$custom = $entity['custom_json_ld'] ?? ($schema['custom_json_ld'] ?? '');
@@ -154,7 +190,7 @@ final class Schema {
 		}
 
 		if (! empty($schema['enable_webpage'])) {
-			$graph[] = array(
+			$web_page = array(
 				'@type'       => 'WebPage',
 				'@id'         => $canonical . '#webpage',
 				'url'         => $canonical,
@@ -162,8 +198,11 @@ final class Schema {
 				'description' => $description,
 				'isPartOf'    => array( '@id' => $web_id ),
 				'about'       => array( '@id' => $org_id ),
-				'image'       => $image_url !== '' ? $image_url : null,
 			);
+			if ($image_url !== '') {
+				$web_page['image'] = $image_url;
+			}
+			$graph[] = $web_page;
 		}
 
 		return array(
@@ -178,27 +217,69 @@ final class Schema {
 	 */
 	private static function organization_node(array $settings, string $org_id): ?array {
 		$schema = $settings['schema'];
-		$name   = (string) ($schema['organization_name'] ?: get_bloginfo('name'));
+		$name   = (string) ($schema['organization_name'] ?: PageDefaults::ORG_NAME);
 		$url    = \KPF\Core\Support\FrontendUrl::to_public(
 			(string) ($schema['organization_url'] ?: Resolver::frontend_url($settings, '/'))
 		);
 		$logo   = ! empty($schema['organization_logo'])
 			? \KPF\Core\Media\PublicUrls::image_url((int) $schema['organization_logo'], 'full')
-			: '';
+			: PageDefaults::logo_url();
 
 		$node = array(
-			'@type' => array( 'NGO', 'NonprofitOrganization' ),
-			'@id'   => $org_id,
-			'name'  => $name,
-			'url'   => $url,
+			'@type'           => array( 'NGO', 'NonprofitOrganization' ),
+			'@id'             => $org_id,
+			'name'            => $name,
+			'legalName'       => (string) ($schema['legal_name'] ?: PageDefaults::LEGAL_NAME),
+			'alternateName'   => 'Kevin Popke Foundation',
+			'url'             => $url,
+			'nonprofitStatus' => 'https://schema.org/Nonprofit501c3',
+			'areaServed'      => array(
+				array(
+					'@type' => 'AdministrativeArea',
+					'name'  => 'Tampa Bay',
+				),
+				array(
+					'@type' => 'State',
+					'name'  => 'Florida',
+					'containedInPlace' => array(
+						'@type' => 'Country',
+						'name'  => 'United States',
+					),
+				),
+			),
 		);
+
+		$same = array_values(
+			array_filter(
+				array(
+					(string) ($schema['facebook_url'] ?? ''),
+					(string) ($schema['instagram_url'] ?? ''),
+				)
+			)
+		);
+		if ($same === array()) {
+			$same = PageDefaults::same_as();
+		}
+		$node['sameAs'] = $same;
+
+		$founding = (string) ($schema['founding_date'] ?? PageDefaults::FOUNDING_DATE);
+		if ($founding !== '') {
+			$node['foundingDate'] = $founding;
+		}
 
 		if ($logo !== '') {
 			$node['logo'] = array(
 				'@type' => 'ImageObject',
 				'url'   => $logo,
 			);
+			$node['image'] = $logo;
 		}
+
+		$description = trim((string) ($settings['global']['home_description'] ?? ''));
+		if (! PageDefaults::is_usable_description($description)) {
+			$description = PageDefaults::HOME_DESCRIPTION;
+		}
+		$node['description'] = $description;
 
 		return $node;
 	}
@@ -255,5 +336,128 @@ final class Schema {
 			'@id'             => $canonical . '#breadcrumb',
 			'itemListElement' => $items,
 		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function person_node(string $org_id, string $canonical, string $image_url): array {
+		$person_id = $canonical . '#kevin-popke';
+		$node      = array(
+			'@type'          => 'Person',
+			'@id'            => $person_id,
+			'name'           => 'Donald “Kevin” Popke',
+			'givenName'      => 'Donald',
+			'additionalName' => 'Kevin',
+			'familyName'     => 'Popke',
+			'alternateName'  => array( 'Kevin Popke', '50' ),
+			'honorificSuffix'=> '1SG, U.S. Army (Ret.)',
+			'jobTitle'       => 'U.S. Army First Sergeant and Airborne Ranger',
+			'description'    => 'Donald “Kevin” Popke was a retired U.S. Army First Sergeant, paratrooper, and Department of Defense contractor. The Kevin Popke Foundation funds Florida veteran charities in his honor.',
+			'memberOf'       => array( '@id' => $org_id ),
+			'url'            => $canonical,
+		);
+		if ($image_url !== '') {
+			$node['image'] = $image_url;
+		}
+		return $node;
+	}
+
+	/**
+	 * @param array<string, mixed> $settings
+	 * @return list<array<string, mixed>>
+	 */
+	private static function event_nodes(array $settings, string $org_id, string $canonical): array {
+		if (! class_exists(\KPF\Core\Events\ContentType::class) || ! class_exists(\KPF\Core\Events\Meta::class)) {
+			return array();
+		}
+
+		$query = new \WP_Query(
+			array(
+				'post_type'              => \KPF\Core\Events\ContentType::POST_TYPE,
+				'post_status'            => 'publish',
+				'posts_per_page'         => 20,
+				'orderby'                => 'date',
+				'order'                  => 'DESC',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		$nodes = array();
+		foreach ($query->posts as $event) {
+			if (! $event instanceof WP_Post) {
+				continue;
+			}
+			$meta      = \KPF\Core\Events\Meta::get((int) $event->ID);
+			$start     = \KPF\Core\Events\Meta::schema_start($meta);
+			if ($start === '') {
+				continue;
+			}
+
+			$details = \KPF\Core\Events\GraphQL::details((int) $event->ID);
+			$node    = array(
+				'@type'               => 'Event',
+				'@id'                 => $canonical . '#event-' . (int) $event->ID,
+				'name'                => get_the_title($event),
+				'startDate'           => $start,
+				'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+				'eventStatus'         => 'https://schema.org/EventScheduled',
+				'organizer'           => array( '@id' => $org_id ),
+				'url'                 => $canonical,
+			);
+
+			$description = trim((string) ($details['description'] ?? ''));
+			if ($description === '') {
+				$description = trim((string) ($details['logline'] ?? ''));
+			}
+			if ($description !== '') {
+				$node['description'] = $description;
+			}
+
+			$place_name = (string) ($details['location']['display'] ?? '');
+			if ($place_name !== '') {
+				$place = array(
+					'@type' => 'Place',
+					'name'  => $place_name,
+				);
+				$location = is_array($meta['location'] ?? null) ? $meta['location'] : array();
+				$line1    = trim((string) ($location['line1'] ?? ''));
+				$city     = trim((string) ($location['city'] ?? ''));
+				$region   = trim((string) ($location['state'] ?? ''));
+				if ($line1 !== '' || $city !== '') {
+					$place['address'] = array_filter(
+						array(
+							'@type'           => 'PostalAddress',
+							'streetAddress'   => $line1,
+							'addressLocality' => $city,
+							'addressRegion'   => $region,
+							'postalCode'      => (string) ($location['postal_code'] ?? ''),
+							'addressCountry'  => 'US',
+						)
+					);
+				}
+				$node['location'] = $place;
+			}
+
+			$tickets = (string) ($details['ticketingLink'] ?? '');
+			if ($tickets !== '') {
+				$node['offers'] = array(
+					'@type'        => 'Offer',
+					'url'          => $tickets,
+					'availability' => 'https://schema.org/InStock',
+				);
+			}
+
+			$thumb = get_the_post_thumbnail_url($event, 'full');
+			if (is_string($thumb) && $thumb !== '') {
+				$node['image'] = \KPF\Core\Media\PublicUrls::to_wp_host($thumb);
+			}
+
+			$nodes[] = $node;
+		}
+
+		return $nodes;
 	}
 }

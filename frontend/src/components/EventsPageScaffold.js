@@ -414,6 +414,21 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                 </div>
                 <div className="kpf-content-block__body-group">
                   <p className="kpf-content-block__body">{copy.hero.body}</p>
+                  {copy.hero.eventSite?.href ? (
+                    <p className="kpf-content-block__body">
+                      Tickets and the night-of schedule live on the{" "}
+                      <a
+                        href={copy.hero.eventSite.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {copy.hero.eventSite.label}
+                        <span className="kpf-u-sr-only"> (opens in a new tab)</span>
+                      </a>{" "}
+                      site. This page is for Foundation guests, sponsors, and how
+                      the room funds grants.
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <div className="kpf-content-block__actions kpf-hero__actions">
@@ -534,7 +549,7 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                     key={tile.key || tile.src}
                     className={`kpf-featured-event__tile kpf-featured-event__tile--${index + 1}`}
                   >
-                    <img src={tile.src} alt="" loading="lazy" decoding="async" />
+                    <img src={tile.src} alt={tile.alt || ""} loading="lazy" decoding="async" />
                   </figure>
                 ) : null,
               )}
@@ -546,7 +561,7 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                     key={tile.key || tile.src}
                     className={`kpf-featured-event__tile kpf-featured-event__tile--${index + 3}`}
                   >
-                    <img src={tile.src} alt="" loading="lazy" decoding="async" />
+                    <img src={tile.src} alt={tile.alt || ""} loading="lazy" decoding="async" />
                   </figure>
                 ) : null,
               )}

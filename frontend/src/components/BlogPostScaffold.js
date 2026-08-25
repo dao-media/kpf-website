@@ -300,6 +300,14 @@ export default function BlogPostScaffold({
               // Trusted WP author HTML with injected heading ids.
               dangerouslySetInnerHTML={{ __html: post.html }}
             />
+            <aside className="kpf-post-continue" aria-label="Keep reading">
+              <p className="kpf-content-block__body">
+                Read more about{" "}
+                <Link href="/about/#history">who Kevin Popke was</Link>
+                {" "}and{" "}
+                <Link href="/about/#grantees">the grants given in his name</Link>.
+              </p>
+            </aside>
           </div>
         </div>
       </section>

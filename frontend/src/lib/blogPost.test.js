@@ -44,6 +44,24 @@ describe("blogPost", () => {
     assert.equal(tree[1].children[0].id, "child");
   });
 
+  it("wraps known grantee names in links", () => {
+    const { html } = prepareArticleHtml(
+      "<h2>Grants</h2><p>A grant to My Warrior's Place funded the retreat.</p>",
+    );
+    assert.match(html, /href="https:\/\/mywarriorsplace.org"/);
+    assert.match(html, />My Warrior's Place</);
+  });
+
+  it("does not nest links inside existing anchors", () => {
+    const { html } = prepareArticleHtml(
+      '<p><a href="https://example.test">My Warrior\'s Place</a></p>',
+    );
+    assert.equal(
+      (html.match(/<a /g) || []).length,
+      1,
+    );
+  });
+
   it("maps admin author to the KPF team", () => {
     assert.equal(blogAuthorLabel("admin"), "the KPF team");
     assert.equal(blogAuthorLabel("Maria R."), "Maria R.");

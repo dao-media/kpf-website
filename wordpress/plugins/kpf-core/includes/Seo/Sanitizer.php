@@ -29,12 +29,15 @@ final class Sanitizer {
 				'separator'            => sanitize_text_field((string) ($global['separator'] ?? '|')),
 				'site_title'           => sanitize_text_field((string) ($global['site_title'] ?? '')),
 				'site_description'     => sanitize_textarea_field((string) ($global['site_description'] ?? '')),
+				'home_title'           => sanitize_text_field((string) ($global['home_title'] ?? $defaults['global']['home_title'])),
+				'home_description'     => sanitize_textarea_field((string) ($global['home_description'] ?? $defaults['global']['home_description'])),
 				'frontend_url'         => esc_url_raw((string) ($global['frontend_url'] ?? 'http://localhost:3010')),
 				'robots_index'         => (bool) ($global['robots_index'] ?? true),
 				'robots_follow'        => (bool) ($global['robots_follow'] ?? true),
 				'robots_noarchive'     => (bool) ($global['robots_noarchive'] ?? false),
 				'robots_nosnippet'     => (bool) ($global['robots_nosnippet'] ?? false),
 				'og_default_image_id'  => absint($global['og_default_image_id'] ?? 0),
+				'og_default_image_url' => esc_url_raw((string) ($global['og_default_image_url'] ?? '')),
 				'twitter_card'         => in_array($global['twitter_card'] ?? '', array( 'summary', 'summary_large_image' ), true)
 					? (string) $global['twitter_card']
 					: 'summary_large_image',
@@ -48,8 +51,12 @@ final class Sanitizer {
 			),
 			'schema'     => array(
 				'organization_name'  => sanitize_text_field((string) ($schema['organization_name'] ?? '')),
+				'legal_name'         => sanitize_text_field((string) ($schema['legal_name'] ?? '')),
 				'organization_url'   => esc_url_raw((string) ($schema['organization_url'] ?? '')),
 				'organization_logo'  => absint($schema['organization_logo'] ?? 0),
+				'facebook_url'       => esc_url_raw((string) ($schema['facebook_url'] ?? '')),
+				'instagram_url'      => esc_url_raw((string) ($schema['instagram_url'] ?? '')),
+				'founding_date'      => sanitize_text_field((string) ($schema['founding_date'] ?? '')),
 				'enable_website'     => (bool) ($schema['enable_website'] ?? true),
 				'enable_webpage'     => (bool) ($schema['enable_webpage'] ?? true),
 				'enable_article'     => (bool) ($schema['enable_article'] ?? true),

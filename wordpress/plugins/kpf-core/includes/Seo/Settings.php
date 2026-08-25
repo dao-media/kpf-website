@@ -50,12 +50,15 @@ final class Settings {
 				'separator'            => '|',
 				'site_title'           => '',
 				'site_description'     => '',
+				'home_title'           => PageDefaults::HOME_TITLE,
+				'home_description'     => PageDefaults::HOME_DESCRIPTION,
 				'frontend_url'         => 'https://kevinpopkefoundation.org',
 				'robots_index'         => true,
 				'robots_follow'        => true,
 				'robots_noarchive'     => false,
 				'robots_nosnippet'     => false,
 				'og_default_image_id'  => 0,
+				'og_default_image_url' => '',
 				'twitter_card'         => 'summary_large_image',
 				'twitter_site'         => '',
 				'custom_meta'          => array(),
@@ -66,9 +69,13 @@ final class Settings {
 				'og_type_default' => 'website',
 			),
 			'schema'     => array(
-				'organization_name'  => '',
+				'organization_name'  => PageDefaults::ORG_NAME,
+				'legal_name'         => PageDefaults::LEGAL_NAME,
 				'organization_url'   => '',
 				'organization_logo'  => 0,
+				'facebook_url'       => PageDefaults::FACEBOOK,
+				'instagram_url'      => PageDefaults::INSTAGRAM,
+				'founding_date'      => PageDefaults::FOUNDING_DATE,
 				'enable_website'     => true,
 				'enable_webpage'     => true,
 				'enable_article'     => true,
@@ -90,15 +97,16 @@ final class Settings {
 	 */
 	public static function default_post_type(string $post_type): array {
 		$is_page = 'page' === $post_type;
+		$is_post = 'post' === $post_type;
 
 		return array(
-			'title_template'       => null,
+			'title_template'       => $is_post ? '%%title%% %%sep%% Kevin Popke Foundation' : null,
 			'description_template' => null,
 			'slug_prefix'          => '',
 			'robots_index'         => null,
 			'robots_follow'        => null,
 			'show_in_sitemap'      => true,
-			'schema_type'          => $is_page ? 'WebPage' : 'Article',
+			'schema_type'          => $is_page ? 'WebPage' : ( $is_post ? 'BlogPosting' : 'Article' ),
 			'og_type'              => $is_page ? 'website' : 'article',
 			'custom_meta'          => array(),
 		);

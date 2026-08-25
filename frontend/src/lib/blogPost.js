@@ -5,6 +5,43 @@
 const { stripHtml } = require("./searchDocuments");
 const { formatPostDate, estimateReadTime } = require("./latestBlogPost");
 
+const STORY_LINKS = [
+  {
+    pattern: /My Warrior['’]s Place/g,
+    href: "https://mywarriorsplace.org",
+  },
+  {
+    pattern: /Freedom Riding Academy/g,
+    href: "https://freedomridingacademy.org",
+  },
+  {
+    pattern: /Other Side of the Dunes/g,
+    href: "https://othersideofthedunes.org",
+  },
+];
+
+/**
+ * Wrap known org names in descriptive links, skipping existing anchors.
+ * @param {string} html
+ * @returns {string}
+ */
+function linkKnownEntities(html) {
+  let inAnchor = false;
+  return String(html || "").replace(/(<[^>]+>)|([^<]+)/g, (full, tag, text) => {
+    if (tag) {
+      if (/^<a\b/i.test(tag)) inAnchor = true;
+      if (/^<\/a>/i.test(tag)) inAnchor = false;
+      return tag;
+    }
+    if (inAnchor || !text) return text;
+    let next = text;
+    for (const { pattern, href } of STORY_LINKS) {
+      next = next.replace(pattern, (match) => `<a href="${href}">${match}</a>`);
+    }
+    return next;
+  });
+}
+
 /**
  * @param {string} text
  * @returns {string}
@@ -51,7 +88,7 @@ function prepareArticleHtml(html) {
     },
   );
 
-  return { html: withIds, toc };
+  return { html: linkKnownEntities(withIds), toc };
 }
 
 /**
@@ -176,6 +213,7 @@ function normalizeBlogPostPage(post) {
 module.exports = {
   blogAuthorLabel,
   buildTocTree,
+  linkKnownEntities,
   normalizeBlogPostPage,
   normalizeComments,
   prepareArticleHtml,

@@ -48,7 +48,7 @@ final class Breadcrumbs {
 		}
 
 		$items[] = array(
-			'name' => $title,
+			'name' => (string) get_the_title($post) ?: $title,
 			'url'  => $canonical,
 		);
 

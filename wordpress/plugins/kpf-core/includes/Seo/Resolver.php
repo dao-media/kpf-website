@@ -37,8 +37,16 @@ final class Resolver {
 			$global['description_template']
 		);
 
+		$slug        = self::page_slug($post);
 		$title       = Engine::render($title_tpl, $context);
 		$description = Engine::render($desc_tpl, $context);
+		$defaults    = PageDefaults::for_slug($slug);
+		if ($defaults && PageDefaults::is_generic_title($title, $slug)) {
+			$title = $defaults['title'];
+		}
+		if ($defaults && ! PageDefaults::is_usable_description($description)) {
+			$description = $defaults['description'];
+		}
 		$canonical   = \KPF\Core\Support\FrontendUrl::to_public(
 			$entity['canonical'] ?: self::frontend_url($settings, $context['permalink'])
 		);
@@ -71,6 +79,9 @@ final class Resolver {
 
 		$image_id  = $entity['og_image_id'] ?: $featured_id ?: (int) $global['og_default_image_id'];
 		$image_url = $image_id ? \KPF\Core\Media\PublicUrls::image_url($image_id, 'full') : '';
+		if ($image_url === '') {
+			$image_url = self::fallback_og_url($settings, $slug, $defaults);
+		}
 
 		$twitter_title = Engine::render(
 			self::first_string($entity['twitter_title'] ?? null, $entity['og_title'] ?? null, $title_tpl),
@@ -82,6 +93,15 @@ final class Resolver {
 		);
 		$twitter_image_id  = $entity['twitter_image_id'] ?: $image_id;
 		$twitter_image_url = $twitter_image_id ? \KPF\Core\Media\PublicUrls::image_url((int) $twitter_image_id, 'full') : $image_url;
+		if ($twitter_image_url === '') {
+			$twitter_image_url = $image_url;
+		}
+		if (PageDefaults::is_generic_title($twitter_title, $slug)) {
+			$twitter_title = $title;
+		}
+		if (! PageDefaults::is_usable_description($twitter_description)) {
+			$twitter_description = $description;
+		}
 
 		$custom_meta = array_merge(
 			(array) ($global['custom_meta'] ?? array()),
@@ -98,7 +118,22 @@ final class Resolver {
 			$custom_meta
 		);
 
-		$schema_type = self::first_string($entity['schema_type'] ?? null, $type['schema_type'] ?? null, 'WebPage');
+		if ($defaults && PageDefaults::is_generic_title($og_title, $slug)) {
+			$og_title = $title;
+		}
+		if (! PageDefaults::is_usable_description($og_description)) {
+			$og_description = $description;
+		}
+
+		$schema_type = self::first_string(
+			$entity['schema_type'] ?? null,
+			is_array($defaults) ? ($defaults['schema_type'] ?? null) : null,
+			$type['schema_type'] ?? null,
+			'WebPage'
+		);
+		if ('post' === $post->post_type && in_array($schema_type, array( '', 'WebPage', 'Article' ), true)) {
+			$schema_type = 'BlogPosting';
+		}
 		$schema      = Schema::build_for_post($post, $settings, $canonical, $title, $description, $schema_type, $image_url, $entity);
 
 		$show_in_sitemap = self::first_bool(
@@ -109,9 +144,6 @@ final class Resolver {
 
 		$front_id = (int) get_option('page_on_front');
 		if ($front_id > 0 && (int) $post->ID === $front_id) {
-			$show_in_sitemap = false;
-		}
-		if ('page' === $post->post_type && 'home' === $post->post_name) {
 			$show_in_sitemap = false;
 		}
 
@@ -179,21 +211,22 @@ final class Resolver {
 		$context['title']   = $context['sitename'];
 		$context['excerpt'] = $context['sitedesc'];
 
-		$tagline = trim((string) $context['sitedesc']);
-		$title   = $tagline !== ''
-			? Engine::render('%%sitename%% %%sep%% %%sitedesc%%', $context)
-			: Engine::render('%%sitename%%', $context);
-		$description = Engine::render(
-			(string) ($global['description_template'] ?: '%%sitedesc%%'),
-			$context
-		);
-		if ('' === trim($description) && $tagline !== '') {
-			$description = $tagline;
+		$home        = PageDefaults::home();
+		$title       = trim((string) ($global['home_title'] ?? ''));
+		if ($title === '' || PageDefaults::is_generic_title($title, 'home')) {
+			$title = $home['title'];
+		}
+		$description = trim((string) ($global['home_description'] ?? ''));
+		if (! PageDefaults::is_usable_description($description)) {
+			$description = $home['description'];
 		}
 		$canonical   = self::frontend_url($settings, '/');
 		$canonical   = \KPF\Core\Support\FrontendUrl::to_public($canonical);
 		$image_id    = (int) $global['og_default_image_id'];
 		$image_url   = $image_id ? \KPF\Core\Media\PublicUrls::image_url($image_id, 'full') : '';
+		if ($image_url === '') {
+			$image_url = self::fallback_og_url($settings, 'home', $home);
+		}
 
 		$robots = array(
 			'index'     => (bool) $global['robots_index'],
@@ -374,6 +407,33 @@ final class Resolver {
 		}
 
 		return $base . $path;
+	}
+
+	private static function page_slug(\WP_Post $post): string {
+		if ('page' !== $post->post_type) {
+			return 'post' === $post->post_type ? 'post' : (string) $post->post_name;
+		}
+		$front = (int) get_option('page_on_front');
+		if ($front > 0 && (int) $post->ID === $front) {
+			return 'home';
+		}
+		return (string) $post->post_name;
+	}
+
+	/**
+	 * @param array<string, mixed>      $settings
+	 * @param array<string, mixed>|null $defaults
+	 */
+	private static function fallback_og_url(array $settings, string $slug, ?array $defaults): string {
+		unset($slug);
+		if (is_array($defaults) && ! empty($defaults['og_path'])) {
+			return PageDefaults::media_url((string) $defaults['og_path']);
+		}
+		$configured = (string) ($settings['global']['og_default_image_url'] ?? '');
+		if ($configured !== '' && preg_match('#^https?://#i', $configured)) {
+			return $configured;
+		}
+		return PageDefaults::default_og_url();
 	}
 
 	/**

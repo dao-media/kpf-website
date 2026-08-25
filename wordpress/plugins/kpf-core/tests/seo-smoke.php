@@ -4,6 +4,7 @@
  * npx wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/seo-smoke.php
  */
 
+use KPF\Core\Seo\PageDefaults;
 use KPF\Core\Seo\Redirects\Matcher;
 use KPF\Core\Seo\Redirects\Repository;
 use KPF\Core\Seo\Redirects\Table;
@@ -120,6 +121,30 @@ kpf_assert($home['canonical'] !== '', 'home canonical present');
 kpf_assert(
 	! str_contains((string) $home['canonical'], 'vercel.app'),
 	'home canonical is not a Vercel host'
+);
+kpf_assert(
+	str_contains((string) $home['title'], 'Tampa Bay'),
+	'home title includes location'
+);
+kpf_assert(
+	PageDefaults::is_usable_description((string) $home['description']),
+	'home description is present'
+);
+kpf_assert(
+	str_contains((string) ($home['openGraph']['imageUrl'] ?? ''), 'kevin-double-exposure')
+		|| (string) ($home['openGraph']['imageUrl'] ?? '') !== '',
+	'home has an Open Graph image'
+);
+$home_types = array_column($home['schema']['@graph'] ?? array(), '@type');
+$home_types = array_map(
+	static function ($type) {
+		return is_array($type) ? implode(',', $type) : (string) $type;
+	},
+	$home_types
+);
+kpf_assert(
+	(bool) array_filter($home_types, static fn($type) => str_contains($type, 'NGO')),
+	'home schema includes NGO'
 );
 
 kpf_assert(

@@ -5,7 +5,7 @@
 
 const HOME = {
   hero: {
-    eyebrow: "Together, we can.",
+    eyebrow: "Veteran grants across Tampa Bay & Florida",
     title: "We fund organizations showing up for vets.",
     body: "The Kevin Popke Foundation makes targeted grants to veteran-focused nonprofits in Tampa Bay and across Florida — the small organizations doing the hardest work, closest to the ground.",
     primaryCta: { donate: true, label: "Donate" },
@@ -20,19 +20,19 @@ const HOME = {
       {
         key: "home.kevinDad",
         src: "/media/home/kevin-with-dad.png",
-        alt: "",
+        alt: "Kevin Popke with his father",
         className: "kpf-hero__cutout kpf-hero__cutout--dad",
       },
       {
         key: "home.kevinAlumni",
         src: "/media/home/kevin-alumni.png",
-        alt: "",
+        alt: "Kevin Popke, U.S. Army alumni portrait",
         className: "kpf-hero__cutout kpf-hero__cutout--alumni",
       },
       {
         key: "home.kevinRunner",
         src: "/media/home/kevin-runner.png",
-        alt: "",
+        alt: "Kevin Popke running",
         className: "kpf-hero__cutout kpf-hero__cutout--runner",
       },
     ],
@@ -68,7 +68,7 @@ const HOME = {
         title: "Donate to Kevin’s Cause",
         body: "Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.",
         cta: { donate: true, label: "Donate" },
-        media: { key: "home.hero", src: "/media/home/hero.jpg", alt: "" },
+        media: { key: "home.hero", src: "/media/home/hero.jpg", alt: "Tampa Bay shoreline at dusk" },
       },
       {
         eyebrow: "What You Can Do",
@@ -86,14 +86,14 @@ const HOME = {
         title: "Songwriters for Vets",
         body: "Each year Nashville songwriters come to play the songs you know by heart.",
         cta: { href: "/events/", label: "See events" },
-        media: { key: "events.library1", src: "/media/events/library-1.jpg", alt: "" },
+        media: { key: "events.library1", src: "/media/events/library-1.jpg", alt: "Songwriters for Vets performers on stage" },
       },
       {
         eyebrow: "What You Can Do",
         title: "Get involved at KPF",
         body: "Volunteer, sponsor an event, or bring the Foundation to your company or community.",
         cta: { href: "/contact/", label: "Contact us" },
-        media: { key: "home.programs", src: "/media/home/programs.jpg", alt: "" },
+        media: { key: "home.programs", src: "/media/home/programs.jpg", alt: "Volunteers gathered at a Foundation cookout" },
       },
     ],
   },
@@ -115,15 +115,19 @@ const HOME = {
         title: "Health",
         body: "Mental health care and adaptive programs for veterans living with injury.",
       },
+      {
+        title: "Family",
+        body: "Emergency financial help and support for veterans’ families, including Special Operations families in crisis.",
+      },
     ],
     media: {
       key: "home.dunes",
       src: "/media/home/dunes.png",
-      alt: "",
+      alt: "Sand dunes along a Florida beach",
     },
     collage: [
-      { key: "home.programsCollageBeach", src: "/media/home/programs-collage-beach.jpg", alt: "" },
-      { key: "home.programsCollageBbq", src: "/media/home/programs-collage-bbq.jpg", alt: "" },
+      { key: "home.programsCollageBeach", src: "/media/home/programs-collage-beach.jpg", alt: "Veterans and volunteers on a Florida beach" },
+      { key: "home.programsCollageBbq", src: "/media/home/programs-collage-bbq.jpg", alt: "Foundation volunteers at a cookout" },
     ],
   },
   blog: {
@@ -137,7 +141,7 @@ const HOME = {
       readTime: "6 min read",
       title: "What Songwriters for Vets taught us about showing up",
       cta: "Read the story",
-      media: { key: "events.library1", src: "/media/events/library-1.jpg", alt: "" },
+      media: { key: "events.library1", src: "/media/events/library-1.jpg", alt: "Songwriters for Vets night on stage" },
     },
   },
   donate: {
@@ -162,6 +166,12 @@ const HOME = {
         id: "work",
         title: "Work",
         body: "Job training and workforce programs that turn service experience into a career.",
+        open: false,
+      },
+      {
+        id: "health",
+        title: "Health",
+        body: "Mental health care and adaptive programs for veterans living with injury.",
         open: false,
       },
       {
@@ -190,7 +200,7 @@ const ABOUT = {
     backgroundPinned: {
       key: "about.tampaBay",
       src: "/media/about/tampa-bay.png",
-      alt: "",
+      alt: "Tampa Bay shoreline",
     },
     background: {
       key: "about.heroBeach",
@@ -234,7 +244,7 @@ const ABOUT = {
       {
         key: "about.historyBack",
         src: "/media/about/history-back.png",
-        alt: "",
+        alt: "Kevin Popke in uniform",
         className: "kpf-history__layer--back",
       },
     ],
@@ -435,9 +445,13 @@ const BLOG = {
 
 const EVENTS = {
   hero: {
-    eyebrow: "What funds our mission",
-    title: "Kevin Popke Foundation events",
-    body: "Our events raise money to support our mission, and we have a good time while doing it.",
+    eyebrow: "Kevin Popke Foundation events",
+    title: "Songwriters for Vets",
+    body: "Once a year, Nashville songwriters take a Florida stage and play the songs you know by heart — a good night out that funds grants for veterans.",
+    eventSite: {
+      href: "https://www.songwriters4vets.com/",
+      label: "Songwriters for Vets",
+    },
     primaryCta: {
       href: "#featured",
       label: "Featured event",
@@ -497,12 +511,12 @@ const EVENTS = {
       {
         key: "events.featured2",
         src: "/media/events/featured-2.webp",
-        alt: "",
+        alt: "Audience at Songwriters for Vets",
       },
       {
         key: "events.featured3",
         src: "/media/events/featured-3.webp",
-        alt: "",
+        alt: "Performers backstage at Songwriters for Vets",
       },
       {
         key: "events.featured4",

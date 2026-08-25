@@ -805,6 +805,29 @@ final class Meta {
 	}
 
 	/**
+	 * ISO-8601 start for Event schema. Empty when no date is known.
+	 *
+	 * @param array<string, mixed> $meta
+	 */
+	public static function schema_start( array $meta ): string {
+		$ymd = self::calendar_start_ymd( $meta );
+		if ( '' === $ymd ) {
+			return '';
+		}
+
+		$schedule = is_array( $meta['schedule'] ?? null ) ? $meta['schedule'] : self::default_schedule();
+		$time     = self::sanitize_time( (string) ( $schedule['start_time'] ?? '' ) );
+		$tz       = wp_timezone();
+
+		if ( '' !== $time ) {
+			$dt = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i', $ymd . ' ' . $time, $tz );
+			return $dt ? $dt->format( 'c' ) : $ymd;
+		}
+
+		return $ymd;
+	}
+
+	/**
 	 * Next concrete Y-m-d for Google Calendar (one-time start, or next annual exact anchor).
 	 *
 	 * @param array<string, mixed> $meta

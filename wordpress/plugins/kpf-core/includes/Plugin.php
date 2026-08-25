@@ -118,6 +118,7 @@ use KPF\Core\Seo\GraphQL;
 use KPF\Core\Seo\MetaRepository;
 use KPF\Core\Seo\Redirects\Table as RedirectsTable;
 use KPF\Core\Seo\Redirects\Legacy as RedirectsLegacy;
+use KPF\Core\Seo\PageCopy as SeoPageCopy;
 use KPF\Core\Seo\Rest;
 use KPF\Core\Seo\Settings;
 use KPF\Core\Seo\Sitemaps;
@@ -169,6 +170,7 @@ final class Plugin {
 		RedirectsTable::install();
 		RedirectsLegacy::ensure();
 		Settings::ensure_defaults();
+		SeoPageCopy::ensure();
 		InboxSettings::ensure_defaults();
 		FormsSettings::ensure_defaults();
 		PerformanceSettings::ensure_defaults();
@@ -340,5 +342,6 @@ final class Plugin {
 			RedirectsTable::install();
 		}
 		RedirectsLegacy::ensure();
+		SeoPageCopy::ensure();
 	}
 }

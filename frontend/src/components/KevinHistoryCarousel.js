@@ -638,7 +638,7 @@ export default function KevinHistoryCarousel({
                   <div className="kpf-content-block__copy">
                     <div className="kpf-content-block__title-group">
                       {cardEyebrow ? (
-                        <p className="kpf-content-block__eyebrow">{cardEyebrow}</p>
+                        <span className="kpf-content-block__eyebrow">{cardEyebrow}</span>
                       ) : null}
                       <h3 className="kpf-content-block__title kpf-content-block__title--h3">
                         {slide.header}

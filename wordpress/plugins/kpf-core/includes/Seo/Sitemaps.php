@@ -59,6 +59,13 @@ final class Sitemaps {
 		);
 
 		$urls = array();
+		if ('page' === $post_type && 1 === $page) {
+			$home = Resolver::for_home();
+			$urls[] = array(
+				'loc'     => (string) $home['canonical'],
+				'lastmod' => gmdate('c'),
+			);
+		}
 		foreach ($query->posts as $post) {
 			if (! $post instanceof \WP_Post) {
 				continue;

@@ -1,6 +1,7 @@
 import Head from "next/head";
 
 const { rewriteSeoPublicUrls } = require("@/lib/publicSiteUrl");
+const { applySeoDefaults } = require("@/lib/seoPageDefaults");
 
 function robotsContent(robots = {}) {
   const parts = [
@@ -82,7 +83,7 @@ export default function SeoHead({ seo }) {
     twitter,
     customMeta = [],
     schemaJson,
-  } = rewriteSeoPublicUrls(seo);
+  } = applySeoDefaults(rewriteSeoPublicUrls(seo), seo?.canonical);
 
   return (
     <Head>
@@ -116,7 +117,14 @@ export default function SeoHead({ seo }) {
         <meta property="og:url" content={openGraph.url} key="og:url" />
       ) : null}
       {openGraph?.imageUrl ? (
-        <meta property="og:image" content={openGraph.imageUrl} key="og:image" />
+        <>
+          <meta property="og:image" content={openGraph.imageUrl} key="og:image" />
+          <meta
+            property="og:image:alt"
+            content={title || "The Kevin Popke Foundation"}
+            key="og:image:alt"
+          />
+        </>
       ) : null}
       {openGraph?.section ? (
         <meta

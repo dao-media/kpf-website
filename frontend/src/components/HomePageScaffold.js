@@ -92,7 +92,7 @@ export default function HomePageScaffold({
             if (!resolved.src) return null;
             return (
               <div key={cutout.key} className={cutout.className}>
-                <img src={resolved.src} alt="" decoding="async" />
+                <img src={resolved.src} alt={resolved.alt || ""} decoding="async" />
               </div>
             );
           })}
@@ -323,7 +323,7 @@ export default function HomePageScaffold({
                   <img
                     key={shot.key}
                     src={resolved.src}
-                    alt=""
+                    alt={resolved.alt || shot.alt || ""}
                     loading="lazy"
                     decoding="async"
                   />

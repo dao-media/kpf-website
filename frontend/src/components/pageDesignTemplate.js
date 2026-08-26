@@ -105,6 +105,59 @@ function findMatchingClose(source, openIndex, openRe, closeRe) {
   return -1;
 }
 
+function findElseAtDepth(inner) {
+  const openRe = /\{\{\s*#if\s+([^{}]+?)\s*\}\}/i;
+  const closeRe = /\{\{\s*\/if\s*\}\}/i;
+  const elseRe = /\{\{\s*else\s*\}\}/i;
+  let index = 0;
+  let depth = 0;
+
+  while (index < inner.length) {
+    const rest = inner.slice(index);
+    const nextOpen = rest.search(openRe);
+    const nextClose = rest.search(closeRe);
+    const nextElse = rest.search(elseRe);
+    const nearest = Math.min(
+      nextOpen === -1 ? Infinity : nextOpen,
+      nextClose === -1 ? Infinity : nextClose,
+      nextElse === -1 ? Infinity : nextElse,
+    );
+    if (nearest === Infinity) {
+      return -1;
+    }
+
+    if (nextElse === nearest && depth === 0) {
+      const matched = rest.slice(nextElse).match(elseRe);
+      return {
+        start: index + nextElse,
+        end: index + nextElse + (matched ? matched[0].length : 1),
+      };
+    }
+
+    if (nextOpen === nearest) {
+      const matched = rest.slice(nextOpen).match(openRe);
+      depth += 1;
+      index += nextOpen + (matched ? matched[0].length : 1);
+      continue;
+    }
+
+    if (nextClose === nearest) {
+      if (depth === 0) {
+        return -1;
+      }
+      const matched = rest.slice(nextClose).match(closeRe);
+      depth -= 1;
+      index += nextClose + (matched ? matched[0].length : 1);
+      continue;
+    }
+
+    const matched = rest.slice(nextElse).match(elseRe);
+    index += nextElse + (matched ? matched[0].length : 1);
+  }
+
+  return -1;
+}
+
 function renderSections(template, model) {
   let source = String(template || "");
   const eachOpen = /\{\{\s*#each\s+([^{}]+?)\s*\}\}/i;
@@ -113,56 +166,59 @@ function renderSections(template, model) {
   const ifClose = /\{\{\s*\/if\s*\}\}/i;
 
   while (true) {
-    const openMatch = source.match(eachOpen);
-    if (!openMatch) break;
-    const openIndex = openMatch.index ?? -1;
-    if (openIndex < 0) break;
-    const close = findMatchingClose(source, openIndex, eachOpen, eachClose);
-    if (close === -1) break;
+    const eachMatch = source.match(eachOpen);
+    const ifMatch = source.match(ifOpen);
+    const eachIndex = eachMatch ? eachMatch.index ?? Infinity : Infinity;
+    const ifIndex = ifMatch ? ifMatch.index ?? Infinity : Infinity;
+    if (eachIndex === Infinity && ifIndex === Infinity) {
+      break;
+    }
 
-    const path = openMatch[1].trim();
-    const inner = source.slice(openIndex + openMatch[0].length, close.start);
-    const value = resolvePath(model, path);
-    const items = Array.isArray(value)
-      ? value
-      : Array.isArray(value?.items)
-        ? value.items
-        : [];
+    if (eachIndex <= ifIndex) {
+      const openIndex = eachIndex;
+      const close = findMatchingClose(source, openIndex, eachOpen, eachClose);
+      if (close === -1) break;
 
-    const renderedItems = items
-      .map((item, index) => {
-        const scoped = {
-          ...model,
-          ...(item && typeof item === "object" ? item : { value: item }),
-          this: item,
-          "@index": index,
-          "@first": index === 0,
-          "@last": index === items.length - 1,
-        };
-        return renderDesignTemplate(inner, scoped);
-      })
-      .join("");
+      const path = eachMatch[1].trim();
+      const inner = source.slice(openIndex + eachMatch[0].length, close.start);
+      const value = resolvePath(model, path);
+      const items = Array.isArray(value)
+        ? value
+        : Array.isArray(value?.items)
+          ? value.items
+          : [];
 
-    source =
-      source.slice(0, openIndex) + renderedItems + source.slice(close.end);
-  }
+      const renderedItems = items
+        .map((item, index) => {
+          const scoped = {
+            ...model,
+            ...(item && typeof item === "object" ? item : { value: item }),
+            this: item,
+            "@index": index,
+            "@first": index === 0,
+            "@last": index === items.length - 1,
+          };
+          return renderDesignTemplate(inner, scoped);
+        })
+        .join("");
 
-  while (true) {
-    const openMatch = source.match(ifOpen);
-    if (!openMatch) break;
-    const openIndex = openMatch.index ?? -1;
-    if (openIndex < 0) break;
+      source =
+        source.slice(0, openIndex) + renderedItems + source.slice(close.end);
+      continue;
+    }
+
+    const openIndex = ifIndex;
     const close = findMatchingClose(source, openIndex, ifOpen, ifClose);
     if (close === -1) break;
 
-    const path = openMatch[1].trim();
-    const inner = source.slice(openIndex + openMatch[0].length, close.start);
-    const elseMatch = inner.match(/\{\{\s*else\s*\}\}/i);
+    const path = ifMatch[1].trim();
+    const inner = source.slice(openIndex + ifMatch[0].length, close.start);
+    const elseMatch = findElseAtDepth(inner);
     let truthyBlock = inner;
     let falsyBlock = "";
-    if (elseMatch) {
-      truthyBlock = inner.slice(0, elseMatch.index);
-      falsyBlock = inner.slice(elseMatch.index + elseMatch[0].length);
+    if (elseMatch !== -1) {
+      truthyBlock = inner.slice(0, elseMatch.start);
+      falsyBlock = inner.slice(elseMatch.end);
     }
 
     const chosen = isTruthy(resolvePath(model, path))

@@ -251,5 +251,30 @@ describe("page design templates", () => {
       ),
       "F:FirstR:Second",
     );
+    assert.equal(
+      renderDesignTemplate(
+        "{{#if queries.blog-posts}}{{#each queries.blog-posts}}{{#if @first}}F {{#if featuredImage.url}}IMG{{else}}NOIMG{{/if}} {{title}}{{/if}}{{/each}}{{else}}EMPTY{{/if}}",
+        {
+          queries: {
+            "blog-posts": {
+              items: [
+                {
+                  title: "Hello",
+                  featuredImage: { url: "https://example.test/a.jpg" },
+                },
+              ],
+            },
+          },
+        },
+      ),
+      "F IMG Hello",
+    );
+    assert.equal(
+      renderDesignTemplate(
+        "{{#if queries.blog-posts}}HAS{{else}}EMPTY{{/if}}",
+        { queries: { "blog-posts": { items: [] } } },
+      ),
+      "EMPTY",
+    );
   });
 });

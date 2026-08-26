@@ -10,10 +10,12 @@ export default function CigarSmoke({
   cigarAlt = "",
   className = "",
   id,
+  decorative,
 }) {
   const videoRef = useRef(null);
   const src = cigarSrc || "/media/cigar/Cigar.png";
   const smoke = smokeSrc || "/media/cigar/smoke.mp4";
+  const isDecorative = decorative ?? !cigarAlt;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -44,10 +46,22 @@ export default function CigarSmoke({
   const classes = ["kpf-cigar", className].filter(Boolean).join(" ");
 
   return (
-    <div id={id || undefined} className={classes}>
+    <div
+      id={id || undefined}
+      className={classes}
+      aria-hidden={isDecorative ? true : undefined}
+    >
       {/* Gutenberg and scaffold layouts set the box; native img scales with it. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="kpf-cigar__image" src={src} alt={cigarAlt} />
+      <img
+        className="kpf-cigar__image"
+        src={src}
+        alt={
+          isDecorative
+            ? "Illustrated cigar associated with Kevin Popke"
+            : cigarAlt
+        }
+      />
       {smoke ? (
         <video
           ref={videoRef}

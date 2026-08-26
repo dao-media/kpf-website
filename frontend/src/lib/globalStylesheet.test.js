@@ -24,6 +24,13 @@ describe("globalStylesheet", () => {
     assert.equal(withoutPagesLayer(""), "");
   });
 
+  it("strips duplicated pages copies that never received the marker", () => {
+    const header =
+      "/**\n * KPF Pages stylesheet — layout utilities, chrome, and page section contracts\n */";
+    const css = `.kpf-btn{color:red}\n\n${header}\n.kpf-header{}\n\n${header}\n.kpf-header{}`;
+    assert.equal(withoutPagesLayer(css), ".kpf-btn{color:red}");
+  });
+
   it("builds a cache-busted same-origin CSS URL from page props", () => {
     assert.equal(stylesheetHref(""), "/kpf-stylesheet.css");
     assert.equal(

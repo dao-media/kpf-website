@@ -10,10 +10,25 @@ const KPF_STYLESHEET_QUERY = `
 `;
 
 const PAGES_MARKER = "/* === KPF_PAGES_LAYER === */";
+const PAGES_HEADER_RE = /\/\*\*?[\s*]*KPF Pages stylesheet/;
+
+/**
+ * Byte offset of the first pages layer (marker or the shipped file header).
+ * Live CPT CSS duplicated pages.css without the marker, so matching only
+ * `KPF_PAGES_LAYER` left ~1.5 MB of copies on the public stylesheet.
+ */
+function pagesLayerIndex(css) {
+  const text = String(css || "");
+  const marker = text.indexOf(PAGES_MARKER);
+  const headerMatch = text.match(PAGES_HEADER_RE);
+  const header = headerMatch && typeof headerMatch.index === "number" ? headerMatch.index : -1;
+  const hits = [marker, header].filter((index) => index >= 0);
+  return hits.length ? Math.min(...hits) : -1;
+}
 
 function withoutPagesLayer(css) {
   const text = String(css || "");
-  const index = text.indexOf(PAGES_MARKER);
+  const index = pagesLayerIndex(text);
   return (index === -1 ? text : text.slice(0, index)).trim();
 }
 
@@ -38,6 +53,7 @@ function stylesheetMetaFromPageProps(pageProps) {
 module.exports = {
   KPF_STYLESHEET_QUERY,
   PAGES_MARKER,
+  pagesLayerIndex,
   stylesheetHref,
   stylesheetMetaFromPageProps,
   withoutPagesLayer,

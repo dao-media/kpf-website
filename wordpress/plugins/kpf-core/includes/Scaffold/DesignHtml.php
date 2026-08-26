@@ -1031,10 +1031,12 @@ HTML;
 		}
 
 		$safe_url = esc_url( $url );
+		$alt      = (string) ( $media[ $key ]['altText'] ?? '' );
 		return sprintf(
-			'<div class="%s"><img src="%s" alt="" decoding="async" /></div>',
+			'<div class="%s"><img src="%s" alt="%s" decoding="async" /></div>',
 			esc_attr( $class ),
-			$safe_url
+			$safe_url,
+			esc_attr( $alt )
 		);
 	}
 
@@ -1051,9 +1053,14 @@ HTML;
 			if ( '' === $name || '' === $logo ) {
 				continue;
 			}
+			$alt   = trim( (string) ( $item['logoAlt'] ?? '' ) );
+			if ( '' === $alt ) {
+				$alt = $name;
+			}
 			$inner = sprintf(
-				'<img class="kpf-partners__logo" src="%s" alt="" width="28" height="28" loading="lazy" decoding="async" /><span class="kpf-partners__name">%s</span>',
+				'<img class="kpf-partners__logo" src="%s" alt="%s" width="28" height="28" loading="lazy" decoding="async" /><span class="kpf-partners__name" aria-hidden="true">%s</span>',
 				esc_url( $logo ),
+				esc_attr( $alt ),
 				esc_html( $name )
 			);
 			$html .= sprintf(

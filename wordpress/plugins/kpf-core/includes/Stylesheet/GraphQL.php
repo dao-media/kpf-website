@@ -134,13 +134,7 @@ final class GraphQL {
 			return Meta::sanitize_css( $css );
 		}
 
-		if ( str_contains( $css, Defaults::PAGES_MARKER ) ) {
-			$merged = Defaults::replace_pages_layer( $css, $pages );
-		} else {
-			$merged = '' === trim( $css ) ? $pages : rtrim( $css ) . "\n\n" . $pages;
-		}
-
-		return Meta::sanitize_css( $merged );
+		return Meta::sanitize_css( Defaults::replace_pages_layer( $css, $pages ) );
 	}
 
 	private static function managed_css(): string {

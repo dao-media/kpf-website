@@ -173,13 +173,15 @@ export default function PartnersSlider({
                   <img
                     className="kpf-partners__logo"
                     src={item.logoUrl}
-                    alt=""
+                    alt={item.logoAlt || item.name}
                     width={40}
                     height={40}
                     loading="lazy"
                     decoding="async"
                   />
-                  <span className="kpf-partners__name">{item.name}</span>
+                  <span className="kpf-partners__name" aria-hidden="true">
+                    {item.name}
+                  </span>
                 </>
               );
 

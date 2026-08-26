@@ -1,53 +1,55 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { gsap } from "gsap";
-import { CSSRulePlugin } from "gsap/CSSRulePlugin";
-import { CustomBounce } from "gsap/CustomBounce";
-import { CustomEase } from "gsap/CustomEase";
-import { CustomWiggle } from "gsap/CustomWiggle";
-import { Draggable } from "gsap/Draggable";
-import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
-import { EasePack, ExpoScaleEase, RoughEase, SlowMo } from "gsap/EasePack";
-import { Flip } from "gsap/Flip";
-import { InertiaPlugin } from "gsap/InertiaPlugin";
-import { MorphSVGPlugin } from "gsap/MorphSVGPlugin";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
-import { Observer } from "gsap/Observer";
-import { Physics2DPlugin } from "gsap/Physics2DPlugin";
-import { PhysicsPropsPlugin } from "gsap/PhysicsPropsPlugin";
-import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SplitText } from "gsap/SplitText";
-import { TextPlugin } from "gsap/TextPlugin";
 import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
 
-gsap.registerPlugin(
-  CSSRulePlugin,
-  CustomBounce,
-  CustomEase,
-  CustomWiggle,
-  Draggable,
-  DrawSVGPlugin,
-  EasePack,
-  ExpoScaleEase,
-  Flip,
-  InertiaPlugin,
-  MorphSVGPlugin,
-  MotionPathPlugin,
-  Observer,
-  Physics2DPlugin,
-  PhysicsPropsPlugin,
-  RoughEase,
-  ScrambleTextPlugin,
-  ScrollSmoother,
-  ScrollToPlugin,
+const { pluginsForAnimations } = require("@/lib/gsapPlugins");
+
+gsap.registerPlugin(ScrollTrigger);
+
+const GSAP_PLUGIN_LOADERS = {
+  CSSRulePlugin: () => import("gsap/CSSRulePlugin").then((m) => m.CSSRulePlugin),
+  CustomBounce: () => import("gsap/CustomBounce").then((m) => m.CustomBounce),
+  CustomEase: () => import("gsap/CustomEase").then((m) => m.CustomEase),
+  CustomWiggle: () => import("gsap/CustomWiggle").then((m) => m.CustomWiggle),
+  Draggable: () => import("gsap/Draggable").then((m) => m.Draggable),
+  DrawSVGPlugin: () => import("gsap/DrawSVGPlugin").then((m) => m.DrawSVGPlugin),
+  EasePack: () => import("gsap/EasePack").then((m) => m.EasePack),
+  Flip: () => import("gsap/Flip").then((m) => m.Flip),
+  InertiaPlugin: () => import("gsap/InertiaPlugin").then((m) => m.InertiaPlugin),
+  MorphSVGPlugin: () => import("gsap/MorphSVGPlugin").then((m) => m.MorphSVGPlugin),
+  MotionPathPlugin: () => import("gsap/MotionPathPlugin").then((m) => m.MotionPathPlugin),
+  Observer: () => import("gsap/Observer").then((m) => m.Observer),
+  Physics2DPlugin: () => import("gsap/Physics2DPlugin").then((m) => m.Physics2DPlugin),
+  PhysicsPropsPlugin: () => import("gsap/PhysicsPropsPlugin").then((m) => m.PhysicsPropsPlugin),
+  ScrambleTextPlugin: () =>
+    import("gsap/ScrambleTextPlugin").then((m) => m.ScrambleTextPlugin),
+  ScrollToPlugin: () => import("gsap/ScrollToPlugin").then((m) => m.ScrollToPlugin),
+  SplitText: () => import("gsap/SplitText").then((m) => m.SplitText),
+  TextPlugin: () => import("gsap/TextPlugin").then((m) => m.TextPlugin),
+};
+
+const loadedPlugins = {
   ScrollTrigger,
-  SlowMo,
-  SplitText,
-  TextPlugin,
-);
+};
+
+async function loadGsapPlugins(names) {
+  const plugins = [ScrollTrigger];
+  for (const name of names || []) {
+    if (name === "ScrollTrigger") continue;
+    if (loadedPlugins[name]) {
+      plugins.push(loadedPlugins[name]);
+      continue;
+    }
+    const loader = GSAP_PLUGIN_LOADERS[name];
+    if (!loader) continue;
+    const plugin = await loader();
+    loadedPlugins[name] = plugin;
+    plugins.push(plugin);
+  }
+  gsap.registerPlugin(...plugins);
+}
 
 export const KPF_GSAP_QUERY = `
   kpfGsapAnimations {
@@ -95,20 +97,20 @@ function parseAnimation(animation) {
 }
 
 function resolveEase(config, animationId) {
-  if (config.ease === "custom") {
-    return CustomEase.create(
+  if (config.ease === "custom" && loadedPlugins.CustomEase) {
+    return loadedPlugins.CustomEase.create(
       `kpf-ease-${animationId}`,
       config.customBezier || "0.25,0.1,0.25,1",
     );
   }
-  if (config.ease === "wiggle") {
-    return CustomWiggle.create(`kpf-wiggle-${animationId}`, {
+  if (config.ease === "wiggle" && loadedPlugins.CustomWiggle) {
+    return loadedPlugins.CustomWiggle.create(`kpf-wiggle-${animationId}`, {
       wiggles: Number(config.wiggleCount) || 10,
       type: config.wiggleType || "easeOut",
     });
   }
-  if (config.ease === "customBounce") {
-    return CustomBounce.create(`kpf-bounce-${animationId}`, {
+  if (config.ease === "customBounce" && loadedPlugins.CustomBounce) {
+    return loadedPlugins.CustomBounce.create(`kpf-bounce-${animationId}`, {
       strength: Number(config.bounceStrength) || 0.7,
       squash: Number(config.bounceSquash) || 1.5,
     });
@@ -225,7 +227,8 @@ function createTween(targets, animation, extra = {}) {
       ...common,
     });
   }
-  if (effect === "splitText") {
+  if (effect === "splitText" && loadedPlugins.SplitText) {
+    const SplitText = loadedPlugins.SplitText;
     const nodes = gsap.utils.toArray(tweenTargets);
     const splits = nodes.map(
       (node) =>
@@ -324,13 +327,19 @@ export default function GsapRuntime({ animations = [] }) {
       return undefined;
     }
 
+    let cancelled = false;
     const listeners = [];
     const cleanups = [];
-    const context = gsap.context(() => {
-      animations
-        .map(parseAnimation)
-        .filter(Boolean)
-        .forEach((animation) => {
+    let context;
+
+    const parsed = animations.map(parseAnimation).filter(Boolean);
+
+    async function run() {
+      await loadGsapPlugins(pluginsForAnimations(parsed));
+      if (cancelled) return;
+
+      context = gsap.context(() => {
+        parsed.forEach((animation) => {
           let targets;
           try {
             targets = gsap.utils.toArray(animation.selector);
@@ -490,20 +499,31 @@ export default function GsapRuntime({ animations = [] }) {
 
           createTween(targets, animation);
         });
-    }, document.body);
+      }, document.body);
 
-    requestAnimationFrame(() => {
-      // Visibility only — do not kill the header entrance's y drop.
-      restoreHeaderBadge({ resetY: false });
-      ScrollTrigger.refresh();
-    });
+      if (cancelled) {
+        context.revert();
+        context = null;
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        // Visibility only — do not kill the header entrance's y drop.
+        restoreHeaderBadge({ resetY: false });
+        ScrollTrigger.refresh();
+      });
+    }
+
+    run();
 
     return () => {
+      cancelled = true;
       listeners.forEach(([target, event, handler]) =>
         target.removeEventListener(event, handler),
       );
       cleanups.forEach((cleanup) => cleanup());
-      context.revert();
+      context?.revert();
       restoreHeaderBadge({ resetY: true });
     };
   }, [animations, router.asPath]);

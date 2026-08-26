@@ -54,7 +54,18 @@ module.exports = withFaust({
 		loadPaths: ['node_modules'],
 	},
 	images: {
-		domains: [getWpHostname()],
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: getWpHostname() || 'kpf.dreamhosters.com',
+				pathname: '/wp-content/uploads/**',
+			},
+			{
+				protocol: 'https',
+				hostname: 'kpf.dreamhosters.com',
+				pathname: '/wp-content/uploads/**',
+			},
+		],
 	},
 	async headers() {
 		return [

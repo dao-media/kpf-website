@@ -89,9 +89,29 @@ final class Defaults {
 	}
 
 	/**
+	 * Byte offset of the first pages layer (marker or the shipped file header).
+	 * Older CPT copies appended pages.css without the marker, which left
+	 * megabytes of duplicates on the public stylesheet.
+	 *
+	 * @return int|false
+	 */
+	public static function pages_layer_index( string $css ): int|false {
+		$marker = strpos( $css, self::PAGES_MARKER );
+		if ( preg_match( '/\/\*\*?[\s\*]*KPF Pages stylesheet/', $css, $match, PREG_OFFSET_CAPTURE ) ) {
+			$header = (int) $match[0][1];
+			if ( false === $marker ) {
+				return $header;
+			}
+			return min( $marker, $header );
+		}
+
+		return $marker;
+	}
+
+	/**
 	 * Append the pages layer when an existing CMS stylesheet predates pages.css.
-	 * If the marker already exists, refresh the pages segment from disk so
-	 * responsive/layout updates ship without wiping custom foundation edits.
+	 * If a pages copy already exists (marker or file header), refresh that
+	 * segment from disk — never append another copy.
 	 */
 	public static function ensure_pages_layer(): void {
 		$post_id = Meta::ensure_stylesheet();
@@ -110,12 +130,7 @@ final class Defaults {
 			return;
 		}
 
-		if ( str_contains( $current, self::PAGES_MARKER ) ) {
-			$merged = self::replace_pages_layer( $current, $pages );
-		} else {
-			$merged = rtrim( $current ) . "\n\n" . $pages;
-		}
-
+		$merged = self::replace_pages_layer( $current, $pages );
 		if ( $merged === $current || strlen( $merged ) > Meta::MAX_BYTES ) {
 			return;
 		}
@@ -127,21 +142,19 @@ final class Defaults {
 	 * CSS without the pages layer (Faust already imports pages.css via webpack).
 	 */
 	public static function strip_pages_layer( string $css ): string {
-		$pos = strpos( $css, self::PAGES_MARKER );
+		$pos = self::pages_layer_index( $css );
 		return trim( false === $pos ? $css : substr( $css, 0, $pos ) );
 	}
 
 	/**
-	 * Replace an existing pages layer block (from marker to EOF or next ship marker).
+	 * Replace an existing pages layer block (from first header/marker to EOF).
 	 */
 	public static function replace_pages_layer( string $current, string $pages ): string {
-		$marker = self::PAGES_MARKER;
-		$pos    = strpos( $current, $marker );
+		$pos = self::pages_layer_index( $current );
 		if ( false === $pos ) {
 			return rtrim( $current ) . "\n\n" . $pages;
 		}
 
-		// Drop the previous pages segment (from marker through end).
 		$before = rtrim( substr( $current, 0, $pos ) );
 		return '' === $before ? $pages : $before . "\n\n" . $pages;
 	}

@@ -27,7 +27,7 @@ export default function KpfFooter({
             <p className="kpf-footer__brand-note">
               A 501(c)(3) nonprofit organization serving Tampa Bay &amp; Florida.
             </p>
-            <CigarSmoke className="kpf-footer__cigar" cigarAlt="" />
+            <CigarSmoke className="kpf-footer__cigar" decorative />
           </div>
 
           <div className="kpf-footer__columns">

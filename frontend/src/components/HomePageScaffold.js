@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
+import KpfImage from "@/components/KpfImage";
 import PartnersSlider from "@/components/PartnersSlider";
 import KpfButton from "@/components/KpfButton";
 import ProgramsCheckRuntime, {
@@ -94,6 +95,8 @@ export default function HomePageScaffold({
             if (!resolved.src) return null;
             return (
               <div key={cutout.key} className={cutout.className}>
+                {/* Native img: CSS mask-image is sized to the img box. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={resolved.src} alt={resolved.alt || ""} decoding="async" />
               </div>
             );
@@ -149,19 +152,13 @@ export default function HomePageScaffold({
       <section className="kpf-story kpf-section" aria-labelledby="kpf-home-story-title">
         <div className="kpf-story__media">
           {kevin.src ? (
-            <picture>
-              {/* Hand-authored alpha WebP only — never rely on WP auto WebP thumbs (they flatten alpha). */}
-              <source
-                type="image/webp"
-                srcSet={kevin.src.replace(/\.(png|jpe?g)$/i, ".webp")}
-              />
-              <img
-                src={kevin.src.replace(/\.(webp|jpe?g)$/i, ".png")}
-                alt={kevin.alt}
-                loading="lazy"
-                decoding="async"
-              />
-            </picture>
+            <KpfImage
+              src={kevin.src}
+              alt={kevin.alt}
+              width={640}
+              height={760}
+              sizes="(min-width: 64rem) 640px, (min-width: 48rem) 55vw, 70vw"
+            />
           ) : null}
         </div>
         <div className="kpf-u-container kpf-story__inner">
@@ -243,7 +240,12 @@ export default function HomePageScaffold({
                 <article key={card.title} className="kpf-card kpf-values__card">
                   {cardMedia.src ? (
                     <div className="kpf-card__media">
-                      <img src={cardMedia.src} alt={cardMedia.alt || ""} loading="lazy" decoding="async" />
+                      <KpfImage
+                        src={cardMedia.src}
+                        alt={cardMedia.alt || ""}
+                        fill
+                        sizes="(min-width: 64rem) 22vw, (min-width: 48rem) 45vw, 92vw"
+                      />
                     </div>
                   ) : null}
                   <div className="kpf-card__body">
@@ -309,12 +311,13 @@ export default function HomePageScaffold({
           </div>
           <div className="kpf-programs__media">
             {dunes.src ? (
-              <img
+              <KpfImage
                 className="kpf-programs__dunes"
                 src={dunes.src}
                 alt={dunes.alt}
-                loading="lazy"
-                decoding="async"
+                width={1200}
+                height={800}
+                sizes="(min-width: 64rem) 42vw, 100vw"
               />
             ) : null}
             <div className="kpf-programs__collage">
@@ -322,12 +325,13 @@ export default function HomePageScaffold({
                 const resolved = resolveMedia(media, shot.key, shot);
                 if (!resolved.src) return null;
                 return (
-                  <img
+                  <KpfImage
                     key={shot.key}
                     src={resolved.src}
                     alt={resolved.alt || shot.alt || ""}
-                    loading="lazy"
-                    decoding="async"
+                    width={800}
+                    height={600}
+                    sizes="(min-width: 64rem) 20vw, 100vw"
                   />
                 );
               })}
@@ -362,12 +366,13 @@ export default function HomePageScaffold({
             >
               {blog.media?.src ? (
                 <div className="kpf-archive__media">
-                  <img
+                  <KpfImage
                     className="kpf-archive__thumb"
                     src={blog.media.src}
                     alt={blog.media.alt || ""}
-                    loading="lazy"
-                    decoding="async"
+                    width={1200}
+                    height={800}
+                    sizes="(min-width: 1201px) 36vw, 92vw"
                   />
                 </div>
               ) : null}

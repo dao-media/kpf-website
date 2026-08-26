@@ -11,6 +11,7 @@ describe("normalizePartnerGrantees", () => {
     ]);
     assert.equal(out.length, 1);
     assert.equal(out[0].name, "Alpha");
+    assert.equal(out[0].logoAlt, "Alpha");
     assert.equal(out[0].website, "https://a.test");
   });
 

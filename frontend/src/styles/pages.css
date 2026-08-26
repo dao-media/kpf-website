@@ -2275,6 +2275,7 @@ button.kpf-partners__dot:focus-visible {
 .kpf-values__card .kpf-card__media {
 	aspect-ratio: 16 / 10;
 	overflow: clip;
+	position: relative;
 }
 
 .kpf-values__card .kpf-card__media img {
@@ -2282,6 +2283,14 @@ button.kpf-partners__dot:focus-visible {
 	height: 100%;
 	object-fit: cover;
 	width: 100%;
+}
+
+/* next/image wraps non-fill photos in a span — keep existing img layout. */
+.kpf-story__media > span,
+.kpf-programs__media > span,
+.kpf-programs__collage > span,
+.kpf-archive__media > span {
+	display: contents;
 }
 
 .kpf-values__card .kpf-card__body {

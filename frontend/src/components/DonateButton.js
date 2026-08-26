@@ -31,7 +31,7 @@ export function PayPalMark() {
     <img
       className="kpf-btn__paypal"
       src="/media/brand/paypal-icon.png"
-      alt=""
+      alt="PayPal"
       width={16}
       height={20}
       decoding="async"

@@ -343,7 +343,7 @@ const ABOUT = {
   gallery: {
     eyebrow: "The work",
     title: "KPF volunteers enable our ongoing support for our nation’s protectors",
-    body: "Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.",
+    body: "Photos from grantee programs, events, and the communities we fund — the work on the ground.",
     seeMore: "See more",
     featured: {
       key: "about.galleryFeatured",

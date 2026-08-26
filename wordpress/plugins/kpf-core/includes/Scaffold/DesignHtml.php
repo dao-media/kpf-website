@@ -438,7 +438,7 @@ HTML;
             <h2 id="kpf-about-gallery-title" class="kpf-content-block__title kpf-content-block__title--h2">KPF volunteers enable our ongoing support for our nation’s protectors</h2>
           </div>
           <div class="kpf-content-block__body-group">
-            <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground, not stock.</p>
+            <p class="kpf-content-block__body">Photos from grantee programs, events, and the communities we fund — the work on the ground.</p>
           </div>
         </div>
       </div>

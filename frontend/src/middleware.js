@@ -41,11 +41,25 @@ function shouldSkipSeoLookup(pathname) {
     pathname === "/coming-soon" ||
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
-    pathname.includes(".")
+    pathname.includes(".") ||
+    isCanonicalPublicPath(pathname)
   );
 }
 
-const WP_LOOKUP_MS = 1500;
+/** Known ISR destinations — no SEO redirect lookup on the hot path. */
+function isCanonicalPublicPath(pathname) {
+  const current = normalizePath(pathname);
+  return (
+    current === "/" ||
+    current === "/about" ||
+    current === "/events" ||
+    current === "/blog" ||
+    current === "/contact" ||
+    current === "/privacy"
+  );
+}
+
+const WP_LOOKUP_MS = 600;
 
 function wpLookupSignal() {
   if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
@@ -179,5 +193,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

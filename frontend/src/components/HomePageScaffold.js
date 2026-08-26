@@ -102,9 +102,13 @@ export default function HomePageScaffold({
                   src={resolved.src}
                   alt={resolved.alt || ""}
                   fill
-                  sizes="(max-width: 47.99rem) 16px, (min-width: 64rem) 42vw, 100vw"
+                  sizes={
+                    isAlumni
+                      ? "(max-width: 47.99rem) 16px, (max-width: 63.99rem) 110vw, 42vw"
+                      : "(max-width: 63.99rem) 16px, 38vw"
+                  }
                   priority={isAlumni}
-                  loading={isAlumni ? undefined : "eager"}
+                  loading={isAlumni ? undefined : "lazy"}
                 />
               </div>
             );

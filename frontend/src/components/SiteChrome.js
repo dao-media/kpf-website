@@ -49,11 +49,12 @@ function ChromeHeader({ component, useScaffold }) {
       return undefined;
     }
 
-    const observer = new ResizeObserver(() => {
-      setHeight(node.offsetHeight || 0);
+    const observer = new ResizeObserver((entries) => {
+      const next = Math.round(entries[0]?.contentRect?.height || 0);
+      setHeight(next);
     });
     observer.observe(node);
-    setHeight(node.offsetHeight || 0);
+    setHeight(Math.round(node.getBoundingClientRect().height) || 0);
     return () => observer.disconnect();
   }, [component?.html, useScaffold]);
 

@@ -58,7 +58,11 @@ export default function App({ Component, pageProps }) {
   return (
     <FaustProvider pageProps={pageProps}>
       <div className={kpfFontClassName}>
-        <GlobalStylesheet href={stylesheet.href} revision={stylesheet.revision} />
+        <GlobalStylesheet
+          href={stylesheet.href}
+          revision={stylesheet.revision}
+          hasOverlay={stylesheet.hasOverlay}
+        />
         <AnalyticsLoader />
         <SiteChrome
           chrome={chrome}

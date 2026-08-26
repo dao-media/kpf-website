@@ -51,7 +51,7 @@ export default function AnalyticsLoader() {
     <>
       {GTM_ID ? (
         <>
-          <Script id="kpf-gtm" strategy="afterInteractive">
+          <Script id="kpf-gtm" strategy="lazyOnload">
             {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -64,9 +64,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
+            strategy="lazyOnload"
           />
-          <Script id="kpf-gtag" strategy="afterInteractive">
+          <Script id="kpf-gtag" strategy="lazyOnload">
             {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());gtag('config','${GA_ID}',{send_page_view:true});`}
           </Script>

@@ -45,6 +45,10 @@ final class GraphQL {
 						'type'        => 'Boolean',
 						'description' => 'True when the combined css includes the KPF pages layer marker.',
 					),
+					'hasOverlay'    => array(
+						'type'        => 'Boolean',
+						'description' => 'True when the public Faust overlay (CMS tokens block) is non-empty. Faust should omit the stylesheet <link> when false.',
+					),
 					'byteLength'    => array(
 						'type'        => 'Int',
 						'description' => 'Byte length of the combined css payload.',
@@ -103,6 +107,7 @@ final class GraphQL {
 	 *   pages: string,
 	 *   revision: string,
 	 *   hasPagesLayer: bool,
+	 *   hasOverlay: bool,
 	 *   byteLength: int,
 	 *   updatedAt: string|null,
 	 *   href: string
@@ -112,6 +117,7 @@ final class GraphQL {
 		$foundation = Defaults::foundation_css();
 		$pages      = Defaults::pages_css();
 		$css        = self::resolve_css();
+		$overlay    = Defaults::public_overlay_css( $css );
 
 		return array(
 			'css'           => $css,
@@ -119,6 +125,7 @@ final class GraphQL {
 			'pages'         => $pages,
 			'revision'      => Meta::revision( $css ),
 			'hasPagesLayer' => '' !== $pages && str_contains( $css, Defaults::PAGES_MARKER ),
+			'hasOverlay'    => '' !== $overlay,
 			'byteLength'    => strlen( $css ),
 			'updatedAt'     => self::updated_at(),
 			'href'          => Rest::public_url(),

@@ -14,7 +14,13 @@ function sendCss(res, req, css) {
   const body = String(css || "").trim() ? css : EMPTY_OVERLAY_CSS;
   res.setHeader("Content-Type", "text/css; charset=utf-8");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=86400");
+  const empty = body === EMPTY_OVERLAY_CSS;
+  res.setHeader(
+    "Cache-Control",
+    empty
+      ? "public, s-maxage=86400, stale-while-revalidate=604800"
+      : "public, s-maxage=300, stale-while-revalidate=86400",
+  );
   if (req.method === "HEAD") {
     return res.status(200).end();
   }
@@ -29,7 +35,7 @@ function sendCss(res, req, css) {
 async function fetchFromRest() {
   const response = await fetch(`${wordpressUrl}/wp-json/kpf-stylesheet/v1/public`, {
     headers: { Accept: "text/css, text/plain, */*" },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(2500),
   });
   if (!response.ok) return null;
   const type = String(response.headers.get("content-type") || "");
@@ -47,7 +53,7 @@ async function fetchFromGraphQL() {
       Accept: "application/json",
     },
     body: JSON.stringify({ query: GRAPHQL_QUERY }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(2500),
   });
   if (!response.ok) return null;
   const payload = await response.json();

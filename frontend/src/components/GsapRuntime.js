@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { gsap } from "gsap";
 import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
 
+const { isHeroLcpNode } = require("@/lib/gsapLcp");
+
 const {
   animationsUsedOnPage,
   parseAnimation,
@@ -141,6 +143,13 @@ function createTween(targets, animation, extra = {}) {
   const tweenTargets = resolveTweenTargets(targets, config);
   const nodes = gsap.utils.toArray(tweenTargets);
   if (!nodes.length) return null;
+  const lcpNodes = nodes.filter(isHeroLcpNode);
+  if (lcpNodes.length && lcpNodes.length < nodes.length) {
+    const rest = nodes.filter((node) => !isHeroLcpNode(node));
+    createTween(lcpNodes, animation, extra);
+    return createTween(rest, animation, extra);
+  }
+  const protectLcp = lcpNodes.length === nodes.length;
   const protectBadge = nodes.some(isHeaderBadgeNode);
   const ease = resolveEase(config, animation.databaseId);
   const method = animation.method || config.method || "from";
@@ -219,7 +228,7 @@ function createTween(targets, animation, extra = {}) {
     const parts = splits.flatMap((split) => split[animateKey] || split.chars || []);
     const splitFrom = config.from || { y: -24, autoAlpha: 0 };
     const tween = gsap.from(parts, {
-      ...(protectBadge ? stripHideProps(splitFrom) : splitFrom),
+      ...(protectBadge || protectLcp ? stripHideProps(splitFrom) : splitFrom),
       ...common,
       stagger: Number(svg.splitStagger ?? config.stagger) || 0.03,
     });
@@ -267,8 +276,9 @@ function createTween(targets, animation, extra = {}) {
     });
   }
 
-  const fromVars = protectBadge ? stripHideProps(config.from) : config.from;
-  const toVars = protectBadge ? stripHideProps(config.to) : config.to;
+  const hideProtected = protectBadge || protectLcp;
+  const fromVars = hideProtected ? stripHideProps(config.from) : config.from;
+  const toVars = hideProtected ? stripHideProps(config.to) : config.to;
 
   if (method === "to") {
     return gsap.to(tweenTargets, { ...(toVars || {}), ...common });
@@ -282,7 +292,7 @@ function createTween(targets, animation, extra = {}) {
   if (method === "keyframes") {
     return gsap.to(tweenTargets, {
       keyframes: (config.keyframes || []).map((frame) => ({
-        ...((protectBadge ? stripHideProps(frame.props) : frame.props) || {}),
+        ...((protectBadge || protectLcp ? stripHideProps(frame.props) : frame.props) || {}),
         duration: frame.duration,
         ease: frame.ease,
       })),
@@ -511,4 +521,4 @@ export default function GsapRuntime({ animations = [] }) {
   return null;
 }
 
-export { createTween, parseAnimation, resolveEase, resolveTweenTargets };
+export { createTween, isHeroLcpNode, parseAnimation, resolveEase, resolveTweenTargets };

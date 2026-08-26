@@ -6,6 +6,7 @@ const KPF_STYLESHEET_QUERY = `
   kpfStylesheetInfo {
     revision
     updatedAt
+    hasOverlay
   }
 `;
 
@@ -60,15 +61,24 @@ function stylesheetHref(revision) {
   return `/kpf-stylesheet.css${qs}`;
 }
 
+function stylesheetHasOverlay(info) {
+  if (!info || typeof info !== "object") return false;
+  return Boolean(info.hasOverlay);
+}
+
 function stylesheetMetaFromPageProps(pageProps) {
   const info =
     pageProps?.__TEMPLATE_QUERY_DATA__?.kpfStylesheetInfo ||
     pageProps?.kpfStylesheetInfo ||
     null;
   const revision = String(info?.revision || "").trim();
+  const hasOverlay = stylesheetHasOverlay(info);
   return {
     revision,
-    href: stylesheetHref(revision),
+    hasOverlay,
+    // Empty overlay is a no-op CSS comment; a render-blocking <link> for it
+    // sat on the critical path for seconds (PSI: 5.8s, 0 bytes).
+    href: hasOverlay ? stylesheetHref(revision) : "",
   };
 }
 
@@ -77,6 +87,7 @@ module.exports = {
   KPF_STYLESHEET_QUERY,
   PAGES_MARKER,
   pagesLayerIndex,
+  stylesheetHasOverlay,
   stylesheetHref,
   stylesheetMetaFromPageProps,
   stylesheetResponseBody,

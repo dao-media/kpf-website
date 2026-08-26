@@ -34,6 +34,7 @@ export default function KpfImage({
         className={className}
         priority={priority}
         loading={lazy}
+        decoding="async"
         style={style}
         {...rest}
       />
@@ -51,6 +52,7 @@ export default function KpfImage({
         className={className}
         priority={priority}
         loading={lazy}
+        decoding="async"
         style={style}
         {...rest}
       />

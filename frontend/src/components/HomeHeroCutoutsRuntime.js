@@ -56,7 +56,7 @@ export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {
       return undefined;
     }
 
-    const stageWidth = stage.getBoundingClientRect().width || stage.offsetWidth;
+    const stageWidth = stage.clientWidth || 0;
     const visible = LAYERS.map((layer) => {
       const node = stage.querySelector(layer.selector);
       if (!node) return null;

@@ -12,6 +12,7 @@ describe("globalStylesheet", () => {
   it("keeps CSS bodies out of the Faust page query", () => {
     assert.match(KPF_STYLESHEET_QUERY, /kpfStylesheetInfo/);
     assert.match(KPF_STYLESHEET_QUERY, /revision/);
+    assert.match(KPF_STYLESHEET_QUERY, /hasOverlay/);
     assert.doesNotMatch(KPF_STYLESHEET_QUERY, /^\s*kpfStylesheet\s*$/m);
     assert.doesNotMatch(KPF_STYLESHEET_QUERY, /\bcss\b/);
     assert.doesNotMatch(KPF_STYLESHEET_QUERY, /\bfoundation\b/);
@@ -68,6 +69,17 @@ describe("globalStylesheet", () => {
       }),
       {
         revision: "deadbeef",
+        hasOverlay: false,
+        href: "",
+      },
+    );
+    assert.deepEqual(
+      stylesheetMetaFromPageProps({
+        kpfStylesheetInfo: { revision: "deadbeef", hasOverlay: true },
+      }),
+      {
+        revision: "deadbeef",
+        hasOverlay: true,
         href: "/kpf-stylesheet.css?rev=deadbeef",
       },
     );

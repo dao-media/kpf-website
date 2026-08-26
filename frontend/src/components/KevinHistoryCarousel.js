@@ -416,7 +416,9 @@ export default function KevinHistoryCarousel({
     };
   }, [baseQueue, count, paint]);
 
-  // Stack photos: hide, then stagger in once the split is on screen.
+  // Stack photos: stagger in on mount. A ScrollTrigger `bottom bottom` wait
+  // left the tartan empty while the story card was already on screen, and it
+  // never fired reliably with ScrollSmoother.
   useLayoutEffect(() => {
     const split = splitRef.current;
     if (!split || count < 1) return undefined;
@@ -429,12 +431,8 @@ export default function KevinHistoryCarousel({
       return undefined;
     }
 
-    let played = false;
-    const playIntro = () => {
-      if (played) return;
-      played = true;
+    const ctx = gsap.context(() => {
       const layers = gsap.utils.toArray(".kpf-history__layer", split);
-      // Leftmost first so the fan reads as stacking in from the left.
       const orderedImgs = [...layers]
         .sort(
           (a, b) =>
@@ -443,49 +441,25 @@ export default function KevinHistoryCarousel({
         .map((layer) => layer.querySelector("img"))
         .filter(Boolean);
 
-      gsap.to(orderedImgs.length ? orderedImgs : imgs, {
-        autoAlpha: 1,
-        x: 0,
+      gsap.from(orderedImgs.length ? orderedImgs : imgs, {
+        autoAlpha: 0,
+        x: INTRO_X,
         duration: INTRO_DURATION,
         ease: "power3.out",
         stagger: INTRO_STAGGER,
         delay: INTRO_DELAY,
-        overwrite: "auto",
       });
-    };
-
-    const ctx = gsap.context(() => {
-      gsap.set(imgs, { autoAlpha: 0, x: INTRO_X });
-
-      // Play as soon as the split appears. Waiting for `bottom bottom` left a
-      // large empty tartan while the card was already on screen.
-      const st = ScrollTrigger.create({
-        trigger: split,
-        start: "top 80%",
-        once: true,
-        onEnter: playIntro,
-      });
-
-      const alreadyInView =
-        st.progress > 0 ||
-        (typeof ScrollTrigger.isInViewport === "function" &&
-          ScrollTrigger.isInViewport(split, 0.1));
-      if (alreadyInView) playIntro();
     }, split);
 
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
-      if (
-        !played &&
-        typeof ScrollTrigger.isInViewport === "function" &&
-        ScrollTrigger.isInViewport(split, 0.1)
-      ) {
-        playIntro();
-      }
-    });
+    const failsafe = window.setTimeout(() => {
+      gsap.set(imgs, { autoAlpha: 1, x: 0 });
+    }, (INTRO_DELAY + INTRO_DURATION + INTRO_STAGGER * imgs.length) * 1000 + 200);
 
-    return () => ctx.revert();
-  }, [count, items]);
+    return () => {
+      window.clearTimeout(failsafe);
+      ctx.revert();
+    };
+  }, [count, items.map((item) => item.src).join("\n")]);
 
   useEffect(() => {
     const split = splitRef.current;

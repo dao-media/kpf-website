@@ -222,19 +222,21 @@ export default function AboutPageScaffold({
     });
   }
 
-  const carouselSlides =
-    Array.isArray(kevinSlides) && kevinSlides.length > 0
-      ? kevinSlides
-      : copy.history.layers.map((layer, index) => {
-          const resolved = resolveMedia(media, layer.key, layer);
-          return {
-            id: layer.key || `history-fallback-${index}`,
-            imageUrl: resolved.src,
-            imageAlt: resolved.alt,
-            header: copy.history.card.title,
-            body: copy.history.card.body.join("\n\n"),
-          };
-        });
+  const carouselSlides = useMemo(() => {
+    if (Array.isArray(kevinSlides) && kevinSlides.length > 0) {
+      return kevinSlides;
+    }
+    return copy.history.layers.map((layer, index) => {
+      const resolved = resolveMedia(media, layer.key, layer);
+      return {
+        id: layer.key || `history-fallback-${index}`,
+        imageUrl: resolved.src,
+        imageAlt: resolved.alt,
+        header: copy.history.card.title,
+        body: copy.history.card.body.join("\n\n"),
+      };
+    });
+  }, [kevinSlides, copy.history, media]);
 
   return (
     <div className="kpf-page-about" data-kpf-scaffold="about">

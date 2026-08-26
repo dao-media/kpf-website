@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { HOME } from "@/lib/pageCopy";
 
@@ -7,6 +7,9 @@ const TRANSITION_MS = 650;
 const GAP_PX = 16;
 /** Mobile portrait: card is 80% of the rail so prev/next peek on both sides. */
 const MOBILE_CHIP_RATIO = 0.8;
+/** Three copies so the middle set always has a neighbor on both sides. */
+const LOOP_COPIES = 3;
+const SWIPE_THRESHOLD_PX = 40;
 
 function prefersReducedMotion() {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -20,33 +23,35 @@ function visibleCountForViewport() {
   return 1;
 }
 
-/**
- * Build stop offsets: start at 0, step one card, finish at maxOffset.
- * Mobile (80% card + side padding) centers each card so both neighbors peek.
- * Tablet/desktop fill the viewport, so the last stop right-aligns the tail.
- */
-function buildOffsets(stepPx, maxOffset) {
-  if (maxOffset <= 0) return [0];
+function logicalIndex(index, count) {
+  if (count < 1) return 0;
+  return ((index % count) + count) % count;
+}
 
-  const stops = [];
-  for (let offset = 0; offset < maxOffset; offset += stepPx) {
-    stops.push(offset);
+/** Keep the track in the middle copy after a loop animation finishes. */
+function wrapLoopIndex(index, count) {
+  if (count < 2) return index;
+  let next = index;
+  while (next >= count * 2) next -= count;
+  while (next < count) next += count;
+  return next;
+}
+
+function loopedChips(chips) {
+  if (chips.length < 2) return chips.map((item) => ({ item, loopKey: `0-${item.id}` }));
+  const out = [];
+  for (let copy = 0; copy < LOOP_COPIES; copy += 1) {
+    for (const item of chips) {
+      out.push({ item, loopKey: `${copy}-${item.id}` });
+    }
   }
-
-  const last = stops[stops.length - 1];
-  if (last == null || Math.abs(maxOffset - last) > 1) {
-    stops.push(maxOffset);
-  } else {
-    stops[stops.length - 1] = maxOffset;
-  }
-
-  return stops;
+  return out;
 }
 
 /**
  * Grantee chip slider — Figma Section / Partners `426:477`.
  * Shows 4 / 3 / 1 cards (desktop / tablet / mobile with 80% card + edge peeks).
- * Advances one card at a time, then loops to the start.
+ * Loops the track so autoplay and touch swipes never jump back to the start.
  */
 export default function PartnersSlider({
   items = [],
@@ -57,18 +62,38 @@ export default function PartnersSlider({
   const viewportRef = useRef(null);
   const trackRef = useRef(null);
   const pausedRef = useRef(false);
-  const [index, setIndex] = useState(0);
-  const [offsets, setOffsets] = useState([0]);
-  const [visible, setVisible] = useState(4);
+  const indexRef = useRef(0);
+  const stepRef = useRef(0);
+  const countRef = useRef(0);
+  const suppressClickRef = useRef(false);
+  const dragRef = useRef({
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    deltaX: 0,
+    axis: null,
+  });
 
   const chips = Array.isArray(items) ? items.filter((item) => item?.logoUrl && item?.name) : [];
-  const slideCount = offsets.length;
+  const count = chips.length;
+  const looping = count >= 2;
+  const slides = loopedChips(chips);
 
-  useEffect(() => {
+  const [index, setIndex] = useState(() => (count >= 2 ? count : 0));
+  const [step, setStep] = useState(0);
+  const [visible, setVisible] = useState(4);
+  const [animate, setAnimate] = useState(true);
+  const [dragX, setDragX] = useState(0);
+
+  indexRef.current = index;
+  stepRef.current = step;
+  countRef.current = count;
+
+  useLayoutEffect(() => {
     const viewport = viewportRef.current;
     const track = trackRef.current;
-    if (!viewport || !track || chips.length < 1) {
-      setOffsets([0]);
+    if (!viewport || !track || count < 1) {
+      setStep(0);
       setIndex(0);
       setVisible(4);
       return undefined;
@@ -94,13 +119,10 @@ export default function PartnersSlider({
 
       track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
 
-      const step = Math.max(1, Math.round(chipWidth + gap));
-      const maxOffset = Math.max(0, Math.round(track.scrollWidth - viewport.clientWidth));
-      const nextOffsets = buildOffsets(step, maxOffset);
-
+      const nextStep = Math.max(1, Math.round(chipWidth + gap));
       setVisible(nextVisible);
-      setOffsets(nextOffsets);
-      setIndex((current) => Math.min(current, nextOffsets.length - 1));
+      setStep(nextStep);
+      setIndex((current) => (count >= 2 ? count + logicalIndex(current, count) : 0));
     }
 
     measure();
@@ -111,32 +133,174 @@ export default function PartnersSlider({
       observer?.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [chips.length]);
+  }, [count]);
 
   useEffect(() => {
-    if (slideCount <= 1 || prefersReducedMotion()) return undefined;
+    if (!looping || prefersReducedMotion()) return undefined;
 
-    // Restart whenever `index` changes (auto or dot click) so the countdown
-    // always gets a full AUTO_MS after a manual page change.
     const id = window.setInterval(() => {
       if (pausedRef.current || document.hidden) return;
-      // After the last (right-aligned) stop, reload to the first card on the left.
-      setIndex((current) => (current + 1) % slideCount);
+      setAnimate(true);
+      setIndex((current) =>
+        prefersReducedMotion()
+          ? wrapLoopIndex(current + 1, countRef.current)
+          : current + 1,
+      );
     }, AUTO_MS);
 
     return () => window.clearInterval(id);
-  }, [slideCount, index]);
+  }, [looping]);
 
-  if (chips.length < 1) return null;
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || !looping) return undefined;
 
-  const offset = offsets[Math.min(index, slideCount - 1)] ?? 0;
-  const dots = offsets.map((_, i) => i);
+    function onTransitionEnd(event) {
+      if (event.target !== track || event.propertyName !== "transform") return;
+      const wrapped = wrapLoopIndex(indexRef.current, countRef.current);
+      if (wrapped === indexRef.current) return;
+      setAnimate(false);
+      setIndex(wrapped);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          setAnimate(true);
+        });
+      });
+    }
+
+    track.addEventListener("transitionend", onTransitionEnd);
+    return () => track.removeEventListener("transitionend", onTransitionEnd);
+  }, [looping]);
+
+  if (count < 1) return null;
+
+  const offset = index * step - dragX;
+  const activeLogical = logicalIndex(index, count);
+  const motionOff = prefersReducedMotion();
+  const durationMs = animate && dragX === 0 && !motionOff ? TRANSITION_MS : 0;
+
+  function isSwipePointer(event) {
+    return event.pointerType === "touch" || event.pointerType === "pen";
+  }
+
+  function onPointerDown(event) {
+    if (!looping || !isSwipePointer(event)) return;
+    pausedRef.current = true;
+    suppressClickRef.current = false;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      deltaX: 0,
+      axis: null,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event) {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (!drag.axis) {
+      if (Math.abs(deltaX) < 8 && Math.abs(deltaY) < 8) return;
+      drag.axis = Math.abs(deltaX) >= Math.abs(deltaY) ? "x" : "y";
+      if (drag.axis === "y") return;
+    }
+    if (drag.axis !== "x") return;
+
+    drag.deltaX = deltaX;
+    if (Math.abs(deltaX) > 8) suppressClickRef.current = true;
+    setAnimate(false);
+    setDragX(deltaX);
+  }
+
+  function onPointerUp(event) {
+    const drag = dragRef.current;
+    if (drag.pointerId !== event.pointerId) return;
+    drag.pointerId = null;
+    pausedRef.current = false;
+
+    const deltaX = drag.axis === "x" ? drag.deltaX : 0;
+    const threshold = Math.max(SWIPE_THRESHOLD_PX, stepRef.current * 0.2);
+    setDragX(0);
+    setAnimate(true);
+    const instant = prefersReducedMotion();
+    if (deltaX > threshold) {
+      setIndex((current) =>
+        instant ? wrapLoopIndex(current - 1, countRef.current) : current - 1,
+      );
+    } else if (deltaX < -threshold) {
+      setIndex((current) =>
+        instant ? wrapLoopIndex(current + 1, countRef.current) : current + 1,
+      );
+    }
+    drag.axis = null;
+    drag.deltaX = 0;
+  }
+
+  function onClickCapture(event) {
+    if (!suppressClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressClickRef.current = false;
+  }
+
+  function goToLogical(target) {
+    if (!looping) {
+      setIndex(target);
+      return;
+    }
+    const current = indexRef.current;
+    const currentLogical = logicalIndex(current, count);
+    let delta = target - currentLogical;
+    if (delta > count / 2) delta -= count;
+    if (delta < -count / 2) delta += count;
+    setAnimate(true);
+    setIndex(current + delta);
+  }
+
+  function renderChip(item, loopKey) {
+    const content = (
+      <>
+        <img
+          className="kpf-partners__logo"
+          src={item.logoUrl}
+          alt={item.logoAlt || item.name}
+          width={40}
+          height={40}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+        />
+        <span className="kpf-partners__name" aria-hidden="true">
+          {item.name}
+        </span>
+      </>
+    );
+
+    if (href) {
+      return (
+        <Link key={loopKey} className="kpf-partners__chip" href={href} draggable={false}>
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <div key={loopKey} className="kpf-partners__chip">
+        {content}
+      </div>
+    );
+  }
 
   return (
     <section
       className="kpf-partners kpf-section"
       aria-labelledby={labelId}
       data-kpf-partners-visible={visible}
+      data-kpf-partners-loop={looping ? "true" : "false"}
     >
       <div className="kpf-u-container kpf-partners__inner">
         <p id={labelId} className="kpf-partners__label">
@@ -146,11 +310,20 @@ export default function PartnersSlider({
         <div
           ref={viewportRef}
           className="kpf-partners__viewport"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onClickCapture={onClickCapture}
           onMouseEnter={() => {
-            pausedRef.current = true;
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+              pausedRef.current = true;
+            }
           }}
           onMouseLeave={() => {
-            pausedRef.current = false;
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+              pausedRef.current = false;
+            }
           }}
           onFocusCapture={() => {
             pausedRef.current = true;
@@ -165,63 +338,28 @@ export default function PartnersSlider({
             ref={trackRef}
             className="kpf-partners__track"
             style={{
-              transform: `translate3d(-${offset}px, 0, 0)`,
-              transitionDuration: `${TRANSITION_MS}ms`,
+              transform: `translate3d(${-offset}px, 0, 0)`,
+              transitionDuration: `${durationMs}ms`,
             }}
           >
-            {chips.map((item) => {
-              const content = (
-                <>
-                  <img
-                    className="kpf-partners__logo"
-                    src={item.logoUrl}
-                    alt={item.logoAlt || item.name}
-                    width={40}
-                    height={40}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span className="kpf-partners__name" aria-hidden="true">
-                    {item.name}
-                  </span>
-                </>
-              );
-
-              if (href) {
-                return (
-                  <Link
-                    key={item.id}
-                    className="kpf-partners__chip"
-                    href={href}
-                  >
-                    {content}
-                  </Link>
-                );
-              }
-
-              return (
-                <div key={item.id} className="kpf-partners__chip">
-                  {content}
-                </div>
-              );
-            })}
+            {slides.map(({ item, loopKey }) => renderChip(item, loopKey))}
           </div>
         </div>
 
-        {slideCount > 1 ? (
+        {looping ? (
           <div className="kpf-partners__dots" role="group" aria-label="Grantee slider pages">
-            {dots.map((dotIndex) => (
+            {chips.map((item, dotIndex) => (
               <button
-                key={dotIndex}
+                key={item.id}
                 type="button"
                 className={
-                  dotIndex === index
+                  dotIndex === activeLogical
                     ? "kpf-partners__dot is-active"
                     : "kpf-partners__dot"
                 }
-                aria-label={`Show grantee ${dotIndex + 1} of ${slideCount}`}
-                aria-current={dotIndex === index ? "true" : undefined}
-                onClick={() => setIndex(dotIndex)}
+                aria-label={`Show ${item.name}`}
+                aria-current={dotIndex === activeLogical ? "true" : undefined}
+                onClick={() => goToLogical(dotIndex)}
               />
             ))}
           </div>

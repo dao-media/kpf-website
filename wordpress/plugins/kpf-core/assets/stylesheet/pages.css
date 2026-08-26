@@ -1948,6 +1948,7 @@ html.kpf-scroll-smoothed body {
 	container-type: inline-size;
 	min-height: var(--kpf-partners-chip-height, 3.5rem);
 	overflow: hidden;
+	touch-action: pan-y;
 	width: 100%;
 }
 
@@ -2040,6 +2041,8 @@ a.kpf-partners__chip:focus-visible {
 	box-sizing: border-box;
 	display: block;
 	flex: 0 0 auto;
+	-webkit-user-drag: none;
+	user-select: none;
 	height: calc(
 		var(--kpf-partners-chip-height) - 2 * var(--kpf-partners-chip-pad-block)
 	);
@@ -2081,6 +2084,13 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	gap: 0.25rem;
 	justify-content: center;
 	min-height: 1.25rem;
+}
+
+/* Infinite loop on touch — dots still work on fine-pointer desktops. */
+@media (hover: none), (pointer: coarse) {
+	.kpf-partners__dots {
+		display: none;
+	}
 }
 
 /*

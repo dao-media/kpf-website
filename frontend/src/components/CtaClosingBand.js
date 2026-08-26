@@ -100,7 +100,7 @@ export default function CtaClosingBand({
         if (follow.length) {
           // Hold the from-state until the title lands; timeline `from` at t>0
           // would leave these visible during the heading drop.
-          gsap.set(follow, { y: 42, autoAlpha: 0 });
+          gsap.set(follow, { y: -42, autoAlpha: 0 });
           tl.to(
             follow,
             {

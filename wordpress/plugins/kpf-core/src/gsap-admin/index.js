@@ -150,7 +150,7 @@ function defaults() {
 		stagger: 0,
 		repeat: 0,
 		yoyo: false,
-		from: { y: 28, autoAlpha: 0 },
+		from: { y: -28, autoAlpha: 0 },
 		to: { y: 0, autoAlpha: 1 },
 		keyframes: [],
 		svg: {
@@ -997,7 +997,7 @@ function Builder({ animation, onSaved, onDeleted }) {
 			const split = new SplitText(target, { type: config.svg.splitType || 'chars,words,lines' });
 			const key = config.svg.splitAnimate || 'chars';
 			tweenRef.current = gsap.from(split[key] || split.chars, {
-				...(config.from || { y: 20, autoAlpha: 0 }),
+				...(config.from || { y: -20, autoAlpha: 0 }),
 				...common,
 				stagger: config.stagger || 0.03,
 			});

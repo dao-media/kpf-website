@@ -2,8 +2,8 @@
 /**
  * Seed sitewide scroll entrances tuned to scfo.de body-copy motion (no pin/scrub).
  *
- * Reference (https://scfo.de/ — Framer Motion variants):
- *   hidden: { opacity: 0, y: 42 }
+ * Reference (https://scfo.de/ — Framer Motion variants, Y inverted to fade in/down):
+ *   hidden: { opacity: 0, y: -42 }
  *   show:   { opacity: 1, y: 0, transition: { duration: 0.9, delay: i*0.08, ease: [0.22, 1, 0.36, 1] } }
  *   viewport: { once: true, amount: ~0.2 }
  *
@@ -132,7 +132,7 @@ kpf_seed_gsap_animation(
 		'customBezier' => '0.22,1,0.36,1',
 		'stagger'  => 0,
 		'from'     => array(
-			'y'         => 42,
+			'y'         => -42,
 			'autoAlpha' => 0,
 		),
 		'scroll'   => array(
@@ -145,7 +145,7 @@ kpf_seed_gsap_animation(
 	10
 );
 
-// Primary sitewide content reveal — scfo.de body-copy motion.
+// Primary sitewide content reveal — fade in/down.
 kpf_seed_gsap_animation(
 	'section-content-stagger',
 	'Section content stagger',
@@ -161,7 +161,7 @@ kpf_seed_gsap_animation(
 		'customBezier' => '0.22,1,0.36,1',
 		'stagger'      => 0.08,
 		'from'         => array(
-			'y'         => 42,
+			'y'         => -42,
 			'autoAlpha' => 0,
 		),
 		'scroll'       => array(

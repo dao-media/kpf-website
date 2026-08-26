@@ -217,7 +217,7 @@ function createTween(targets, animation, extra = {}) {
     );
     const animateKey = svg.splitAnimate || "chars";
     const parts = splits.flatMap((split) => split[animateKey] || split.chars || []);
-    const splitFrom = config.from || { y: 24, autoAlpha: 0 };
+    const splitFrom = config.from || { y: -24, autoAlpha: 0 };
     const tween = gsap.from(parts, {
       ...(protectBadge ? stripHideProps(splitFrom) : splitFrom),
       ...common,

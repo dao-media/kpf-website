@@ -83,7 +83,7 @@ final class Meta {
 			'stagger'         => 0,
 			'repeat'          => 0,
 			'yoyo'            => false,
-			'from'            => array( 'y' => 28, 'autoAlpha' => 0 ),
+			'from'            => array( 'y' => -28, 'autoAlpha' => 0 ),
 			'to'              => array( 'y' => 0, 'autoAlpha' => 1 ),
 			'keyframes'       => array(),
 			'svg'             => self::effect_defaults(),

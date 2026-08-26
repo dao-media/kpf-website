@@ -319,6 +319,69 @@ final class Meta {
 		return $design_id;
 	}
 
+	/**
+	 * Front page used as the Site Fallback source.
+	 */
+	public static function front_page_id(): int {
+		$front = (int) get_option( 'page_on_front' );
+		if ( $front > 0 && 'page' === get_post_type( $front ) ) {
+			return $front;
+		}
+
+		$home = get_page_by_path( 'home' );
+		return $home instanceof \WP_Post ? (int) $home->ID : 0;
+	}
+
+	public static function page_design_id( int $page_id ): int {
+		if ( $page_id < 1 ) {
+			return 0;
+		}
+
+		return self::sanitize_page_design_id( get_post_meta( $page_id, self::PAGE_DESIGN_META, true ) );
+	}
+
+	/**
+	 * Copy an existing design payload onto a Site role (Fallback / 404 / maintenance).
+	 */
+	public static function copy_design_to_role( int $source_design_id, string $role ): int {
+		$source_design_id = self::sanitize_page_design_id( $source_design_id );
+		if ( $source_design_id < 1 ) {
+			return 0;
+		}
+
+		$source = self::get_design( $source_design_id );
+		if ( '' === trim( (string) $source['html'] ) ) {
+			return 0;
+		}
+
+		return self::save_system_design( $role, $source );
+	}
+
+	/**
+	 * @param array<string, mixed> $payload Design HTML/CSS payload.
+	 */
+	public static function save_system_design( string $role, array $payload ): int {
+		$design_id = self::ensure_system_design( $role );
+		if ( $design_id < 1 ) {
+			return 0;
+		}
+
+		$clean = self::sanitize_design( $payload );
+		if ( '' === trim( (string) $clean['html'] ) ) {
+			return 0;
+		}
+
+		update_post_meta( $design_id, self::DESIGN_META, $clean );
+		wp_update_post(
+			array(
+				'ID'          => $design_id,
+				'post_status' => 'publish',
+			)
+		);
+
+		return $design_id;
+	}
+
 	public static function find_template_design_id( string $post_type, string $view ): int {
 		$post_type = sanitize_key( $post_type );
 		$view      = sanitize_key( $view );
@@ -398,6 +461,33 @@ final class Meta {
 		update_post_meta( $design_id, self::DESIGN_META, self::design_defaults() );
 		update_post_meta( $design_id, self::TEMPLATE_TYPE_META, $post_type );
 		update_post_meta( $design_id, self::TEMPLATE_VIEW_META, $view );
+
+		return $design_id;
+	}
+
+	/**
+	 * Publish HTML/CSS onto a post-type template slot (Pages → Designs → Templates).
+	 *
+	 * @param array<string, mixed> $payload Raw design payload.
+	 */
+	public static function save_template_design( string $post_type, string $view, array $payload ): int {
+		$design_id = self::ensure_template_design( $post_type, $view );
+		if ( $design_id < 1 ) {
+			return 0;
+		}
+
+		$clean = self::sanitize_design( $payload );
+		if ( '' === trim( (string) $clean['html'] ) ) {
+			return 0;
+		}
+
+		update_post_meta( $design_id, self::DESIGN_META, $clean );
+		wp_update_post(
+			array(
+				'ID'          => $design_id,
+				'post_status' => 'publish',
+			)
+		);
 
 		return $design_id;
 	}
@@ -487,26 +577,58 @@ final class Meta {
 
 	private static function sanitize_html( string $html ): string {
 		$allowed = wp_kses_allowed_html( 'post' );
+		foreach ( array( 'a', 'button', 'div', 'span', 'section', 'article', 'aside' ) as $tag ) {
+			if ( ! isset( $allowed[ $tag ] ) || ! is_array( $allowed[ $tag ] ) ) {
+				$allowed[ $tag ] = array();
+			}
+			$allowed[ $tag ]['data-kpf-href']       = true;
+			$allowed[ $tag ]['data-kpf-external']   = true;
+			$allowed[ $tag ]['data-kpf-category']   = true;
+			$allowed[ $tag ]['data-kpf-chip-tip']   = true;
+			$allowed[ $tag ]['aria-labelledby']     = true;
+			$allowed[ $tag ]['aria-hidden']         = true;
+			$allowed[ $tag ]['aria-label']          = true;
+			$allowed[ $tag ]['hidden']              = true;
+		}
+
+		foreach ( array( 'p', 'figure', 'img' ) as $tag ) {
+			if ( ! isset( $allowed[ $tag ] ) || ! is_array( $allowed[ $tag ] ) ) {
+				$allowed[ $tag ] = array();
+			}
+			$allowed[ $tag ]['hidden']                 = true;
+			$allowed[ $tag ]['data-kpf-filter-empty']  = true;
+			$allowed[ $tag ]['data-kpf-category']      = true;
+			$allowed[ $tag ]['loading']                = true;
+			$allowed[ $tag ]['decoding']               = true;
+		}
+
 		foreach ( array( 'header', 'footer', 'main', 'section', 'article', 'aside', 'nav', 'picture', 'source', 'video' ) as $tag ) {
-			$allowed[ $tag ] = array(
-				'id'         => true,
-				'class'      => true,
-				'role'       => true,
-				'aria-label' => true,
-				'style'      => true,
-				'src'        => true,
-				'srcset'     => true,
-				'sizes'      => true,
-				'type'       => true,
-				'media'      => true,
-				'alt'        => true,
-				'width'      => true,
-				'height'     => true,
-				'controls'   => true,
-				'autoplay'   => true,
-				'loop'       => true,
-				'muted'      => true,
-				'poster'     => true,
+			$existing = isset( $allowed[ $tag ] ) && is_array( $allowed[ $tag ] ) ? $allowed[ $tag ] : array();
+			$allowed[ $tag ] = array_merge(
+				$existing,
+				array(
+					'id'             => true,
+					'class'          => true,
+					'role'           => true,
+					'aria-label'     => true,
+					'aria-labelledby'=> true,
+					'aria-hidden'    => true,
+					'style'          => true,
+					'src'            => true,
+					'srcset'         => true,
+					'sizes'          => true,
+					'type'           => true,
+					'media'          => true,
+					'alt'            => true,
+					'width'          => true,
+					'height'         => true,
+					'controls'       => true,
+					'autoplay'       => true,
+					'loop'           => true,
+					'muted'          => true,
+					'poster'         => true,
+					'hidden'         => true,
+				)
 			);
 		}
 

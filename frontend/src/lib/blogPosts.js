@@ -168,6 +168,27 @@ function blogFilterBar(posts) {
   };
 }
 
+/**
+ * Shape used by design templates ({{featuredImage.url}}, {{href}}, …).
+ * @param {Record<string, unknown>} post
+ * @returns {Record<string, unknown>}
+ */
+function toDesignQueryItem(post) {
+  return {
+    title: post.title,
+    href: post.href,
+    description: post.description,
+    date: post.date,
+    readTime: post.readTime,
+    category: post.category,
+    categorySlug: post.categorySlug,
+    featuredImage: {
+      url: post.media?.src || "",
+      alt: post.media?.alt || "",
+    },
+  };
+}
+
 module.exports = {
   BLOG_CARD_MAX_WORDS,
   KPF_BLOG_POSTS_QUERY,
@@ -176,5 +197,6 @@ module.exports = {
   blogTopicFilters,
   normalizeBlogPost,
   normalizeBlogPosts,
+  toDesignQueryItem,
   truncateWords,
 };

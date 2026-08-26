@@ -34,6 +34,12 @@ final class Placeholders {
 			self::item( '{{fields.key}}', __( 'Custom design field', 'kpf-core' ), __( 'Replace “key” with a custom field key from the Page editor.', 'kpf-core' ), 'fields' ),
 			self::item( '{{form:slug}}', __( 'Form island', 'kpf-core' ), __( 'Embed a Forms CPT by slug as a React island.', 'kpf-core' ), 'islands' ),
 			self::item( '{{stacked-slider:slug}}', __( 'Stacked image slider', 'kpf-core' ), __( 'Bottom-aligned photo stack driven by a design query slug. Front exits up/right on scroll and recycles to the back (−12% per layer, 4 visible). On tablet/mobile the media card owns the tartan wash; on desktop the section owns it and the media card is unstyled.', 'kpf-core' ), 'islands' ),
+			self::item( '{{partners-slider}}', __( 'Partners slider', 'kpf-core' ), __( 'Grantee logo slider on the homepage.', 'kpf-core' ), 'islands' ),
+			self::item( '{{blog-filters}}', __( 'Blog topic filters', 'kpf-core' ), __( 'Interactive topic chips that hide archive cards by category.', 'kpf-core' ), 'islands' ),
+			self::item( '{{post-sidebar}}', __( 'Post sidebar', 'kpf-core' ), __( 'Table of contents and recent comment activity on a blog post.', 'kpf-core' ), 'islands' ),
+			self::item( '{{comments}}', __( 'Comments', 'kpf-core' ), __( 'Comment list and form on a blog post.', 'kpf-core' ), 'islands' ),
+			self::item( '{{#each queries.blog-posts}}', __( 'Blog posts loop', 'kpf-core' ), __( 'Latest published posts. Use @first for the featured row.', 'kpf-core' ), 'queries' ),
+			self::item( '{{#each queries.related-posts}}', __( 'Related posts loop', 'kpf-core' ), __( 'Other stories on a single post template.', 'kpf-core' ), 'queries' ),
 		);
 
 		foreach ( self::seo_pattern_items() as $item ) {
@@ -127,6 +133,7 @@ final class Placeholders {
 			'site'         => 55,
 			'queries'      => 57,
 			'library'      => 60,
+			'islands'      => 70,
 		);
 		return $order[ $group ] ?? 100;
 	}

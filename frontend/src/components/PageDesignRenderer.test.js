@@ -216,4 +216,40 @@ describe("page design templates", () => {
       { type: "html", html: "c" },
     ]);
   });
+
+  it("preserves blog islands and splits @first featured rows", () => {
+    const { renderDesignTemplate, splitDesignHtml } = require("./pageDesignTemplate");
+    assert.equal(
+      renderDesignTemplate("<div>{{blog-filters}}{{post-sidebar}}{{comments}}</div>", model),
+      "<div>{{blog-filters}}{{post-sidebar}}{{comments}}</div>",
+    );
+    assert.deepEqual(
+      splitDesignHtml("a{{blog-filters}}b{{post-sidebar}}c{{comments}}d"),
+      [
+        { type: "html", html: "a" },
+        { type: "blog-filters" },
+        { type: "html", html: "b" },
+        { type: "post-sidebar" },
+        { type: "html", html: "c" },
+        { type: "comments" },
+        { type: "html", html: "d" },
+      ],
+    );
+    assert.equal(
+      renderDesignTemplate(
+        "{{#each queries.blog-posts}}{{#if @first}}F:{{title}}{{else}}R:{{title}}{{/if}}{{/each}}",
+        {
+          queries: {
+            "blog-posts": {
+              items: [
+                { title: "First", href: "/blog/a/" },
+                { title: "Second", href: "/blog/b/" },
+              ],
+            },
+          },
+        },
+      ),
+      "F:FirstR:Second",
+    );
+  });
 });

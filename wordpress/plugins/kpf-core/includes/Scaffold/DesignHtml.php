@@ -196,6 +196,72 @@ HTML;
 	}
 
 	/**
+	 * 404 / not found Site design. Hero + closing CTA, same file shape as homepage/about.
+	 *
+	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
+	 */
+	public static function notfound( array $media ): string {
+		$planes = self::img( $media, 'notfound.planes', '', '' );
+		if ( '' === $planes ) {
+			$planes_url = \KPF\Core\Support\FrontendUrl::base() . 'media/404/fighter-planes.webp';
+			$planes     = sprintf(
+				'<img src="%s" alt="" width="1600" height="1070" decoding="async" />',
+				esc_url( $planes_url )
+			);
+		}
+		$flag       = self::cta_flag( $media );
+		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
+		$go         = '(function(el){var h=el.getAttribute(\'data-kpf-href\');if(!h)return;if(el.getAttribute(\'data-kpf-external\')==\'true\'&&!/^mailto:|^tel:/i.test(h)){window.open(h,\'_blank\',\'noopener,noreferrer\');return;}location.assign(h);})(this)';
+
+		return <<<HTML
+<div class="kpf-page-404" data-kpf-scaffold="notfound">
+  <section class="kpf-hero kpf-hero--404" aria-labelledby="kpf-404-hero-title">
+    <div class="kpf-hero--404__planes" aria-hidden="true">{$planes}</div>
+    <div class="kpf-u-container kpf-hero__layout">
+      <div class="kpf-hero__content">
+        <div class="kpf-content-block kpf-u-invert">
+          <div class="kpf-content-block__copy">
+            <div class="kpf-content-block__title-group">
+              <h1 id="kpf-404-hero-title" class="kpf-content-block__title kpf-content-block__title--h0">That page isn’t available right now.</h1>
+            </div>
+            <div class="kpf-content-block__body-group">
+              <p class="kpf-content-block__body">We’re having trouble finding what you’re looking for, but we’re happy to help you get there. Here are a few helpful pages:</p>
+            </div>
+          </div>
+          <div class="kpf-content-block__actions kpf-hero__actions">
+            <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/about/" onclick="{$go}">About KPF</button>
+            <button type="button" class="kpf-btn kpf-btn--secondary" data-kpf-href="/events/" onclick="{$go}">Our events</button>
+            <button type="button" class="kpf-btn kpf-btn--outline" data-kpf-href="/about/#history" onclick="{$go}">Kevin’s story</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-404-cta-title">
+    {$flag}
+    <div class="kpf-u-container">
+      <div class="kpf-content-block kpf-u-invert kpf-cta-closing__block">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <h2 id="kpf-404-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">There's more than one way to make a difference.</h2>
+          </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Volunteer a Saturday. Point us toward an org that deserves a look. Or give. Every gift becomes a grant in Kevin's name.</p>
+          </div>
+        </div>
+        <div class="kpf-content-block__actions">
+          {$donate_btn}
+          <button type="button" class="kpf-btn kpf-btn--outline" data-kpf-href="/contact/" onclick="{$go}">Get in touch</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+HTML;
+	}
+
+	/**
 	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
 	 */
 	public static function about( array $media ): string {
@@ -672,6 +738,225 @@ HTML;
           </div>
         </div>
       </aside>
+    </div>
+  </section>
+</div>
+HTML;
+	}
+
+	/**
+	 * Posts archive (Templates → Posts archive). Faust injects {{#each queries.blog-posts}}.
+	 *
+	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
+	 */
+	public static function blog_archive( array $media ): string {
+		$flag       = self::cta_flag( $media );
+		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
+
+		return <<<HTML
+<div class="kpf-page kpf-page--blog" data-kpf-scaffold="blog-archive">
+  <section class="kpf-hero kpf-hero--blog kpf-section kpf-section--inverse kpf-u-invert" aria-labelledby="kpf-blog-hero-title">
+    <div class="kpf-u-container">
+      <div class="kpf-hero__layout">
+        <div class="kpf-content-block kpf-hero__content">
+          <div class="kpf-content-block__copy">
+            <div class="kpf-content-block__title-group">
+              <p class="kpf-content-block__eyebrow">Updates, News &amp; More</p>
+              <h1 id="kpf-blog-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">Welcome to the KPF blog</h1>
+            </div>
+            <div class="kpf-content-block__body-group">
+              <p class="kpf-content-block__body">We have the privilege of supporting veterans because of the dedication and passion of our volunteers. Be sure to check out our stories, updates, and other news.</p>
+            </div>
+          </div>
+          <div class="kpf-content-block__actions kpf-hero__actions">
+            <a class="kpf-btn kpf-btn--primary" href="#archive">Latest stories</a>
+            <a class="kpf-btn kpf-btn--outline" href="#topics">Browse topics</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="archive" class="kpf-blog-archive kpf-section" aria-labelledby="kpf-blog-archive-title">
+    <div class="kpf-u-container">
+      <header class="kpf-blog-archive__header kpf-content-block">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <p class="kpf-content-block__eyebrow">Our Blog Archive</p>
+            <h2 id="kpf-blog-archive-title" class="kpf-content-block__title kpf-content-block__title--h2">All stories</h2>
+          </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Updates from grants, events, and the people doing the work — newest first.</p>
+          </div>
+        </div>
+      </header>
+
+      {{#if queries.blog-posts}}
+      {{#each queries.blog-posts}}
+      {{#if @first}}
+      <a class="kpf-blog-featured kpf-blog-row kpf-blog-row--featured" href="{{href}}" data-kpf-category="{{categorySlug}}">
+        <div class="kpf-blog-row__copy">
+          <div class="kpf-blog-row__meta">
+            {{#if category}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__chip">{{category}}</span></span>{{/if}}
+            {{#if date}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__date">{{date}}</span></span>{{/if}}
+            {{#if readTime}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__read">{{readTime}}</span></span>{{/if}}
+          </div>
+          <h3 class="kpf-content-block__title kpf-content-block__title--h2">{{title}}</h3>
+          {{#if description}}<p class="kpf-blog-row__excerpt">{{description}}</p>{{/if}}
+          <span class="kpf-link kpf-blog-row__cta">Read the story</span>
+        </div>
+        <div class="kpf-blog-row__media">
+          {{#if featuredImage.url}}<img class="kpf-blog-row__thumb" src="{{featuredImage.url}}" alt="{{featuredImage.alt}}" loading="eager" decoding="async" />{{else}}<div class="kpf-blog-row__thumb kpf-blog-row__thumb--empty" aria-hidden="true"></div>{{/if}}
+        </div>
+      </a>
+      {{/if}}
+      {{/each}}
+
+      {{blog-filters}}
+
+      <div class="kpf-blog-grid">
+      {{#each queries.blog-posts}}
+      {{#if @first}}{{else}}
+      <a class="kpf-blog-row" href="{{href}}" data-kpf-category="{{categorySlug}}">
+        <div class="kpf-blog-row__copy">
+          <div class="kpf-blog-row__meta">
+            {{#if category}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__chip">{{category}}</span></span>{{/if}}
+            {{#if date}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__date">{{date}}</span></span>{{/if}}
+          </div>
+          <h3 class="kpf-content-block__title kpf-content-block__title--h3">{{title}}</h3>
+          {{#if description}}<p class="kpf-blog-row__excerpt">{{description}}</p>{{/if}}
+          <span class="kpf-link kpf-blog-row__cta">Read story</span>
+        </div>
+        {{#if featuredImage.url}}<img class="kpf-blog-row__thumb" src="{{featuredImage.url}}" alt="{{featuredImage.alt}}" loading="lazy" decoding="async" />{{else}}<div class="kpf-blog-row__thumb kpf-blog-row__thumb--empty" aria-hidden="true"></div>{{/if}}
+      </a>
+      {{/if}}
+      {{/each}}
+      </div>
+      <p class="kpf-blog-archive__empty" data-kpf-filter-empty hidden="hidden">No stories in this topic.</p>
+      {{else}}
+      <p class="kpf-blog-archive__empty">No stories published yet. Check back soon.</p>
+      {{/if}}
+    </div>
+  </section>
+
+  <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-blog-cta-title">
+    {$flag}
+    <div class="kpf-u-container">
+      <div class="kpf-content-block kpf-u-invert kpf-cta-closing__block">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <h2 id="kpf-blog-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">There's more than one way to make a difference.</h2>
+          </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Volunteer a Saturday. Point us toward an org that deserves a look. Or give — every gift becomes a grant in Kevin's name.</p>
+          </div>
+        </div>
+        <div class="kpf-content-block__actions">
+          {$donate_btn}
+          <a class="kpf-btn kpf-btn--outline" href="/contact/">Get in touch</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+HTML;
+	}
+
+	/**
+	 * Single post (Templates → Posts singular). Faust fills {{page.*}} from the post.
+	 *
+	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
+	 */
+	public static function blog_post( array $media ): string {
+		$flag       = self::cta_flag( $media );
+		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
+
+		return <<<HTML
+<div class="kpf-page kpf-page--post" data-kpf-scaffold="blog-post">
+  <section class="kpf-hero kpf-hero--post kpf-section kpf-u-invert" aria-labelledby="kpf-post-title">
+    <div class="kpf-u-container">
+      <div class="kpf-hero__layout">
+        <div class="kpf-content-block kpf-hero__content">
+          <nav class="kpf-post-breadcrumb" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            <span aria-hidden="true"> / </span>
+            <a href="/blog/">Blog</a>
+            {{#if fields.category}}<span aria-hidden="true"> / </span><span>{{fields.category}}</span>{{/if}}
+          </nav>
+          <h1 id="kpf-post-title" class="kpf-content-block__title kpf-content-block__title--h1">{{page.title}}</h1>
+          <p class="kpf-post-meta">
+            {{#if page.date}}<span>{{page.date}}</span>{{/if}}
+            {{#if fields.readTime}}<span aria-hidden="true"> · </span><span>{{fields.readTime}}</span>{{/if}}
+            {{#if page.author.name}}<span aria-hidden="true"> · </span><span>By {{page.author.name}}</span>{{/if}}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpf-post-body kpf-section" aria-label="Article">
+    <div class="kpf-u-container kpf-post-body__inner">
+      {{post-sidebar}}
+      <div class="kpf-post-main">
+        {{#if page.featuredImage.url}}
+        <figure class="kpf-post-featured">
+          <img src="{{page.featuredImage.url}}" alt="{{page.featuredImage.alt}}" loading="eager" decoding="async" />
+        </figure>
+        {{/if}}
+        <article class="kpf-article">{{{page.content}}}</article>
+        <aside class="kpf-post-continue" aria-label="Keep reading">
+          <p class="kpf-content-block__body">Read more about <a href="/about/#history">who Kevin Popke was</a> and <a href="/about/#grantees">the grants given in his name</a>.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  {{comments}}
+
+  {{#if queries.related-posts}}
+  <section class="kpf-related kpf-section" aria-labelledby="kpf-related-title">
+    <div class="kpf-u-container">
+      <header class="kpf-related__header kpf-content-block">
+        <p class="kpf-content-block__eyebrow">Keep reading</p>
+        <h2 id="kpf-related-title" class="kpf-content-block__title kpf-content-block__title--h2">Other stories from the foundation</h2>
+      </header>
+      <div class="kpf-related__grid">
+        {{#each queries.related-posts}}
+        <a class="kpf-blog-row kpf-related__card" href="{{href}}">
+          <div class="kpf-blog-row__copy">
+            <div class="kpf-blog-row__meta">
+              {{#if category}}<span class="kpf-blog-row__chip">{{category}}</span>{{/if}}
+              {{#if date}}<span class="kpf-blog-row__date">{{date}}</span>{{/if}}
+            </div>
+            <h3 class="kpf-content-block__title kpf-content-block__title--h3">{{title}}</h3>
+            {{#if description}}<p class="kpf-blog-row__excerpt">{{description}}</p>{{/if}}
+            <span class="kpf-link kpf-blog-row__cta">Read story</span>
+          </div>
+          {{#if featuredImage.url}}<img class="kpf-blog-row__thumb" src="{{featuredImage.url}}" alt="{{featuredImage.alt}}" loading="lazy" decoding="async" />{{/if}}
+        </a>
+        {{/each}}
+      </div>
+    </div>
+  </section>
+  {{/if}}
+
+  <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-post-cta-title">
+    {$flag}
+    <div class="kpf-u-container">
+      <div class="kpf-content-block kpf-u-invert kpf-cta-closing__block">
+        <div class="kpf-content-block__copy">
+          <div class="kpf-content-block__title-group">
+            <h2 id="kpf-post-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">There's more than one way to make a difference.</h2>
+          </div>
+          <div class="kpf-content-block__body-group">
+            <p class="kpf-content-block__body">Volunteer a Saturday. Point us toward an org that deserves a look. Or give — every gift becomes a grant in Kevin's name.</p>
+          </div>
+        </div>
+        <div class="kpf-content-block__actions">
+          {$donate_btn}
+          <a class="kpf-btn kpf-btn--outline" href="/contact/">Get in touch</a>
+        </div>
+      </div>
     </div>
   </section>
 </div>

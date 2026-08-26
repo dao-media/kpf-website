@@ -23,6 +23,7 @@ export default function PageScaffold({
   scrapbookTiles = [],
   events = [],
   posts = null,
+  blogArchiveDesign = null,
 }) {
   const router = useRouter();
   const routeSlug = String(router?.asPath || "")
@@ -52,6 +53,19 @@ export default function PageScaffold({
   }
 
   if (slug === "blog") {
+    const design = page?.kpfPageDesign?.html
+      ? page.kpfPageDesign
+      : blogArchiveDesign?.html
+        ? blogArchiveDesign
+        : null;
+    if (design) {
+      return (
+        <PageDesignRenderer
+          page={{ ...page, kpfPageDesign: design }}
+          posts={posts}
+        />
+      );
+    }
     return <BlogPageScaffold media={media} posts={posts} />;
   }
 

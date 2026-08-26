@@ -66,6 +66,7 @@ export default function PageTemplate(props) {
         scrapbookTiles={scrapbookTiles}
         events={events}
         posts={posts}
+        blogArchiveDesign={props?.data?.kpfBlogArchiveDesign || null}
       />
     </>
   );
@@ -85,6 +86,12 @@ PageTemplate.query = gql`
     ${KPF_SCRAPBOOK_TILES_QUERY}
     ${KPF_EVENTS_QUERY}
     ${KPF_BLOG_POSTS_QUERY}
+    kpfBlogArchiveDesign: kpfDesignTemplate(postType: "post", view: "archive") {
+      databaseId
+      title
+      html
+      css
+    }
     kpfKevinSlides(first: 12) {
       databaseId
       header

@@ -149,34 +149,33 @@ final class GraphQL {
 			return;
 		}
 
-		register_graphql_field(
-			'KpfPageDesign',
-			'queries',
-			array(
-				'type'        => array( 'list_of' => 'KpfQueryResult' ),
-				'description' => 'Saved queries referenced by {{#each queries.slug}} in this design.',
-				'args'        => array(
-					'page' => array(
-						'type'        => 'Int',
-						'description' => 'Pagination page for queries that enable pagination.',
-					),
+		$queries_field = array(
+			'type'        => array( 'list_of' => 'KpfQueryResult' ),
+			'description' => 'Saved queries referenced by {{#each queries.slug}} in this design.',
+			'args'        => array(
+				'page' => array(
+					'type'        => 'Int',
+					'description' => 'Pagination page for queries that enable pagination.',
 				),
-				'resolve'     => static function ( $source, array $args ): array {
-					$html       = is_array( $source ) ? (string) ( $source['html'] ?? '' ) : '';
-					$context_id = is_array( $source ) ? (int) ( $source['contextId'] ?? 0 ) : 0;
-					$page       = max( 1, (int) ( $args['page'] ?? 1 ) );
-					$slugs      = Resolver::discover_slugs_in_html( $html );
-					$results    = array();
-					foreach ( $slugs as $slug ) {
-						$resolved = self::resolve_slug( $slug, $context_id, $page );
-						if ( $resolved ) {
-							$results[] = $resolved;
-						}
+			),
+			'resolve'     => static function ( $source, array $args ): array {
+				$html       = is_array( $source ) ? (string) ( $source['html'] ?? '' ) : '';
+				$context_id = is_array( $source ) ? (int) ( $source['contextId'] ?? 0 ) : 0;
+				$page       = max( 1, (int) ( $args['page'] ?? 1 ) );
+				$slugs      = Resolver::discover_slugs_in_html( $html );
+				$results    = array();
+				foreach ( $slugs as $slug ) {
+					$resolved = self::resolve_slug( $slug, $context_id, $page );
+					if ( $resolved ) {
+						$results[] = $resolved;
 					}
-					return $results;
-				},
-			)
+				}
+				return $results;
+			},
 		);
+
+		register_graphql_field( 'KpfPageDesign', 'queries', $queries_field );
+		register_graphql_field( 'KpfDesignTemplate', 'queries', $queries_field );
 	}
 
 	/**

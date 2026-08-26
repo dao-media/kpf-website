@@ -6,6 +6,7 @@
  */
 
 use KPF\Core\Designs\Meta as DesignsMeta;
+use KPF\Core\Designs\Settings as DesignsSettings;
 use KPF\Core\Forms\ContentType as FormsContentType;
 use KPF\Core\Forms\Definition as FormsDefinition;
 use KPF\Core\Forms\Meta as FormsMeta;
@@ -49,7 +50,7 @@ if ( ! $contact instanceof WP_Post ) {
 	echo $contact ? "Created Contact page (ID {$contact->ID}).\n" : "FAILED to create Contact page.\n";
 }
 
-// Ensure Blog page exists (React BlogPageScaffold; no design HTML required).
+// Ensure Blog page exists (archive HTML is also assigned as the page design).
 $blog = get_page_by_path( 'blog' );
 if ( ! $blog instanceof WP_Post ) {
 	$blog_id = wp_insert_post(
@@ -262,5 +263,61 @@ $save_design( 'home', array( DesignHtml::class, 'home' ), $media );
 $save_design( 'about', array( DesignHtml::class, 'about' ), $media );
 $save_design( 'events', array( DesignHtml::class, 'events' ), $media );
 $save_design( 'contact', array( DesignHtml::class, 'contact' ), $media );
+$save_design( 'blog', array( DesignHtml::class, 'blog_archive' ), $media );
+
+$save_template_design = static function ( string $post_type, string $view, string $filename, callable $html_builder, array $media ): void {
+	$html    = (string) $html_builder( $media );
+	$payload = array(
+		'html_filename' => $filename,
+		'html'          => $html,
+		'css_filename'  => '',
+		'css'           => '',
+	);
+	$design_id = DesignsMeta::save_template_design( $post_type, $view, $payload );
+	if ( $design_id < 1 ) {
+		echo "FAIL template design {$post_type}/{$view}.\n";
+		return;
+	}
+
+	$stored = DesignsMeta::get_design( $design_id );
+	$ready  = DesignsMeta::template_has_design( $post_type, $view ) ? 'READY' : 'NO';
+	$file   = (string) ( $stored['html_filename'] ?? '' );
+	echo "Template {$post_type}/{$view}: design_id={$design_id} file={$file} html_len=" . strlen( (string) ( $stored['html'] ?? '' ) ) . " ready={$ready}\n";
+};
+
+$save_template_design( 'post', 'archive', 'blog-archive.html', array( DesignHtml::class, 'blog_archive' ), $media );
+$save_template_design( 'post', 'singular', 'blog-post.html', array( DesignHtml::class, 'blog_post' ), $media );
+
+$save_system_design = static function ( string $role, array $payload, string $label ): void {
+	$design_id = DesignsMeta::save_system_design( $role, $payload );
+	if ( $design_id < 1 ) {
+		echo "FAIL system design {$label}.\n";
+		return;
+	}
+
+	$ready = DesignsMeta::design_is_ready( $design_id ) ? 'READY' : 'NO';
+	$file  = (string) ( DesignsMeta::get_design( $design_id )['html_filename'] ?? '' );
+	echo "System {$label}: design_id={$design_id} file={$file} html_len=" . strlen( (string) ( $payload['html'] ?? '' ) ) . " ready={$ready}\n";
+};
+
+$home_design_id = DesignsMeta::page_design_id( DesignsMeta::front_page_id() );
+if ( $home_design_id > 0 ) {
+	$home_payload = DesignsMeta::get_design( $home_design_id );
+	$save_system_design( DesignsSettings::ROLE_FALLBACK, $home_payload, 'fallback (homepage file)' );
+} else {
+	echo "SKIP Site Fallback: homepage design not found.\n";
+}
+
+$notfound_html = DesignHtml::notfound( $media );
+$save_system_design(
+	DesignsSettings::ROLE_NOTFOUND,
+	array(
+		'html_filename' => '404.html',
+		'html'          => $notfound_html,
+		'css_filename'  => '',
+		'css'           => '',
+	),
+	'404'
+);
 
 echo "Done.\n";

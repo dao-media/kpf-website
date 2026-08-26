@@ -1,6 +1,7 @@
 import { gql } from "@apollo/client";
 import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import BlogPostScaffold from "@/components/BlogPostScaffold";
+import PageDesignRenderer from "@/components/PageDesignRenderer";
 import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
 import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
 import SeoHead, { KPF_SEO_FRAGMENT } from "@/components/SeoHead";
@@ -17,16 +18,25 @@ export default function SingleTemplate(props) {
   const post = props?.data?.post;
   const media = scaffoldMediaMap(props?.data?.kpfScaffoldMedia);
   const relatedPosts = props?.data?.kpfBlogPosts || null;
+  const design = props?.data?.kpfBlogPostDesign;
 
   return (
     <>
       <GsapRuntime animations={props?.data?.kpfGsapAnimations} />
       <SeoHead seo={post?.kpfSeo} />
-      <BlogPostScaffold
-        post={post}
-        relatedPosts={relatedPosts}
-        media={media}
-      />
+      {design?.html ? (
+        <PageDesignRenderer
+          page={{ ...post, kpfPageDesign: design }}
+          postSource={post}
+          relatedPosts={relatedPosts}
+        />
+      ) : (
+        <BlogPostScaffold
+          post={post}
+          relatedPosts={relatedPosts}
+          media={media}
+        />
+      )}
     </>
   );
 }
@@ -40,6 +50,12 @@ SingleTemplate.query = gql`
     ${KPF_CODE_SNIPPETS_QUERY}
     ${KPF_GSAP_QUERY}
     ${KPF_BLOG_POSTS_QUERY}
+    kpfBlogPostDesign: kpfDesignTemplate(postType: "post", view: "singular") {
+      databaseId
+      title
+      html
+      css
+    }
     post(id: $uri, idType: URI) {
       id
       databaseId

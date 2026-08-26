@@ -11,8 +11,10 @@ use KPF\Core\Designs\ContentType;
 use KPF\Core\Designs\GraphQL;
 use KPF\Core\Designs\Meta;
 use KPF\Core\Designs\Placeholders;
+use KPF\Core\Designs\Preview;
 use KPF\Core\Designs\Settings;
 use KPF\Core\Designs\Templates;
+use KPF\Core\Scaffold\DesignHtml;
 
 $GLOBALS['kpf_design_failures'] = 0;
 
@@ -97,6 +99,17 @@ $fields = Meta::sanitize_fields(
 kpf_design_assert( 2 === count( $fields ), 'Custom design fields normalize keys and remove duplicates' );
 kpf_design_assert( 'hero_heading' === $fields[0]['key'], 'Custom field keys are placeholder-safe' );
 kpf_design_assert( count( Placeholders::all() ) >= 20, 'Placeholder registry includes standard page data' );
+$placeholder_tokens = array_column( Placeholders::all(), 'token' );
+kpf_design_assert( in_array( '{{blog-filters}}', $placeholder_tokens, true ), 'Placeholder registry includes blog filter island' );
+kpf_design_assert( in_array( '{{post-sidebar}}', $placeholder_tokens, true ), 'Placeholder registry includes post sidebar island' );
+
+$blog_archive_html = DesignHtml::blog_archive( array() );
+kpf_design_assert( str_contains( $blog_archive_html, '{{#each queries.blog-posts}}' ), 'Blog archive template loops queries.blog-posts' );
+kpf_design_assert( str_contains( $blog_archive_html, '{{blog-filters}}' ), 'Blog archive template includes filter island' );
+$blog_post_html = DesignHtml::blog_post( array() );
+kpf_design_assert( str_contains( $blog_post_html, '{{{page.content}}}' ), 'Blog post template renders page content' );
+kpf_design_assert( str_contains( $blog_post_html, '{{post-sidebar}}' ), 'Blog post template includes sidebar island' );
+kpf_design_assert( str_contains( $blog_post_html, '{{comments}}' ), 'Blog post template includes comments island' );
 $placeholder_groups = array_unique( array_column( Placeholders::all(), 'group' ) );
 kpf_design_assert( in_array( 'seo_patterns', $placeholder_groups, true ), 'Placeholder library includes SEO %% patterns section' );
 $seo_pattern_tokens = array_column( Placeholders::seo_pattern_items(), 'token' );
@@ -352,6 +365,50 @@ $notfound_design = GraphQL::resolve_notfound_design();
 kpf_design_assert(
 	is_array( $notfound_design ) && $notfound_design['databaseId'] === $notfound_id,
 	'404 design resolves over GraphQL'
+);
+
+$copied_fallback = Meta::copy_design_to_role( $fallback_id, Settings::ROLE_FALLBACK );
+kpf_design_assert(
+	$copied_fallback === $fallback_id && Meta::design_is_ready( $fallback_id ),
+	'copy_design_to_role can re-apply a homepage file onto the Site Fallback slot'
+);
+
+$preview_doc = Preview::document(
+	'Home',
+	'<main class="kpf-hero"><h1>That page isn’t available</h1></main>',
+	'.kpf-hero { background: #000; }'
+);
+kpf_design_assert( str_contains( $preview_doc, 'kpf-stylesheet/v1/public' ), 'Raw preview links the global stylesheet' );
+kpf_design_assert( str_contains( $preview_doc, 'assets/stylesheet/pages.css' ), 'Raw preview links pages.css' );
+kpf_design_assert( str_contains( $preview_doc, 'id="kpf-design-css"' ), 'Raw preview includes design CSS' );
+kpf_design_assert( str_contains( $preview_doc, '<h1>That page isn’t available</h1>' ), 'Raw preview renders the design HTML' );
+kpf_design_assert( str_contains( $preview_doc, 'noindex' ), 'Raw preview is noindexed' );
+
+$wrapped = Preview::document( 'Full', '<html><head><title>X</title></head><body><p>Hi</p></body></html>', 'p{color:red}' );
+kpf_design_assert(
+	str_contains( $wrapped, '<link rel="stylesheet"' ) && str_contains( $wrapped, '<p>Hi</p>' ),
+	'Full HTML documents receive stylesheet links in head'
+);
+
+$preview_url = Preview::url_for_row( array( 'kind' => 'page', 'id' => 12, 'ready' => true ) );
+kpf_design_assert(
+	str_contains( $preview_url, 'page=kpf-design-preview' ) &&
+	str_contains( $preview_url, 'kind=page' ) &&
+	str_contains( $preview_url, '_wpnonce=' ),
+	'Preview URLs are nonce-protected admin routes'
+);
+
+$decorated = Preview::decorate_row(
+	array(
+		'kind'  => 'system',
+		'role'  => Settings::ROLE_NOTFOUND,
+		'ready' => true,
+		'id'    => 'system:notfound',
+	)
+);
+kpf_design_assert(
+	is_string( $decorated['previewUrl'] ?? null ) && str_contains( $decorated['previewUrl'], 'kind=system' ),
+	'Ready designs expose a previewUrl for the admin table'
 );
 
 $system_payload = Settings::admin_payload();

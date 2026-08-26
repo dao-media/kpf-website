@@ -760,8 +760,9 @@ html.kpf-scroll-smoothed body {
 }
 
 .kpf-header__nav .kpf-nav-link:hover,
-.kpf-header__nav .kpf-nav-link:focus-visible {
-	color: var(--kpf-nav-hover, var(--kpf-ember, #bb0d0d));
+.kpf-header__nav .kpf-nav-link:focus-visible,
+.kpf-header__nav .kpf-nav-link:active {
+	color: var(--kpf-nav, #12090a);
 	text-decoration: none;
 }
 

@@ -3108,25 +3108,28 @@ a.kpf-archive__card:focus-visible {
 	mask-image: linear-gradient(90deg, transparent 0%, #000 20%);
 }
 
-/* Mobile: keep overlay photo; pull right + leave left fade/scrim */
+/* Mobile P + Mobile L: copy on ink only. Photo returns at tablet. */
+@media (max-width: 47.99rem) {
+	.kpf-hero--events {
+		min-height: unset;
+	}
+
+	.kpf-hero--events .kpf-hero__media-frame,
+	.kpf-hero--events .kpf-hero__scrim {
+		display: none;
+	}
+}
+
 @media (max-width: 29.99rem) {
 	.kpf-hero--events .kpf-hero__content {
 		max-width: 100%;
 	}
-
-	.kpf-hero--events .kpf-hero__media {
-		right: -33%;
-	}
 }
 
-/* Mobile landscape: tighter copy measure; keep photo pulled right */
+/* Mobile landscape: tighter copy measure */
 @media (min-width: 30rem) and (max-width: 47.99rem) {
 	.kpf-hero--events .kpf-hero__content {
 		max-width: 460px;
-	}
-
-	.kpf-hero--events .kpf-hero__media {
-		right: -33%;
 	}
 }
 

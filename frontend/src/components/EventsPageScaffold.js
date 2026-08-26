@@ -392,13 +392,21 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
       <section className="kpf-hero kpf-hero--events" aria-labelledby="kpf-events-hero-title">
         <div className="kpf-hero__media-frame">
           <picture className="kpf-hero__media-host">
-            <source type="image/webp" srcSet="/media/events/hero.webp" />
+            <source
+              media="(min-width: 48rem)"
+              type="image/webp"
+              srcSet="/media/events/hero.webp"
+            />
+            <source
+              media="(min-width: 48rem)"
+              srcSet="/media/events/hero.jpg"
+            />
             <img
               className="kpf-hero__media"
               src="/media/events/hero.jpg"
               alt={heroAlt}
               decoding="async"
-              fetchPriority="high"
+              loading="lazy"
             />
           </picture>
         </div>

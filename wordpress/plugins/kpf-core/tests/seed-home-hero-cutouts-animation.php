@@ -1,9 +1,8 @@
 <?php
 /**
- * Seed homepage hero photo entrance (Interactions → GSAP).
- *
- * Fade in/down with a long expo-out ease, 600ms after load, 400ms stagger.
- * Desktop cutouts (dad → alumni → runner). Hidden on small screens via CSS.
+ * Homepage hero cutouts are owned by Faust `HomeHeroCutoutsRuntime`
+ * (left-to-right parallax). Keep this CMS row inactive so GsapRuntime
+ * does not fight that entrance.
  *
  * wp-env run cli wp eval-file wp-content/plugins/kpf-core/tests/seed-home-hero-cutouts-animation.php
  */
@@ -18,16 +17,16 @@ const KPF_HOME_CUTOUTS_TITLE = 'Home hero photos';
 
 $config = Meta::sanitize(
 	array(
-		'active'       => true,
+		'active'       => false,
 		'selector'     => '.kpf-hero--home .kpf-hero__cutout',
 		'trigger'      => 'load',
 		'method'       => 'from',
-		'duration'     => 1.8,
-		'delay'        => 0.6,
+		'duration'     => 1.55,
+		'delay'        => 0.4,
 		'ease'         => 'expo.out',
-		'stagger'      => 0.4,
+		'stagger'      => 0,
 		'from'         => array(
-			'y'         => -56,
+			'xPercent'  => -78,
 			'autoAlpha' => 0,
 		),
 	)
@@ -45,7 +44,7 @@ $existing = get_posts(
 
 $payload = array(
 	'post_type'   => ContentType::POST_TYPE,
-	'post_status' => 'publish',
+	'post_status' => 'draft',
 	'post_title'  => KPF_HOME_CUTOUTS_TITLE,
 	'post_name'   => KPF_HOME_CUTOUTS_SLUG,
 	'menu_order'  => 4,
@@ -66,7 +65,4 @@ if ( is_wp_error( $post_id ) || (int) $post_id < 1 ) {
 $post_id = (int) $post_id;
 update_post_meta( $post_id, Meta::META_KEY, $config );
 
-echo 'Seeded ' . KPF_HOME_CUTOUTS_SLUG . " (ID {$post_id}).\n";
-echo 'Selector: ' . $config['selector'] . "\n";
-echo 'Trigger: ' . $config['trigger'] . ' / method: ' . $config['method'] . "\n";
-echo 'Duration: ' . $config['duration'] . 's delay: ' . $config['delay'] . 's stagger: ' . $config['stagger'] . 's ease: ' . $config['ease'] . "\n";
+echo 'Seeded ' . KPF_HOME_CUTOUTS_SLUG . " (ID {$post_id}) as inactive — Faust owns the entrance.\n";

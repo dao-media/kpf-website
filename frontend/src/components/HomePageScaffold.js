@@ -8,6 +8,7 @@ import KpfButton from "@/components/KpfButton";
 import ProgramsCheckRuntime, {
   ProgramsCheckIcon,
 } from "@/components/ProgramsCheckRuntime";
+import HomeHeroCutoutsRuntime from "@/components/HomeHeroCutoutsRuntime";
 import { HOME } from "@/lib/pageCopy";
 const { normalizeLatestBlogPost } = require("@/lib/latestBlogPost");
 const { resolveMedia } = require("@/lib/scaffoldMedia");
@@ -87,6 +88,7 @@ export default function HomePageScaffold({
   return (
     <div className="kpf-page-home" data-kpf-scaffold="home">
       <ProgramsCheckRuntime />
+      <HomeHeroCutoutsRuntime />
       <section className="kpf-hero kpf-hero--home" aria-labelledby="kpf-home-hero-title">
         <div className="kpf-hero__scrim" aria-hidden="true" />
         <div className="kpf-hero__stage" aria-hidden="true">

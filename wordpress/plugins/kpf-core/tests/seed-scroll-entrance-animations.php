@@ -80,9 +80,6 @@ $content_children = implode(
 		'.kpf-grantee-card',
 		'.kpf-mission__criteria > *',
 		'.kpf-accordion',
-		'.kpf-gallery__mosaic > *',
-		'.kpf-gallery__grid > *',
-		'.kpf-gallery__featured',
 		'.kpf-programs__list > *',
 		'.kpf-values__cards > *',
 		'.kpf-archive__card',
@@ -101,19 +98,33 @@ $content_children = implode(
 		'.kpf-related__grid > *',
 		'.kpf-event-card',
 		'.kpf-event-library__grid > *',
-		'.kpf-featured-event__collage',
 		'.kpf-featured-event__chips',
 		'.kpf-partners__viewport',
 		'.kpf-contact__form',
 		'.kpf-contact__aside',
-		'.kpf-story__media',
 		'.kpf-story__copy',
 		'.kpf-donate__inner > *',
 		'.kpf-hero__eyebrow',
 		'.kpf-hero__title',
 		'.kpf-hero__description',
 		'.kpf-hero__actions',
+	)
+);
+
+/*
+ * Photographs keep the pre-flip fade in/up (positive y). Do not include
+ * homepage hero cutouts — HomeHeroCutoutsRuntime owns those.
+ */
+$media_children = implode(
+	', ',
+	array(
+		'.kpf-story__media',
+		'.kpf-programs__media',
 		'.kpf-hero__media',
+		'.kpf-gallery__mosaic > *',
+		'.kpf-gallery__grid > *',
+		'.kpf-gallery__featured',
+		'.kpf-featured-event__collage',
 	)
 );
 
@@ -172,6 +183,35 @@ kpf_seed_gsap_animation(
 		),
 	),
 	20
+);
+
+// Photographs — fade in/up (do not follow the copy fade in/down).
+kpf_seed_gsap_animation(
+	'section-media-stagger',
+	'Section media stagger',
+	array(
+		'active'       => true,
+		'selector'     => $reveal_hosts,
+		'animateChild' => $media_children,
+		'trigger'      => 'in-view',
+		'method'       => 'from',
+		'duration'     => 0.95,
+		'delay'        => 0.05,
+		'ease'         => 'custom',
+		'customBezier' => '0.22,1,0.36,1',
+		'stagger'      => 0.08,
+		'from'         => array(
+			'y'         => 42,
+			'autoAlpha' => 0,
+		),
+		'scroll'       => array(
+			'start' => 'top 80%',
+			'end'   => 'bottom 20%',
+			'scrub' => 0,
+			'once'  => true,
+		),
+	),
+	21
 );
 
 // About framed photo — same butter ease, still load (not sticky).

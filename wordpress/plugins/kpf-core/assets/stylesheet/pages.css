@@ -1901,6 +1901,17 @@ html.kpf-scroll-smoothed body {
 	}
 }
 
+/*
+ * Park home hero cutouts invisible until HomeHeroCutoutsRuntime (or the
+ * safety timeout) marks html.kpf-hero-cutouts-entered. GSAP owns the
+ * left-to-right travel; this only prevents a rest-state flash.
+ */
+@media (min-width: 48rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout {
+		opacity: 0;
+	}
+}
+
 /* Partners chips — Figma 426:477
  * Visible slots: 4 desktop · 3 tablet · 1 mobile (80% card, prev/next peek).
  * Chip width is measured in PartnersSlider (--kpf-partners-chip-width).

@@ -10,7 +10,7 @@ final class Meta {
 	public const HISTORY_DEFAULT = 20;
 	public const HISTORY_MIN     = 2;
 	public const HISTORY_MAX     = 100;
-	public const MAX_BYTES       = 1048576;
+	public const MAX_BYTES       = 2097152;
 
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_meta' ), 10 );

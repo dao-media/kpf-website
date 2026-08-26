@@ -14,6 +14,11 @@ const adminCmsRewrites = [
 		destination: `${WORDPRESS_CMS_ORIGIN}/wp-admin/`,
 	},
 	{
+		source: '/wp-admin',
+		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
+		destination: `${WORDPRESS_CMS_ORIGIN}/wp-admin/`,
+	},
+	{
 		source: '/:path*',
 		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
 		destination: `${WORDPRESS_CMS_ORIGIN}/:path*`,

@@ -28,6 +28,10 @@ describe("publicSiteUrl", () => {
       `${WORDPRESS_CMS_ORIGIN}/wp-admin/`
     );
     assert.equal(
+      adminCmsDestination("/wp-admin"),
+      `${WORDPRESS_CMS_ORIGIN}/wp-admin/`
+    );
+    assert.equal(
       adminCmsDestination("/wp-login.php", "?redirect_to=%2Fwp-admin%2F"),
       `${WORDPRESS_CMS_ORIGIN}/wp-login.php?redirect_to=%2Fwp-admin%2F`
     );

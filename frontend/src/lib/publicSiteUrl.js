@@ -33,7 +33,10 @@ function isAdminCmsHost(host) {
 }
 
 function adminCmsDestination(pathname, search = "") {
-  const path = pathname === "/" || pathname === "" ? "/wp-admin/" : pathname;
+  const path =
+    pathname === "/" || pathname === "" || pathname === "/wp-admin"
+      ? "/wp-admin/"
+      : pathname;
   return `${WORDPRESS_CMS_ORIGIN}${path}${search || ""}`;
 }
 

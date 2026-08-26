@@ -1,12 +1,32 @@
-const KPF_SCAFFOLD_MEDIA_QUERY = `
-  kpfScaffoldMedia {
+const KPF_SCAFFOLD_MEDIA_FIELDS = `
     key
     databaseId
     sourceUrl
     altText
     title
+`;
+
+const KPF_SCAFFOLD_MEDIA_QUERY = `
+  kpfScaffoldMedia {
+    ${KPF_SCAFFOLD_MEDIA_FIELDS}
   }
 `;
+
+/**
+ * Limit named media to key prefixes (e.g. "about.", "cta.") so inner pages
+ * do not download the full scaffold catalog.
+ * @param {string[]} prefixes
+ */
+function scaffoldMediaQuery(prefixes) {
+  const list = (prefixes || []).map((p) => String(p || "").trim()).filter(Boolean);
+  if (!list.length) return KPF_SCAFFOLD_MEDIA_QUERY;
+  const args = list.map((p) => JSON.stringify(p)).join(", ");
+  return `
+  kpfScaffoldMedia(prefixes: [${args}]) {
+    ${KPF_SCAFFOLD_MEDIA_FIELDS}
+  }
+`;
+}
 
 /**
  * @param {Array<{ key?: string, sourceUrl?: string, altText?: string, title?: string, databaseId?: number }>|null|undefined} items
@@ -50,4 +70,5 @@ module.exports = {
   KPF_SCAFFOLD_MEDIA_QUERY,
   resolveMedia,
   scaffoldMediaMap,
+  scaffoldMediaQuery,
 };

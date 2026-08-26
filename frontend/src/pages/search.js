@@ -6,6 +6,7 @@ const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
 const { KPF_STYLESHEET_QUERY } = require("@/lib/globalStylesheet");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
+const { KPF_ISR_SECONDS } = require("@/lib/isr");
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
   /\/$/,
@@ -86,6 +87,6 @@ export async function getStaticProps() {
       kpfAccessibility,
       kpfCodeSnippets,
     },
-    revalidate: 60,
+    revalidate: KPF_ISR_SECONDS,
   };
 }

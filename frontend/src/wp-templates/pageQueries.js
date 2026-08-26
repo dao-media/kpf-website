@@ -6,6 +6,7 @@ const { KPF_GRANTS_QUERY, KPF_GRANTS_TOTAL_QUERY } = require("../lib/grantsQuery
 const { KPF_SCRAPBOOK_TILES_QUERY } = require("../lib/scrapbookTiles");
 const { KPF_EVENTS_QUERY } = require("../lib/eventsQuery");
 const { KPF_BLOG_POSTS_QUERY } = require("../lib/blogPosts");
+const { scaffoldMediaQuery } = require("../lib/scaffoldMedia");
 
 const KPF_KEVIN_SLIDES_QUERY = `
   kpfKevinSlides(first: 12) {
@@ -30,6 +31,7 @@ const KPF_CONTACT_FORM_QUERY = `
 const GET_ABOUT_PAGE = `
   query GetAboutPage($uri: ID!) {
     ${KPF_PAGE_SHELL_QUERY}
+    ${scaffoldMediaQuery(["about.", "cta."])}
     ${KPF_GRANTS_QUERY}
     ${KPF_GRANTS_TOTAL_QUERY}
     ${KPF_SCRAPBOOK_TILES_QUERY}
@@ -43,6 +45,7 @@ const GET_ABOUT_PAGE = `
 const GET_CONTACT_PAGE = `
   query GetContactPage($uri: ID!) {
     ${KPF_PAGE_SHELL_QUERY}
+    ${scaffoldMediaQuery(["cta."])}
     ${KPF_CONTACT_FORM_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}
@@ -53,6 +56,7 @@ const GET_CONTACT_PAGE = `
 const GET_EVENTS_PAGE = `
   query GetEventsPage($uri: ID!) {
     ${KPF_PAGE_SHELL_QUERY}
+    ${scaffoldMediaQuery(["events.", "cta."])}
     ${KPF_EVENTS_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}
@@ -63,6 +67,7 @@ const GET_EVENTS_PAGE = `
 const GET_BLOG_PAGE = `
   query GetBlogPage($uri: ID!) {
     ${KPF_PAGE_SHELL_QUERY}
+    ${scaffoldMediaQuery(["cta."])}
     ${KPF_BLOG_POSTS_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}

@@ -131,10 +131,10 @@
 	--kpf-color-icon-muted: var(--kpf-mute); /* color/icon/muted */
 	--kpf-color-icon-on-brand: var(--kpf-white); /* color/icon/on-brand */
 
-	/* —— Type (Figma text styles: Geist / Roboto) —— */
-	--kpf-font-display: "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
-	--kpf-font-body: "Roboto", "Helvetica Neue", Arial, sans-serif;
-	--kpf-font-ui: "Roboto", "Helvetica Neue", Arial, sans-serif;
+	/* —— Type (Figma text styles: Geist / Roboto). Faust loads faces via next/font. —— */
+	--kpf-font-display: var(--font-geist-sans, "Geist"), "Segoe UI", system-ui, -apple-system, sans-serif;
+	--kpf-font-body: var(--kpf-font-body-face, "Roboto"), "Helvetica Neue", Arial, sans-serif;
+	--kpf-font-ui: var(--kpf-font-body-face, "Roboto"), "Helvetica Neue", Arial, sans-serif;
 
 	/*
 	 * Responsive type scale — Mobile Portrait default, then:

@@ -34,7 +34,19 @@ final class GraphQL {
 			array(
 				'type'        => array( 'list_of' => 'KpfScaffoldMediaItem' ),
 				'description' => 'Named scaffold images (Home / About / Events / partners) from the Media Library.',
-				'resolve'     => static fn(): array => Media::resolve_items(),
+				'args'        => array(
+					'prefixes' => array(
+						'type'        => array( 'list_of' => 'String' ),
+						'description' => 'Only return items whose key starts with one of these prefixes (e.g. "about."). Omit for the full catalog.',
+					),
+				),
+				'resolve'     => static function ( $root, array $args ): array {
+					$prefixes = $args['prefixes'] ?? array();
+					if ( ! is_array( $prefixes ) ) {
+						$prefixes = array();
+					}
+					return Media::resolve_items( $prefixes );
+				},
 			)
 		);
 	}

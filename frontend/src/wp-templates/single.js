@@ -8,8 +8,8 @@ const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_BLOG_POSTS_QUERY } = require("@/lib/blogPosts");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");
 const {
-  KPF_SCAFFOLD_MEDIA_QUERY,
   scaffoldMediaMap,
+  scaffoldMediaQuery,
 } = require("@/lib/scaffoldMedia");
 const { KPF_SITE_CHROME_QUERY } = require("@/lib/siteChrome");
 
@@ -34,7 +34,7 @@ export default function SingleTemplate(props) {
 SingleTemplate.query = gql`
   query GetPost($uri: ID!) {
     ${KPF_STYLESHEET_QUERY}
-    ${KPF_SCAFFOLD_MEDIA_QUERY}
+    ${scaffoldMediaQuery(["cta."])}
     ${KPF_SITE_CHROME_QUERY}
     ${KPF_ACCESSIBILITY_QUERY}
     ${KPF_CODE_SNIPPETS_QUERY}

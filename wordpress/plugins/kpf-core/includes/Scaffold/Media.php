@@ -132,9 +132,10 @@ final class Media {
 	}
 
 	/**
+	 * @param list<string> $prefixes Optional key prefixes (e.g. "about."). Empty = all items.
 	 * @return list<array{key: string, databaseId: int, sourceUrl: string, altText: string, title: string}>
 	 */
-	public static function resolve_items(): array {
+	public static function resolve_items( array $prefixes = array() ): array {
 		$items = array();
 		foreach ( self::id_map() as $key => $id ) {
 			$url = wp_get_attachment_url( $id );
@@ -150,7 +151,31 @@ final class Media {
 				'title'      => get_the_title( $id ) ?: '',
 			);
 		}
-		return $items;
+
+		$prefixes = array_values(
+			array_filter(
+				array_map( 'strval', $prefixes ),
+				static fn( string $prefix ): bool => '' !== $prefix
+			)
+		);
+		if ( array() === $prefixes ) {
+			return $items;
+		}
+
+		return array_values(
+			array_filter(
+				$items,
+				static function ( array $item ) use ( $prefixes ): bool {
+					$key = (string) ( $item['key'] ?? '' );
+					foreach ( $prefixes as $prefix ) {
+						if ( str_starts_with( $key, $prefix ) ) {
+							return true;
+						}
+					}
+					return false;
+				}
+			)
+		);
 	}
 
 	/**

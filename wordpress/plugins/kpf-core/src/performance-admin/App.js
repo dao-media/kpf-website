@@ -713,7 +713,7 @@ export default function App() {
 						<FieldGroup
 							title={__('Minify & combine', 'kpf-core')}
 							help={__(
-								'Minify is usually safe. Combining files can conflict with modern module loaders — use carefully.',
+								'Minify is usually safe. Combine/delay/unused/critical CSS target classic wp_head and are forced off on this headless install so they cannot break wp-admin.',
 								'kpf-core'
 							)}
 						>
@@ -729,13 +729,15 @@ export default function App() {
 							/>
 							<ToggleControl
 								label={__('Combine CSS files', 'kpf-core')}
-								checked={!!settings.code.combine_css}
-								onChange={(value) => patch('code', 'combine_css', value)}
+								checked={false}
+								disabled
+								help={__('Disabled: no effect on Faust; can break wp-admin.', 'kpf-core')}
 							/>
 							<ToggleControl
 								label={__('Combine JavaScript files', 'kpf-core')}
-								checked={!!settings.code.combine_js}
-								onChange={(value) => patch('code', 'combine_js', value)}
+								checked={false}
+								disabled
+								help={__('Disabled: no effect on Faust; can break wp-admin.', 'kpf-core')}
 							/>
 						</FieldGroup>
 						<FieldGroup title={__('Loading strategy', 'kpf-core')}>
@@ -746,19 +748,21 @@ export default function App() {
 							/>
 							<ToggleControl
 								label={__('Delay JavaScript until interaction', 'kpf-core')}
-								help={__('Aggressive: can improve LCP but may break early interactions.', 'kpf-core')}
-								checked={!!settings.code.delay_js}
-								onChange={(value) => patch('code', 'delay_js', value)}
+								help={__('Disabled on this headless install (classic wp_head only).', 'kpf-core')}
+								checked={false}
+								disabled
 							/>
 							<ToggleControl
 								label={__('Remove unused CSS', 'kpf-core')}
-								checked={!!settings.code.remove_unused_css}
-								onChange={(value) => patch('code', 'remove_unused_css', value)}
+								help={__('Disabled on this headless install (classic wp_head only).', 'kpf-core')}
+								checked={false}
+								disabled
 							/>
 							<ToggleControl
 								label={__('Critical CSS', 'kpf-core')}
-								checked={!!settings.code.critical_css}
-								onChange={(value) => patch('code', 'critical_css', value)}
+								help={__('Disabled on this headless install (classic wp_head only).', 'kpf-core')}
+								checked={false}
+								disabled
 							/>
 							<ToggleControl
 								label={__('Preload fonts', 'kpf-core')}

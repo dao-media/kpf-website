@@ -3,6 +3,7 @@ import { FaustProvider } from "@faustwp/core";
 import AnalyticsLoader from "@/components/AnalyticsLoader";
 import GlobalStylesheet from "@/components/GlobalStylesheet";
 import SiteChrome from "@/components/SiteChrome";
+import { kpfFontClassName } from "@/lib/kpfFonts";
 import "../../faust.config";
 import "@/styles/components.css";
 import "@/styles/pages.css";
@@ -56,15 +57,17 @@ export default function App({ Component, pageProps }) {
 
   return (
     <FaustProvider pageProps={pageProps}>
-      <GlobalStylesheet href={stylesheet.href} revision={stylesheet.revision} />
-      <AnalyticsLoader />
-      <SiteChrome
-        chrome={chrome}
-        snippets={snippets}
-        accessibility={accessibility}
-      >
-        <Component {...pageProps} key={pageKey} />
-      </SiteChrome>
+      <div className={kpfFontClassName}>
+        <GlobalStylesheet href={stylesheet.href} revision={stylesheet.revision} />
+        <AnalyticsLoader />
+        <SiteChrome
+          chrome={chrome}
+          snippets={snippets}
+          accessibility={accessibility}
+        >
+          <Component {...pageProps} key={pageKey} />
+        </SiteChrome>
+      </div>
     </FaustProvider>
   );
 }

@@ -4,12 +4,10 @@ const { KPF_GSAP_QUERY } = require("../lib/gsapQuery");
 const { KPF_ACCESSIBILITY_QUERY } = require("../lib/accessibility");
 const { KPF_CODE_SNIPPETS_QUERY } = require("../lib/codeSnippets");
 const { KPF_SITE_CHROME_QUERY } = require("../lib/siteChrome");
-const { KPF_SCAFFOLD_MEDIA_QUERY } = require("../lib/scaffoldMedia");
 
-/** Chrome every public page still needs. No design HTML, grants, or events. */
+/** Chrome every public page still needs. Scaffold media is queried per slug. */
 const KPF_PAGE_SHELL_QUERY = `
   ${KPF_STYLESHEET_QUERY}
-  ${KPF_SCAFFOLD_MEDIA_QUERY}
   ${KPF_SITE_CHROME_QUERY}
   ${KPF_ACCESSIBILITY_QUERY}
   ${KPF_CODE_SNIPPETS_QUERY}

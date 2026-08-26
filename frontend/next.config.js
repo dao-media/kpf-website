@@ -1,4 +1,3 @@
-const { createSecureHeaders } = require('next-secure-headers');
 const { withFaust, getWpHostname } = require('@faustwp/core');
 const {
 	ADMIN_CMS_HOST,
@@ -6,6 +5,7 @@ const {
 	VERCEL_PRODUCTION_HOSTS,
 	WORDPRESS_CMS_ORIGIN,
 } = require('./src/lib/publicSiteUrl');
+const { createKpfSecureHeaders } = require('./src/lib/secureHeaders');
 
 const adminCmsRewrites = [
 	{
@@ -61,6 +61,7 @@ module.exports = withFaust({
 	sassOptions: {
 		loadPaths: ['node_modules'],
 	},
+	transpilePackages: ['geist'],
 	images: {
 		formats: ['image/avif', 'image/webp'],
 		deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
@@ -89,9 +90,7 @@ module.exports = withFaust({
 				source: '/:path*',
 				missing: [{ type: 'host', value: ADMIN_CMS_HOST }],
 				headers: [
-					...createSecureHeaders({
-						xssProtection: false,
-					}),
+					...createKpfSecureHeaders(),
 					{
 						key: 'Link',
 						value: '</llms.txt>; rel="describedby"',

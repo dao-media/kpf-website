@@ -30,6 +30,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_ABOUT_PAGE, /kpfQuery\(slug: "grants"\)/);
     assert.match(GET_ABOUT_PAGE, /kpfKevinSlides/);
     assert.match(GET_ABOUT_PAGE, /kpfScrapbookTiles/);
+    assert.match(GET_ABOUT_PAGE, /kpfScaffoldMedia\(prefixes: \["about\.", "cta\."\]\)/);
     assertOmits(
       GET_ABOUT_PAGE,
       [/foundationEvents/, /kpfPageDesign/, /kpfForm/, /kpfBlogPosts/, /editorBlocks/],
@@ -50,6 +51,7 @@ describe("slug Faust page queries", () => {
   it("Events fetches foundationEvents only", () => {
     assert.match(GET_EVENTS_PAGE, /query GetEventsPage/);
     assert.match(GET_EVENTS_PAGE, /foundationEvents/);
+    assert.match(GET_EVENTS_PAGE, /kpfScaffoldMedia\(prefixes: \["events\.", "cta\."\]\)/);
     assertOmits(
       GET_EVENTS_PAGE,
       [/kpfQuery/, /kpfKevinSlides/, /kpfPageDesign/, /kpfForm/, /kpfBlogPosts/],

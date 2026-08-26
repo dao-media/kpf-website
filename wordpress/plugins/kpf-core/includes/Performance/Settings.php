@@ -30,7 +30,40 @@ final class Settings {
 		$current = get_option( self::OPTION_KEY, null );
 		if ( ! is_array( $current ) ) {
 			update_option( self::OPTION_KEY, self::defaults(), false );
+			return;
 		}
+
+		$migrated = self::migrate_headless_classic_assets( $current );
+		if ( $migrated !== $current ) {
+			update_option( self::OPTION_KEY, Sanitizer::sanitize_settings( $migrated ), false );
+		}
+	}
+
+	/**
+	 * Classic theme combine/delay/unused/critical CSS only affect wp_head.
+	 * On this headless install they mainly risk wp-admin after core updates.
+	 *
+	 * @param array<string, mixed> $stored
+	 * @return array<string, mixed>
+	 */
+	private static function migrate_headless_classic_assets( array $stored ): array {
+		$code = is_array( $stored['code'] ?? null ) ? $stored['code'] : array();
+		$classic = array( 'combine_css', 'combine_js', 'delay_js', 'remove_unused_css', 'critical_css' );
+		$changed = false;
+		foreach ( $classic as $key ) {
+			if ( ! empty( $code[ $key ] ) ) {
+				$code[ $key ] = false;
+				$changed      = true;
+			}
+		}
+		if ( $changed ) {
+			$stored['code'] = $code;
+		}
+		if ( ( $stored['preset'] ?? '' ) === 'aggressive' ) {
+			$stored['preset'] = 'balanced';
+			$changed          = true;
+		}
+		return $stored;
 	}
 
 	/**

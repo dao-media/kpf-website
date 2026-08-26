@@ -53,3 +53,10 @@ if [[ "$HA" != "$HB" ]]; then
 fi
 
 echo "check-css-twins: pages.css OK ($HA)"
+
+# components.css and foundation.css are related but not twins. Never hash-fail them.
+COMP_A="$ROOT/frontend/src/styles/components.css"
+COMP_B="$ROOT/wordpress/plugins/kpf-core/assets/stylesheet/foundation.css"
+if [[ -f "$COMP_A" && -f "$COMP_B" ]]; then
+  echo "check-css-twins: skipping components.css vs foundation.css (intentional drift)"
+fi

@@ -7,18 +7,16 @@ const {
 	WORDPRESS_CMS_ORIGIN,
 } = require('./src/lib/publicSiteUrl');
 
-const adminCmsRedirects = [
+const adminCmsRewrites = [
 	{
 		source: '/',
 		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
 		destination: `${WORDPRESS_CMS_ORIGIN}/wp-admin/`,
-		permanent: false,
 	},
 	{
 		source: '/:path*',
 		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
 		destination: `${WORDPRESS_CMS_ORIGIN}/:path*`,
-		permanent: false,
 	},
 ];
 
@@ -57,6 +55,7 @@ module.exports = withFaust({
 		return [
 			{
 				source: '/:path*',
+				missing: [{ type: 'host', value: ADMIN_CMS_HOST }],
 				headers: [
 					...createSecureHeaders({
 						xssProtection: false,
@@ -80,7 +79,6 @@ module.exports = withFaust({
 	},
 	async redirects() {
 		return [
-			...adminCmsRedirects,
 			...vercelAliasRedirects,
 			{
 				source: '/about-us',
@@ -105,23 +103,26 @@ module.exports = withFaust({
 		];
 	},
 	async rewrites() {
-		return [
-			{
-				source: '/robots.txt',
-				destination: '/api/seo/robots',
-			},
-			{
-				source: '/kpf-stylesheet.css',
-				destination: '/api/kpf-stylesheet',
-			},
-			{
-				source: '/sitemap.xml',
-				destination: '/api/seo/sitemap',
-			},
-			{
-				source: '/sitemap-:type-:page.xml',
-				destination: '/api/seo/sitemap/:type/:page',
-			},
-		];
+		return {
+			beforeFiles: adminCmsRewrites,
+			afterFiles: [
+				{
+					source: '/robots.txt',
+					destination: '/api/seo/robots',
+				},
+				{
+					source: '/kpf-stylesheet.css',
+					destination: '/api/kpf-stylesheet',
+				},
+				{
+					source: '/sitemap.xml',
+					destination: '/api/seo/sitemap',
+				},
+				{
+					source: '/sitemap-:type-:page.xml',
+					destination: '/api/seo/sitemap/:type/:page',
+				},
+			],
+		};
 	},
 });

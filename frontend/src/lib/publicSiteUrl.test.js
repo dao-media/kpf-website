@@ -19,7 +19,7 @@ describe("publicSiteUrl", () => {
     assert.equal(isEphemeralHost("kevinpopkefoundation.org"), false);
   });
 
-  it("sends the admin CMS host to the DreamHost WordPress login", () => {
+  it("maps the admin CMS host onto the WordPress origin", () => {
     assert.equal(isAdminCmsHost("admin.kevinpopkefoundation.org"), true);
     assert.equal(isAdminCmsHost("ADMIN.kevinpopkefoundation.org:443"), true);
     assert.equal(isAdminCmsHost("kevinpopkefoundation.org"), false);

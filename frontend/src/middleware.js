@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  ADMIN_CMS_HOST,
   PRODUCTION_ORIGIN,
   adminCmsDestination,
   isAdminCmsHost,
@@ -53,10 +54,17 @@ export async function middleware(request) {
     .split(":")[0]
     .toLowerCase();
 
+  // Proxy WordPress so the browser stays on admin.kevinpopkefoundation.org.
   if (isAdminCmsHost(incomingHost)) {
-    return NextResponse.redirect(
-      adminCmsDestination(request.nextUrl.pathname, request.nextUrl.search),
-      302
+    const headers = new Headers(request.headers);
+    headers.set("x-forwarded-host", ADMIN_CMS_HOST);
+    headers.set("x-forwarded-proto", "https");
+    headers.set("x-kpf-admin-host", "1");
+    return NextResponse.rewrite(
+      new URL(
+        adminCmsDestination(request.nextUrl.pathname, request.nextUrl.search)
+      ),
+      { request: { headers } }
     );
   }
 

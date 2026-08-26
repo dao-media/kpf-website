@@ -1,6 +1,6 @@
 const PRODUCTION_ORIGIN = "https://kevinpopkefoundation.org";
 
-/** CMS hostname. Vercel terminates SSL; middleware sends it to WordPress. */
+/** CMS hostname. Vercel terminates SSL and proxies to WordPress; the browser stays on this host. */
 const ADMIN_CMS_HOST = "admin.kevinpopkefoundation.org";
 const WORDPRESS_CMS_ORIGIN = "https://kpf.dreamhosters.com";
 

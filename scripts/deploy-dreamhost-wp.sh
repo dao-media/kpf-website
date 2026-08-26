@@ -8,6 +8,7 @@ HOST="${DH_HOST:-kpf.dreamhosters.com}"
 USER="${DH_USER:-daneoleary}"
 PLUGIN_PATH="${DH_PLUGIN_PATH:-kpf.dreamhosters.com/wp-content/plugins/kpf-core}"
 THEME_PATH="${DH_THEME_PATH:-kpf.dreamhosters.com/wp-content/themes/kpf-blank}"
+MU_PATH="${DH_MU_PATH:-kpf.dreamhosters.com/wp-content/mu-plugins}"
 KEY_FILE="${DH_SSH_KEY_FILE:-}"
 CLEANUP=()
 
@@ -53,5 +54,11 @@ rsync -az --delete "${RSYNC_EXCLUDES[@]}" \
   -e "$WRAPPER" \
   "$ROOT/wordpress/themes/kpf-blank/" \
   "${USER}@${HOST}:${THEME_PATH}/"
+
+echo "→ mu-plugins ${USER}@${HOST}:${MU_PATH}"
+rsync -az "${RSYNC_EXCLUDES[@]}" \
+  -e "$WRAPPER" \
+  "$ROOT/wordpress/mu-plugins/" \
+  "${USER}@${HOST}:${MU_PATH}/"
 
 echo "DreamHost WordPress plugin/theme sync complete."

@@ -134,6 +134,15 @@ final class Admin {
 					array( 'value' => 'monthly', 'label' => __( 'Monthly', 'kpf-core' ) ),
 					array( 'value' => 'custom', 'label' => __( 'Custom interval', 'kpf-core' ) ),
 				),
+				'weekdayOptions' => array(
+					array( 'value' => '0', 'label' => __( 'Sunday', 'kpf-core' ) ),
+					array( 'value' => '1', 'label' => __( 'Monday', 'kpf-core' ) ),
+					array( 'value' => '2', 'label' => __( 'Tuesday', 'kpf-core' ) ),
+					array( 'value' => '3', 'label' => __( 'Wednesday', 'kpf-core' ) ),
+					array( 'value' => '4', 'label' => __( 'Thursday', 'kpf-core' ) ),
+					array( 'value' => '5', 'label' => __( 'Friday', 'kpf-core' ) ),
+					array( 'value' => '6', 'label' => __( 'Saturday', 'kpf-core' ) ),
+				),
 			)
 		);
 	}

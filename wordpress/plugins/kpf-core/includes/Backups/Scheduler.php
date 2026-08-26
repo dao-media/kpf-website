@@ -70,7 +70,10 @@ final class Scheduler {
 		}
 
 		$recurrence = self::recurrence_for( (string) $settings['schedule']['cadence'] );
-		$timestamp  = self::next_timestamp( (string) $settings['schedule']['time'] );
+		$timestamp  = self::next_timestamp(
+			(string) $settings['schedule']['time'],
+			self::weekday_for_cadence( $settings['schedule'] )
+		);
 
 		wp_schedule_event( $timestamp, $recurrence, self::HOOK );
 	}
@@ -124,30 +127,50 @@ final class Scheduler {
 	}
 
 	/**
-	 * Next Unix timestamp for the preferred HH:MM in the site timezone.
+	 * Weekday (0 = Sunday … 6 = Saturday) for cadences that are not daily.
+	 *
+	 * @param array<string, mixed> $schedule
 	 */
-	private static function next_timestamp( string $time ): int {
+	private static function weekday_for_cadence( array $schedule ): ?int {
+		$cadence = sanitize_key( (string) ( $schedule['cadence'] ?? 'daily' ) );
+		if ( in_array( $cadence, array( 'daily', 'hourly', 'twicedaily', 'custom' ), true ) ) {
+			return null;
+		}
+
+		$weekday = (int) ( $schedule['weekday'] ?? 0 );
+		return max( 0, min( 6, $weekday ) );
+	}
+
+	/**
+	 * Next Unix timestamp for the preferred HH:MM in the site timezone.
+	 * When $weekday is set (0–6, Sunday–Saturday), the stamp is the next matching weekday.
+	 */
+	private static function next_timestamp( string $time, ?int $weekday = null ): int {
 		$tz = wp_timezone();
 		try {
 			if ( ! preg_match( '/^([01]\d|2[0-3]):([0-5]\d)$/', $time ) ) {
 				$time = '02:00';
 			}
 
-			$now  = new \DateTimeImmutable( 'now', $tz );
-			$next = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $now->format( 'Y-m-d' ) . ' ' . $time . ':00', $tz );
-			if ( ! $next instanceof \DateTimeImmutable ) {
-				return time() + MINUTE_IN_SECONDS;
+			$hour   = (int) substr( $time, 0, 2 );
+			$minute = (int) substr( $time, 3, 2 );
+			$now    = new \DateTimeImmutable( 'now', $tz );
+			$next   = $now->setTime( $hour, $minute, 0 );
+
+			$use_weekday = null !== $weekday && $weekday >= 0 && $weekday <= 6;
+			if ( $use_weekday ) {
+				for ( $i = 0; $i < 8; $i++ ) {
+					if ( (int) $next->format( 'w' ) === $weekday && $next->getTimestamp() > $now->getTimestamp() ) {
+						break;
+					}
+					$next = $next->modify( '+1 day' )->setTime( $hour, $minute, 0 );
+				}
+
+				return $next->getTimestamp();
 			}
 
-			// createFromFormat can inherit unexpected fields; normalize to the intended wall clock.
-			$next = $next->setTimezone( $tz )->setTime(
-				(int) substr( $time, 0, 2 ),
-				(int) substr( $time, 3, 2 ),
-				0
-			);
-
 			if ( $next->getTimestamp() <= $now->getTimestamp() ) {
-				$next = $next->modify( '+1 day' );
+				$next = $next->modify( '+1 day' )->setTime( $hour, $minute, 0 );
 			}
 
 			return $next->getTimestamp();

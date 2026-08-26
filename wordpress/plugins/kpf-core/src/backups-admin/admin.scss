@@ -176,6 +176,19 @@
 	gap: 1rem;
 }
 
+.kpf-backups__fields-row {
+	align-items: start;
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media screen and (max-width: 782px) {
+	.kpf-backups__fields-row {
+		grid-template-columns: 1fr;
+	}
+}
+
 .kpf-backups__header-run {
 	min-width: 11rem;
 }

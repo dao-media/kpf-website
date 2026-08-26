@@ -45,6 +45,7 @@ final class Settings {
 				'cadence'      => 'daily',
 				'custom_hours' => 24,
 				'time'         => '02:00',
+				'weekday'      => 0,
 			),
 			'retention'         => 5,
 			'notify_on_failure' => true,
@@ -116,6 +117,11 @@ final class Settings {
 			$time = '02:00';
 		}
 
+		$weekday = absint( $schedule_in['weekday'] ?? $defaults['schedule']['weekday'] );
+		if ( $weekday > 6 ) {
+			$weekday = 0;
+		}
+
 		$retention = absint( $settings['retention'] ?? $defaults['retention'] );
 		$retention = max( 1, min( 50, $retention ) );
 
@@ -147,6 +153,7 @@ final class Settings {
 				'cadence'      => $cadence,
 				'custom_hours' => $custom_hours,
 				'time'         => $time,
+				'weekday'      => $weekday,
 			),
 			'retention'          => $retention,
 			'notify_on_failure'  => ! empty( $settings['notify_on_failure'] ),

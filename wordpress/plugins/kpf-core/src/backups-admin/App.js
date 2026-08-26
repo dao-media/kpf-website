@@ -30,6 +30,15 @@ const CADENCE_OPTIONS = window.kpfBackupsAdmin?.cadenceOptions || [
 	{ value: 'monthly', label: __('Monthly', 'kpf-core') },
 	{ value: 'custom', label: __('Custom interval', 'kpf-core') },
 ];
+const WEEKDAY_OPTIONS = window.kpfBackupsAdmin?.weekdayOptions || [
+	{ value: '0', label: __('Sunday', 'kpf-core') },
+	{ value: '1', label: __('Monday', 'kpf-core') },
+	{ value: '2', label: __('Tuesday', 'kpf-core') },
+	{ value: '3', label: __('Wednesday', 'kpf-core') },
+	{ value: '4', label: __('Thursday', 'kpf-core') },
+	{ value: '5', label: __('Friday', 'kpf-core') },
+	{ value: '6', label: __('Saturday', 'kpf-core') },
+];
 
 const SECTION_COPY = {
 	overview: {
@@ -694,16 +703,40 @@ export default function App() {
 								onChange={(value) => patchSchedule('custom_hours', Number(value) || 1)}
 							/>
 						) : null}
-						{['daily', 'weekly', 'monthly'].includes(settings.schedule?.cadence) ? (
-							<TextControl
-								label={__('Preferred time', 'kpf-core')}
-								help={`${__('24-hour HH:MM in the site timezone:', 'kpf-core')} ${
-									siteTimezoneLabel() || __('site timezone', 'kpf-core')
-								}`}
-								value={settings.schedule?.time || '02:00'}
-								onChange={(value) => patchSchedule('time', value)}
-								placeholder="02:00"
-							/>
+						{['daily', 'weekly', 'monthly'].includes(
+							settings.schedule?.cadence
+						) ? (
+							<div
+								className={
+									settings.schedule?.cadence !== 'daily'
+										? 'kpf-backups__fields-row'
+										: undefined
+								}
+							>
+								<TextControl
+									label={__('Preferred time', 'kpf-core')}
+									help={`${__('24-hour HH:MM in the site timezone:', 'kpf-core')} ${
+										siteTimezoneLabel() || __('site timezone', 'kpf-core')
+									}`}
+									value={settings.schedule?.time || '02:00'}
+									onChange={(value) => patchSchedule('time', value)}
+									placeholder="02:00"
+								/>
+								{settings.schedule?.cadence !== 'daily' ? (
+									<SelectControl
+										label={__('Day of the week', 'kpf-core')}
+										help={__(
+											'Runs on this weekday at the preferred time.',
+											'kpf-core'
+										)}
+										value={String(settings.schedule?.weekday ?? 0)}
+										options={WEEKDAY_OPTIONS}
+										onChange={(value) =>
+											patchSchedule('weekday', Number(value))
+										}
+									/>
+								) : null}
+							</div>
 						) : null}
 						<TextControl
 							label={__('Keep this many backups', 'kpf-core')}

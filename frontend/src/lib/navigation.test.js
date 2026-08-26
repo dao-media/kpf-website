@@ -33,13 +33,13 @@ assert(
 );
 assert(
   KPF_FOOTER_CONNECT.map((item) => item.label).join("|") ===
-    `Contact|Blog|Email us (${KPF_CONTACT_EMAIL})`,
-  "footer Connect lists Contact, Blog, Email us with the address in the label"
+    "Contact|Blog|Email us",
+  "footer Connect lists Contact, Blog, Email us"
 );
 assert(
   KPF_FOOTER_CONNECT[2].href === `mailto:${KPF_CONTACT_EMAIL}` &&
-    KPF_FOOTER_CONNECT[2].label.includes(KPF_CONTACT_EMAIL),
-  "Email us uses the foundation Gmail address"
+    KPF_FOOTER_CONNECT[2].label === "Email us",
+  "Email us mailto uses the foundation Gmail address"
 );
 assert(
   !KPF_FOOTER_CONNECT.some((item) => /facebook|instagram/i.test(item.href + item.label)),

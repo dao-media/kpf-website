@@ -146,7 +146,7 @@ final class ChromeHtml {
 			array( 'href' => '/blog/', 'label' => 'Blog' ),
 			array(
 				'href'  => 'mailto:kevinpopke.foundation@gmail.com',
-				'label' => 'Email us (kevinpopke.foundation@gmail.com)',
+				'label' => 'Email us',
 			),
 		);
 

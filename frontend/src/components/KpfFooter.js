@@ -71,9 +71,9 @@ export default function KpfFooter({
           </div>
 
           <div className="kpf-footer__cta-card">
-            <h5 className="kpf-footer__cta-title">
+            <p className="kpf-footer__cta-title">
               Your donations support our nation’s protectors.
-            </h5>
+            </p>
             <p className="kpf-footer__cta-body kpf-body--s">
               Every gift provided to the Kevin Popke Foundation is invested back
               into organizations doing incredible work for vets and their

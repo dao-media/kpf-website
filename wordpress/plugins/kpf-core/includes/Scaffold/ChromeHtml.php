@@ -181,7 +181,7 @@ final class ChromeHtml {
 		$html .= '</div></div>';
 		$html .= '<div class="kpf-footer__columns"><div><p class="kpf-footer__heading">Explore</p><ul class="kpf-footer__list">' . $explore_lis . '</ul></div>';
 		$html .= '<div><p class="kpf-footer__heading">Connect</p><ul class="kpf-footer__list">' . $connect_lis . '</ul></div></div>';
-		$html .= '<div class="kpf-footer__cta-card"><h5 class="kpf-footer__cta-title">Your donations support our nation’s protectors.</h5>';
+		$html .= '<div class="kpf-footer__cta-card"><p class="kpf-footer__cta-title">Your donations support our nation’s protectors.</p>';
 		$html .= '<p class="kpf-footer__cta-body kpf-body--s">Every gift provided to the Kevin Popke Foundation is invested back into organizations doing incredible work for vets and their families.</p>';
 		$html .= self::donate_button( 'Donate', 'kpf-btn kpf-btn--primary kpf-btn--sm' ) . '</div>';
 		$html .= '</div></div>';

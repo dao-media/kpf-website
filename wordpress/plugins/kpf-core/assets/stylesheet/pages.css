@@ -848,7 +848,7 @@ html.kpf-scroll-smoothed body {
 	padding-inline-end: var(--kpf-paypal-pad-end, 1.25rem);
 }
 
-@media (hover: hover) and (pointer: fine) and (not (any-pointer: coarse)) and (min-width: 64rem) {
+@media (hover: hover) and (pointer: fine) and (min-width: 64rem) {
 	@media (prefers-reduced-motion: no-preference) {
 		.kpf-header__actions .kpf-btn--donate {
 			padding-inline-end: var(--kpf-space-button-x);
@@ -858,6 +858,12 @@ html.kpf-scroll-smoothed body {
 		.kpf-header__actions .kpf-btn--donate:focus-visible {
 			padding-inline-end: var(--kpf-paypal-pad-end, 1.25rem);
 		}
+	}
+}
+
+@media (hover: none), (pointer: coarse), (any-pointer: coarse) {
+	.kpf-header__actions .kpf-btn--donate {
+		padding-inline-end: var(--kpf-paypal-pad-end, 1.25rem);
 	}
 }
 

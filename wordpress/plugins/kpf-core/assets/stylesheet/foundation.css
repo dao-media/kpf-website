@@ -355,6 +355,18 @@
 	--kpf-transition: 200ms ease-in-out;
 }
 
+/*
+ * next/font sets --font-geist-sans / --kpf-font-body-face on this wrapper,
+ * not :root. Custom properties inherit computed values, so :root already
+ * resolved to the "Geist" fallback (a family name that is never loaded).
+ * Re-resolve stacks here so headings use GeistSans.
+ */
+.kpf-font-root {
+	--kpf-font-display: var(--font-geist-sans, "Geist"), "Segoe UI", system-ui, -apple-system, sans-serif;
+	--kpf-font-body: var(--kpf-font-body-face, "Roboto"), "Helvetica Neue", Arial, sans-serif;
+	--kpf-font-ui: var(--kpf-font-body-face, "Roboto"), "Helvetica Neue", Arial, sans-serif;
+}
+
 /* —— Base —— */
 *,
 *::before,

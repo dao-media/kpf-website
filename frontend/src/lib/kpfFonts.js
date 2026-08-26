@@ -12,6 +12,6 @@ const roboto = Roboto({
   variable: "--kpf-font-body-face",
 });
 
-const kpfFontClassName = `${GeistSans.variable} ${roboto.variable}`;
+const kpfFontClassName = `${GeistSans.variable} ${roboto.variable} kpf-font-root`;
 
 export { GeistSans, kpfFontClassName, roboto };

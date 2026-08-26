@@ -42,4 +42,5 @@ jobs:
           DH_THEME_PATH: ${{ secrets.DH_THEME_PATH }}
         run: |
           chmod +x scripts/deploy-dreamhost-wp.sh
+          # Script archives git HEAD; Actions checkout is already that commit.
           scripts/deploy-dreamhost-wp.sh

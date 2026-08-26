@@ -17,7 +17,7 @@ Local (`frontend/` on :3010, wp-env on :8888) is a **copy of live**, not the pla
 1. **Edit locally** in this repo (`frontend/` and/or `wordpress/plugins/kpf-core`, `wordpress/themes/kpf-blank`). Never patch production without the same files on disk here.
 2. **Ship live** in the same turn — do not stop at local:
    - Faust/Next UI: commit if asked, **push `main`** so Vercel deploys.
-   - Plugin/theme/admin CSS/JS: `DH_SSH_KEY_FILE=…/.tmp/kpf-dreamhost-deploy scripts/deploy-dreamhost-wp.sh` (rsync). Rebuild `kpf-core` webpack assets before sync when SCSS/JS changed.
+   - Plugin/theme/admin CSS/JS: **commit** the files that should go live, then `DH_SSH_KEY_FILE=…/.tmp/kpf-dreamhost-deploy scripts/deploy-dreamhost-wp.sh`. The script rsyncs **git HEAD**, not leftover dirty `kpf-core` files (Designs admin, `Preview.php`, maps). Rebuild webpack assets and commit `build/` before sync when SCSS/JS changed. Do not set `KPF_DEPLOY_FROM_WORKDIR` / `KPF_DEPLOY_ALLOW_DIRTY` to ship WIP.
 3. **Done** only when live shows the change **and** the local tree matches what was deployed (same source + built CSS/JS). Hard-refresh / cache-bust if WP admin CSS looks stale.
 
 Do not leave local-only diffs for UI the user will check on DreamHost or Vercel. Do not change live without writing it locally first.

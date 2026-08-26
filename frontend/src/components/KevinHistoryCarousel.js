@@ -17,7 +17,7 @@ const SWIPE_THRESHOLD_PX = 48;
 const WHEEL_THRESHOLD = 48;
 const STEP_DURATION = 0.7;
 const STEP_EASE = "power2.out";
-/** Entrance: after the split is fully in view, wait then stagger imgs from the left. */
+/** Entrance: when the split hits the viewport, wait then stagger imgs from the left. */
 const INTRO_DELAY = 0.2;
 const INTRO_DURATION = 0.7;
 const INTRO_STAGGER = 0.12;
@@ -416,7 +416,7 @@ export default function KevinHistoryCarousel({
     };
   }, [baseQueue, count, paint]);
 
-  // Stack photos: hide until the split fully enters, then stagger slide/fade from left.
+  // Stack photos: hide, then stagger in once the split is on screen.
   useLayoutEffect(() => {
     const split = splitRef.current;
     if (!split || count < 1) return undefined;
@@ -429,41 +429,60 @@ export default function KevinHistoryCarousel({
       return undefined;
     }
 
+    let played = false;
+    const playIntro = () => {
+      if (played) return;
+      played = true;
+      const layers = gsap.utils.toArray(".kpf-history__layer", split);
+      // Leftmost first so the fan reads as stacking in from the left.
+      const orderedImgs = [...layers]
+        .sort(
+          (a, b) =>
+            a.getBoundingClientRect().left - b.getBoundingClientRect().left,
+        )
+        .map((layer) => layer.querySelector("img"))
+        .filter(Boolean);
+
+      gsap.to(orderedImgs.length ? orderedImgs : imgs, {
+        autoAlpha: 1,
+        x: 0,
+        duration: INTRO_DURATION,
+        ease: "power3.out",
+        stagger: INTRO_STAGGER,
+        delay: INTRO_DELAY,
+        overwrite: "auto",
+      });
+    };
+
     const ctx = gsap.context(() => {
       gsap.set(imgs, { autoAlpha: 0, x: INTRO_X });
 
-      const playIntro = () => {
-        const layers = gsap.utils.toArray(".kpf-history__layer", split);
-        // Leftmost first so the fan reads as stacking in from the left.
-        const orderedImgs = [...layers]
-          .sort(
-            (a, b) =>
-              a.getBoundingClientRect().left - b.getBoundingClientRect().left,
-          )
-          .map((layer) => layer.querySelector("img"))
-          .filter(Boolean);
-
-        gsap.to(orderedImgs.length ? orderedImgs : imgs, {
-          autoAlpha: 1,
-          x: 0,
-          duration: INTRO_DURATION,
-          ease: "power3.out",
-          stagger: INTRO_STAGGER,
-          delay: INTRO_DELAY,
-          overwrite: "auto",
-        });
-      };
-
-      // `bottom bottom` = element has fully entered the viewport from below.
-      ScrollTrigger.create({
+      // Play as soon as the split appears. Waiting for `bottom bottom` left a
+      // large empty tartan while the card was already on screen.
+      const st = ScrollTrigger.create({
         trigger: split,
-        start: "bottom bottom",
+        start: "top 80%",
         once: true,
         onEnter: playIntro,
       });
+
+      const alreadyInView =
+        st.progress > 0 ||
+        (typeof ScrollTrigger.isInViewport === "function" &&
+          ScrollTrigger.isInViewport(split, 0.1));
+      if (alreadyInView) playIntro();
     }, split);
 
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      if (
+        !played &&
+        typeof ScrollTrigger.isInViewport === "function" &&
+        ScrollTrigger.isInViewport(split, 0.1)
+      ) {
+        playIntro();
+      }
+    });
 
     return () => ctx.revert();
   }, [count, items]);

@@ -43,6 +43,19 @@ describe("globalStylesheet", () => {
     assert.equal(publicOverlayCss(":root{--kpf-ember:#bb0d0d}"), "");
   });
 
+  it("never yields an empty stylesheet body (avoids 204 MIME failures)", () => {
+    const { EMPTY_OVERLAY_CSS, stylesheetResponseBody } = require("./globalStylesheet");
+    assert.match(EMPTY_OVERLAY_CSS, /kpf: no CMS overlay/);
+    assert.equal(stylesheetResponseBody(""), EMPTY_OVERLAY_CSS);
+    assert.equal(stylesheetResponseBody(":root{--kpf-ember:#bb0d0d}"), EMPTY_OVERLAY_CSS);
+    assert.match(
+      stylesheetResponseBody(
+        `/* kpf-tokens:start */\n:root{--kpf-ember:#c00}\n/* kpf-tokens:end */`,
+      ),
+      /--kpf-ember:#c00/,
+    );
+  });
+
   it("builds a cache-busted same-origin CSS URL from page props", () => {
     assert.equal(stylesheetHref(""), "/kpf-stylesheet.css");
     assert.equal(

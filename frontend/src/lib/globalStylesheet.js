@@ -43,6 +43,17 @@ function publicOverlayCss(css) {
   return match ? match[0].trim() : "";
 }
 
+/**
+ * Body for `/kpf-stylesheet.css`. Never empty: a 204/empty response is
+ * stripped of Content-Type by the host, and nosniff then refuses the link.
+ */
+const EMPTY_OVERLAY_CSS = "/* kpf: no CMS overlay */\n";
+
+function stylesheetResponseBody(css) {
+  const overlay = publicOverlayCss(css);
+  return overlay || EMPTY_OVERLAY_CSS;
+}
+
 function stylesheetHref(revision) {
   const token = String(revision || "").trim();
   const qs = token ? `?rev=${encodeURIComponent(token)}` : "";
@@ -62,11 +73,13 @@ function stylesheetMetaFromPageProps(pageProps) {
 }
 
 module.exports = {
+  EMPTY_OVERLAY_CSS,
   KPF_STYLESHEET_QUERY,
   PAGES_MARKER,
   pagesLayerIndex,
   stylesheetHref,
   stylesheetMetaFromPageProps,
+  stylesheetResponseBody,
   withoutPagesLayer,
   publicOverlayCss,
 };

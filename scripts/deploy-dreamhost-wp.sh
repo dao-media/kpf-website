@@ -6,11 +6,17 @@
 # untracked plugin files (Designs admin WIP, Preview.php, source maps) never
 # ship, and --delete cannot wipe live using a dirty working tree.
 #
+# Before --delete, the live plugin and theme are copied to date-stamped
+# *.kpf-prev-* siblings on DreamHost (keeps the two newest).
+#
+# Fail if pages.css twins drifted on the revision being shipped.
+#
 # Escape hatches:
 #   KPF_DEPLOY_FROM_WORKDIR=1  rsync the working tree (refuses dirty paths)
 #   KPF_DEPLOY_ALLOW_DIRTY=1   with FROM_WORKDIR, allow uncommitted files
 #   KPF_DEPLOY_REF=<rev>       which git rev to archive (default HEAD)
 #   KPF_DEPLOY_DRY_RUN=1       rsync --dry-run
+#   KPF_DEPLOY_SKIP_SNAPSHOT=1 skip the remote pre-delete copy
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -58,6 +64,7 @@ chmod +x "$WRAPPER"
 RSYNC_EXCLUDES=(
   --exclude node_modules
   --exclude .git
+  --exclude tests
   --exclude '*.map'
 )
 
@@ -75,6 +82,43 @@ refuse_dirty() {
     echo "Commit first, or omit KPF_DEPLOY_FROM_WORKDIR (deploys git ${REF}), or set KPF_DEPLOY_ALLOW_DIRTY=1." >&2
     exit 1
   fi
+}
+
+if [[ "$FROM_WORKDIR" == "1" ]]; then
+  echo "→ checking pages.css twins (working tree)"
+  bash "$ROOT/scripts/check-css-twins.sh"
+else
+  echo "→ checking pages.css twins (${REF})"
+  bash "$ROOT/scripts/check-css-twins.sh" "$REF"
+fi
+
+snapshot_remote() {
+  local remote_path="$1"
+  if [[ -n "$RSYNC_DRY" ]]; then
+    echo "→ skip remote snapshot (dry-run): ${remote_path}"
+    return 0
+  fi
+  if [[ "${KPF_DEPLOY_SKIP_SNAPSHOT:-0}" == "1" ]]; then
+    echo "→ skip remote snapshot (KPF_DEPLOY_SKIP_SNAPSHOT=1): ${remote_path}"
+    return 0
+  fi
+  echo "→ snapshot ${remote_path}"
+  "$WRAPPER" "${USER}@${HOST}" "bash -s" <<REMOTE
+set -euo pipefail
+src=$(printf '%q' "$remote_path")
+if [ ! -d "\$src" ]; then
+  echo "no remote dir \$src, skip snapshot"
+  exit 0
+fi
+stamp=\$(date -u +%Y%m%dT%H%M%SZ)
+dest="\${src}.kpf-prev-\${stamp}"
+cp -a "\$src" "\$dest"
+echo "snapshot \$dest"
+old=\$(ls -1dt "\${src}.kpf-prev-"* 2>/dev/null | tail -n +3 || true)
+if [ -n "\$old" ]; then
+  printf '%s\n' "\$old" | xargs rm -rf
+fi
+REMOTE
 }
 
 SRC_PLUGIN=""
@@ -114,6 +158,9 @@ else
     exit 1
   fi
 fi
+
+snapshot_remote "$PLUGIN_PATH"
+snapshot_remote "$THEME_PATH"
 
 echo "→ plugin ${USER}@${HOST}:${PLUGIN_PATH}"
 rsync -az --delete ${RSYNC_DRY:+$RSYNC_DRY} "${RSYNC_EXCLUDES[@]}" \

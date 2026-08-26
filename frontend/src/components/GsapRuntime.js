@@ -490,7 +490,7 @@ export default function GsapRuntime({ animations = [] }) {
       requestAnimationFrame(() => {
         if (cancelled) return;
         // Visibility only — do not kill the header entrance's y drop.
-        restoreHeaderBadge({ resetY: false });
+        restoreHeaderBadge({ resetY: false, gsap });
         loadedPlugins.ScrollTrigger?.refresh?.();
       });
     }
@@ -504,7 +504,7 @@ export default function GsapRuntime({ animations = [] }) {
       );
       cleanups.forEach((cleanup) => cleanup());
       context?.revert();
-      restoreHeaderBadge({ resetY: true });
+      restoreHeaderBadge({ resetY: true, gsap });
     };
   }, [animations, router.asPath]);
 

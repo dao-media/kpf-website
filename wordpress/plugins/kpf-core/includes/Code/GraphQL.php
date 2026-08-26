@@ -35,7 +35,7 @@ final class GraphQL {
 			'kpfCodeSnippets',
 			array(
 				'type'        => array( 'list_of' => 'KpfCodeSnippet' ),
-				'description' => 'Allowlisted public snippets (sanitized CSS, reconstructed GTM, or https script src on known hosts). Raw admin JS is never returned.',
+				'description' => 'Allowlisted public snippets (sanitized CSS, GTM as https script src, GTM noscript iframe, or other script-free HTML). Raw admin JS is never returned.',
 				'args'        => array(
 					'path' => array(
 						'type'        => 'String',

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace KPF\Core\Code;
 
 final class ContentType {
-	public const POST_TYPE = 'kpf_code';
+	public const POST_TYPE  = 'kpf_code';
+	public const CAPABILITY = 'manage_options';
 
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_content' ), 5 );
@@ -56,26 +57,28 @@ final class ContentType {
 	}
 
 	/**
-	 * Restrict snippet management to theme editors (raw HTML/JS is trusted site code).
+	 * Restrict snippet management to administrators (raw HTML/JS is trusted site code).
 	 *
 	 * @return array<string, string>
 	 */
 	private static function capabilities(): array {
+		$cap = self::CAPABILITY;
+
 		return array(
-			'edit_post'              => 'edit_theme_options',
-			'read_post'              => 'edit_theme_options',
-			'delete_post'            => 'edit_theme_options',
-			'edit_posts'             => 'edit_theme_options',
-			'edit_others_posts'      => 'edit_theme_options',
-			'publish_posts'          => 'edit_theme_options',
-			'read_private_posts'     => 'edit_theme_options',
-			'delete_posts'           => 'edit_theme_options',
-			'delete_private_posts'   => 'edit_theme_options',
-			'delete_published_posts' => 'edit_theme_options',
-			'delete_others_posts'    => 'edit_theme_options',
-			'edit_private_posts'     => 'edit_theme_options',
-			'edit_published_posts'   => 'edit_theme_options',
-			'create_posts'           => 'edit_theme_options',
+			'edit_post'              => $cap,
+			'read_post'              => $cap,
+			'delete_post'            => $cap,
+			'edit_posts'             => $cap,
+			'edit_others_posts'      => $cap,
+			'publish_posts'          => $cap,
+			'read_private_posts'     => $cap,
+			'delete_posts'           => $cap,
+			'delete_private_posts'   => $cap,
+			'delete_published_posts' => $cap,
+			'delete_others_posts'    => $cap,
+			'edit_private_posts'     => $cap,
+			'edit_published_posts'   => $cap,
+			'create_posts'           => $cap,
 		);
 	}
 

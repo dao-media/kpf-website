@@ -97,7 +97,7 @@ describe("public snippet allowlist", () => {
     );
   });
 
-  it("allows reconstructed GTM HTML and rejects other scripts", () => {
+  it("allows GTM noscript HTML and rejects any script tag", () => {
     assert.equal(
       isSafePublicSnippet({
         type: "html",
@@ -109,6 +109,20 @@ describe("public snippet allowlist", () => {
       isSafePublicSnippet({
         type: "html",
         code: "<script src='https://www.googletagmanager.com/gtm.js?id=GTM-TEST'></script>",
+      }),
+      false
+    );
+    assert.equal(
+      isSafePublicSnippet({
+        type: "html",
+        code: '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TEST" height="0" width="0"></iframe></noscript>',
+      }),
+      true
+    );
+    assert.equal(
+      isSafePublicSnippet({
+        type: "js",
+        code: "https://www.googletagmanager.com/gtm.js?id=GTM-TEST",
       }),
       true
     );

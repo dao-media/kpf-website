@@ -63,7 +63,7 @@ final class Admin {
 			return;
 		}
 
-		if ( ! current_user_can( 'edit_theme_options' ) ) {
+		if ( ! current_user_can( ContentType::CAPABILITY ) ) {
 			return;
 		}
 
@@ -139,8 +139,8 @@ JS
 	}
 
 	public static function render_settings( WP_Post $post ): void {
-		if ( ! current_user_can( 'edit_theme_options' ) ) {
-			echo '<p>' . esc_html__( 'You need permission to manage theme options to edit code snippets.', 'kpf-core' ) . '</p>';
+		if ( ! current_user_can( ContentType::CAPABILITY ) ) {
+			echo '<p>' . esc_html__( 'You need administrator access to edit code snippets.', 'kpf-core' ) . '</p>';
 			return;
 		}
 
@@ -183,7 +183,7 @@ JS
 	}
 
 	public static function render_source( WP_Post $post ): void {
-		if ( ! current_user_can( 'edit_theme_options' ) ) {
+		if ( ! current_user_can( ContentType::CAPABILITY ) ) {
 			return;
 		}
 
@@ -212,7 +212,7 @@ JS
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
-		if ( ! current_user_can( 'edit_theme_options' ) ) {
+		if ( ! current_user_can( ContentType::CAPABILITY ) ) {
 			return;
 		}
 		if ( ! isset( $_POST['kpf_code_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( (string) $_POST['kpf_code_nonce'] ) ), 'kpf_code_save' ) ) {

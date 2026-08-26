@@ -113,8 +113,7 @@ function allowlistedScriptSrc(code) {
 
 function isAllowlistedHtml(code) {
   const text = String(code || "");
-  if (!/<script/i.test(text)) return true;
-  return /GTM-[A-Z0-9]+/i.test(text) && /googletagmanager\.com/i.test(text);
+  return !/<script/i.test(text);
 }
 
 function isSafePublicSnippet(snippet) {

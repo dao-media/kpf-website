@@ -1,7 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { gsap } from "gsap";
 import KpfMobileNav from "@/components/KpfMobileNav";
 import DonateButton from "@/components/DonateButton";
 import {
@@ -46,6 +45,8 @@ function BrandText({ full = BRAND_LABEL_FULL }) {
 
 /** Survives SPA remounts within one full document load; resets on hard refresh. */
 let navEntrancePlayed = false;
+/** GSAP instance after the motion path loads — never imported on reduced-motion. */
+let headerGsap = null;
 
 /** Force badge/header to resting visibility — clears GSAP inline hide only. */
 function settleHeaderEntrance(header, badge) {
@@ -53,25 +54,30 @@ function settleHeaderEntrance(header, badge) {
   if (typeof document !== "undefined") {
     document.documentElement.classList.add("kpf-nav-entered");
   }
-  // overwrite:"auto" only interrupts conflicting props (opacity/y), so CMS
-  // badge-swing rotation and ribbon breeze tweens keep running.
-  gsap.set(header, {
-    autoAlpha: 1,
-    y: 0,
-    overwrite: "auto",
-    clearProps: "transform",
-  });
-  if (badge) {
-    gsap.killTweensOf(badge, "autoAlpha,opacity,visibility,y");
-    gsap.set(badge, {
+  if (headerGsap) {
+    headerGsap.set(header, {
       autoAlpha: 1,
       y: 0,
-      overwrite: false,
+      overwrite: "auto",
+      clearProps: "transform",
     });
+  } else {
+    header.style.opacity = "";
+    header.style.visibility = "";
+  }
+  if (badge) {
+    if (headerGsap) {
+      headerGsap.killTweensOf(badge, "autoAlpha,opacity,visibility,y");
+      headerGsap.set(badge, {
+        autoAlpha: 1,
+        y: 0,
+        overwrite: false,
+      });
+    }
     badge.style.opacity = "";
     badge.style.visibility = "";
   } else {
-    restoreHeaderBadge();
+    restoreHeaderBadge({ gsap: headerGsap });
   }
   navEntrancePlayed = true;
 }
@@ -97,7 +103,18 @@ function Brandmark({ className = "kpf-header__mark" }) {
     const hoverRoot =
       badge.closest(".kpf-header__brand") || badge;
 
-    const mm = gsap.matchMedia();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      displacement.setAttribute("scale", "0");
+      return undefined;
+    }
+
+    let cancelled = false;
+    let revert = () => {};
+
+    import("gsap").then(({ gsap }) => {
+      if (cancelled) return;
+      headerGsap = gsap;
+      const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: reduce)", () => {
       displacement.setAttribute("scale", "0");
       gsap.set(ribbons, { clearProps: "transform" });
@@ -270,7 +287,13 @@ function Brandmark({ className = "kpf-header__mark" }) {
       };
     });
 
-    return () => mm.revert();
+      revert = () => mm.revert();
+    });
+
+    return () => {
+      cancelled = true;
+      revert();
+    };
   }, []);
 
   // Use CSS clip-path (not the SVG clipPath attribute) so SSR `clip-path`
@@ -423,14 +446,11 @@ export default function KpfHeader({
       return undefined;
     }
 
-    const badge = badgeEl();
-
-    // Header bar is in-flow from first paint (hiding it with autoAlpha caused
-    // a visible jump). Only the badge drops in with transform.
-    gsap.set(header, { autoAlpha: 1, y: 0, overwrite: false });
-    if (badge) gsap.set(badge, { y: BADGE_DROP_FROM_Y, overwrite: false });
-
+    let cancelled = false;
+    let ctx = null;
     let settled = false;
+    let safetyTimer = 0;
+
     const settleOnce = () => {
       if (settled) return;
       settled = true;
@@ -438,31 +458,43 @@ export default function KpfHeader({
       settle();
     };
 
-    // If the timeline is killed (Strict Mode, route remount, CMS overwrite),
-    // still force the badge visible — never park at autoAlpha 0.
-    const safetyTimer = window.setTimeout(settleOnce, 1600);
+    import("gsap").then(({ gsap }) => {
+      if (cancelled) return;
+      headerGsap = gsap;
+      const badge = badgeEl();
 
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        defaults: { ease: "power3.out", overwrite: false },
-        onComplete: settleOnce,
-      });
+      // Header bar is in-flow from first paint (hiding it with autoAlpha caused
+      // a visible jump). Only the badge drops in with transform.
+      gsap.set(header, { autoAlpha: 1, y: 0, overwrite: false });
+      if (badge) gsap.set(badge, { y: BADGE_DROP_FROM_Y, overwrite: false });
 
-      if (badge) {
-        tl.to(badge, {
-          y: 0,
-          duration: 0.7,
-          ease: "power3.out",
-          overwrite: false,
+      // If the timeline is killed (Strict Mode, route remount, CMS overwrite),
+      // still force the badge visible — never park at autoAlpha 0.
+      safetyTimer = window.setTimeout(settleOnce, 1600);
+
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({
+          defaults: { ease: "power3.out", overwrite: false },
+          onComplete: settleOnce,
         });
-      } else {
-        settleOnce();
-      }
-    }, header);
+
+        if (badge) {
+          tl.to(badge, {
+            y: 0,
+            duration: 0.7,
+            ease: "power3.out",
+            overwrite: false,
+          });
+        } else {
+          settleOnce();
+        }
+      }, header);
+    });
 
     return () => {
+      cancelled = true;
       window.clearTimeout(safetyTimer);
-      ctx.revert();
+      ctx?.revert();
       // Treat interrupt as "entrance done" so remounts never re-hide the badge.
       settleOnce();
     };
@@ -470,7 +502,7 @@ export default function KpfHeader({
 
   useEffect(() => {
     if (!navEntrancePlayed) return undefined;
-    restoreHeaderBadge({ resetY: true });
+    restoreHeaderBadge({ resetY: true, gsap: headerGsap });
     return undefined;
   }, [pathname]);
 

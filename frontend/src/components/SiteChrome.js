@@ -5,9 +5,9 @@ import KpfFooter from "@/components/KpfFooter";
 import KpfHeader from "@/components/KpfHeader";
 import LinkArrowRuntime from "@/components/LinkArrowRuntime";
 import ExternalExitTipsRuntime from "@/components/ExternalExitTipsRuntime";
-import ScrollSmootherRuntime from "@/components/ScrollSmootherRuntime";
 import AnalyticsRuntime from "@/components/AnalyticsRuntime";
 import CodeSnippetsRuntime from "@/components/CodeSnippetsRuntime";
+import ScrollSmootherGate from "@/components/ScrollSmootherGate";
 import { SiteDateTimeProvider } from "@/components/SiteDateTimeProvider";
 
 const {
@@ -234,7 +234,7 @@ export default function SiteChrome({
         <KpfChromeRuntime enabled={!useHeaderScaffold} />
         <LinkArrowRuntime />
         <ExternalExitTipsRuntime />
-        <ScrollSmootherRuntime />
+        <ScrollSmootherGate />
         <AnalyticsRuntime />
         <CodeSnippetsRuntime snippets={snippets} slot="header" />
         <div id="smooth-wrapper" className="kpf-smooth-wrapper">

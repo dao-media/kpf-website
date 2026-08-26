@@ -42,7 +42,7 @@ final class Settings {
 			'components'        => Components::default_selection(),
 			'schedule'          => array(
 				'enabled'      => false,
-				'cadence'      => 'daily',
+				'cadence'      => 'weekly',
 				'custom_hours' => 24,
 				'time'         => '02:00',
 				'weekday'      => 0,
@@ -106,7 +106,7 @@ final class Settings {
 		$cadence     = sanitize_key( (string) ( $schedule_in['cadence'] ?? $defaults['schedule']['cadence'] ) );
 		$allowed     = array( 'hourly', 'twicedaily', 'daily', 'weekly', 'monthly', 'custom' );
 		if ( ! in_array( $cadence, $allowed, true ) ) {
-			$cadence = 'daily';
+			$cadence = 'weekly';
 		}
 
 		$custom_hours = absint( $schedule_in['custom_hours'] ?? $defaults['schedule']['custom_hours'] );

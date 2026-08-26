@@ -83,6 +83,7 @@ export default function ScrollSmootherRuntime() {
       smoothTouch: 0.1,
       normalizeScroll: true,
     });
+    window.__kpfScrollSmoother = smoother;
 
     const refresh = () => {
       requestAnimationFrame(() => {
@@ -125,6 +126,7 @@ export default function ScrollSmootherRuntime() {
       window.removeEventListener("hashchange", onHashChange);
       router.events?.off("routeChangeComplete", onRouteComplete);
       document.documentElement.classList.remove(SMOOTHED_CLASS);
+      window.__kpfScrollSmoother = null;
       smoother.kill();
     };
   }, [routePath, router.events]);

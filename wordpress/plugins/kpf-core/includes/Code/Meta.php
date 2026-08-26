@@ -27,7 +27,7 @@ final class Meta {
 				'default'           => self::defaults(),
 				'sanitize_callback' => array( self::class, 'sanitize' ),
 				'auth_callback'     => static function (): bool {
-					return current_user_can( 'edit_theme_options' );
+					return current_user_can( ContentType::CAPABILITY );
 				},
 				'show_in_rest'      => false,
 				'revisions_enabled' => true,

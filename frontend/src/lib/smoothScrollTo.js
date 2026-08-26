@@ -1,4 +1,9 @@
-const { ScrollSmoother } = require("gsap/ScrollSmoother");
+const SMOOTHER_KEY = "__kpfScrollSmoother";
+
+function getScrollSmoother() {
+  if (typeof window === "undefined") return null;
+  return window[SMOOTHER_KEY] || null;
+}
 
 /**
  * Sticky header clearance for in-page scroll targets.
@@ -53,7 +58,7 @@ function scrollToTarget(target, options = {}) {
   if (!el) return false;
 
   const offset = getStickyOffsetPx();
-  const smoother = ScrollSmoother.get();
+  const smoother = getScrollSmoother();
 
   if (smoother) {
     // Position string keeps the target below the floating header.

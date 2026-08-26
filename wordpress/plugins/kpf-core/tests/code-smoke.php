@@ -24,6 +24,10 @@ $assert   = static function ( bool $condition, string $message ) use ( &$failure
 wp_set_current_user( 1 );
 
 $assert( (bool) get_post_type_object( ContentType::POST_TYPE ), 'Code post type is registered' );
+$assert(
+	'manage_options' === get_post_type_object( ContentType::POST_TYPE )->cap->publish_posts,
+	'Code snippets require manage_options'
+);
 
 $clean = Meta::sanitize(
 	array(
@@ -191,10 +195,52 @@ if ( ! is_wp_error( $gtm_id ) && $gtm_id > 0 ) {
 			static fn( array $item ): bool => (int) $item['databaseId'] === (int) $gtm_id
 		)
 	);
-	$assert( 1 === count( $gtm ), 'GTM HTML is exposed as a reconstructed snippet' );
-	$assert( isset( $gtm[0]['code'] ) && str_contains( $gtm[0]['code'], 'GTM-TEST1' ), 'Reconstructed GTM keeps the container id' );
+	$assert( 1 === count( $gtm ), 'Header GTM is exposed as an allowlisted script src' );
+	$assert( isset( $gtm[0]['type'] ) && 'js' === $gtm[0]['type'], 'Header GTM public type is js' );
+	$assert(
+		isset( $gtm[0]['code'] ) && 'https://www.googletagmanager.com/gtm.js?id=GTM-TEST1' === $gtm[0]['code'],
+		'Header GTM is the googletagmanager.com script URL'
+	);
 	$assert( isset( $gtm[0]['code'] ) && ! str_contains( $gtm[0]['code'], 'alert(1)' ), 'Piggybacked inline JS is stripped from GTM snippets' );
+	$assert( isset( $gtm[0]['code'] ) && ! str_contains( $gtm[0]['code'], '<script' ), 'Public GTM payload has no inline script tag' );
 	wp_delete_post( (int) $gtm_id, true );
+}
+
+$gtm_footer_id = wp_insert_post(
+	array(
+		'post_type'   => ContentType::POST_TYPE,
+		'post_status' => 'publish',
+		'post_title'  => 'Code smoke GTM footer',
+	),
+	true
+);
+if ( ! is_wp_error( $gtm_footer_id ) && $gtm_footer_id > 0 ) {
+	Meta::update(
+		(int) $gtm_footer_id,
+		array(
+			'location' => 'footer',
+			'type'     => 'html',
+			'code'     => '<script>alert(1)</script><script src="https://www.googletagmanager.com/gtm.js?id=GTM-FOOT1"></script>',
+			'scope'    => 'global',
+			'urls'     => array(),
+		)
+	);
+	$gtm_footer = array_values(
+		array_filter(
+			GraphQL::active_snippets( '/' ),
+			static fn( array $item ): bool => (int) $item['databaseId'] === (int) $gtm_footer_id
+		)
+	);
+	$assert( 1 === count( $gtm_footer ), 'Footer GTM is exposed as a noscript iframe' );
+	$assert( isset( $gtm_footer[0]['type'] ) && 'html' === $gtm_footer[0]['type'], 'Footer GTM public type is html' );
+	$assert(
+		isset( $gtm_footer[0]['code'] )
+			&& str_contains( $gtm_footer[0]['code'], 'GTM-FOOT1' )
+			&& str_contains( $gtm_footer[0]['code'], '<noscript>' )
+			&& ! str_contains( $gtm_footer[0]['code'], '<script' ),
+		'Footer GTM is noscript-only and keeps the container id'
+	);
+	wp_delete_post( (int) $gtm_footer_id, true );
 }
 
 if ( $failures > 0 ) {

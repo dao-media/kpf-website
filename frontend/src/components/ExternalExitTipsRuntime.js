@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { BoundChipCursorTooltip } from "@/components/ChipCursorTooltip";
 import { ExitTooltipIcon, exitTooltipLabel } from "@/components/ExternalExitTooltip";
 const { hrefFromExitTarget, isOffsiteHttpHref } = require("@/lib/externalHref");
 
@@ -37,6 +36,20 @@ function collectExitTargets(root) {
 export default function ExternalExitTipsRuntime() {
   const router = useRouter();
   const [hosts, setHosts] = useState([]);
+  const [BoundTip, setBoundTip] = useState(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
+    let cancelled = false;
+    import("@/components/ChipCursorTooltip").then((mod) => {
+      if (!cancelled) setBoundTip(() => mod.BoundChipCursorTooltip);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -61,8 +74,10 @@ export default function ExternalExitTipsRuntime() {
     return () => observer.disconnect();
   }, [router.asPath]);
 
+  if (!BoundTip) return null;
+
   return hosts.map((host) => (
-    <BoundChipCursorTooltip
+    <BoundTip
       key={host.getAttribute("data-kpf-exit-id")}
       host={host}
       label={exitTooltipLabel(hrefFromExitTarget(host))}

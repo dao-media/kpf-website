@@ -178,7 +178,7 @@ Live CSS is served to Faust via WPGraphQL `kpfStylesheet` (foundation + pages la
 | Foundation (tokens, accordion, buttons, chrome) | `frontend/src/styles/components.css` | `wordpress/plugins/kpf-core/assets/stylesheet/foundation.css` |
 | Pages (About, donate, events, …) | `frontend/src/styles/pages.css` | `wordpress/plugins/kpf-core/assets/stylesheet/pages.css` |
 
-Edit carefully — do **not** overwrite `foundation.css` wholesale with `components.css` (they can drift). After plugin stylesheet changes locally:
+`pages.css` twins must stay byte-identical. **Frontend is the source of truth** — edit `frontend/src/styles/pages.css`, then `bash scripts/sync-css-twins.sh` (or copy by hand) and commit both. `npm test` and DreamHost deploys fail if the hashes drift. Do **not** hash-compare `components.css` vs `foundation.css` (intentional drift). After plugin stylesheet changes locally:
 
 ```bash
 npx wp-env run cli wp eval 'var_export(\KPF\Core\Stylesheet\Defaults::apply_foundation());'

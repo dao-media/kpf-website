@@ -8,8 +8,9 @@ use KPF\Core\Stylesheet\Meta as StylesheetMeta;
 
 /**
  * Allowlisted public snippet bodies. Admin CPT still stores raw code;
- * GraphQL / Faust only receive CSS, reconstructed GTM, or https script src
- * on known hosts.
+ * GraphQL / Faust only receive sanitized CSS, an https GTM/analytics script
+ * src on known hosts, a GTM noscript iframe, or script-free HTML.
+ * Inline admin JS is never returned.
  */
 final class PublicPayload {
 	public const SCRIPT_HOSTS = array(
@@ -27,7 +28,27 @@ final class PublicPayload {
 	public static function for_public( array $snippet ): ?array {
 		$type     = sanitize_key( (string) ( $snippet['type'] ?? 'html' ) );
 		$location = sanitize_key( (string) ( $snippet['location'] ?? 'header' ) );
-		$code     = self::code( $type, (string) ( $snippet['code'] ?? '' ), $location );
+		$raw      = (string) ( $snippet['code'] ?? '' );
+
+		if ( 'css' === $type ) {
+			$code = StylesheetMeta::sanitize_css( $raw );
+		} elseif ( 'js' === $type ) {
+			$code = self::allowlisted_script_src( $raw );
+		} else {
+			$gtm = self::gtm_id( $raw );
+			if ( '' !== $gtm ) {
+				if ( 'footer' === $location ) {
+					$type = 'html';
+					$code = self::gtm_body( $gtm );
+				} else {
+					$type = 'js';
+					$code = self::gtm_script_src( $gtm );
+				}
+			} else {
+				$code = wp_kses( $raw, self::html_allowed() );
+			}
+		}
+
 		if ( '' === trim( $code ) ) {
 			return null;
 		}
@@ -39,21 +60,15 @@ final class PublicPayload {
 	}
 
 	public static function code( string $type, string $code, string $location = 'header' ): string {
-		$code = str_replace( "\0", '', $code );
-		if ( 'css' === $type ) {
-			return StylesheetMeta::sanitize_css( $code );
-		}
+		$public = self::for_public(
+			array(
+				'type'     => $type,
+				'code'     => $code,
+				'location' => $location,
+			)
+		);
 
-		if ( 'js' === $type ) {
-			return self::allowlisted_script_src( $code );
-		}
-
-		$gtm = self::gtm_id( $code );
-		if ( '' !== $gtm ) {
-			return 'footer' === $location ? self::gtm_body( $gtm ) : self::gtm_head( $gtm );
-		}
-
-		return wp_kses( $code, self::html_allowed() );
+		return is_array( $public ) ? (string) $public['code'] : '';
 	}
 
 	public static function allowlisted_script_src( string $code ): string {
@@ -89,13 +104,13 @@ final class PublicPayload {
 		return strtoupper( $match[1] );
 	}
 
-	public static function gtm_head( string $id ): string {
+	public static function gtm_script_src( string $id ): string {
 		$id = preg_replace( '/[^A-Z0-9\-]/', '', strtoupper( $id ) ) ?: '';
 		if ( '' === $id ) {
 			return '';
 		}
 
-		return "<!-- Google Tag Manager -->\n<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':\nnew Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],\nj=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=\n'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);\n})(window,document,'script','dataLayer','{$id}');</script>\n<!-- End Google Tag Manager -->";
+		return 'https://www.googletagmanager.com/gtm.js?id=' . rawurlencode( $id );
 	}
 
 	public static function gtm_body( string $id ): string {

@@ -45,7 +45,8 @@ final class HeadlessAppearance {
 
 	/**
 	 * Soft-disable theme install / update capabilities in the admin UI.
-	 * Leaves edit_theme_options intact (Stylesheet, Code, Dynamic Content).
+	 * Leaves edit_theme_options intact (Stylesheet, Dynamic Content).
+	 * Code snippets use manage_options.
 	 *
 	 * @param string[] $caps Primed capabilities.
 	 * @param string   $cap  Capability being checked.

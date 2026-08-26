@@ -1,4 +1,4 @@
-import * as LucideIcons from 'lucide-react';
+import { useEffect, useState } from "react";
 
 /**
  * Optional convenience wrapper around Lucide icons.
@@ -14,23 +14,34 @@ export default function Icon({
 	name,
 	size = 24,
 	strokeWidth = 2,
-	color = 'currentColor',
+	color = "currentColor",
 	label,
 	className,
 	...props
 }) {
-	const Component = LucideIcons[name];
+	const [Component, setComponent] = useState(null);
 
-	if (!Component) {
-		if (process.env.NODE_ENV !== 'production') {
-			console.warn(`[Icon] Unknown Lucide icon: "${name}"`);
+	useEffect(() => {
+		if (!name) {
+			setComponent(null);
+			return undefined;
 		}
-		return null;
-	}
+		let cancelled = false;
+		import("lucide-react").then((mod) => {
+			if (cancelled) return;
+			const next = mod[name];
+			setComponent(() => next || null);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [name]);
+
+	if (!Component) return null;
 
 	const a11y = label
-		? { role: 'img', 'aria-label': label }
-		: { 'aria-hidden': true, focusable: false };
+		? { role: "img", "aria-label": label }
+		: { "aria-hidden": true, focusable: false };
 
 	return (
 		<Component

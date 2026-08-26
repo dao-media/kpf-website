@@ -1,7 +1,72 @@
 import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronRight } from "lucide-react";
 import { isCurrentPath } from "@/lib/navigation";
+
+function MenuIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 5h16" />
+      <path d="M4 12h16" />
+      <path d="M4 19h16" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
 
 /**
  * Mobile nav panel — Figma Mobile Nav Menu `950:566`.
@@ -83,18 +148,8 @@ export default function KpfMobileNav({
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => onOpenChange?.(!open)}
       >
-        <Menu
-          className="kpf-mobile-nav__icon kpf-mobile-nav__icon--menu"
-          size={22}
-          strokeWidth={1.8}
-          aria-hidden="true"
-        />
-        <X
-          className="kpf-mobile-nav__icon kpf-mobile-nav__icon--close"
-          size={22}
-          strokeWidth={1.8}
-          aria-hidden="true"
-        />
+        <MenuIcon className="kpf-mobile-nav__icon kpf-mobile-nav__icon--menu" />
+        <CloseIcon className="kpf-mobile-nav__icon kpf-mobile-nav__icon--close" />
       </button>
 
       <div
@@ -118,12 +173,7 @@ export default function KpfMobileNav({
                 onClick={() => onOpenChange?.(false)}
               >
                 {current ? (
-                  <ChevronRight
-                    className="kpf-mobile-nav__arrow"
-                    size={16}
-                    strokeWidth={2}
-                    aria-hidden
-                  />
+                  <ChevronIcon className="kpf-mobile-nav__arrow" />
                 ) : null}
                 <span className="kpf-mobile-nav__label">{item.label}</span>
               </Link>

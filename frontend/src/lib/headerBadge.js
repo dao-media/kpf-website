@@ -1,5 +1,3 @@
-import { gsap } from "gsap";
-
 export const HEADER_BADGE_SELECTOR = "[data-kpf-badge], .kpf-header__badge";
 
 export function isHeaderBadgeNode(node) {
@@ -15,22 +13,25 @@ export function isHeaderBadgeNode(node) {
  * `gsap.context().revert()` were restoring the entrance's autoAlpha:0
  * (and sometimes y: -140). Does not touch rotation — hover swing stays.
  *
- * @param {{ resetY?: boolean }} [opts]
- *   resetY: also snap translateY to 0. Use after `context.revert()`, not
- *   while the header entrance drop is still playing.
+ * Pass `gsap` when the motion runtime is already loaded so tweens are
+ * killed. Reduced-motion / chrome-without-GSAP only clears CSS visibility.
+ *
+ * @param {{ resetY?: boolean, gsap?: { killTweensOf: Function, set: Function } }} [opts]
  */
-export function restoreHeaderBadge({ resetY = true } = {}) {
+export function restoreHeaderBadge({ resetY = true, gsap = null } = {}) {
   if (typeof document === "undefined") return;
   document.querySelectorAll(HEADER_BADGE_SELECTOR).forEach((badge) => {
-    gsap.killTweensOf(
-      badge,
-      resetY ? "autoAlpha,opacity,visibility,y" : "autoAlpha,opacity,visibility",
-    );
-    gsap.set(badge, {
-      autoAlpha: 1,
-      ...(resetY ? { y: 0 } : {}),
-      overwrite: false,
-    });
+    if (gsap) {
+      gsap.killTweensOf(
+        badge,
+        resetY ? "autoAlpha,opacity,visibility,y" : "autoAlpha,opacity,visibility",
+      );
+      gsap.set(badge, {
+        autoAlpha: 1,
+        ...(resetY ? { y: 0 } : {}),
+        overwrite: false,
+      });
+    }
     badge.style.opacity = "";
     badge.style.visibility = "";
   });

@@ -783,7 +783,9 @@ html.kpf-scroll-smoothed body {
 	font-weight: 800;
 }
 
-/* Red underline — off at rest; CSS hover (GSAP may also tween this bar). */
+/* Red underline — off at rest. GSAP hover tween owns scaleX. A CSS transition
+   on transform fights that tween; :hover { scaleX(1) !important } hid the play-in
+   on the current page, then reverse() flashed the bar on mouseleave. */
 .kpf-header__nav .kpf-nav-link__line {
 	background: var(--kpf-ember, #bb0d0d);
 	border-radius: 2px;
@@ -795,28 +797,15 @@ html.kpf-scroll-smoothed body {
 	right: -0.22em;
 	transform: scaleX(0);
 	transform-origin: 50% 50%;
-	transition: transform 0.35s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
-/* Active: no underline (text weight/color carry the state) */
-.kpf-header__nav .kpf-nav-link[aria-current="page"] .kpf-nav-link__line {
-	transform: scaleX(0);
-}
-
-.kpf-header__nav .kpf-nav-link:hover .kpf-nav-link__line,
-.kpf-header__nav .kpf-nav-link:focus-visible .kpf-nav-link__line {
-	transform: scaleX(1) !important;
-}
-
+/* Active: no underline (text weight/color carry the state). */
+.kpf-header__nav .kpf-nav-link[aria-current="page"] .kpf-nav-link__line,
 .kpf-header__nav .kpf-nav-link[aria-current="page"]:hover .kpf-nav-link__line,
 .kpf-header__nav .kpf-nav-link[aria-current="page"]:focus-visible .kpf-nav-link__line {
 	transform: scaleX(0) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.kpf-header__nav .kpf-nav-link__line {
-		transition: none;
-	}
+	transition: none;
+	visibility: hidden;
 }
 
 .kpf-header__actions {

@@ -116,6 +116,14 @@ function resolveEase(config, animationId) {
   return config.ease;
 }
 
+function isCurrentHeaderNavLink(node) {
+  return Boolean(
+    node &&
+      typeof node.matches === "function" &&
+      node.matches('.kpf-header__nav .kpf-nav-link[aria-current="page"]'),
+  );
+}
+
 function resolveTweenTargets(triggerTargets, config) {
   const child = String(config?.animateChild || "").trim();
   if (!child) return triggerTargets;
@@ -396,6 +404,13 @@ export default function GsapRuntime({ animations = [] }) {
                     return;
                   }
                   clearLeaveTimer();
+                  // Current page: no underline. Playing the tween (even if CSS
+                  // hides it) leaves scaleX:1 for reverse() to flash on leave.
+                  if (isCurrentHeaderNavLink(target)) {
+                    hovering = false;
+                    tween.pause(0);
+                    return;
+                  }
                   // Already hovered (e.g. click → focusin while :hover) — do not re-run.
                   if (hovering) return;
                   hovering = true;
@@ -436,6 +451,10 @@ export default function GsapRuntime({ animations = [] }) {
                   }
                   // Nav underline etc. — reverse only after a true unhover.
                   hovering = false;
+                  if (isCurrentHeaderNavLink(target)) {
+                    tween.pause(0);
+                    return;
+                  }
                   tween.reverse();
                 };
 

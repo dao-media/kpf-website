@@ -12,7 +12,6 @@ const KPF_SITE_CHROME_QUERY = `
       databaseId
       title
       role
-      html
       behavior {
         version
         mode
@@ -30,7 +29,6 @@ const KPF_SITE_CHROME_QUERY = `
       databaseId
       title
       role
-      html
       behavior {
         version
         mode

@@ -9,6 +9,8 @@ const roboto = Roboto({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   display: "swap",
+  preload: true,
+  adjustFontFallback: true,
   variable: "--kpf-font-body-face",
 });
 

@@ -131,6 +131,15 @@ export async function middleware(request) {
 
   const skipSeo = shouldSkipSeoLookup(pathname);
 
+  // Canonical ISR pages must not wait on DreamHost. GTmetrix FCP/LCP include
+  // this middleware RTT; maintenance is env-gated instead.
+  if (isCanonicalPublicPath(pathname)) {
+    if (process.env.KPF_MAINTENANCE === "1") {
+      return NextResponse.redirect(new URL("/coming-soon", request.url), 302);
+    }
+    return NextResponse.next();
+  }
+
   try {
     const lookups = [
       fetch(`${wordpressUrl}/wp-json/kpf-designs/v1/public/maintenance`, {

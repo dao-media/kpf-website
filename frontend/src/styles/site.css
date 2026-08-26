@@ -1,0 +1,6 @@
+/**
+ * Single entry so Faust/Next emit one render-blocking stylesheet instead of
+ * two sequential CSS round-trips on FCP.
+ */
+@import "./components.css";
+@import "./pages.css";

@@ -1902,12 +1902,14 @@ html.kpf-scroll-smoothed body {
 }
 
 /*
- * Park home hero cutouts invisible until HomeHeroCutoutsRuntime (or the
- * safety timeout) marks html.kpf-hero-cutouts-entered. GSAP owns the
- * left-to-right travel; this only prevents a rest-state flash.
+ * Park dad/runner until HomeHeroCutoutsRuntime (or the safety timeout)
+ * marks html.kpf-hero-cutouts-entered. Alumni stays painted from first
+ * frame — it is the LCP image on tablet/desktop. GSAP still slides the
+ * outer layers; hiding alumni delayed LCP until JS ran.
  */
-@media (min-width: 48rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout {
+@media (min-width: 64rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--dad,
+	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--runner {
 		opacity: 0;
 	}
 }

@@ -5,6 +5,7 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
+  KPF_SITE_CHROME_QUERY,
   clampInt,
   footerClassNames,
   headerClassNames,
@@ -14,6 +15,12 @@ const {
 } = require("./siteChrome.js");
 
 describe("normalizeHeaderBehavior", () => {
+  it("does not pull CMS header/footer HTML into Faust page payloads", () => {
+    assert.match(KPF_SITE_CHROME_QUERY, /kpfSiteChrome/);
+    assert.match(KPF_SITE_CHROME_QUERY, /behavior/);
+    assert.doesNotMatch(KPF_SITE_CHROME_QUERY, /\bhtml\b/);
+  });
+
   it("applies defaults and clamps timing", () => {
     const behavior = normalizeHeaderBehavior({
       mode: "unknown",

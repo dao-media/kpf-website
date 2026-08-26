@@ -8,7 +8,6 @@ const ENTERED_CLASS = "kpf-hero-cutouts-entered";
  */
 const LAYERS = [
   { selector: ".kpf-hero__cutout--dad", travel: 0.28 },
-  { selector: ".kpf-hero__cutout--alumni", travel: 0.62 },
   { selector: ".kpf-hero__cutout--runner", travel: 1.05 },
 ];
 
@@ -38,8 +37,9 @@ function resolveGsap(mod) {
 }
 
 /**
- * Homepage hero cutouts: fade in while sliding right from off-stage left.
- * Skipped when the user prefers reduced motion; CSS then shows them at rest.
+ * Homepage hero cutouts: dad + runner fade in while sliding from off-stage
+ * left. Alumni stays at rest from first paint so it can be LCP.
+ * Skipped when the user prefers reduced motion; CSS then shows all at rest.
  */
 export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {
   useLayoutEffect(() => {

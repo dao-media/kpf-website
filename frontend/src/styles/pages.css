@@ -4818,6 +4818,13 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	min-width: 0;
 }
 
+/* Island is split out of the archive container; keep the same page gutter. */
+[data-kpf-design] > .kpf-blog-filters {
+	box-sizing: border-box;
+	padding-inline: var(--kpf-page-gutter);
+	width: 100%;
+}
+
 .kpf-blog-filters__chip {
 	align-items: center;
 	appearance: none;
@@ -4929,14 +4936,17 @@ a.kpf-blog-row:focus-visible {
 }
 
 .kpf-blog-row--featured .kpf-blog-row__thumb {
-	aspect-ratio: auto;
+	aspect-ratio: unset;
 	border-radius: 0;
 	display: block;
-	height: 100%;
+	height: auto;
 	inset: 0;
+	max-height: none;
+	max-width: none;
 	object-fit: cover;
+	object-position: center center;
 	position: absolute;
-	width: 100%;
+	width: auto;
 }
 
 .kpf-blog-row--featured .kpf-blog-row__thumb--empty {
@@ -5077,6 +5087,7 @@ a.kpf-blog-row:focus-visible {
 	display: block;
 	height: auto;
 	object-fit: cover;
+	object-position: center center;
 	width: 100%;
 }
 

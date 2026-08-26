@@ -120,7 +120,7 @@ export default function BlogPageScaffold({ media = {}, posts: postSource = null 
     [postSource, copy.archive.rowCta],
   );
 
-  const { items: filterItems, interactive: filtersInteractive } = useMemo(
+  const { items: filterItems, interactive: filtersInteractive, visible: filtersVisible } = useMemo(
     () => blogFilterBar(posts),
     [posts],
   );
@@ -207,7 +207,7 @@ export default function BlogPageScaffold({ media = {}, posts: postSource = null 
 
           {featured ? <BlogCard post={featured} featured /> : null}
 
-          {posts.length > 0 ? (
+          {filtersVisible ? (
             <div
               id="topics"
               className="kpf-blog-filters"

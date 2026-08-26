@@ -11,7 +11,7 @@ const { useTocActiveId } = require("@/lib/useTocActiveId");
 export function BlogFiltersIsland({ posts = [] }) {
   const rootRef = useRef(null);
   const [topic, setTopic] = useState("all");
-  const { items, interactive } = useMemo(() => blogFilterBar(posts), [posts]);
+  const { items, interactive, visible } = useMemo(() => blogFilterBar(posts), [posts]);
 
   useEffect(() => {
     const archive = rootRef.current?.closest(".kpf-blog-archive");
@@ -34,7 +34,7 @@ export function BlogFiltersIsland({ posts = [] }) {
     return undefined;
   }, [topic, posts]);
 
-  if (!posts.length) return null;
+  if (!visible) return null;
 
   return (
     <div

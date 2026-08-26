@@ -154,15 +154,24 @@ function blogTopicFilters(posts) {
 }
 
 /**
- * Filter bar: All-only and inert until two or more categories are in use.
+ * Filter bar visibility:
+ * - hidden with 0–1 posts
+ * - All only (inert) with 2+ posts in a single category
+ * - All + categories (interactive) once two or more categories are in use
  * @param {Array<{ category?: string, categorySlug?: string }>} posts
- * @returns {{ items: Array<{ slug: string, label: string }>, interactive: boolean }}
+ * @returns {{ visible: boolean, items: Array<{ slug: string, label: string }>, interactive: boolean }}
  */
 function blogFilterBar(posts) {
-  const filters = blogTopicFilters(posts);
+  const list = Array.isArray(posts) ? posts : [];
+  if (list.length <= 1) {
+    return { visible: false, interactive: false, items: [] };
+  }
+
+  const filters = blogTopicFilters(list);
   const categoryCount = filters.filter((item) => item.slug !== "all").length;
   const interactive = categoryCount > 1;
   return {
+    visible: true,
     interactive,
     items: interactive ? filters : [{ slug: "all", label: "All" }],
   };

@@ -63,22 +63,35 @@ describe("blogPosts", () => {
     ]);
   });
 
-  it("keeps All inert until more than one category is in use", () => {
+  it("hides the filter bar until there is more than one post", () => {
+    const empty = blogFilterBar([]);
+    assert.equal(empty.visible, false);
+    assert.equal(empty.interactive, false);
+    assert.deepEqual(empty.items, []);
+
+    const one = blogFilterBar([
+      { category: "Grants", categorySlug: "grants" },
+    ]);
+    assert.equal(one.visible, false);
+    assert.deepEqual(one.items, []);
+  });
+
+  it("shows inert All when two posts share one category", () => {
     const single = blogFilterBar([
       { category: "Grants", categorySlug: "grants" },
       { category: "Grants", categorySlug: "grants" },
     ]);
+    assert.equal(single.visible, true);
     assert.equal(single.interactive, false);
     assert.deepEqual(single.items, [{ slug: "all", label: "All" }]);
+  });
 
-    const empty = blogFilterBar([]);
-    assert.equal(empty.interactive, false);
-    assert.deepEqual(empty.items, [{ slug: "all", label: "All" }]);
-
+  it("shows All plus categories once more than one topic is in use", () => {
     const multi = blogFilterBar([
       { category: "Grants", categorySlug: "grants" },
       { category: "Events", categorySlug: "events" },
     ]);
+    assert.equal(multi.visible, true);
     assert.equal(multi.interactive, true);
     assert.deepEqual(multi.items, [
       { slug: "all", label: "All" },

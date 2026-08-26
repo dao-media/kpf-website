@@ -2723,7 +2723,7 @@ a.kpf-archive__card:focus-visible {
 }
 
 .kpf-donate--band .kpf-accordion {
-	background: var(--kpf-parchment, #f4efea);
+	background: var(--kpf-color-bg-surface, #fff);
 	border: 1px solid var(--kpf-parchment-deep, #dfd6cc);
 	border-radius: var(--kpf-radius-md);
 	box-shadow: none; /* base accordion uses inset stroke; band uses border instead */
@@ -2736,7 +2736,7 @@ a.kpf-archive__card:focus-visible {
 .kpf-donate--band .kpf-accordion:hover,
 .kpf-donate--band .kpf-accordion:focus-within,
 .kpf-donate--band .kpf-accordion.is-open {
-	background: var(--kpf-ember-soft, #ebd1d1);
+	background: var(--kpf-color-bg-surface, #fff);
 }
 
 .kpf-donate--band .kpf-accordion__header {
@@ -2761,14 +2761,16 @@ a.kpf-archive__card:focus-visible {
 .kpf-donate--band .kpf-accordion__header:hover,
 .kpf-donate--band .kpf-accordion.is-open .kpf-accordion__header,
 .kpf-donate--band .kpf-accordion__header:focus-visible {
-	background: transparent;
+	background: var(--kpf-ember-soft, #ebd1d1);
 }
 
 .kpf-donate--band .kpf-accordion__body {
+	background: var(--kpf-color-bg-surface, #fff);
 	color: var(--kpf-ink-soft, #3d2c2d);
 }
 
 .kpf-donate--band .kpf-accordion__content {
+	background: var(--kpf-color-bg-surface, #fff);
 	padding-left: 1rem;
 	padding-right: 1rem;
 }

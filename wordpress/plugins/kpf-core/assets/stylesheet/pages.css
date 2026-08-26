@@ -1902,13 +1902,13 @@ html.kpf-scroll-smoothed body {
 }
 
 /* Partners chips — Figma 426:477
- * Visible slots: 4 desktop · 3 tablet · 1 mobile (edge peeks).
+ * Visible slots: 4 desktop · 3 tablet · 1 mobile (80% card, prev/next peek).
  * Chip width is measured in PartnersSlider (--kpf-partners-chip-width).
  */
 .kpf-partners {
 	--kpf-partners-gap: 1rem; /* 16 */
 	--kpf-partners-visible: 1;
-	--kpf-partners-peek: 1.5rem; /* 24 — matches PartnersSlider PEEK_PX */
+	--kpf-partners-chip-width: 80cqi;
 	background: var(--kpf-parchment, #f4efea);
 	overflow: hidden;
 	padding-block: 2rem 1.75rem; /* 32 / 28 */
@@ -1918,7 +1918,6 @@ html.kpf-scroll-smoothed body {
 @media (min-width: 48rem) {
 	.kpf-partners {
 		--kpf-partners-visible: 3;
-		--kpf-partners-peek: 0px;
 	}
 }
 
@@ -1958,19 +1957,23 @@ html.kpf-scroll-smoothed body {
 	flex-wrap: nowrap;
 	gap: var(--kpf-partners-gap);
 	justify-content: flex-start;
+	padding-inline: 10cqi; /* (100 − 80) / 2 — prev/next peek on mobile */
 	transition-property: transform;
 	transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 	width: max-content;
 	will-change: transform;
 }
 
+@media (min-width: 48rem) {
+	.kpf-partners__track {
+		padding-inline: 0;
+	}
+}
+
 .kpf-partners__chip {
 	--kpf-partners-chip-height: 3.5rem; /* 56 */
 	--kpf-partners-chip-pad-block: 0.5rem; /* 8 */
 	--kpf-partners-chip-pad-inline: 0.625rem; /* 10 */
-	--kpf-partners-chip-width: calc(
-		100cqi - var(--kpf-partners-peek) - var(--kpf-partners-gap)
-	);
 	align-items: center;
 	background: var(--kpf-color-bg-surface, #fff);
 	border-radius: var(--kpf-radius-md); /* 8 */

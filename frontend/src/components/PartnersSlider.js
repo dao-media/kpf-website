@@ -5,8 +5,8 @@ import { HOME } from "@/lib/pageCopy";
 const AUTO_MS = 3000;
 const TRANSITION_MS = 650;
 const GAP_PX = 16;
-/** Mobile: visible sliver of the next/prev card past the active card. */
-const PEEK_PX = 24;
+/** Mobile portrait: card is 80% of the rail so prev/next peek on both sides. */
+const MOBILE_CHIP_RATIO = 0.8;
 
 function prefersReducedMotion() {
   if (typeof window === "undefined" || !window.matchMedia) return false;
@@ -21,8 +21,9 @@ function visibleCountForViewport() {
 }
 
 /**
- * Build stop offsets: start at 0 (first card left-aligned), step one card,
- * and always finish at maxOffset (last card right-aligned).
+ * Build stop offsets: start at 0, step one card, finish at maxOffset.
+ * Mobile (80% card + side padding) centers each card so both neighbors peek.
+ * Tablet/desktop fill the viewport, so the last stop right-aligns the tail.
  */
 function buildOffsets(stepPx, maxOffset) {
   if (maxOffset <= 0) return [0];
@@ -44,8 +45,8 @@ function buildOffsets(stepPx, maxOffset) {
 
 /**
  * Grantee chip slider — Figma Section / Partners `426:477`.
- * Shows 4 / 3 / 1 cards (desktop / tablet / mobile with edge peeks).
- * Advances one card at a time until the last card is right-aligned, then loops to the start.
+ * Shows 4 / 3 / 1 cards (desktop / tablet / mobile with 80% card + edge peeks).
+ * Advances one card at a time, then loops to the start.
  */
 export default function PartnersSlider({
   items = [],
@@ -79,17 +80,18 @@ export default function PartnersSlider({
       let chipWidth;
 
       if (nextVisible === 1) {
-        // Full-bleed mobile: first card left-aligned, last card right-aligned,
-        // with a small neighbor peek on the free edge.
-        chipWidth = Math.max(180, viewport.clientWidth - PEEK_PX - gap);
+        const viewW = viewport.clientWidth;
+        chipWidth = Math.max(180, Math.round(viewW * MOBILE_CHIP_RATIO));
+        const sideInset = Math.max(0, (viewW - chipWidth) / 2);
+        track.style.paddingInline = `${sideInset}px`;
       } else {
         chipWidth = Math.max(
           120,
           (viewport.clientWidth - (nextVisible - 1) * gap) / nextVisible,
         );
+        track.style.paddingInline = "0px";
       }
 
-      track.style.paddingInline = "0px";
       track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
 
       const step = Math.max(1, Math.round(chipWidth + gap));

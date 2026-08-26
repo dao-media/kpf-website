@@ -1904,13 +1904,18 @@ html.kpf-scroll-smoothed body {
 /* Partners chips — Figma 426:477
  * Visible slots: 4 desktop · 3 tablet · 1 mobile (80% card, prev/next peek).
  * Chip width is measured in PartnersSlider (--kpf-partners-chip-width).
+ * Viewport does not clip neighbor chips; a viewport-relative mask fades
+ * peeks (transparent to ~60%, then to 80% at the peek-card inside edge,
+ * ease-out to 100% inside the window).
+ * Section overflow still clips at ~100vw so the page does not scroll sideways.
  */
 .kpf-partners {
 	--kpf-partners-gap: 1rem; /* 16 */
 	--kpf-partners-visible: 1;
 	--kpf-partners-chip-width: 80cqi;
 	background: var(--kpf-parchment, #f4efea);
-	overflow: hidden;
+	overflow-x: clip;
+	overflow-y: hidden;
 	padding-block: 2rem 1.75rem; /* 32 / 28 */
 	padding-inline: 0;
 }
@@ -1945,11 +1950,61 @@ html.kpf-scroll-smoothed body {
 }
 
 .kpf-partners__viewport {
+	--kpf-partners-peek: calc(10cqi - var(--kpf-partners-gap, 1rem));
+	--kpf-partners-peek-extend: 0px;
+	--kpf-partners-inside: 1.5rem;
 	container-type: inline-size;
 	min-height: var(--kpf-partners-chip-height, 3.5rem);
-	overflow: hidden;
+	overflow: visible;
 	touch-action: pan-y;
 	width: 100%;
+}
+
+@media (min-width: 48rem) {
+	.kpf-partners__viewport {
+		--kpf-partners-peek: calc(var(--kpf-page-gutter) - var(--kpf-partners-gap, 1rem));
+		--kpf-partners-peek-extend: var(--kpf-page-gutter);
+	}
+}
+
+/* Mask is on a wrapper, not the chip — a card eases 80% → 100% as it
+ * enters the window instead of carrying a fade with it. Cubic ease-out
+ * samples: 1 − (1 − t)³ from 0 → 0.8 across the inner 40% of each peek,
+ * then 0.8 → 1 across --kpf-partners-inside. */
+.kpf-partners__fade {
+	--kpf-partners-fade-mask: linear-gradient(
+		to right,
+		rgb(0 0 0 / 0) 0,
+		rgb(0 0 0 / 0) calc(var(--kpf-partners-peek) * 0.6),
+		rgb(0 0 0 / 0.46) calc(var(--kpf-partners-peek) * 0.7),
+		rgb(0 0 0 / 0.7) calc(var(--kpf-partners-peek) * 0.8),
+		rgb(0 0 0 / 0.787) calc(var(--kpf-partners-peek) * 0.9),
+		rgb(0 0 0 / 0.8) var(--kpf-partners-peek),
+		rgb(0 0 0 / 0.916) calc(var(--kpf-partners-peek) + var(--kpf-partners-inside) * 0.25),
+		rgb(0 0 0 / 0.975) calc(var(--kpf-partners-peek) + var(--kpf-partners-inside) * 0.5),
+		rgb(0 0 0 / 0.997) calc(var(--kpf-partners-peek) + var(--kpf-partners-inside) * 0.75),
+		#000 calc(var(--kpf-partners-peek) + var(--kpf-partners-inside)),
+		#000 calc(100% - var(--kpf-partners-peek) - var(--kpf-partners-inside)),
+		rgb(0 0 0 / 0.997) calc(100% - var(--kpf-partners-peek) - var(--kpf-partners-inside) * 0.75),
+		rgb(0 0 0 / 0.975) calc(100% - var(--kpf-partners-peek) - var(--kpf-partners-inside) * 0.5),
+		rgb(0 0 0 / 0.916) calc(100% - var(--kpf-partners-peek) - var(--kpf-partners-inside) * 0.25),
+		rgb(0 0 0 / 0.8) calc(100% - var(--kpf-partners-peek)),
+		rgb(0 0 0 / 0.787) calc(100% - var(--kpf-partners-peek) * 0.9),
+		rgb(0 0 0 / 0.7) calc(100% - var(--kpf-partners-peek) * 0.8),
+		rgb(0 0 0 / 0.46) calc(100% - var(--kpf-partners-peek) * 0.7),
+		rgb(0 0 0 / 0) calc(100% - var(--kpf-partners-peek) * 0.6),
+		rgb(0 0 0 / 0) 100%
+	);
+	-webkit-mask-image: var(--kpf-partners-fade-mask);
+	mask-image: var(--kpf-partners-fade-mask);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100% 100%;
+	mask-size: 100% 100%;
+	box-sizing: border-box;
+	margin-inline: calc(-1 * var(--kpf-partners-peek-extend));
+	padding-inline: var(--kpf-partners-peek-extend);
+	width: calc(100% + 2 * var(--kpf-partners-peek-extend));
 }
 
 .kpf-partners__track {

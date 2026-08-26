@@ -102,21 +102,34 @@ export default function PartnersSlider({
     function measure() {
       const nextVisible = visibleCountForViewport();
       const gap = GAP_PX;
+      const viewW = viewport.clientWidth;
       let chipWidth;
+      let peek;
+      let peekExtend;
 
       if (nextVisible === 1) {
-        const viewW = viewport.clientWidth;
         chipWidth = Math.max(180, Math.round(viewW * MOBILE_CHIP_RATIO));
         const sideInset = Math.max(0, (viewW - chipWidth) / 2);
         track.style.paddingInline = `${sideInset}px`;
+        /* Peeks already sit inside the full-bleed rail — do not shift cards.
+         * Mask 80% stop is the peek *card* inside edge (inset minus gap). */
+        peekExtend = 0;
+        peek = Math.max(8, sideInset - gap);
       } else {
         chipWidth = Math.max(
           120,
-          (viewport.clientWidth - (nextVisible - 1) * gap) / nextVisible,
+          (viewW - (nextVisible - 1) * gap) / nextVisible,
         );
         track.style.paddingInline = "0px";
+        const rect = viewport.getBoundingClientRect();
+        const peekLeft = Math.max(0, rect.left);
+        const peekRight = Math.max(0, window.innerWidth - rect.right);
+        peekExtend = Math.max(peekLeft, peekRight, 8);
+        peek = Math.max(8, peekExtend - gap);
       }
 
+      viewport.style.setProperty("--kpf-partners-peek", `${Math.round(peek)}px`);
+      viewport.style.setProperty("--kpf-partners-peek-extend", `${Math.round(peekExtend)}px`);
       track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
 
       const nextStep = Math.max(1, Math.round(chipWidth + gap));
@@ -334,15 +347,17 @@ export default function PartnersSlider({
             }
           }}
         >
-          <div
-            ref={trackRef}
-            className="kpf-partners__track"
-            style={{
-              transform: `translate3d(${-offset}px, 0, 0)`,
-              transitionDuration: `${durationMs}ms`,
-            }}
-          >
-            {slides.map(({ item, loopKey }) => renderChip(item, loopKey))}
+          <div className="kpf-partners__fade">
+            <div
+              ref={trackRef}
+              className="kpf-partners__track"
+              style={{
+                transform: `translate3d(${-offset}px, 0, 0)`,
+                transitionDuration: `${durationMs}ms`,
+              }}
+            >
+              {slides.map(({ item, loopKey }) => renderChip(item, loopKey))}
+            </div>
           </div>
         </div>
 

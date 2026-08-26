@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   PRODUCTION_ORIGIN,
+  adminCmsDestination,
+  isAdminCmsHost,
   isVercelProductionAlias,
 } from "@/lib/publicSiteUrl";
 
@@ -50,6 +52,13 @@ export async function middleware(request) {
   )
     .split(":")[0]
     .toLowerCase();
+
+  if (isAdminCmsHost(incomingHost)) {
+    return NextResponse.redirect(
+      adminCmsDestination(request.nextUrl.pathname, request.nextUrl.search),
+      302
+    );
+  }
 
   if (isVercelProductionAlias(incomingHost)) {
     const dest = new URL(

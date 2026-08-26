@@ -1,9 +1,26 @@
 const { createSecureHeaders } = require('next-secure-headers');
 const { withFaust, getWpHostname } = require('@faustwp/core');
 const {
+	ADMIN_CMS_HOST,
 	PRODUCTION_ORIGIN,
 	VERCEL_PRODUCTION_HOSTS,
+	WORDPRESS_CMS_ORIGIN,
 } = require('./src/lib/publicSiteUrl');
+
+const adminCmsRedirects = [
+	{
+		source: '/',
+		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
+		destination: `${WORDPRESS_CMS_ORIGIN}/wp-admin/`,
+		permanent: false,
+	},
+	{
+		source: '/:path*',
+		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
+		destination: `${WORDPRESS_CMS_ORIGIN}/:path*`,
+		permanent: false,
+	},
+];
 
 const vercelAliasRedirects = VERCEL_PRODUCTION_HOSTS.flatMap((host) => [
 	{
@@ -63,6 +80,7 @@ module.exports = withFaust({
 	},
 	async redirects() {
 		return [
+			...adminCmsRedirects,
 			...vercelAliasRedirects,
 			{
 				source: '/about-us',

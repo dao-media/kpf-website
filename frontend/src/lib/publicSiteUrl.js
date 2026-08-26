@@ -1,5 +1,9 @@
 const PRODUCTION_ORIGIN = "https://kevinpopkefoundation.org";
 
+/** CMS hostname. Vercel terminates SSL; middleware sends it to WordPress. */
+const ADMIN_CMS_HOST = "admin.kevinpopkefoundation.org";
+const WORDPRESS_CMS_ORIGIN = "https://kpf.dreamhosters.com";
+
 /** Production Vercel alias — 301 onto the custom domain. Preview hosts stay as-is. */
 const VERCEL_PRODUCTION_HOSTS = Object.freeze(["kpf-site.vercel.app"]);
 
@@ -19,6 +23,18 @@ function isVercelProductionAlias(host) {
     .toLowerCase()
     .split(":")[0];
   return VERCEL_PRODUCTION_HOSTS.includes(name);
+}
+
+function isAdminCmsHost(host) {
+  const name = String(host || "")
+    .toLowerCase()
+    .split(":")[0];
+  return name === ADMIN_CMS_HOST;
+}
+
+function adminCmsDestination(pathname, search = "") {
+  const path = pathname === "/" || pathname === "" ? "/wp-admin/" : pathname;
+  return `${WORDPRESS_CMS_ORIGIN}${path}${search || ""}`;
 }
 
 function isEphemeralHost(host) {
@@ -81,8 +97,12 @@ function rewriteSeoPublicUrls(seo) {
 }
 
 module.exports = {
+  ADMIN_CMS_HOST,
   PRODUCTION_ORIGIN,
   VERCEL_PRODUCTION_HOSTS,
+  WORDPRESS_CMS_ORIGIN,
+  adminCmsDestination,
+  isAdminCmsHost,
   isEphemeralHost,
   isEphemeralUrl,
   isVercelProductionAlias,

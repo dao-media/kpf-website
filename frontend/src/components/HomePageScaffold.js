@@ -163,7 +163,7 @@ export default function HomePageScaffold({
               alt={kevin.alt}
               width={640}
               height={760}
-              sizes="(min-width: 64rem) 640px, (min-width: 48rem) 55vw, 70vw"
+              sizes="(min-width: 64rem) 640px, (min-width: 48rem) 55vw, 100vw"
             />
           ) : null}
         </div>

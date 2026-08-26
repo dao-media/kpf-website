@@ -2178,7 +2178,8 @@ button.kpf-partners__dot:focus-visible {
 
 /* His Story — Figma 414:658 (tablet 416:727 · mobile 418:253) */
 .kpf-story {
-	--kpf-story-media-size: min(105vw, 26rem);
+	/* Portrait 640×760 at full viewport width on mobile. */
+	--kpf-story-media-size: calc(100vw * 760 / 640);
 
 	background: var(--kpf-color-bg-surface, #fff); /* contrast vs partners parchment above */
 	/* Horizontal inset for copy comes from .kpf-u-container. */
@@ -2211,16 +2212,18 @@ button.kpf-partners__dot:focus-visible {
 }
 
 /*
- * Portrait always bottom-right of the section (out of flow).
- * Section height comes from copy + reserved padding on mobile.
+ * Mobile: full-bleed at the bottom of the section (out of flow).
+ * Section height comes from copy + reserved padding.
  */
 .kpf-story__media {
 	bottom: 0;
+	left: 0;
 	line-height: 0;
 	pointer-events: none;
 	position: absolute;
 	right: 0;
 	top: auto;
+	width: 100%;
 	z-index: 0;
 }
 
@@ -2228,23 +2231,27 @@ button.kpf-partners__dot:focus-visible {
 	border-radius: 0;
 	display: block;
 	height: auto;
-	/* Mobile — Figma 418:253 ≈ 409² on 390 frame */
-	max-height: var(--kpf-story-media-size);
-	max-width: var(--kpf-story-media-size);
+	max-height: none;
+	max-width: none;
 	pointer-events: auto;
-	width: auto;
-}
-
-@media (min-width: 30rem) {
-	.kpf-story {
-		--kpf-story-media-size: min(70vw, 28rem);
-	}
+	width: 100%;
 }
 
 /* Tablet: copy capped at 420px; portrait sits beside copy (no bottom reserve) */
 @media (min-width: 48rem) {
 	.kpf-story__inner {
 		padding-bottom: 0;
+	}
+
+	.kpf-story__media {
+		left: auto;
+		width: auto;
+	}
+
+	.kpf-story__media img {
+		max-height: var(--kpf-story-media-size);
+		max-width: var(--kpf-story-media-size);
+		width: auto;
 	}
 }
 

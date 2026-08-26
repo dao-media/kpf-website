@@ -445,13 +445,9 @@ const BLOG = {
 
 const EVENTS = {
   hero: {
-    eyebrow: "Kevin Popke Foundation events",
-    title: "Songwriters for Vets",
-    body: "Once a year, Nashville songwriters take a Florida stage and play the songs you know by heart — a good night out that funds grants for veterans.",
-    eventSite: {
-      href: "https://www.songwriters4vets.com/",
-      label: "Songwriters for Vets",
-    },
+    eyebrow: "What funds our mission",
+    title: "Kevin Popke Foundation events",
+    body: "Our events raise money to support our mission, and we have a good time while doing it.",
     primaryCta: {
       href: "#featured",
       label: "Featured event",

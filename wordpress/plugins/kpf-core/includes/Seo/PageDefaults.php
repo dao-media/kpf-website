@@ -34,8 +34,8 @@ final class PageDefaults {
 				'schema_type' => 'AboutPage',
 			),
 			'events'  => array(
-				'title'       => 'Songwriters for Vets | Kevin Popke Foundation Events',
-				'description' => 'Songwriters for Vets brings Nashville songwriters to Tampa Bay each year to raise grants for veteran charities. Get tickets or become a sponsor.',
+				'title'       => 'Events | Kevin Popke Foundation',
+				'description' => 'Songwriters for Vets and other events supporting Florida veterans. Partnership and sponsorship opportunities available.',
 				'og_path'     => '/media/events/featured-1.webp',
 				'schema_type' => 'WebPage',
 			),

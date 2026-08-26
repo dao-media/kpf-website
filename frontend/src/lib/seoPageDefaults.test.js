@@ -30,9 +30,9 @@ describe("seoPageDefaults", () => {
       { title: "Events | The Kevin Popke Foundation", description: "Editor save check" },
       "/events",
     );
-    assert.match(events.title, /Songwriters for Vets/);
+    assert.match(events.title, /^Events \|/);
     assert.equal(isUsableDescription("Editor save check"), false);
-    assert.match(events.description, /tickets/i);
+    assert.match(events.description, /Songwriters for Vets/);
   });
 
   it("leaves a unique blog archive description alone", () => {

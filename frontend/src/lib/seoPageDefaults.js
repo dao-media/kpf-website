@@ -20,9 +20,9 @@ const PAGES = {
     ogPath: "/media/about/hero-frame.png",
   },
   "/events": {
-    title: "Songwriters for Vets | Kevin Popke Foundation Events",
+    title: "Events | Kevin Popke Foundation",
     description:
-      "Songwriters for Vets brings Nashville songwriters to Tampa Bay each year to raise grants for veteran charities. Get tickets or become a sponsor.",
+      "Songwriters for Vets and other events supporting Florida veterans. Partnership and sponsorship opportunities available.",
     ogPath: "/media/events/featured-1.webp",
   },
   "/contact": {
@@ -104,6 +104,7 @@ function isGenericTitle(title, pathname) {
     "/contact": "Contact |",
   };
   const prefix = prefixes[path];
+  if (path === "/events" && text.startsWith("Songwriters for Vets")) return true;
   return prefix ? text.startsWith(prefix) : false;
 }
 

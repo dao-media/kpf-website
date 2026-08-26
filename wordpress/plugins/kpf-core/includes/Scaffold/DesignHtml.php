@@ -512,8 +512,8 @@ HTML;
         <div class="kpf-content-block kpf-u-invert">
           <div class="kpf-content-block__copy">
             <div class="kpf-content-block__title-group">
-              <p class="kpf-content-block__eyebrow">Kevin Popke Foundation events</p>
-              <h1 id="kpf-events-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">Songwriters for Vets</h1>
+              <p class="kpf-content-block__eyebrow">What funds our mission</p>
+              <h1 id="kpf-events-hero-title" class="kpf-content-block__title kpf-content-block__title--h1">Kevin Popke Foundation events</h1>
             </div>
             <div class="kpf-content-block__body-group">
               <p class="kpf-content-block__body">Our events raise money to support our mission, and we have a good time while doing it.</p>

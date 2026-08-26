@@ -418,23 +418,6 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                 </div>
                 <div className="kpf-content-block__body-group">
                   <p className="kpf-content-block__body">{copy.hero.body}</p>
-                  {copy.hero.eventSite?.href ? (
-                    <p className="kpf-content-block__body">
-                      Tickets and the night-of schedule live on the{" "}
-                      <ExternalExitTooltip href={copy.hero.eventSite.href}>
-                        <a
-                          href={copy.hero.eventSite.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {copy.hero.eventSite.label}
-                          <span className="kpf-u-sr-only"> (opens in a new tab)</span>
-                        </a>
-                      </ExternalExitTooltip>{" "}
-                      site. This page is for Foundation guests, sponsors, and how
-                      the room funds grants.
-                    </p>
-                  ) : null}
                 </div>
               </div>
               <div className="kpf-content-block__actions kpf-hero__actions">

@@ -124,6 +124,14 @@ function isCurrentHeaderNavLink(node) {
   );
 }
 
+function isPartnersChip(node) {
+  return Boolean(
+    node &&
+      typeof node.closest === "function" &&
+      node.closest(".kpf-partners__chip"),
+  );
+}
+
 function resolveTweenTargets(triggerTargets, config) {
   const child = String(config?.animateChild || "").trim();
   if (!child) return triggerTargets;
@@ -365,6 +373,8 @@ export default function GsapRuntime({ animations = [] }) {
 
           if (animation.trigger === "hover" || animation.trigger === "click") {
             targets.forEach((target) => {
+              // Chip/card is the control; do not paint org names as text links.
+              if (isPartnersChip(target)) return;
               const tween = createTween(target, animation, {
                 paused: true,
                 // Apply `from` so resting state matches CSS (nav underlines

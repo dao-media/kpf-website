@@ -66,7 +66,7 @@ describe("accessibility utilities", () => {
     assert.match(css, /:focus-visible/);
     assert.match(css, /#abc123/);
     assert.match(css, /text-decoration:\s*underline/);
-    assert.match(css, /:not\(\.kpf-archive__card\):not\(\.kpf-blog-row\)/);
+    assert.match(css, /:not\(\.kpf-archive__card\):not\(\.kpf-blog-row\):not\(\.kpf-partners__chip\):not\(\.kpf-grantee-card__chip\)/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
     assert.match(css, /\.kpf-a11y-test\{color:red\}/);
     assert.match(css, /html \{ font-size: 125%; \}/);

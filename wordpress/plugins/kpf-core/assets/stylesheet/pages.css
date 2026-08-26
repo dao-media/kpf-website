@@ -1944,6 +1944,7 @@ html.kpf-scroll-smoothed body {
 	border-radius: var(--kpf-radius-md); /* 8 */
 	box-sizing: border-box;
 	color: inherit;
+	cursor: pointer;
 	display: inline-flex;
 	flex: 0 0 var(--kpf-partners-chip-width, auto);
 	gap: 0.375rem; /* 6 */
@@ -1957,9 +1958,35 @@ html.kpf-scroll-smoothed body {
 	width: var(--kpf-partners-chip-width, auto);
 }
 
-a.kpf-partners__chip:hover .kpf-partners__name,
-a.kpf-partners__chip:focus-visible .kpf-partners__name {
-	color: var(--kpf-ember, #bb0d0d);
+/*
+ * The chip/card is the link. Org name is a label, never hyperlink chrome
+ * (ember, underline, link weight/tracking) in any state.
+ */
+.kpf-site-chrome__main a.kpf-partners__chip,
+.kpf-site-chrome__main a.kpf-partners__chip:link,
+.kpf-site-chrome__main a.kpf-partners__chip:visited,
+.kpf-site-chrome__main a.kpf-partners__chip:hover,
+.kpf-site-chrome__main a.kpf-partners__chip:active,
+.kpf-site-chrome__main a.kpf-partners__chip:focus-visible,
+a.kpf-partners__chip:link,
+a.kpf-partners__chip:visited,
+a.kpf-partners__chip:hover,
+a.kpf-partners__chip:active,
+a.kpf-partners__chip:focus-visible {
+	color: inherit;
+	font-weight: inherit;
+	letter-spacing: inherit;
+	text-decoration: none;
+}
+
+a.kpf-partners__chip:hover {
+	box-shadow: var(--kpf-shadow-sm);
+}
+
+a.kpf-partners__chip:focus-visible {
+	box-shadow: var(--kpf-shadow-sm);
+	outline: 0.125rem solid var(--kpf-brass, #c9a15b);
+	outline-offset: 0.15rem;
 }
 
 .kpf-partners__logo {
@@ -1985,11 +2012,23 @@ a.kpf-partners__chip:focus-visible .kpf-partners__name {
 	font-family: var(--kpf-font-ui);
 	font-size: 0.9375rem; /* 15 */
 	font-weight: 700;
+	letter-spacing: normal;
 	line-height: 1.125rem; /* 18 */
 	min-width: 0;
 	overflow: hidden;
+	text-decoration: none;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+a.kpf-partners__chip .kpf-partners__name,
+a.kpf-partners__chip:link .kpf-partners__name,
+a.kpf-partners__chip:visited .kpf-partners__name,
+a.kpf-partners__chip:hover .kpf-partners__name,
+a.kpf-partners__chip:active .kpf-partners__name,
+a.kpf-partners__chip:focus-visible .kpf-partners__name {
+	color: var(--kpf-ink, #12090a);
+	text-decoration: none;
 }
 
 .kpf-partners__dots {

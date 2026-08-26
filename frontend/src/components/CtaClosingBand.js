@@ -113,6 +113,8 @@ export default function CtaClosingBand({
             titleEl ? TITLE_DURATION : 0,
           );
         }
+
+        ScrollTrigger.refresh();
       }, section);
 
       if (cancelled) ctx.revert();

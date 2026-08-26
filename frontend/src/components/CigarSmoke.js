@@ -13,7 +13,7 @@ export default function CigarSmoke({
   decorative,
 }) {
   const videoRef = useRef(null);
-  const src = cigarSrc || "/media/cigar/Cigar.png";
+  const src = cigarSrc || "/media/cigar/Cigar.webp";
   const smoke = smokeSrc || "/media/cigar/smoke.mp4";
   const isDecorative = decorative ?? !cigarAlt;
 

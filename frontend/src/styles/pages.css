@@ -3504,7 +3504,7 @@ a.kpf-archive__card:focus-visible {
 	background-color: #410a09;
 	background-image:
 		radial-gradient(ellipse at 50% 50%, rgba(100, 15, 14, 0.75), #410a09 70%),
-		url(/media/kpf-tartan-tile.png);
+		url(/media/kpf-tartan-tile.webp);
 	background-size: auto, 220px;
 	border-radius: var(--kpf-radius-lg);
 	display: grid;

@@ -18,7 +18,7 @@ use KPF\Core\Support\FrontendUrl;
 final class AdminSrcset {
 	public static function register(): void {
 		add_filter( 'wp_calculate_image_srcset', array( self::class, 'restore_wp_urls' ), 20 );
-		add_action( 'init', array( self::class, 'ensure_faust_media_domain' ), 5 );
+		add_action( 'admin_init', array( self::class, 'ensure_faust_media_domain' ), 5 );
 	}
 
 	/**

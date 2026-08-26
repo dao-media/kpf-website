@@ -191,6 +191,24 @@ if ( $post instanceof WP_Post ) {
 	);
 }
 
+$event_id = wp_insert_post(
+	array(
+		'post_title'  => 'Event Editor Smoke',
+		'post_status' => 'draft',
+		'post_type'   => 'kpf_event',
+	),
+	true
+);
+kpf_page_editor_assert( ! is_wp_error( $event_id ) && $event_id > 0, 'Creates smoke event' );
+$event_post = get_post( (int) $event_id );
+kpf_page_editor_assert(
+	$event_post instanceof WP_Post && false === (bool) apply_filters( 'replace_editor', false, $event_post ),
+	'replace_editor stays false for kpf_event (Events keep Gutenberg)'
+);
+if ( $event_id ) {
+	wp_delete_post( (int) $event_id, true );
+}
+
 kpf_page_editor_assert( post_type_supports( 'page', 'editor' ), 'Pages keep editor support for GraphQL content fields' );
 kpf_page_editor_assert( post_type_supports( 'post', 'editor' ), 'Blog posts keep the written body editor' );
 kpf_page_editor_assert(

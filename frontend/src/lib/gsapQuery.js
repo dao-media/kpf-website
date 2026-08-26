@@ -1,4 +1,4 @@
-export const KPF_GSAP_QUERY = `
+const KPF_GSAP_QUERY = `
   kpfGsapAnimations {
     databaseId
     name
@@ -8,3 +8,5 @@ export const KPF_GSAP_QUERY = `
     configJson
   }
 `;
+
+module.exports = { KPF_GSAP_QUERY };

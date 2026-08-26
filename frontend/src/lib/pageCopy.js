@@ -194,12 +194,12 @@ const ABOUT = {
     /* Pinned — restore framed photo + tampa-bay cutout layout later */
     frame: {
       key: "about.heroFrame",
-      src: "/media/about/hero-frame.png",
+      src: "/media/about/hero-frame.webp",
       alt: "Kevin Popke with his wife in a wooden frame",
     },
     backgroundPinned: {
       key: "about.tampaBay",
-      src: "/media/about/tampa-bay.png",
+      src: "/media/about/tampa-bay.webp",
       alt: "Tampa Bay shoreline",
     },
     background: {
@@ -225,25 +225,25 @@ const ABOUT = {
     layers: [
       {
         key: "about.historyFront",
-        src: "/media/about/history-front.png",
+        src: "/media/about/history-front.webp",
         alt: "Donald “Kevin” Popke",
         className: "kpf-history__layer--front",
       },
       {
         key: "about.history1",
-        src: "/media/about/history-1.png",
+        src: "/media/about/history-1.webp",
         alt: "Donald “Kevin” Popke with his wife",
         className: "kpf-history__layer--1",
       },
       {
         key: "about.history2",
-        src: "/media/about/history-2.png",
+        src: "/media/about/history-2.webp",
         alt: "Donald “Kevin” Popke running",
         className: "kpf-history__layer--2",
       },
       {
         key: "about.historyBack",
-        src: "/media/about/history-back.png",
+        src: "/media/about/history-back.webp",
         alt: "Kevin Popke in uniform",
         className: "kpf-history__layer--back",
       },
@@ -295,7 +295,7 @@ const ABOUT = {
         date: "Aug 2025",
         amount: "$10,000",
         logoUrl: "/media/partners/Freedom_Riding_Academy.jpg",
-        photoUrl: "/media/grantees/freedom-riding.png",
+        photoUrl: "/media/grantees/freedom-riding.webp",
         href: "https://freedomridingacademy.org",
       },
       {
@@ -347,7 +347,7 @@ const ABOUT = {
     seeMore: "See more",
     featured: {
       key: "about.galleryFeatured",
-      src: "/media/about/Beach_wheelchair.png",
+      src: "/media/about/Beach_wheelchair.webp",
       alt: "Volunteer helping a veteran in a beach wheelchair near the shore",
     },
     items: [
@@ -564,7 +564,7 @@ const EVENTS = {
       "We announce events a few months out. The best way to hear first is to follow along, or reach out if you'd like to help put one together.",
     cardMark: {
       key: "events.cardMark",
-      src: "/media/brand/50-badge.png",
+      src: "/media/brand/50-badge.webp",
       alt: "",
     },
     items: [

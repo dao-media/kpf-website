@@ -10,7 +10,7 @@ import {
 } from "@/lib/navigation";
 import { restoreHeaderBadge } from "@/lib/headerBadge";
 
-const BRAND_BADGE_SRC = "/media/brand/50-badge.png";
+const BRAND_BADGE_SRC = "/media/brand/50-badge.webp";
 const BRAND_LABEL_FULL = "Kevin Popke Foundation";
 /** Joint starts off-page here, then drops to y:0. Same cord length. */
 const BADGE_DROP_FROM_Y = -140;

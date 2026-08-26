@@ -40,6 +40,7 @@ kpf_admin_srcset_assert(
 	'Admin srcset leaves WordPress media URLs unchanged'
 );
 
+# Write-once Faust flag. Hooked on admin_init so public REST/HTML never writes.
 AdminSrcset::ensure_faust_media_domain();
 if ( function_exists( 'WPE\\FaustWP\\Settings\\use_wp_domain_for_media' ) ) {
 	kpf_admin_srcset_assert(

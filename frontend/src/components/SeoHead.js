@@ -2,6 +2,9 @@ import Head from "next/head";
 
 const { rewriteSeoPublicUrls } = require("@/lib/publicSiteUrl");
 const { applySeoDefaults } = require("@/lib/seoPageDefaults");
+const { KPF_SEO_FRAGMENT } = require("@/lib/seoFragment");
+
+export { KPF_SEO_FRAGMENT };
 
 function robotsContent(robots = {}) {
   const parts = [
@@ -12,62 +15,6 @@ function robotsContent(robots = {}) {
   if (robots.nosnippet) parts.push("nosnippet");
   return parts.join(", ");
 }
-
-export const KPF_SEO_FRAGMENT = `
-  kpfSeo {
-    title
-    description
-    canonical
-    robots {
-      index
-      follow
-      noarchive
-      nosnippet
-    }
-    openGraph {
-      title
-      description
-      imageUrl
-      type
-      url
-      section
-      tags
-    }
-    twitter {
-      card
-      site
-      title
-      description
-      imageUrl
-    }
-    customMeta {
-      name
-      property
-      content
-      rel
-      href
-      media
-    }
-    schemaJson
-    focusKeyphrase
-    primaryCategory {
-      id
-      name
-      slug
-      url
-    }
-    primaryTopic {
-      id
-      name
-      slug
-      url
-    }
-    breadcrumbs {
-      name
-      url
-    }
-  }
-`;
 
 export default function SeoHead({ seo }) {
   if (!seo) {

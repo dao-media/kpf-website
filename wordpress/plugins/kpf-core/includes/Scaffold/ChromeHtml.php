@@ -52,7 +52,7 @@ final class ChromeHtml {
 	}
 
 	public static function brandmark_html(): string {
-		$src = FrontendUrl::base() . 'media/brand/50-badge.png';
+		$src = FrontendUrl::base() . 'media/brand/50-badge.webp';
 
 		$strings  = '<svg class="kpf-header__badge-strings" viewBox="0 0 86 177" width="86" height="177" aria-hidden="true" focusable="false">';
 		$strings .= '<defs><filter id="kpf-badge-string-shadow" x="-40%" y="-20%" width="180%" height="140%" color-interpolation-filters="sRGB">';
@@ -176,7 +176,7 @@ final class ChromeHtml {
 		$html .= '<div class="kpf-footer__brand"><p class="kpf-footer__brand-name">' . esc_html( $brand ) . '</p>';
 		$html .= '<p class="kpf-footer__brand-note">A 501(c)(3) nonprofit organization serving Tampa Bay &amp; Florida.</p>';
 		$html .= '<div class="kpf-cigar kpf-footer__cigar" aria-hidden="true">';
-		$html .= '<img class="kpf-cigar__image" src="/media/cigar/Cigar.png" alt="Illustrated cigar associated with Kevin Popke"/>';
+		$html .= '<img class="kpf-cigar__image" src="/media/cigar/Cigar.webp" alt="Illustrated cigar associated with Kevin Popke"/>';
 		$html .= '<video class="kpf-cigar__smoke" autoplay loop muted playsinline preload="auto" aria-hidden="true"><source src="/media/cigar/smoke.mp4" type="video/mp4"/></video>';
 		$html .= '</div></div>';
 		$html .= '<div class="kpf-footer__columns"><div><p class="kpf-footer__heading">Explore</p><ul class="kpf-footer__list">' . $explore_lis . '</ul></div>';

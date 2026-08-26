@@ -1,3 +1,5 @@
+import { useLayoutEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import FormRenderer from "@/components/FormRenderer";
 import PartnersSlider from "@/components/PartnersSlider";
 import StackedImageSlider from "@/components/StackedImageSlider";
@@ -10,7 +12,7 @@ import {
 
 const {
   renderDesignTemplate,
-  splitDesignHtml,
+  embedDesignIslands,
 } = require("./pageDesignTemplate");
 const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
 const {
@@ -146,35 +148,27 @@ export function buildDesignModel(
   };
 }
 
-const ISLAND_TYPES = new Set([
-  "form",
-  "stacked-slider",
-  "partners-slider",
-  "blog-filters",
-  "post-sidebar",
-  "comments",
-]);
+function DesignIslandPortal({ islandId, html, children }) {
+  const [target, setTarget] = useState(null);
 
-function renderDesignPart(
-  part,
-  index,
+  useLayoutEffect(() => {
+    setTarget(document.getElementById(islandId));
+    return () => setTarget(null);
+  }, [islandId, html]);
+
+  if (!target || children == null) return null;
+  return createPortal(children, target);
+}
+
+function renderDesignIsland(
+  island,
   { forms, queries, partnerGrantees, posts, postRuntime },
 ) {
-  if (part.type === "html") {
-    return (
-      <div
-        key={`html-${index}`}
-        dangerouslySetInnerHTML={{ __html: part.html }}
-      />
-    );
-  }
-
-  if (part.type === "form") {
-    const form = forms[part.slug];
+  if (island.type === "form") {
+    const form = forms[island.slug];
     if (!form) return null;
     return (
       <FormRenderer
-        key={`form-${part.slug}-${index}`}
         slug={form.slug}
         formId={form.databaseId}
         title={form.title}
@@ -183,25 +177,23 @@ function renderDesignPart(
     );
   }
 
-  if (part.type === "stacked-slider") {
-    const query = queries[part.slug];
+  if (island.type === "stacked-slider") {
+    const query = queries[island.slug];
     const images = imagesFromQuery(query);
     if (!images.length) return null;
     return (
       <StackedImageSlider
-        key={`stacked-slider-${part.slug}-${index}`}
         images={images}
         ariaLabel={query?.title || "Photo stack"}
       />
     );
   }
 
-  if (part.type === "partners-slider") {
+  if (island.type === "partners-slider") {
     const items = normalizePartnerGrantees(partnerGrantees);
     if (!items.length) return null;
     return (
       <PartnersSlider
-        key={`partners-slider-${index}`}
         items={items}
         label={HOME?.partners?.label || "Kevin Popke Foundation Grantees"}
         href={HOME?.partners?.href || "/about/#grantees"}
@@ -209,16 +201,16 @@ function renderDesignPart(
     );
   }
 
-  if (part.type === "blog-filters") {
-    return <BlogFiltersIsland key={`blog-filters-${index}`} posts={posts} />;
+  if (island.type === "blog-filters") {
+    return <BlogFiltersIsland posts={posts} />;
   }
 
-  if (part.type === "post-sidebar") {
-    return <PostSidebarIsland key={`post-sidebar-${index}`} post={postRuntime} />;
+  if (island.type === "post-sidebar") {
+    return <PostSidebarIsland post={postRuntime} />;
   }
 
-  if (part.type === "comments") {
-    return <CommentsIsland key={`comments-${index}`} post={postRuntime} />;
+  if (island.type === "comments") {
+    return <CommentsIsland post={postRuntime} />;
   }
 
   return null;
@@ -228,8 +220,8 @@ export default function PageDesignRenderer({
   page,
   partnerGrantees = [],
   grantsTotal = "",
-  posts: archiveSource = null,
-  relatedPosts: relatedSource = null,
+  posts = null,
+  relatedPosts = null,
   postSource = null,
 }) {
   const design = page?.kpfPageDesign;
@@ -244,6 +236,28 @@ export default function PageDesignRenderer({
     );
   }
 
+  return (
+    <PageDesignWithIslands
+      page={page}
+      design={design}
+      partnerGrantees={partnerGrantees}
+      grantsTotal={grantsTotal}
+      archiveSource={posts}
+      relatedSource={relatedPosts}
+      postSource={postSource}
+    />
+  );
+}
+
+function PageDesignWithIslands({
+  page,
+  design,
+  partnerGrantees,
+  grantsTotal,
+  archiveSource,
+  relatedSource,
+  postSource,
+}) {
   const postRuntime = postSource ? normalizeBlogPostPage(postSource) : null;
   const posts = designCardsFromPosts(archiveSource, {
     featuredCta: "Read the story",
@@ -261,8 +275,18 @@ export default function PageDesignRenderer({
   });
   const html = renderDesignTemplate(design.html, model);
   const forms = formsFromDesign(design);
-  const parts = splitDesignHtml(html);
-  const hasIslands = parts.some((part) => ISLAND_TYPES.has(part.type));
+  const islandPrefix = `kpf-island-${design.databaseId || "page"}`;
+  const { html: embeddedHtml, islands } = useMemo(
+    () => embedDesignIslands(html, islandPrefix),
+    [html, islandPrefix],
+  );
+  const islandContext = {
+    forms,
+    queries: model.queries,
+    partnerGrantees,
+    posts,
+    postRuntime,
+  };
 
   return (
     <>
@@ -272,24 +296,19 @@ export default function PageDesignRenderer({
           dangerouslySetInnerHTML={{ __html: design.css }}
         />
       ) : null}
-      {hasIslands ? (
-        <div data-kpf-design={design.databaseId}>
-          {parts.map((part, index) =>
-            renderDesignPart(part, index, {
-              forms,
-              queries: model.queries,
-              partnerGrantees,
-              posts,
-              postRuntime,
-            }),
-          )}
-        </div>
-      ) : (
-        <div
-          data-kpf-design={design.databaseId}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      )}
+      <div
+        data-kpf-design={design.databaseId}
+        dangerouslySetInnerHTML={{ __html: embeddedHtml }}
+      />
+      {islands.map((island) => (
+        <DesignIslandPortal
+          key={island.id}
+          islandId={island.id}
+          html={embeddedHtml}
+        >
+          {renderDesignIsland(island, islandContext)}
+        </DesignIslandPortal>
+      ))}
     </>
   );
 }

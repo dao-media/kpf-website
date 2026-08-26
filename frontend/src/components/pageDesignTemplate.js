@@ -351,6 +351,37 @@ function splitDesignHtml(html) {
   return parts;
 }
 
+/**
+ * Keep island markers in the HTML tree so React does not split a container
+ * across sibling wrappers (which the parser then auto-closes).
+ * @param {string} html
+ * @returns {{ html: string, islands: Array<{ id: string, type: string, slug: string }> }}
+ */
+function embedDesignIslands(html, idPrefix = "kpf-island") {
+  const islands = [];
+  const prefix =
+    String(idPrefix || "kpf-island").replace(/[^a-zA-Z0-9_-]/g, "") ||
+    "kpf-island";
+  const re = new RegExp(
+    `\\{\\{\\s*(?:(form|stacked-slider):([a-z0-9_-]+)|(${BARE_ISLANDS}))\\s*\\}\\}`,
+    "gi",
+  );
+  const next = String(html || "").replace(
+    re,
+    (_match, kind, slug, bareIsland) => {
+      const type = String(bareIsland || kind).toLowerCase();
+      const id = `${prefix}-${islands.length}`;
+      islands.push({
+        id,
+        type,
+        slug: slug ? String(slug).toLowerCase() : "",
+      });
+      return `<div id="${id}" data-kpf-island="${type}"></div>`;
+    },
+  );
+  return { html: next, islands };
+}
+
 module.exports = {
   decodeHtmlEntities,
   escapeTemplateValue,
@@ -359,4 +390,5 @@ module.exports = {
   discoverFormSlugs,
   discoverStackedSliderSlugs,
   splitDesignHtml,
+  embedDesignIslands,
 };

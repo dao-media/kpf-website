@@ -4818,7 +4818,12 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	min-width: 0;
 }
 
-/* Island is split out of the archive container; keep the same page gutter. */
+/* Placeholders stay in the template tree; portaled islands join parent layout. */
+[data-kpf-island] {
+	display: contents;
+}
+
+/* Fallback if a filter island is ever a direct child of the design root. */
 [data-kpf-design] > .kpf-blog-filters {
 	box-sizing: border-box;
 	padding-inline: var(--kpf-page-gutter);
@@ -5142,7 +5147,7 @@ a.kpf-blog-row:focus-visible {
 		top: calc(var(--kpf-header-offset, 5.5rem) + 1rem);
 	}
 
-	.kpf-page--post .kpf-post-body__inner > .pin-spacer {
+	.kpf-page--post .kpf-post-body__inner .pin-spacer {
 		align-self: start;
 		min-width: 0;
 		width: 100%;

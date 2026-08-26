@@ -235,6 +235,19 @@ describe("page design templates", () => {
         { type: "html", html: "d" },
       ],
     );
+    const { embedDesignIslands } = require("./pageDesignTemplate");
+    const embedded = embedDesignIslands(
+      '<div class="kpf-post-body__inner">{{post-sidebar}}<div class="kpf-post-main"></div></div>{{comments}}',
+      "kpf-island-12",
+    );
+    assert.equal(
+      embedded.html,
+      '<div class="kpf-post-body__inner"><div id="kpf-island-12-0" data-kpf-island="post-sidebar"></div><div class="kpf-post-main"></div></div><div id="kpf-island-12-1" data-kpf-island="comments"></div>',
+    );
+    assert.deepEqual(embedded.islands, [
+      { id: "kpf-island-12-0", type: "post-sidebar", slug: "" },
+      { id: "kpf-island-12-1", type: "comments", slug: "" },
+    ]);
     assert.equal(
       renderDesignTemplate(
         "{{#each queries.blog-posts}}{{#if @first}}F:{{title}}{{else}}R:{{title}}{{/if}}{{/each}}",

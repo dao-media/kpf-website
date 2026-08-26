@@ -1,12 +1,10 @@
 import { gql } from "@apollo/client";
-import dynamic from "next/dynamic";
 import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
+import BlogPostScaffold from "@/components/BlogPostScaffold";
+import PageDesignRenderer from "@/components/PageDesignRenderer";
 import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
 import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntimeGate";
 import SeoHead, { KPF_SEO_FRAGMENT } from "@/components/SeoHead";
-
-const BlogPostScaffold = dynamic(() => import("@/components/BlogPostScaffold"));
-const PageDesignRenderer = dynamic(() => import("@/components/PageDesignRenderer"));
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_BLOG_POSTS_QUERY } = require("@/lib/blogPosts");
 const { KPF_CODE_SNIPPETS_QUERY } = require("@/lib/codeSnippets");

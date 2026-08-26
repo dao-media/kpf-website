@@ -774,7 +774,8 @@ html.kpf-scroll-smoothed body {
 }
 
 .kpf-header__nav .kpf-nav-link[aria-current="page"]:hover,
-.kpf-header__nav .kpf-nav-link[aria-current="page"]:focus-visible {
+.kpf-header__nav .kpf-nav-link[aria-current="page"]:focus-visible,
+.kpf-header__nav .kpf-nav-link[aria-current="page"]:active {
 	color: var(--kpf-ember, #bb0d0d); /* active stays red; no color shift on hover */
 }
 
@@ -1096,11 +1097,15 @@ html.kpf-scroll-smoothed body {
 }
 
 .kpf-mobile-nav__item:hover,
-.kpf-mobile-nav__item:focus-visible {
-	color: var(--kpf-ember, #bb0d0d);
+.kpf-mobile-nav__item:focus-visible,
+.kpf-mobile-nav__item:active {
+	color: var(--kpf-ink-soft, #3d2c2d);
 }
 
-.kpf-mobile-nav__item[aria-current="page"] {
+.kpf-mobile-nav__item[aria-current="page"],
+.kpf-mobile-nav__item[aria-current="page"]:hover,
+.kpf-mobile-nav__item[aria-current="page"]:focus-visible,
+.kpf-mobile-nav__item[aria-current="page"]:active {
 	color: var(--kpf-ember, #bb0d0d);
 }
 

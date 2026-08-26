@@ -4,6 +4,7 @@ import { createRoot, useCallback, useEffect, useMemo, useRef, useState } from '@
 import { __, sprintf } from '@wordpress/i18n';
 import CodeEditor from './CodeEditor';
 import { extractCopyFields, updateCopyField } from './copyFields';
+import PriorVersions from './PriorVersions';
 import './admin.scss';
 
 apiFetch.use(apiFetch.createNonceMiddleware(window.kpfDesignsAdmin?.nonce || ''));
@@ -28,6 +29,10 @@ function designApiPath(row) {
 		return `${REST_BASE}/template/${encodeURIComponent(row.postType)}/${encodeURIComponent(row.view)}`;
 	}
 	return `${REST_BASE}/page/${row.id}`;
+}
+
+function rowDomId(row) {
+	return String(row.id).replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
 function StatusBadge({ ready }) {
@@ -147,10 +152,11 @@ function FilePicker({
 function UrlRow({ row, onUpdated, onEdit, onSettings }) {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
+	const [notice, setNotice] = useState('');
 	const [htmlFile, setHtmlFile] = useState(null);
 	const [cssFile, setCssFile] = useState(null);
-	const htmlInputId = `kpf-design-html-${String(row.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
-	const cssInputId = `kpf-design-css-${String(row.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+	const htmlInputId = `kpf-design-html-${rowDomId(row)}`;
+	const cssInputId = `kpf-design-css-${rowDomId(row)}`;
 
 	async function uploadFiles() {
 		if (!htmlFile) {
@@ -242,6 +248,11 @@ function UrlRow({ row, onUpdated, onEdit, onSettings }) {
 						{error}
 					</Notice>
 				) : null}
+				{notice ? (
+					<Notice status="success" onRemove={() => setNotice('')}>
+						{notice}
+					</Notice>
+				) : null}
 			</td>
 			<td>
 				{isSystemRow(row) ? (
@@ -295,6 +306,22 @@ function UrlRow({ row, onUpdated, onEdit, onSettings }) {
 							{__('Edit code & copy', 'kpf-core')}
 						</Button>
 					) : null}
+					{row.ready ? (
+						<PriorVersions
+							apiPath={designApiPath(row)}
+							controlId={`kpf-prior-versions-${htmlInputId}`}
+							disabled={busy}
+							onRestored={(response) => {
+								onUpdated(response.url);
+								if (response.settings && onSettings) {
+									onSettings(response.settings);
+								}
+								setNotice(
+									__('Version restored. The previous current files are now a prior version.', 'kpf-core')
+								);
+							}}
+						/>
+					) : null}
 					<Button
 						variant={row.ready ? 'secondary' : 'primary'}
 						onClick={uploadFiles}
@@ -325,12 +352,6 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState('');
 	const [notice, setNotice] = useState('');
-	const [historyOpen, setHistoryOpen] = useState(false);
-	const [history, setHistory] = useState([]);
-	const [historyLimit, setHistoryLimit] = useState(0);
-	const [historyLoading, setHistoryLoading] = useState(false);
-	const [historyError, setHistoryError] = useState('');
-	const [restoring, setRestoring] = useState(0);
 
 	useEffect(() => {
 		setLoading(true);
@@ -383,24 +404,6 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 	const dirty = Boolean(editor && (html !== editor.html || css !== editor.css));
 	const apiPath = designApiPath(row);
 
-	const loadHistory = useCallback(async () => {
-		setHistoryLoading(true);
-		setHistoryError('');
-		try {
-			const response = await apiFetch({ url: `${apiPath}/revisions` });
-			setHistory(response.revisions || []);
-			setHistoryLimit(Number(response.limit || 0));
-		} catch (err) {
-			setHistoryError(err?.message || __('Could not load version history.', 'kpf-core'));
-		} finally {
-			setHistoryLoading(false);
-		}
-	}, [apiPath]);
-
-	useEffect(() => {
-		if (historyOpen) loadHistory();
-	}, [historyOpen, loadHistory]);
-
 	const save = useCallback(async () => {
 		if (!editor || saving) return;
 		if (html.length > MAX_BYTES || css.length > MAX_BYTES) {
@@ -426,43 +429,12 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 			setCss(response.editor.css || '');
 			onSaved(response.url, response);
 			setNotice(__('Design saved.', 'kpf-core'));
-			if (historyOpen) loadHistory();
 		} catch (err) {
 			setError(err?.message || __('Could not save the design.', 'kpf-core'));
 		} finally {
 			setSaving(false);
 		}
-	}, [apiPath, css, editor, historyOpen, html, loadHistory, onSaved, saving]);
-
-	async function restoreVersion(version) {
-		if (dirty && !window.confirm(__('Discard your unsaved changes and restore this version?', 'kpf-core'))) {
-			return;
-		}
-		if (!window.confirm(sprintf(__('Restore the version from %s?', 'kpf-core'), version.dateDisplay))) {
-			return;
-		}
-
-		setRestoring(version.id);
-		setHistoryError('');
-		setNotice('');
-		try {
-			const response = await apiFetch({
-				url: `${apiPath}/revisions/${version.id}/restore`,
-				method: 'POST',
-				data: { revision: editor.revision },
-			});
-			setEditor(response.editor);
-			setHtml(response.editor.html || '');
-			setCss(response.editor.css || '');
-			onSaved(response.url, response);
-			setNotice(__('Version restored. The previous current version remains in history.', 'kpf-core'));
-			await loadHistory();
-		} catch (err) {
-			setHistoryError(err?.message || __('Could not restore that version.', 'kpf-core'));
-		} finally {
-			setRestoring(0);
-		}
-	}
+	}, [apiPath, css, editor, html, onSaved, saving]);
 
 	useEffect(() => {
 		function saveShortcut(event) {
@@ -531,13 +503,29 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 					<span className={dirty ? 'is-dirty' : ''}>
 						{dirty ? __('Unsaved changes', 'kpf-core') : __('All changes saved', 'kpf-core')}
 					</span>
-					<Button
-						variant="secondary"
-						aria-expanded={historyOpen}
-						onClick={() => setHistoryOpen((open) => !open)}
-					>
-						{__('Version history', 'kpf-core')}
-					</Button>
+					<PriorVersions
+						apiPath={apiPath}
+						controlId={`kpf-prior-versions-editor-${rowDomId(row)}`}
+						revision={editor.revision || ''}
+						disabled={saving}
+						confirmUnsaved={() =>
+							!dirty ||
+							window.confirm(
+								__('Discard your unsaved changes and restore this version?', 'kpf-core')
+							)
+						}
+						onRestored={(response) => {
+							if (response?.editor) {
+								setEditor(response.editor);
+								setHtml(response.editor.html || '');
+								setCss(response.editor.css || '');
+							}
+							onSaved(response.url, response);
+							setNotice(
+								__('Version restored. The previous current version is now in history.', 'kpf-core')
+							);
+						}}
+					/>
 					<Button variant="primary" onClick={save} isBusy={saving} disabled={saving || !dirty}>
 						{__('Save design', 'kpf-core')}
 					</Button>
@@ -649,65 +637,6 @@ function DesignEditorWorkspace({ row, onBack, onSaved }) {
 					/>
 				</main>
 			</div>
-			{historyOpen ? (
-				<aside className="kpf-history-panel" aria-label={__('Design version history', 'kpf-core')}>
-					<div className="kpf-history-header">
-						<div>
-							<p className="kpf-editor-eyebrow">{__('Design archive', 'kpf-core')}</p>
-							<h3>{__('Version history', 'kpf-core')}</h3>
-							<p>
-								{sprintf(
-									__('Up to %d saved versions are retained.', 'kpf-core'),
-									historyLimit
-								)}
-							</p>
-						</div>
-						<Button
-							variant="tertiary"
-							onClick={() => setHistoryOpen(false)}
-							aria-label={__('Close version history', 'kpf-core')}
-						>
-							×
-						</Button>
-					</div>
-					{historyError ? (
-						<Notice status="error" isDismissible={false}>
-							{historyError}
-						</Notice>
-					) : null}
-					<div className="kpf-history-list">
-						{historyLoading ? <Spinner /> : null}
-						{!historyLoading && history.length === 0 ? (
-							<p className="kpf-copy-empty">
-								{__('No earlier saved versions yet.', 'kpf-core')}
-							</p>
-						) : null}
-						{history.map((version, index) => (
-							<article className="kpf-history-item" key={version.id}>
-								<div className="kpf-history-marker">{history.length - index}</div>
-								<div>
-									<strong>
-										<time dateTime={version.date}>{version.dateDisplay}</time>
-									</strong>
-									<span>{sprintf(__('by %s', 'kpf-core'), version.author)}</span>
-									{version.summary ? <p>{version.summary}</p> : null}
-									<small>
-										{[version.htmlFilename, version.cssFilename].filter(Boolean).join(' · ')}
-									</small>
-									<Button
-										variant="secondary"
-										isBusy={restoring === version.id}
-										disabled={Boolean(restoring)}
-										onClick={() => restoreVersion(version)}
-									>
-										{__('Restore this version', 'kpf-core')}
-									</Button>
-								</div>
-							</article>
-						))}
-					</div>
-				</aside>
-			) : null}
 		</div>
 	);
 }

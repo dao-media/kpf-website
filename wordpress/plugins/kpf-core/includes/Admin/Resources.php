@@ -144,6 +144,7 @@ final class Resources {
 				'kpf-core'
 			),
 			'postTypeKey' => self::post_type_key(),
+			'techStack'   => self::tech_stack(),
 			'groups'      => $groups,
 			// Flat list kept for smoke tests and older consumers.
 			'cards'       => self::flatten_cards( $groups ),
@@ -196,6 +197,107 @@ final class Resources {
 				'label'       => __( 'Grantees', 'kpf-core' ),
 				'description' => __(
 					'Appears under Grants — the company, organization, or individual receiving the grant.',
+					'kpf-core'
+				),
+			),
+		);
+	}
+
+	/**
+	 * Legend for the live project stack (frontend, CMS, hosting, and supporting services).
+	 *
+	 * @return list<array{label: string, description: string}>
+	 */
+	public static function tech_stack(): array {
+		return array(
+			array(
+				'label'       => __( 'Public site', 'kpf-core' ),
+				'description' => __(
+					'Faust.js 3 and Next.js 16 (pages router) with React 18 and Apollo Client. Hosted on Vercel at kevinpopkefoundation.org.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'CMS', 'kpf-core' ),
+				'description' => __(
+					'Headless WordPress (PHP) on DreamHost (kpf.dreamhosters.com; admin.kevinpopkefoundation.org). FaustWP plugin. Stub theme kpf-blank — no public theme UI.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'GraphQL', 'kpf-core' ),
+				'description' => __(
+					'WPGraphQL and WPGraphQL Content Blocks. Faust reads SEO, page designs, queries, forms, Scrapbook, grants, events, and the global stylesheet over this API.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'kpf-core', 'kpf-core' ),
+				'description' => __(
+					'Custom plugin: Designs, Queries, Forms, GSAP interactions, SEO, Scrapbook, Grants, Events, Components, Tokens, Stylesheet, Inbox, and this Resources screen.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Admin UI', 'kpf-core' ),
+				'description' => __(
+					'React screens compiled with @wordpress/scripts (webpack). Icons from Lucide.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Motion', 'kpf-core' ),
+				'description' => __(
+					'GSAP 3 with Club plugins (ScrollTrigger, ScrollSmoother, MorphSVG, DrawSVG, SplitText, and others), authored under Interactions → GSAP.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Design', 'kpf-core' ),
+				'description' => __(
+					'Figma is the source of truth. Global CSS lives in Design → Stylesheet; page CSS twins live in the plugin and Faust (foundation.css / pages.css).',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Search', 'kpf-core' ),
+				'description' => __(
+					'MiniSearch builds a static index at frontend compile time for public site search.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Analytics', 'kpf-core' ),
+				'description' => __(
+					'Google Analytics 4 and Google Tag Manager on the public site.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Forms & spam', 'kpf-core' ),
+				'description' => __(
+					'Visual Forms builder. Cloudflare Turnstile, Google reCAPTCHA, and a honeypot.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Donations', 'kpf-core' ),
+				'description' => __(
+					'PayPal giving form from the public site Donate links.',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Local', 'kpf-core' ),
+				'description' => __(
+					'Node.js 20.9+, Docker Desktop, and @wordpress/env (WordPress on :8888, Faust on :3010).',
+					'kpf-core'
+				),
+			),
+			array(
+				'label'       => __( 'Source', 'kpf-core' ),
+				'description' => __(
+					'GitHub. Frontend deploys from main via Vercel; the plugin and theme sync to DreamHost.',
 					'kpf-core'
 				),
 			),

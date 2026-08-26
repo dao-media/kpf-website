@@ -453,26 +453,19 @@ function buildGroups() {
 	return [...byKey.values()];
 }
 
-function PostTypeKey({ items }) {
+function KeyCard({ titleId, title, description, items }) {
 	if (!Array.isArray(items) || !items.length) {
 		return null;
 	}
 
 	return (
 		<section
-			aria-labelledby="kpf-resources-post-type-key-title"
+			aria-labelledby={titleId}
 			className="kpf-resources-key"
 		>
 			<header className="kpf-resources-key__header">
-				<h2 id="kpf-resources-post-type-key-title">
-					{__('Post type key', 'kpf-core')}
-				</h2>
-				<p>
-					{__(
-						'What each main content type is for — use this before opening a how-to card.',
-						'kpf-core'
-					)}
-				</p>
+				<h2 id={titleId}>{title}</h2>
+				{description ? <p>{description}</p> : null}
 			</header>
 			<dl className="kpf-resources-key__list">
 				{items.map((item) => (
@@ -489,6 +482,7 @@ function PostTypeKey({ items }) {
 function App() {
 	const groups = buildGroups();
 	const postTypeKey = Array.isArray(data.postTypeKey) ? data.postTypeKey : [];
+	const techStack = Array.isArray(data.techStack) ? data.techStack : [];
 
 	return (
 		<div className="kpf-resources">
@@ -504,7 +498,28 @@ function App() {
 				</p>
 			</header>
 
-			<PostTypeKey items={postTypeKey} />
+			{postTypeKey.length || techStack.length ? (
+				<div className="kpf-resources-keys">
+					<KeyCard
+						description={__(
+							'What each main content type is for — use this before opening a how-to card.',
+							'kpf-core'
+						)}
+						items={postTypeKey}
+						title={__('Post type key', 'kpf-core')}
+						titleId="kpf-resources-post-type-key-title"
+					/>
+					<KeyCard
+						description={__(
+							'How the public site, CMS, and supporting services fit together.',
+							'kpf-core'
+						)}
+						items={techStack}
+						title={__('Tech stack', 'kpf-core')}
+						titleId="kpf-resources-tech-stack-title"
+					/>
+				</div>
+			) : null}
 
 			{groups.length ? (
 				<div className="kpf-resources-topics">

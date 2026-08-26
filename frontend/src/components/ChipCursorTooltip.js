@@ -66,6 +66,308 @@ function prefersReducedMotion() {
 }
 
 /**
+ * Bind cursor-tracked tooltip behavior to an existing host + tip node.
+ * @returns {() => void}
+ */
+function attachChipCursorTooltip(
+  host,
+  tip,
+  { desktopOnly = false, label = "", labelSoft = "", tipId = "" } = {},
+) {
+  if (!host || !tip || !label) return () => {};
+
+  const pointerOk = () =>
+    desktopOnly ? isDesktopFinePointer() : isFinePointer();
+
+  gsap.set(tip, {
+    autoAlpha: 0,
+    xPercent: -50,
+    yPercent: -100,
+    y: TRAVEL,
+    scale: SCALE_EXIT,
+    transformOrigin: "50% 100%",
+    force3D: true,
+    pointerEvents: "none",
+  });
+
+  let xTo = gsap.quickTo(tip, "left", {
+    duration: 0.12,
+    ease: "power3.out",
+    overwrite: "auto",
+  });
+  let yTo = gsap.quickTo(tip, "top", {
+    duration: 0.12,
+    ease: "power3.out",
+    overwrite: "auto",
+  });
+  let visible = false;
+  let hideTimer = null;
+  let belowCursor = false;
+
+  const applySide = (nextBelow) => {
+    if (belowCursor === nextBelow) return;
+    belowCursor = nextBelow;
+    gsap.set(tip, {
+      yPercent: nextBelow ? 0 : -100,
+      transformOrigin: nextBelow ? "50% 0%" : "50% 100%",
+    });
+    tip.classList.toggle("kpf-chip-tip--below", nextBelow);
+  };
+
+  const travelY = () => (belowCursor ? -TRAVEL : TRAVEL);
+
+  const clearHideTimer = () => {
+    if (hideTimer != null) {
+      window.clearTimeout(hideTimer);
+      hideTimer = null;
+    }
+  };
+
+  const poseForPoint = (clientX, clientY) => {
+    if (typeof clientX !== "number" || typeof clientY !== "number") {
+      return poseFromProgress(0);
+    }
+    const rect = host.getBoundingClientRect();
+    return poseFromProgress(
+      edgeExitProgress(clientX, clientY, rect, edgeBufferForRect(rect)),
+    );
+  };
+
+  const applyProximity = (clientX, clientY) => {
+    if (!visible || prefersReducedMotion()) return;
+    const pose = poseForPoint(clientX, clientY);
+    gsap.to(tip, {
+      autoAlpha: pose.autoAlpha,
+      scale: pose.scale,
+      duration: DURATION,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  };
+
+  const place = (clientX, clientY) => {
+    const tipH = tip.offsetHeight || 40;
+    applySide(clientY - TIP_GAP - tipH < VIEWPORT_PAD);
+    const left = clientX;
+    const top = belowCursor ? clientY + TIP_GAP : clientY - TIP_GAP;
+    if (xTo && yTo && visible) {
+      xTo(left);
+      yTo(top);
+    } else {
+      gsap.set(tip, { left, top });
+    }
+  };
+
+  const placeOverHost = () => {
+    const rect = host.getBoundingClientRect();
+    const tipH = tip.offsetHeight || 40;
+    applySide(rect.top - TIP_GAP - tipH < VIEWPORT_PAD);
+    gsap.set(tip, {
+      left: rect.left + rect.width / 2,
+      top: belowCursor ? rect.bottom + TIP_GAP : rect.top - TIP_GAP,
+    });
+  };
+
+  /** @param {number=} clientX @param {number=} clientY */
+  const animateIn = (clientX, clientY) => {
+    const dur = prefersReducedMotion() ? 0 : DURATION;
+    const pose = poseForPoint(clientX, clientY);
+    gsap.killTweensOf(tip, "autoAlpha,y,scale");
+    gsap.fromTo(
+      tip,
+      { y: travelY() },
+      {
+        y: 0,
+        duration: dur,
+        ease: "power2.out",
+        overwrite: "auto",
+      },
+    );
+    gsap.fromTo(
+      tip,
+      { autoAlpha: 0, scale: SCALE_EXIT },
+      {
+        autoAlpha: pose.autoAlpha,
+        scale: pose.scale,
+        duration: dur,
+        ease: "power2.out",
+        overwrite: "auto",
+      },
+    );
+  };
+
+  const animateOut = () => {
+    const dur = prefersReducedMotion() ? 0 : DURATION;
+    gsap.killTweensOf(tip, "autoAlpha,y,scale");
+    gsap.to(tip, {
+      autoAlpha: 0,
+      y: travelY(),
+      scale: SCALE_EXIT,
+      duration: dur,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+  };
+
+  /** @param {number=} clientX @param {number=} clientY */
+  const show = (clientX, clientY) => {
+    clearHideTimer();
+    if (typeof clientX === "number" && typeof clientY === "number") {
+      place(clientX, clientY);
+    } else {
+      placeOverHost();
+    }
+
+    if (visible) {
+      activeTipHost = host;
+      return;
+    }
+
+    claimActiveTip(host, () => {
+      visible = true;
+      tip.setAttribute("data-open", "true");
+      host.setAttribute("data-kpf-tip-open", "true");
+      animateIn(clientX, clientY);
+    });
+  };
+
+  /** @param {{ force?: boolean }} [opts] */
+  const hide = (opts = {}) => {
+    clearHideTimer();
+    const run = () => {
+      if (!visible) return;
+      visible = false;
+      tip.removeAttribute("data-open");
+      host.removeAttribute("data-kpf-tip-open");
+      releaseActiveTip(host);
+      animateOut();
+    };
+
+    if (opts.force || HIDE_GRACE_MS <= 0) {
+      run();
+      return;
+    }
+
+    hideTimer = window.setTimeout(run, HIDE_GRACE_MS);
+  };
+
+  tipRegistry.set(host, {
+    showAt: (x, y) => show(x, y),
+    hide: () => hide({ force: true }),
+    getLabel: () => (labelSoft ? `${label} | ${labelSoft}` : label),
+  });
+
+  const trigger = host.querySelector("a,button") || host;
+  trigger.setAttribute("aria-describedby", tipId);
+
+  const leftHostFor = (related) => {
+    if (!(related instanceof Node)) return true;
+    if (host.contains(related)) return false;
+    if (related instanceof Element && related.closest(".kpf-chip-tip")) {
+      return false;
+    }
+    return true;
+  };
+
+  const onEnter = (event) => {
+    if (!pointerOk()) return;
+    show(event.clientX, event.clientY);
+  };
+
+  const onMove = (event) => {
+    if (!pointerOk() || !visible) return;
+    place(event.clientX, event.clientY);
+    applyProximity(event.clientX, event.clientY);
+  };
+
+  const onLeave = (event) => {
+    if (!pointerOk()) return;
+    if (!leftHostFor(event.relatedTarget)) return;
+    hide();
+  };
+
+  const onFocusIn = () => {
+    if (!pointerOk()) return;
+    show();
+  };
+
+  const onFocusOut = (event) => {
+    if (!pointerOk()) return;
+    if (!leftHostFor(event.relatedTarget)) return;
+    hide();
+  };
+
+  const usePointer = typeof window.PointerEvent === "function";
+  if (usePointer) {
+    host.addEventListener("pointerenter", onEnter);
+    host.addEventListener("pointermove", onMove);
+    host.addEventListener("pointerleave", onLeave);
+  } else {
+    host.addEventListener("mouseenter", onEnter);
+    host.addEventListener("mousemove", onMove);
+    host.addEventListener("mouseleave", onLeave);
+  }
+  host.addEventListener("focusin", onFocusIn);
+  host.addEventListener("focusout", onFocusOut);
+
+  return () => {
+    clearHideTimer();
+    if (usePointer) {
+      host.removeEventListener("pointerenter", onEnter);
+      host.removeEventListener("pointermove", onMove);
+      host.removeEventListener("pointerleave", onLeave);
+    } else {
+      host.removeEventListener("mouseenter", onEnter);
+      host.removeEventListener("mousemove", onMove);
+      host.removeEventListener("mouseleave", onLeave);
+    }
+    host.removeEventListener("focusin", onFocusIn);
+    host.removeEventListener("focusout", onFocusOut);
+    trigger.removeAttribute("aria-describedby");
+    tipRegistry.delete(host);
+    releaseActiveTip(host);
+    host.removeAttribute("data-kpf-tip-open");
+    gsap.killTweensOf(tip);
+    xTo = null;
+    yTo = null;
+    visible = false;
+  };
+}
+
+function ChipTipMarkup({ tipRef, tipId, label, labelSoft, icon }) {
+  const tipText = labelSoft ? `${label} | ${labelSoft}` : label;
+  return (
+    <span
+      ref={tipRef}
+      id={tipId}
+      className={["kpf-chip-tip", icon ? "kpf-chip-tip--icon" : ""]
+        .filter(Boolean)
+        .join(" ")}
+      role="tooltip"
+    >
+      <span className="kpf-chip-tip__label">
+        {icon ? (
+          <>
+            <span className="kpf-chip-tip__icon" aria-hidden="true">
+              {icon}
+            </span>
+            <span className="kpf-u-sr-only">{tipText}</span>
+          </>
+        ) : (
+          <>
+            {label}
+            {labelSoft ? (
+              <span className="kpf-chip-tip__soft">{` | ${labelSoft}`}</span>
+            ) : null}
+          </>
+        )}
+      </span>
+      <span className="kpf-chip-tip__carrot" aria-hidden="true" />
+    </span>
+  );
+}
+
+/**
  * @param {{
  *   label: string,
  *   children: import("react").ReactNode,
@@ -87,10 +389,6 @@ export default function ChipCursorTooltip({
 }) {
   const hostRef = useRef(null);
   const tipRef = useRef(null);
-  const visibleRef = useRef(false);
-  const hideTimerRef = useRef(null);
-  const xToRef = useRef(null);
-  const yToRef = useRef(null);
   const tipId = useId();
   const [mounted, setMounted] = useState(false);
 
@@ -99,275 +397,13 @@ export default function ChipCursorTooltip({
   }, []);
 
   useEffect(() => {
-    const host = hostRef.current;
-    const tip = tipRef.current;
-    if (!mounted || !host || !tip || !label) return undefined;
-
-    const pointerOk = () =>
-      desktopOnly ? isDesktopFinePointer() : isFinePointer();
-
-    gsap.set(tip, {
-      autoAlpha: 0,
-      xPercent: -50,
-      yPercent: -100,
-      y: TRAVEL,
-      scale: SCALE_EXIT,
-      transformOrigin: "50% 100%",
-      force3D: true,
-      pointerEvents: "none",
+    if (!mounted) return undefined;
+    return attachChipCursorTooltip(hostRef.current, tipRef.current, {
+      desktopOnly,
+      label,
+      labelSoft,
+      tipId,
     });
-
-    xToRef.current = gsap.quickTo(tip, "left", {
-      duration: 0.12,
-      ease: "power3.out",
-      overwrite: "auto",
-    });
-    yToRef.current = gsap.quickTo(tip, "top", {
-      duration: 0.12,
-      ease: "power3.out",
-      overwrite: "auto",
-    });
-
-    let belowCursor = false;
-
-    const applySide = (nextBelow) => {
-      if (belowCursor === nextBelow) return;
-      belowCursor = nextBelow;
-      gsap.set(tip, {
-        yPercent: nextBelow ? 0 : -100,
-        transformOrigin: nextBelow ? "50% 0%" : "50% 100%",
-      });
-      tip.classList.toggle("kpf-chip-tip--below", nextBelow);
-    };
-
-    const travelY = () => (belowCursor ? -TRAVEL : TRAVEL);
-
-    const clearHideTimer = () => {
-      if (hideTimerRef.current != null) {
-        window.clearTimeout(hideTimerRef.current);
-        hideTimerRef.current = null;
-      }
-    };
-
-    const poseForPoint = (clientX, clientY) => {
-      if (typeof clientX !== "number" || typeof clientY !== "number") {
-        return poseFromProgress(0);
-      }
-      const rect = host.getBoundingClientRect();
-      return poseFromProgress(
-        edgeExitProgress(clientX, clientY, rect, edgeBufferForRect(rect)),
-      );
-    };
-
-    const applyProximity = (clientX, clientY) => {
-      if (!visibleRef.current || prefersReducedMotion()) return;
-      const pose = poseForPoint(clientX, clientY);
-      gsap.to(tip, {
-        autoAlpha: pose.autoAlpha,
-        scale: pose.scale,
-        duration: DURATION,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
-    };
-
-    const place = (clientX, clientY) => {
-      const tipH = tip.offsetHeight || 40;
-      applySide(clientY - TIP_GAP - tipH < VIEWPORT_PAD);
-      const left = clientX;
-      const top = belowCursor ? clientY + TIP_GAP : clientY - TIP_GAP;
-      if (xToRef.current && yToRef.current && visibleRef.current) {
-        xToRef.current(left);
-        yToRef.current(top);
-      } else {
-        gsap.set(tip, { left, top });
-      }
-    };
-
-    const placeOverHost = () => {
-      const rect = host.getBoundingClientRect();
-      const tipH = tip.offsetHeight || 40;
-      applySide(rect.top - TIP_GAP - tipH < VIEWPORT_PAD);
-      gsap.set(tip, {
-        left: rect.left + rect.width / 2,
-        top: belowCursor ? rect.bottom + TIP_GAP : rect.top - TIP_GAP,
-      });
-    };
-
-    /** @param {number=} clientX @param {number=} clientY */
-    const animateIn = (clientX, clientY) => {
-      const dur = prefersReducedMotion() ? 0 : DURATION;
-      const pose = poseForPoint(clientX, clientY);
-      gsap.killTweensOf(tip, "autoAlpha,y,scale");
-      // Keep Y on its own tween so edge-proximity can overwrite scale/alpha
-      // without parking the entrance travel.
-      gsap.fromTo(
-        tip,
-        { y: travelY() },
-        {
-          y: 0,
-          duration: dur,
-          ease: "power2.out",
-          overwrite: "auto",
-        },
-      );
-      gsap.fromTo(
-        tip,
-        { autoAlpha: 0, scale: SCALE_EXIT },
-        {
-          autoAlpha: pose.autoAlpha,
-          scale: pose.scale,
-          duration: dur,
-          ease: "power2.out",
-          overwrite: "auto",
-        },
-      );
-    };
-
-    const animateOut = () => {
-      const dur = prefersReducedMotion() ? 0 : DURATION;
-      gsap.killTweensOf(tip, "autoAlpha,y,scale");
-      gsap.to(tip, {
-        autoAlpha: 0,
-        y: travelY(),
-        scale: SCALE_EXIT,
-        duration: dur,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
-    };
-
-    /** @param {number=} clientX @param {number=} clientY */
-    const show = (clientX, clientY) => {
-      clearHideTimer();
-      if (typeof clientX === "number" && typeof clientY === "number") {
-        place(clientX, clientY);
-      } else {
-        placeOverHost();
-      }
-
-      // Already open: track only. Never restart the entrance tween.
-      if (visibleRef.current) {
-        activeTipHost = host;
-        return;
-      }
-
-      claimActiveTip(host, () => {
-        visibleRef.current = true;
-        tip.setAttribute("data-open", "true");
-        host.setAttribute("data-kpf-tip-open", "true");
-        animateIn(clientX, clientY);
-      });
-    };
-
-    /** @param {{ force?: boolean }} [opts] */
-    const hide = (opts = {}) => {
-      clearHideTimer();
-      const run = () => {
-        if (!visibleRef.current) return;
-        visibleRef.current = false;
-        tip.removeAttribute("data-open");
-        host.removeAttribute("data-kpf-tip-open");
-        releaseActiveTip(host);
-        animateOut();
-      };
-
-      if (opts.force || HIDE_GRACE_MS <= 0) {
-        run();
-        return;
-      }
-
-      hideTimerRef.current = window.setTimeout(run, HIDE_GRACE_MS);
-    };
-
-    tipRegistry.set(host, {
-      showAt: (x, y) => show(x, y),
-      hide: () => hide({ force: true }),
-      getLabel: () =>
-        labelSoft ? `${label} | ${labelSoft}` : label,
-    });
-
-    const trigger = host.querySelector("a,button") || host;
-    if (trigger !== host) {
-      trigger.setAttribute("aria-describedby", tipId);
-    }
-
-    /** Leave is only real if relatedTarget is outside the host (and not our tip). */
-    const leftHostFor = (related) => {
-      if (!(related instanceof Node)) return true;
-      if (host.contains(related)) return false;
-      if (related instanceof Element && related.closest(".kpf-chip-tip")) {
-        return false;
-      }
-      return true;
-    };
-
-    const onEnter = (event) => {
-      if (!pointerOk()) return;
-      show(event.clientX, event.clientY);
-    };
-
-    const onMove = (event) => {
-      if (!pointerOk() || !visibleRef.current) return;
-      place(event.clientX, event.clientY);
-      applyProximity(event.clientX, event.clientY);
-    };
-
-    const onLeave = (event) => {
-      if (!pointerOk()) return;
-      if (!leftHostFor(event.relatedTarget)) return;
-      hide();
-    };
-
-    const onFocusIn = () => {
-      if (!pointerOk()) return;
-      show();
-    };
-
-    const onFocusOut = (event) => {
-      if (!pointerOk()) return;
-      if (!leftHostFor(event.relatedTarget)) return;
-      hide();
-    };
-
-    // Pointer OR mouse — never both (duplicate enter restarts / thrash).
-    const usePointer = typeof window.PointerEvent === "function";
-    if (usePointer) {
-      host.addEventListener("pointerenter", onEnter);
-      host.addEventListener("pointermove", onMove);
-      host.addEventListener("pointerleave", onLeave);
-    } else {
-      host.addEventListener("mouseenter", onEnter);
-      host.addEventListener("mousemove", onMove);
-      host.addEventListener("mouseleave", onLeave);
-    }
-    host.addEventListener("focusin", onFocusIn);
-    host.addEventListener("focusout", onFocusOut);
-
-    return () => {
-      clearHideTimer();
-      if (usePointer) {
-        host.removeEventListener("pointerenter", onEnter);
-        host.removeEventListener("pointermove", onMove);
-        host.removeEventListener("pointerleave", onLeave);
-      } else {
-        host.removeEventListener("mouseenter", onEnter);
-        host.removeEventListener("mousemove", onMove);
-        host.removeEventListener("mouseleave", onLeave);
-      }
-      host.removeEventListener("focusin", onFocusIn);
-      host.removeEventListener("focusout", onFocusOut);
-      if (trigger !== host) {
-        trigger.removeAttribute("aria-describedby");
-      }
-      tipRegistry.delete(host);
-      releaseActiveTip(host);
-      host.removeAttribute("data-kpf-tip-open");
-      gsap.killTweensOf(tip);
-      xToRef.current = null;
-      yToRef.current = null;
-      visibleRef.current = false;
-    };
   }, [desktopOnly, icon, label, labelSoft, mounted, tipId]);
 
   const tipText = labelSoft ? `${label} | ${labelSoft}` : label;
@@ -383,37 +419,83 @@ export default function ChipCursorTooltip({
       {children}
       {mounted
         ? createPortal(
-            <span
-              ref={tipRef}
-              id={tipId}
-              className={["kpf-chip-tip", icon ? "kpf-chip-tip--icon" : ""]
-                .filter(Boolean)
-                .join(" ")}
-              role="tooltip"
-            >
-              <span className="kpf-chip-tip__label">
-                {icon ? (
-                  <>
-                    <span className="kpf-chip-tip__icon" aria-hidden="true">
-                      {icon}
-                    </span>
-                    <span className="kpf-u-sr-only">{tipText}</span>
-                  </>
-                ) : (
-                  <>
-                    {label}
-                    {labelSoft ? (
-                      <span className="kpf-chip-tip__soft">{` | ${labelSoft}`}</span>
-                    ) : null}
-                  </>
-                )}
-              </span>
-              <span className="kpf-chip-tip__carrot" aria-hidden="true" />
-            </span>,
+            <ChipTipMarkup
+              tipRef={tipRef}
+              tipId={tipId}
+              label={label}
+              labelSoft={labelSoft}
+              icon={icon}
+            />,
             document.body,
           )
         : null}
     </span>
+  );
+}
+
+/**
+ * Same tooltip as {@link ChipCursorTooltip}, bound to an existing DOM node
+ * (WordPress HTML links, design-template buttons).
+ */
+export function BoundChipCursorTooltip({
+  host,
+  label,
+  labelSoft = "",
+  icon = null,
+  desktopOnly = false,
+  className = "kpf-exit-tip",
+}) {
+  const tipRef = useRef(null);
+  const tipId = useId();
+  const [mounted, setMounted] = useState(false);
+  const tipText = labelSoft ? `${label} | ${labelSoft}` : label;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !host || !label) return undefined;
+    const tokens = ["kpf-chip-tip-host", className]
+      .filter(Boolean)
+      .flatMap((value) => String(value).split(/\s+/).filter(Boolean));
+    tokens.forEach((token) => host.classList.add(token));
+    host.setAttribute("data-kpf-chip-tip", tipText);
+    if (desktopOnly) host.setAttribute("data-kpf-chip-tip-desktop", "true");
+    const detach = attachChipCursorTooltip(host, tipRef.current, {
+      desktopOnly,
+      label,
+      labelSoft,
+      tipId,
+    });
+    return () => {
+      detach();
+      tokens.forEach((token) => host.classList.remove(token));
+      host.removeAttribute("data-kpf-chip-tip");
+      host.removeAttribute("data-kpf-chip-tip-desktop");
+    };
+  }, [
+    className,
+    desktopOnly,
+    host,
+    icon,
+    label,
+    labelSoft,
+    mounted,
+    tipId,
+    tipText,
+  ]);
+
+  if (!mounted) return null;
+  return createPortal(
+    <ChipTipMarkup
+      tipRef={tipRef}
+      tipId={tipId}
+      label={label}
+      labelSoft={labelSoft}
+      icon={icon}
+    />,
+    document.body,
   );
 }
 

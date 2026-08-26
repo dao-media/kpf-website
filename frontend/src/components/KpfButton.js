@@ -1,6 +1,8 @@
 import { useRouter } from "next/router";
+import ExternalExitTooltip from "@/components/ExternalExitTooltip";
 
 const { sameDocumentHash, scrollToTarget } = require("@/lib/smoothScrollTo");
+const { isOffsiteHttpHref } = require("@/lib/externalHref");
 
 function isExternalHref(href = "") {
   return /^(https?:|mailto:|tel:)/i.test(href);
@@ -64,7 +66,7 @@ export default function KpfButton({
     router.push(href);
   }
 
-  return (
+  const button = (
     <button
       type={type}
       className={classes}
@@ -80,4 +82,13 @@ export default function KpfButton({
       ) : null}
     </button>
   );
+
+  if (
+    isOffsiteHttpHref(href) &&
+    !classes.split(/\s+/).includes("kpf-btn--donate")
+  ) {
+    return <ExternalExitTooltip href={href}>{button}</ExternalExitTooltip>;
+  }
+
+  return button;
 }

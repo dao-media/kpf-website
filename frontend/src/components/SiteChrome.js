@@ -4,6 +4,7 @@ import KpfChromeRuntime from "@/components/KpfChromeRuntime";
 import KpfFooter from "@/components/KpfFooter";
 import KpfHeader from "@/components/KpfHeader";
 import LinkArrowRuntime from "@/components/LinkArrowRuntime";
+import ExternalExitTipsRuntime from "@/components/ExternalExitTipsRuntime";
 import ScrollSmootherRuntime from "@/components/ScrollSmootherRuntime";
 import AnalyticsRuntime from "@/components/AnalyticsRuntime";
 import CodeSnippetsRuntime from "@/components/CodeSnippetsRuntime";
@@ -232,6 +233,7 @@ export default function SiteChrome({
         <ChromeHeader component={header} useScaffold={useHeaderScaffold} />
         <KpfChromeRuntime enabled={!useHeaderScaffold} />
         <LinkArrowRuntime />
+        <ExternalExitTipsRuntime />
         <ScrollSmootherRuntime />
         <AnalyticsRuntime />
         <CodeSnippetsRuntime snippets={snippets} slot="header" />

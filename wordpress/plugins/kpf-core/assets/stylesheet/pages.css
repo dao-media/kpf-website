@@ -4137,6 +4137,14 @@ a.kpf-grantee-card__chip.kpf-grantee-card__chip--action:focus-visible,
 	vertical-align: top;
 }
 
+/* Inline off-site text links keep paragraph flow. */
+.kpf-chip-tip-host.kpf-exit-tip:not(:has(.kpf-btn, .kpf-grantee-card__chip, img)),
+a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
+	display: inline;
+	max-width: none;
+	vertical-align: baseline;
+}
+
 /* Pointer sits on the host; hide it so it cannot flash through the tip. */
 @media (hover: hover) and (pointer: fine) {
 	.kpf-chip-tip-host[data-kpf-tip-open],

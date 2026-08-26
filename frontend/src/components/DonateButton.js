@@ -1,10 +1,11 @@
-import { SquareArrowOutUpRight } from "lucide-react";
-import ChipCursorTooltip from "@/components/ChipCursorTooltip";
+import ExternalExitTooltip, {
+  DONATE_TOOLTIP_LABEL,
+} from "@/components/ExternalExitTooltip";
 import KpfButton from "@/components/KpfButton";
 import { KPF_DONATE_HREF } from "@/lib/navigation";
 
 export const DONATE_BUTTON_DEFAULT_LABEL = "Donate";
-export const DONATE_TOOLTIP_LABEL = "Opens PayPal";
+export { DONATE_TOOLTIP_LABEL };
 
 /**
  * True when copy/action config should render {@link DonateButton}
@@ -51,12 +52,7 @@ export default function DonateButton({
   ...rest
 }) {
   return (
-    <ChipCursorTooltip
-      label={DONATE_TOOLTIP_LABEL}
-      className="kpf-donate-tip"
-      desktopOnly
-      icon={<SquareArrowOutUpRight size={18} strokeWidth={2} />}
-    >
+    <ExternalExitTooltip href={KPF_DONATE_HREF} className="kpf-donate-tip">
       <KpfButton
         href={KPF_DONATE_HREF}
         className={withDonateClass(className)}
@@ -75,6 +71,6 @@ export default function DonateButton({
           </span>
         </span>
       </KpfButton>
-    </ChipCursorTooltip>
+    </ExternalExitTooltip>
   );
 }

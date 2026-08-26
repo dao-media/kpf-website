@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ArrowRight, CalendarHeart, Gift } from "lucide-react";
+import ExternalExitTooltip from "@/components/ExternalExitTooltip";
 
 function canHoverFlip() {
   if (typeof window === "undefined") return false;
@@ -398,18 +399,20 @@ export default function GranteeCard({
               </span>
             ) : null}
             {href ? (
-              <a
-                className="kpf-grantee-card__chip kpf-grantee-card__chip--link"
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <span className="kpf-grantee-card__chip-label">Website</span>
-                <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
-                  <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
-                </span>
-              </a>
+              <ExternalExitTooltip href={href}>
+                <a
+                  className="kpf-grantee-card__chip kpf-grantee-card__chip--link"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <span className="kpf-grantee-card__chip-label">Website</span>
+                  <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
+                    <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
+                  </span>
+                </a>
+              </ExternalExitTooltip>
             ) : null}
           </div>
         </div>

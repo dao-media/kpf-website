@@ -44,7 +44,10 @@ function linkKnownEntities(html) {
     if (inAnchor || !text) return text;
     let next = text;
     for (const { pattern, href } of STORY_LINKS) {
-      next = next.replace(pattern, (match) => `<a href="${href}">${match}</a>`);
+      const attrs = /^https?:\/\//i.test(href)
+        ? `href="${href}" target="_blank" rel="noopener noreferrer"`
+        : `href="${href}"`;
+      next = next.replace(pattern, (match) => `<a ${attrs}>${match}</a>`);
     }
     return next;
   });

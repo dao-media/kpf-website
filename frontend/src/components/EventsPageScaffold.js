@@ -16,6 +16,7 @@ import ChipCursorTooltip, {
 } from "@/components/ChipCursorTooltip";
 import CtaClosingBand from "@/components/CtaClosingBand";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
+import ExternalExitTooltip from "@/components/ExternalExitTooltip";
 import EventCardPlaceholder, {
   eventLibraryPlaceholderCount,
 } from "@/components/EventCardPlaceholder";
@@ -168,7 +169,10 @@ function GrantChip({
     );
   }
 
-  if (!tooltip || variant === "link") return chip;
+  if (variant === "link" && href && external) {
+    return <ExternalExitTooltip href={href}>{chip}</ExternalExitTooltip>;
+  }
+  if (!tooltip) return chip;
 
   return <ChipCursorTooltip label={tooltip}>{chip}</ChipCursorTooltip>;
 }
@@ -417,14 +421,16 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                   {copy.hero.eventSite?.href ? (
                     <p className="kpf-content-block__body">
                       Tickets and the night-of schedule live on the{" "}
-                      <a
-                        href={copy.hero.eventSite.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {copy.hero.eventSite.label}
-                        <span className="kpf-u-sr-only"> (opens in a new tab)</span>
-                      </a>{" "}
+                      <ExternalExitTooltip href={copy.hero.eventSite.href}>
+                        <a
+                          href={copy.hero.eventSite.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {copy.hero.eventSite.label}
+                          <span className="kpf-u-sr-only"> (opens in a new tab)</span>
+                        </a>
+                      </ExternalExitTooltip>{" "}
                       site. This page is for Foundation guests, sponsors, and how
                       the room funds grants.
                     </p>

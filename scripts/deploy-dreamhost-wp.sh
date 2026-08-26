@@ -24,7 +24,7 @@ REF="${KPF_DEPLOY_REF:-HEAD}"
 FROM_WORKDIR="${KPF_DEPLOY_FROM_WORKDIR:-0}"
 ALLOW_DIRTY="${KPF_DEPLOY_ALLOW_DIRTY:-0}"
 CLEANUP=()
-RSYNC_DRY=()
+RSYNC_DRY=""
 
 cleanup() {
   rm -rf "${CLEANUP[@]:-}"
@@ -32,7 +32,7 @@ cleanup() {
 trap cleanup EXIT
 
 if [[ "${KPF_DEPLOY_DRY_RUN:-0}" == "1" ]]; then
-  RSYNC_DRY=(--dry-run)
+  RSYNC_DRY="--dry-run"
 fi
 
 if [[ -z "$KEY_FILE" && -n "${DH_SSH_KEY:-}" ]]; then
@@ -116,20 +116,20 @@ else
 fi
 
 echo "→ plugin ${USER}@${HOST}:${PLUGIN_PATH}"
-rsync -az --delete "${RSYNC_DRY[@]}" "${RSYNC_EXCLUDES[@]}" \
+rsync -az --delete ${RSYNC_DRY:+$RSYNC_DRY} "${RSYNC_EXCLUDES[@]}" \
   -e "$WRAPPER" \
   "$SRC_PLUGIN" \
   "${USER}@${HOST}:${PLUGIN_PATH}/"
 
 echo "→ theme ${USER}@${HOST}:${THEME_PATH}"
-rsync -az --delete "${RSYNC_DRY[@]}" "${RSYNC_EXCLUDES[@]}" \
+rsync -az --delete ${RSYNC_DRY:+$RSYNC_DRY} "${RSYNC_EXCLUDES[@]}" \
   -e "$WRAPPER" \
   "$SRC_THEME" \
   "${USER}@${HOST}:${THEME_PATH}/"
 
 if [[ -d "$SRC_MU" ]]; then
   echo "→ mu-plugins ${USER}@${HOST}:${MU_PATH}"
-  rsync -az "${RSYNC_DRY[@]}" "${RSYNC_EXCLUDES[@]}" \
+  rsync -az ${RSYNC_DRY:+$RSYNC_DRY} "${RSYNC_EXCLUDES[@]}" \
     -e "$WRAPPER" \
     "$SRC_MU" \
     "${USER}@${HOST}:${MU_PATH}/"

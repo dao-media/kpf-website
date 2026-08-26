@@ -130,6 +130,11 @@ if ( ! is_wp_error( $grant_id ) && $grant_id > 0 ) {
 		'Sort date key is YYYYMM'
 	);
 
+	\KPF\Core\Grants\Totals::bust_cache();
+	$by_grantee = \KPF\Core\Grants\Totals::for_grantee( (int) $grantee_id );
+	kpf_grantees_assert( 1 === $by_grantee['count'], 'Grantee summary counts the published grant' );
+	kpf_grantees_assert( 5000.5 === $by_grantee['amount'], 'Grantee summary sums the published amount' );
+
 	$details = GrantGraphQL::details( (int) $grant_id );
 	kpf_grantees_assert( 'Smoke Test Org' === $details['recipientName'], 'GraphQL grant details include recipient' );
 	kpf_grantees_assert( 'Jul 2024' === $details['awardedLabel'], 'GraphQL grant details include awarded label' );
@@ -151,6 +156,12 @@ kpf_grantees_assert(
 	isset( $grantee_sortable['title'][4] ) && 'asc' === $grantee_sortable['title'][4],
 	'Organization column is the default ascending sort'
 );
+kpf_grantees_assert( isset( $grantee_sortable['kpf_grants'] ), 'Grants column is sortable' );
+kpf_grantees_assert( isset( $grantee_sortable['kpf_granted'] ), 'Total granted column is sortable' );
+
+$grantee_cols = GranteeAdmin::columns( array( 'cb' => '', 'date' => 'Date' ) );
+kpf_grantees_assert( isset( $grantee_cols['kpf_grants'] ), 'Grantees list has a Grants column' );
+kpf_grantees_assert( isset( $grantee_cols['kpf_granted'] ), 'Grantees list has a Total granted column' );
 
 if ( $GLOBALS['kpf_grantees_failures'] > 0 ) {
 	echo "\n{$GLOBALS['kpf_grantees_failures']} failure(s)\n";

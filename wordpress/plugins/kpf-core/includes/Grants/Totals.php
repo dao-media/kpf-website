@@ -15,6 +15,13 @@ namespace KPF\Core\Grants;
 final class Totals {
 	public const TRANSIENT_KEY = 'kpf_grants_total_amount_v1';
 
+	/**
+	 * Request cache of published grant count/sum keyed by grantee post ID.
+	 *
+	 * @var array<int, array{count: int, amount: float}>|null
+	 */
+	private static $by_grantee = null;
+
 	public static function register(): void {
 		add_action( 'kpf_seo_register_tags', array( self::class, 'register_seo_tags' ) );
 		add_filter( 'kpf_design_placeholders', array( self::class, 'append_design_placeholders' ) );
@@ -57,6 +64,7 @@ final class Totals {
 	public static function bust_cache( int $post_id = 0 ): void {
 		unset( $post_id );
 		delete_transient( self::TRANSIENT_KEY );
+		self::$by_grantee = null;
 	}
 
 	public static function bust_cache_on_delete( int $post_id ): void {
@@ -107,6 +115,68 @@ final class Totals {
 		}
 		$decimals = abs( $amount - round( $amount ) ) < 0.00001 ? 0 : 2;
 		return '$' . number_format_i18n( $amount, $decimals );
+	}
+
+	/**
+	 * Published grant count and sum for each recipient organization.
+	 *
+	 * @return array<int, array{count: int, amount: float}>
+	 */
+	public static function by_grantee(): array {
+		if ( is_array( self::$by_grantee ) ) {
+			return self::$by_grantee;
+		}
+
+		$map = array();
+		$ids = get_posts(
+			array(
+				'post_type'              => ContentType::POST_TYPE,
+				'post_status'            => 'publish',
+				'posts_per_page'         => -1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+		foreach ( $ids as $id ) {
+			$meta       = Meta::get( (int) $id );
+			$grantee_id = (int) ( $meta['grantee_id'] ?? 0 );
+			if ( $grantee_id < 1 ) {
+				continue;
+			}
+			if ( ! isset( $map[ $grantee_id ] ) ) {
+				$map[ $grantee_id ] = array(
+					'count'  => 0,
+					'amount' => 0.0,
+				);
+			}
+			$map[ $grantee_id ]['count']++;
+			$map[ $grantee_id ]['amount'] = round(
+				$map[ $grantee_id ]['amount'] + (float) ( $meta['grant_amount'] ?? 0 ),
+				2
+			);
+		}
+
+		self::$by_grantee = $map;
+		return $map;
+	}
+
+	/**
+	 * @return array{count: int, amount: float}
+	 */
+	public static function for_grantee( int $grantee_id ): array {
+		if ( $grantee_id < 1 ) {
+			return array(
+				'count'  => 0,
+				'amount' => 0.0,
+			);
+		}
+		$all = self::by_grantee();
+		return $all[ $grantee_id ] ?? array(
+			'count'  => 0,
+			'amount' => 0.0,
+		);
 	}
 
 	/**

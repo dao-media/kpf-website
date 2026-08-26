@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace KPF\Core\Grantees;
 
+use KPF\Core\Grants\Totals as GrantTotals;
 use WP_Post;
 use WP_Query;
 
 final class Admin {
 	private const NONCE_ACTION = 'kpf_grantee_details_save';
 	private const NONCE_NAME   = 'kpf_grantee_details_nonce';
+
+	/** Guard so summary sorting does not recurse into pre_get_posts. */
+	private static $sorting_summaries = false;
 
 	public static function register(): void {
 		add_filter(
@@ -40,6 +44,7 @@ final class Admin {
 			array( self::class, 'sortable_columns' )
 		);
 		add_action( 'pre_get_posts', array( self::class, 'apply_default_sorting' ) );
+		add_action( 'admin_head', array( self::class, 'list_table_styles' ) );
 		add_filter(
 			'enter_title_here',
 			static function ( string $title, WP_Post $post ): string {
@@ -172,12 +177,14 @@ final class Admin {
 	 */
 	public static function columns( array $columns ): array {
 		return array(
-			'cb'          => $columns['cb'] ?? '<input type="checkbox" />',
-			'kpf_logo'    => __( 'Logo', 'kpf-core' ),
-			'title'       => __( 'Organization', 'kpf-core' ),
-			'kpf_contact' => __( 'Point of contact', 'kpf-core' ),
-			'kpf_website' => __( 'Website', 'kpf-core' ),
-			'date'        => __( 'Date', 'kpf-core' ),
+			'cb'            => $columns['cb'] ?? '<input type="checkbox" />',
+			'kpf_logo'      => __( 'Logo', 'kpf-core' ),
+			'title'         => __( 'Organization', 'kpf-core' ),
+			'kpf_grants'    => __( 'Grants', 'kpf-core' ),
+			'kpf_granted'   => __( 'Total granted', 'kpf-core' ),
+			'kpf_contact'   => __( 'Point of contact', 'kpf-core' ),
+			'kpf_website'   => __( 'Website', 'kpf-core' ),
+			'date'          => __( 'Date', 'kpf-core' ),
 		);
 	}
 
@@ -193,7 +200,21 @@ final class Admin {
 			__( 'Table ordered by organization name.', 'kpf-core' ),
 			'asc',
 		);
-		$columns['date']  = array(
+		$columns['kpf_grants']  = array(
+			'kpf_grants',
+			true,
+			__( 'Grants', 'kpf-core' ),
+			__( 'Table ordered by number of published grants.', 'kpf-core' ),
+			'desc',
+		);
+		$columns['kpf_granted'] = array(
+			'kpf_granted',
+			true,
+			__( 'Total granted', 'kpf-core' ),
+			__( 'Table ordered by total amount granted.', 'kpf-core' ),
+			'desc',
+		);
+		$columns['date']        = array(
 			'date',
 			true,
 			__( 'Date', 'kpf-core' ),
@@ -203,7 +224,7 @@ final class Admin {
 	}
 
 	public static function apply_default_sorting( WP_Query $query ): void {
-		if ( ! is_admin() || ! $query->is_main_query() ) {
+		if ( ! is_admin() || ! $query->is_main_query() || self::$sorting_summaries ) {
 			return;
 		}
 		if ( ContentType::POST_TYPE !== $query->get( 'post_type' ) ) {
@@ -211,7 +232,14 @@ final class Admin {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list-table sort params.
-		if ( isset( $_GET['orderby'] ) && (string) wp_unslash( $_GET['orderby'] ) !== '' ) {
+		$orderby = isset( $_GET['orderby'] ) ? sanitize_key( (string) wp_unslash( $_GET['orderby'] ) ) : '';
+
+		if ( 'kpf_grants' === $orderby || 'kpf_granted' === $orderby ) {
+			self::order_by_grant_summary( $query, $orderby );
+			return;
+		}
+
+		if ( $orderby !== '' ) {
 			return;
 		}
 
@@ -219,7 +247,76 @@ final class Admin {
 		$query->set( 'order', 'ASC' );
 	}
 
+	public static function list_table_styles(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-' . ContentType::POST_TYPE !== $screen->id ) {
+			return;
+		}
+		echo '<style id="kpf-grantee-list-cols">'
+			. '.column-kpf_grants,.column-kpf_granted{width:9rem;text-align:right}'
+			. '.column-kpf_grants .kpf-num,.column-kpf_granted .kpf-num{font-variant-numeric:tabular-nums}'
+			. '</style>';
+	}
+
+	private static function order_by_grant_summary( WP_Query $query, string $column ): void {
+		self::$sorting_summaries = true;
+
+		$status = $query->get( 'post_status' );
+		if ( $status === '' || $status === 'all' ) {
+			$status = array( 'publish', 'pending', 'draft', 'future', 'private' );
+		}
+
+		$ids = get_posts(
+			array(
+				'post_type'              => ContentType::POST_TYPE,
+				'post_status'            => $status,
+				'posts_per_page'         => -1,
+				'fields'                 => 'ids',
+				'suppress_filters'       => true,
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				's'                      => (string) $query->get( 's' ),
+			)
+		);
+
+		self::$sorting_summaries = false;
+
+		$summaries = GrantTotals::by_grantee();
+		$key       = 'kpf_grants' === $column ? 'count' : 'amount';
+		$order     = strtoupper( (string) $query->get( 'order' ) ) === 'ASC' ? 'ASC' : 'DESC';
+
+		usort(
+			$ids,
+			static function ( $a, $b ) use ( $summaries, $key, $order ): int {
+				$va = $summaries[ (int) $a ][ $key ] ?? 0;
+				$vb = $summaries[ (int) $b ][ $key ] ?? 0;
+				if ( $va === $vb ) {
+					return (int) $a <=> (int) $b;
+				}
+				$cmp = $va <=> $vb;
+				return 'ASC' === $order ? $cmp : -$cmp;
+			}
+		);
+
+		$query->set( 'post__in', $ids !== array() ? $ids : array( 0 ) );
+		$query->set( 'orderby', 'post__in' );
+	}
+
 	public static function render_column( string $column, int $post_id ): void {
+		if ( 'kpf_grants' === $column || 'kpf_granted' === $column ) {
+			$summary = GrantTotals::for_grantee( $post_id );
+			if ( 'kpf_grants' === $column ) {
+				echo '<span class="kpf-num">' . esc_html( number_format_i18n( $summary['count'] ) ) . '</span>';
+				return;
+			}
+			$label = GrantTotals::format_amount( $summary['amount'] );
+			echo $label !== ''
+				? '<span class="kpf-num">' . esc_html( $label ) . '</span>'
+				: '<span aria-hidden="true">—</span>';
+			return;
+		}
+
 		$meta = Meta::get( $post_id );
 
 		switch ( $column ) {

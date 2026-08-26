@@ -381,7 +381,7 @@ export default function HomePageScaffold({
                 <p className="kpf-archive__date">
                   {blog.date}
                   {blog.date && blog.readTime ? (
-                    <span aria-hidden="true"> · </span>
+                    <span aria-hidden="true"> — </span>
                   ) : null}
                   {blog.readTime}
                 </p>

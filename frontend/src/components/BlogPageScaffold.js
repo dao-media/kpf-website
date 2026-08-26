@@ -45,7 +45,7 @@ function PostMeta({ category, date, readTime, chip = false }) {
         <span key={part.key} className="kpf-blog-row__meta-item">
           {!chip && index > 0 ? (
             <span className="kpf-blog-row__meta-sep" aria-hidden="true">
-              ·
+              {parts[index - 1].key === "date" && part.key === "read" ? "—" : "·"}
             </span>
           ) : null}
           {part}

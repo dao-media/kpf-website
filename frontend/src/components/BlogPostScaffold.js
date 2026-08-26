@@ -233,7 +233,7 @@ export default function BlogPostScaffold({
                 {post.date ? <span>{post.date}</span> : null}
                 {post.readTime ? (
                   <>
-                    <span aria-hidden="true"> · </span>
+                    <span aria-hidden="true"> — </span>
                     <span>{post.readTime}</span>
                   </>
                 ) : null}

@@ -144,7 +144,7 @@ final class DesignHtml {
         <div class="kpf-archive__media">{$blog}</div>
         <div class="kpf-archive__meta">
           <p class="kpf-archive__category">Events</p>
-          <p class="kpf-archive__date">July 18, 2026 · 6 min read</p>
+          <p class="kpf-archive__date">July 18, 2026 — 6 min read</p>
           <h3 class="kpf-content-block__title kpf-content-block__title--h3">What Songwriters for Vets taught us about showing up</h3>
           <span class="kpf-link">Read the story</span>
         </div>
@@ -796,7 +796,7 @@ HTML;
           <div class="kpf-blog-row__meta">
             {{#if category}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__chip">{{category}}</span></span>{{/if}}
             {{#if date}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__date">{{date}}</span></span>{{/if}}
-            {{#if readTime}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__read">{{readTime}}</span></span>{{/if}}
+            {{#if readTime}}<span class="kpf-blog-row__meta-item"><span class="kpf-blog-row__meta-sep" aria-hidden="true">—</span><span class="kpf-blog-row__read">{{readTime}}</span></span>{{/if}}
           </div>
           <h3 class="kpf-content-block__title kpf-content-block__title--h2">{{title}}</h3>
           {{#if description}}<p class="kpf-blog-row__excerpt">{{description}}</p>{{/if}}
@@ -865,7 +865,7 @@ HTML;
           <h1 id="kpf-post-title" class="kpf-content-block__title kpf-content-block__title--h1">{{page.title}}</h1>
           <p class="kpf-post-meta">
             {{#if page.date}}<span>{{page.date}}</span>{{/if}}
-            {{#if fields.readTime}}<span aria-hidden="true"> · </span><span>{{fields.readTime}}</span>{{/if}}
+            {{#if fields.readTime}}<span aria-hidden="true"> — </span><span>{{fields.readTime}}</span>{{/if}}
             {{#if page.author.name}}<span aria-hidden="true"> · </span><span>By {{page.author.name}}</span>{{/if}}
           </p>
         </div>

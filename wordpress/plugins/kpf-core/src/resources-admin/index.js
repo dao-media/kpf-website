@@ -16,6 +16,8 @@ import {
 	ExternalLink,
 	FilePenLine,
 	HandCoins,
+	ImagePlus,
+	Images,
 	Maximize2,
 	PencilLine,
 	Users,
@@ -29,6 +31,8 @@ const icons = {
 	BookHeart,
 	FilePenLine,
 	HandCoins,
+	ImagePlus,
+	Images,
 	PencilLine,
 	Users,
 };

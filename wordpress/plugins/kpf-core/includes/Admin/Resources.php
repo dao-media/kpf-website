@@ -7,6 +7,7 @@ namespace KPF\Core\Admin;
 use KPF\Core\Grantees\ContentType as GranteesContentType;
 use KPF\Core\Grants\ContentType as GrantsContentType;
 use KPF\Core\Kevin\ContentType as KevinContentType;
+use KPF\Core\Scrapbook\ContentType as ScrapbookContentType;
 
 /**
  * Dashboard → Resources: editorial how-to cards for common CMS tasks.
@@ -310,12 +311,14 @@ final class Resources {
 	 * @return list<array<string, mixed>>
 	 */
 	public static function groups(): array {
-		$kevin_list   = admin_url( 'edit.php?post_type=' . KevinContentType::POST_TYPE );
-		$kevin_new    = admin_url( 'post-new.php?post_type=' . KevinContentType::POST_TYPE );
-		$grantee_list = admin_url( 'edit.php?post_type=' . GranteesContentType::POST_TYPE );
-		$grantee_new  = admin_url( 'post-new.php?post_type=' . GranteesContentType::POST_TYPE );
-		$grant_list   = admin_url( 'edit.php?post_type=' . GrantsContentType::POST_TYPE );
-		$grant_new    = admin_url( 'post-new.php?post_type=' . GrantsContentType::POST_TYPE );
+		$kevin_list     = admin_url( 'edit.php?post_type=' . KevinContentType::POST_TYPE );
+		$kevin_new      = admin_url( 'post-new.php?post_type=' . KevinContentType::POST_TYPE );
+		$scrapbook_list = admin_url( 'edit.php?post_type=' . ScrapbookContentType::POST_TYPE );
+		$scrapbook_new  = admin_url( 'post-new.php?post_type=' . ScrapbookContentType::POST_TYPE );
+		$grantee_list   = admin_url( 'edit.php?post_type=' . GranteesContentType::POST_TYPE );
+		$grantee_new    = admin_url( 'post-new.php?post_type=' . GranteesContentType::POST_TYPE );
+		$grant_list     = admin_url( 'edit.php?post_type=' . GrantsContentType::POST_TYPE );
+		$grant_new      = admin_url( 'post-new.php?post_type=' . GrantsContentType::POST_TYPE );
 
 		return array(
 			array(
@@ -327,6 +330,18 @@ final class Resources {
 				),
 				'cards'       => array(
 					self::card_editing_page_content(),
+				),
+			),
+			array(
+				'id'          => 'scrapbook',
+				'title'       => __( 'Scrapbook', 'kpf-core' ),
+				'description' => __(
+					'About page “The work” mosaic. Photos and photo stories from Scrapbook → Add Media / Manage — not Kevin slides.',
+					'kpf-core'
+				),
+				'cards'       => array(
+					self::card_adding_scrapbook_item( $scrapbook_new, $scrapbook_list ),
+					self::card_editing_scrapbook_items( $scrapbook_list ),
 				),
 			),
 			array(
@@ -466,7 +481,7 @@ final class Resources {
 					'title' => __( 'What this does not change', 'kpf-core' ),
 					'items' => array(
 						__( 'Even if <strong>Home, About, Events, Blog, Contact, or Privacy</strong> show as Ready, the public page still uses a built-in layout. Copy you save here will not appear on those live pages.', 'kpf-core' ),
-						__( 'For those pages, use the other Resources cards (Kevin slides, grants, events) or ask a developer to change template copy.', 'kpf-core' ),
+						__( 'For those pages, use the other Resources cards (scrapbook photos, Kevin slides, grants, events) or ask a developer to change template copy.', 'kpf-core' ),
 						__( 'If a row says <strong>No design</strong>, <strong>Edit code & copy</strong> is not available until an HTML design is applied.', 'kpf-core' ),
 						__( 'Page title, slug, and SEO live on the page itself: <strong>Pages → All Pages</strong> → open the page → <strong>Save page</strong>.', 'kpf-core' ),
 					),
@@ -482,6 +497,145 @@ final class Resources {
 					'label'   => __( 'All Pages', 'kpf-core' ),
 					'url'     => $pages_url,
 					'primary' => false,
+				),
+			),
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_adding_scrapbook_item( string $scrapbook_new, string $scrapbook_list ): array {
+		$mosaic = self::screenshot(
+			'scrapbook.webp',
+			__( 'About page “The work” mosaic: photos from published scrapbook items.', 'kpf-core' ),
+			'center 42%',
+			__( 'About page “The work” mosaic', 'kpf-core' )
+		);
+		$editor = self::screenshot(
+			'scrapbook-editor.webp',
+			__( 'Scrapbook editor: description, Images box, and Scrapbook details in the sidebar.', 'kpf-core' ),
+			'left top',
+			__( 'Add Media editor: Images box and description', 'kpf-core' )
+		);
+		$shots  = array_values( array_filter( array( $mosaic, $editor ) ) );
+
+		return array(
+			'id'          => 'scrapbook-item',
+			'icon'        => 'ImagePlus',
+			'title'       => __( 'Adding a scrapbook item', 'kpf-core' ),
+			'summary'     => __(
+				'Add a photo or photo story to the About page mosaic (Scrapbook → Add Media).',
+				'kpf-core'
+			),
+			'screenshot'  => $mosaic,
+			'screenshots' => $shots,
+			'sections'    => array(
+				array(
+					'title' => __( 'Where it appears', 'kpf-core' ),
+					'items' => array(
+						__( 'Published scrapbook items feed the About page <strong>The work</strong> mosaic — not the “Who Kevin was” slides.', 'kpf-core' ),
+						__( 'Every image on the item becomes a tile. One image is a photo; two or more is a photo story.', 'kpf-core' ),
+						__( 'Kevin slides live under <strong>Scrapbook → Kevin</strong>. Those never appear in this mosaic.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Create the item', 'kpf-core' ),
+					'items' => array(
+						__( 'In the admin menu, go to <strong>Scrapbook → Add Media</strong>.', 'kpf-core' ),
+						__( 'The title field is labeled <strong>Add a description</strong>. That text is the public caption on the mosaic.', 'kpf-core' ),
+						__( 'Add photos in the <strong>Images</strong> box below the description. You cannot publish without at least one image.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Images box', 'kpf-core' ),
+					'items' => array(
+						__( 'Click <strong>Choose images</strong> (or <strong>Add more images</strong> after the first).', 'kpf-core' ),
+						__( 'A single-photo item can contain only one image. Add a second image to make it a photo story.', 'kpf-core' ),
+						__( 'Fill in <strong>Image description for screen readers</strong> on each photo before publishing.', 'kpf-core' ),
+						__( 'Optional: a <strong>Caption for this story</strong> stays with this item only and does not change the Media Library.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Scrapbook details sidebar', 'kpf-core' ),
+					'items' => array(
+						__( 'Open <strong>Scrapbook details</strong> in the sidebar for when, where, and source notes.', 'kpf-core' ),
+						__( '<strong>When</strong> can be year only, month and year, or a full date — use as much as you know.', 'kpf-core' ),
+						__( '<strong>Place</strong>, photographer, and “where the photo came from” are optional historical record fields.', 'kpf-core' ),
+						__( '<strong>Feature this item</strong> is stored for later design work. The live mosaic currently shuffles tiles, so featured does not pin a photo first.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Publish', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Publish</strong> when the photos should appear on About. Save as <strong>Draft</strong> if images or alt text are still coming.', 'kpf-core' ),
+						__( 'Hard-refresh the About page if you still see the old mosaic (frontend cache).', 'kpf-core' ),
+					),
+				),
+			),
+			'actions'     => array(
+				array(
+					'label'   => __( 'Add Media', 'kpf-core' ),
+					'url'     => $scrapbook_new,
+					'primary' => true,
+				),
+				array(
+					'label'   => __( 'Manage', 'kpf-core' ),
+					'url'     => $scrapbook_list,
+					'primary' => false,
+				),
+			),
+		);
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private static function card_editing_scrapbook_items( string $scrapbook_list ): array {
+		return array(
+			'id'         => 'scrapbook-item-edit',
+			'icon'       => 'Images',
+			'title'      => __( 'Editing scrapbook items', 'kpf-core' ),
+			'summary'    => __(
+				'Update photos, description, date, or place on an existing mosaic item (Scrapbook → Manage).',
+				'kpf-core'
+			),
+			'screenshot' => self::screenshot(
+				'scrapbook-list.webp',
+				__( 'Scrapbook → Manage list with Image, Description, When, and Where columns.', 'kpf-core' ),
+				'left top'
+			),
+			'sections' => array(
+				array(
+					'title' => __( 'Find the item', 'kpf-core' ),
+					'items' => array(
+						__( 'Go to <strong>Scrapbook → Manage</strong> (or use Manage below). This is the photo mosaic CPT, not <strong>Scrapbook → Kevin</strong>.', 'kpf-core' ),
+						__( 'Use the <strong>Image</strong>, <strong>Description</strong>, <strong>When</strong>, and <strong>Where</strong> columns to spot the right row.', 'kpf-core' ),
+						__( 'Open the description to edit.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'What to change', 'kpf-core' ),
+					'items' => array(
+						__( '<strong>Add a description</strong> updates the mosaic caption.', 'kpf-core' ),
+						__( 'Replace or add photos in the <strong>Images</strong> box. You still cannot publish with zero images.', 'kpf-core' ),
+						__( 'Update <strong>Scrapbook details</strong> for When, Place, photographer, source, or historical notes.', 'kpf-core' ),
+					),
+				),
+				array(
+					'title' => __( 'Publish & review', 'kpf-core' ),
+					'items' => array(
+						__( 'Save as <strong>Draft</strong> to hold a photo off the mosaic; <strong>Update</strong> / Publish when About should show it.', 'kpf-core' ),
+						__( 'After publish, hard-refresh About if you still see an old photo or caption.', 'kpf-core' ),
+						__( 'To remove an item from the mosaic without deleting history, set it to <strong>Draft</strong> or trash it from Manage.', 'kpf-core' ),
+					),
+				),
+			),
+			'actions'  => array(
+				array(
+					'label'   => __( 'Manage', 'kpf-core' ),
+					'url'     => $scrapbook_list,
+					'primary' => true,
 				),
 			),
 		);

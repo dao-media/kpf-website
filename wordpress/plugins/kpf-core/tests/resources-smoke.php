@@ -34,16 +34,19 @@ $stack_labels = array_map( static fn( array $row ): string => (string) ( $row['l
 foreach ( array( 'Public site', 'CMS', 'GraphQL', 'kpf-core', 'Motion', 'Design', 'Source' ) as $expected_label ) {
 	kpf_resources_assert( in_array( $expected_label, $stack_labels, true ), "Tech stack includes {$expected_label}" );
 }
-kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 3, 'Resources includes at least three topic groups' );
-kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 5, 'Resources includes at least five cards' );
+kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 4, 'Resources includes at least four topic groups' );
+kpf_resources_assert( is_array( $data['cards'] ) && count( $data['cards'] ) >= 7, 'Resources includes at least seven cards' );
 
 $group_ids = array_map( static fn( array $group ): string => (string) ( $group['id'] ?? '' ), $data['groups'] );
 kpf_resources_assert( in_array( 'page-content', $group_ids, true ), 'Resources includes Page content topic' );
+kpf_resources_assert( in_array( 'scrapbook', $group_ids, true ), 'Resources includes Scrapbook topic' );
 kpf_resources_assert( in_array( 'kevin-stories', $group_ids, true ), 'Resources includes Kevin’s Stories topic' );
 kpf_resources_assert( in_array( 'grants-partners', $group_ids, true ), 'Resources includes Grants & partners topic' );
 
 $ids = array_map( static fn( array $card ): string => (string) ( $card['id'] ?? '' ), $data['cards'] );
 kpf_resources_assert( in_array( 'page-copy', $ids, true ), 'Resources includes Editing page content card' );
+kpf_resources_assert( in_array( 'scrapbook-item', $ids, true ), 'Resources includes Adding a scrapbook item card' );
+kpf_resources_assert( in_array( 'scrapbook-item-edit', $ids, true ), 'Resources includes Editing scrapbook items card' );
 kpf_resources_assert( in_array( 'kevin-story', $ids, true ), 'Resources includes Kevin’s Story card' );
 kpf_resources_assert( in_array( 'kevin-story-edit', $ids, true ), 'Resources includes Editing Kevin’s Stories card' );
 kpf_resources_assert( in_array( 'grantee', $ids, true ), 'Resources includes Grantee card' );
@@ -118,6 +121,31 @@ kpf_resources_assert( false !== stripos( (string) $page_blob, 'Save design' ), '
 kpf_resources_assert( false !== stripos( (string) $page_blob, 'Page copy' ), 'Page content card names the Page copy column' );
 kpf_resources_assert( false !== stripos( (string) $page_blob, 'built-in' ), 'Page content card warns about built-in layouts' );
 kpf_resources_assert( is_array( $page_copy['screenshots'] ?? null ) && count( $page_copy['screenshots'] ) >= 2, 'Page content card includes two screenshots' );
+
+$scrapbook = null;
+$scrapbook_edit = null;
+foreach ( $data['cards'] as $card ) {
+	if ( 'scrapbook-item' === ( $card['id'] ?? '' ) ) {
+		$scrapbook = $card;
+	}
+	if ( 'scrapbook-item-edit' === ( $card['id'] ?? '' ) ) {
+		$scrapbook_edit = $card;
+	}
+}
+kpf_resources_assert( is_array( $scrapbook ), 'Adding a scrapbook item card resolved' );
+kpf_resources_assert( is_array( $scrapbook_edit ), 'Editing scrapbook items card resolved' );
+$scrapbook_blob = wp_json_encode( $scrapbook );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_blob, 'Images' ), 'Scrapbook card mentions the Images box' );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_blob, 'Add a description' ), 'Scrapbook card mentions Add a description' );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_blob, 'cannot publish' ), 'Scrapbook card says you cannot publish without an image' );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_blob, 'The work' ), 'Scrapbook card points to About The work mosaic' );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_blob, 'Kevin' ), 'Scrapbook card distinguishes Kevin slides' );
+kpf_resources_assert( is_array( $scrapbook['screenshots'] ?? null ) && count( $scrapbook['screenshots'] ) >= 2, 'Scrapbook card includes two screenshots' );
+
+$scrapbook_edit_blob = wp_json_encode( $scrapbook_edit );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_edit_blob, 'Manage' ), 'Edit scrapbook card points to Manage' );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_edit_blob, 'Kevin' ), 'Edit scrapbook card distinguishes Kevin slides' );
+kpf_resources_assert( false !== stripos( (string) $scrapbook_edit_blob, 'Images' ), 'Edit scrapbook card mentions the Images box' );
 
 require_once ABSPATH . 'wp-admin/includes/admin.php';
 

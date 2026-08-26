@@ -1,8 +1,6 @@
 const {
   KPF_PAGE_SHELL_QUERY,
   KPF_PAGE_NODE_CORE,
-  KPF_PAGE_DESIGN_FALLBACK,
-  KPF_PAGE_DESIGN_HTML,
 } = require("./pageChrome");
 const { KPF_GRANTS_QUERY, KPF_GRANTS_TOTAL_QUERY } = require("../lib/grantsQuery");
 const { KPF_SCRAPBOOK_TILES_QUERY } = require("../lib/scrapbookTiles");
@@ -26,15 +24,6 @@ const KPF_CONTACT_FORM_QUERY = `
     title
     slug
     definitionJson
-  }
-`;
-
-const KPF_BLOG_ARCHIVE_DESIGN_QUERY = `
-  kpfBlogArchiveDesign: kpfDesignTemplate(postType: "post", view: "archive") {
-    databaseId
-    title
-    html
-    css
   }
 `;
 
@@ -75,10 +64,8 @@ const GET_BLOG_PAGE = `
   query GetBlogPage($uri: ID!) {
     ${KPF_PAGE_SHELL_QUERY}
     ${KPF_BLOG_POSTS_QUERY}
-    ${KPF_BLOG_ARCHIVE_DESIGN_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}
-      ${KPF_PAGE_DESIGN_HTML}
     }
   }
 `;
@@ -98,7 +85,7 @@ const GET_PAGE = `
     ${KPF_PAGE_SHELL_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}
-      ${KPF_PAGE_DESIGN_FALLBACK}
+      content
     }
   }
 `;

@@ -57,14 +57,19 @@ describe("slug Faust page queries", () => {
     );
   });
 
-  it("Blog fetches posts plus slim design HTML", () => {
+  it("Blog fetches posts, not Mustache design HTML", () => {
     assert.match(GET_BLOG_PAGE, /query GetBlogPage/);
     assert.match(GET_BLOG_PAGE, /kpfBlogPosts/);
-    assert.match(GET_BLOG_PAGE, /kpfPageDesign/);
-    assert.match(GET_BLOG_PAGE, /kpfBlogArchiveDesign/);
     assertOmits(
       GET_BLOG_PAGE,
-      [/foundationEvents/, /kpfQuery\(slug: "grants"\)/, /kpfKevinSlides/, /kpfForm/],
+      [
+        /kpfPageDesign/,
+        /kpfBlogArchiveDesign/,
+        /foundationEvents/,
+        /kpfQuery\(slug: "grants"\)/,
+        /kpfKevinSlides/,
+        /kpfForm/,
+      ],
       "GetBlogPage",
     );
   });
@@ -79,13 +84,20 @@ describe("slug Faust page queries", () => {
     );
   });
 
-  it("fallback GetPage keeps Mustache design fields and drops listing overfetch", () => {
+  it("fallback GetPage fetches Gutenberg content, not Mustache design HTML", () => {
     assert.match(GET_PAGE, /query GetPage/);
-    assert.match(GET_PAGE, /kpfPageDesign/);
-    assert.match(GET_PAGE, /kpfDesignFields/);
+    assert.match(GET_PAGE, /^\s+content$/m);
     assertOmits(
       GET_PAGE,
-      [/foundationEvents/, /kpfQuery\(slug: "grants"\)/, /kpfKevinSlides/, /kpfBlogPosts/, /editorBlocks/],
+      [
+        /kpfPageDesign/,
+        /kpfDesignFields/,
+        /foundationEvents/,
+        /kpfQuery\(slug: "grants"\)/,
+        /kpfKevinSlides/,
+        /kpfBlogPosts/,
+        /editorBlocks/,
+      ],
       "GetPage",
     );
   });

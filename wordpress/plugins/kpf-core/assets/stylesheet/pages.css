@@ -5472,23 +5472,27 @@ a.kpf-blog-row:focus-visible {
 	color: var(--kpf-ember);
 }
 
-/* Privacy: stack TOC above prose until desktop */
-.kpf-page--privacy .kpf-post-body__inner {
+/* Privacy + generic content pages: stack TOC above prose until desktop */
+.kpf-page--privacy .kpf-post-body__inner,
+.kpf-page--content .kpf-post-body__inner {
 	gap: var(--kpf-space-lg);
 }
 
 @media (max-width: 63.99rem) {
-	.kpf-page--privacy .kpf-post-sidebar {
+	.kpf-page--privacy .kpf-post-sidebar,
+	.kpf-page--content .kpf-post-sidebar {
 		position: static;
 	}
 
-	.kpf-page--privacy .kpf-post-toc {
+	.kpf-page--privacy .kpf-post-toc,
+	.kpf-page--content .kpf-post-toc {
 		max-width: none;
 	}
 }
 
 @media (min-width: 30rem) and (max-width: 63.99rem) {
-	.kpf-page--privacy .kpf-post-toc__list {
+	.kpf-page--privacy .kpf-post-toc__list,
+	.kpf-page--content .kpf-post-toc__list {
 		display: grid;
 		gap: 0.5rem 1rem;
 		grid-template-columns: repeat(2, minmax(0, 1fr));

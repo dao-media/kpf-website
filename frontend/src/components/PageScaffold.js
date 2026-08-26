@@ -1,14 +1,14 @@
 import AboutPageScaffold from "@/components/AboutPageScaffold";
 import BlogPageScaffold from "@/components/BlogPageScaffold";
 import ContactPageScaffold from "@/components/ContactPageScaffold";
+import ContentPageScaffold from "@/components/ContentPageScaffold";
 import EventsPageScaffold from "@/components/EventsPageScaffold";
-import PageDesignRenderer from "@/components/PageDesignRenderer";
 import PrivacyPageScaffold from "@/components/PrivacyPageScaffold";
 import { useRouter } from "next/router";
 
 /**
- * Prefer slug-matched React scaffolds (interactive 1:1 builds);
- * fall back to CMS design HTML when no scaffold exists.
+ * Prefer slug-matched React scaffolds (interactive 1:1 builds).
+ * Unknown WP pages use Gutenberg content, never Mustache design HTML.
  *
  * Route path wins over `page.slug` so a stalled Faust template query cannot
  * leave the previous scaffold on screen after client-side nav.
@@ -23,7 +23,6 @@ export default function PageScaffold({
   scrapbookTiles = [],
   events = [],
   posts = null,
-  blogArchiveDesign = null,
 }) {
   const router = useRouter();
   const routeSlug = String(router?.asPath || "")
@@ -53,19 +52,6 @@ export default function PageScaffold({
   }
 
   if (slug === "blog") {
-    const design = page?.kpfPageDesign?.html
-      ? page.kpfPageDesign
-      : blogArchiveDesign?.html
-        ? blogArchiveDesign
-        : null;
-    if (design) {
-      return (
-        <PageDesignRenderer
-          page={{ ...page, kpfPageDesign: design }}
-          posts={posts}
-        />
-      );
-    }
     return <BlogPageScaffold media={media} posts={posts} />;
   }
 
@@ -77,9 +63,5 @@ export default function PageScaffold({
     return <ContactPageScaffold form={contactForm} media={media} />;
   }
 
-  if (page?.kpfPageDesign?.html) {
-    return <PageDesignRenderer page={page} grantsTotal={grantsTotal} />;
-  }
-
-  return <PageDesignRenderer page={page} grantsTotal={grantsTotal} />;
+  return <ContentPageScaffold page={page} />;
 }

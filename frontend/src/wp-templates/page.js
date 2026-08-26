@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 import PageFromFaust, { pageVariables } from "./PageFromFaust";
 const { GET_PAGE } = require("./pageQueries");
 
-/** Unknown pages: Mustache design HTML only. No grants/events/blog overfetch. */
+/** Unknown pages: Gutenberg content via ContentPageScaffold. No design HTML. */
 export default function PageTemplate(props) {
   return <PageFromFaust {...props} />;
 }

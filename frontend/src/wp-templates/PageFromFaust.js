@@ -46,7 +46,6 @@ export default function PageFromFaust(props) {
         scrapbookTiles={scrapbookTiles}
         events={events}
         posts={posts}
-        blogArchiveDesign={props?.data?.kpfBlogArchiveDesign || null}
       />
     </>
   );

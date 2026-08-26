@@ -19,19 +19,19 @@ const HOME = {
     cutouts: [
       {
         key: "home.kevinDad",
-        src: "/media/home/kevin-with-dad.png",
+        src: "/media/home/kevin-with-dad.webp",
         alt: "Kevin Popke with his father",
         className: "kpf-hero__cutout kpf-hero__cutout--dad",
       },
       {
         key: "home.kevinAlumni",
-        src: "/media/home/kevin-alumni.png",
+        src: "/media/home/kevin-alumni.webp",
         alt: "Kevin Popke, U.S. Army alumni portrait",
         className: "kpf-hero__cutout kpf-hero__cutout--alumni",
       },
       {
         key: "home.kevinRunner",
-        src: "/media/home/kevin-runner.png",
+        src: "/media/home/kevin-runner.webp",
         alt: "Kevin Popke running",
         className: "kpf-hero__cutout kpf-hero__cutout--runner",
       },
@@ -122,7 +122,7 @@ const HOME = {
     ],
     media: {
       key: "home.dunes",
-      src: "/media/home/dunes.png",
+      src: "/media/home/dunes.webp",
       alt: "Sand dunes along a Florida beach",
     },
     collage: [
@@ -353,17 +353,17 @@ const ABOUT = {
     items: [
       {
         key: "about.gallery1",
-        src: "/media/home/kevin-alumni.png",
+        src: "/media/home/kevin-alumni.webp",
         alt: "Kevin Popke in flight gear",
       },
       {
         key: "about.gallery2",
-        src: "/media/home/kevin-runner.png",
+        src: "/media/home/kevin-runner.webp",
         alt: "Kevin Popke running",
       },
       {
         key: "about.gallery3",
-        src: "/media/home/kevin-with-dad.png",
+        src: "/media/home/kevin-with-dad.webp",
         alt: "Kevin Popke with family",
       },
       {

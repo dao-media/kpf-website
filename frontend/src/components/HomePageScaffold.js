@@ -93,11 +93,17 @@ export default function HomePageScaffold({
           {(copy.hero.cutouts || []).map((cutout) => {
             const resolved = resolveMedia(media, cutout.key, cutout);
             if (!resolved.src) return null;
+            const isAlumni = cutout.key === "home.kevinAlumni";
             return (
               <div key={cutout.key} className={cutout.className}>
-                {/* Native img: CSS mask-image is sized to the img box. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={resolved.src} alt={resolved.alt || ""} decoding="async" />
+                <KpfImage
+                  src={resolved.src}
+                  alt={resolved.alt || ""}
+                  fill
+                  sizes="(max-width: 47.99rem) 16px, (min-width: 64rem) 42vw, 100vw"
+                  priority={isAlumni}
+                  loading={isAlumni ? undefined : "eager"}
+                />
               </div>
             );
           })}

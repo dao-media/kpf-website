@@ -1734,6 +1734,15 @@ html.kpf-scroll-smoothed body {
 	width: auto;
 }
 
+/* next/image fill: keep the optimizer img as the mask target. */
+.kpf-hero__cutout > span {
+	display: block;
+	height: 100%;
+	inset: 0;
+	position: absolute;
+	width: 100%;
+}
+
 .kpf-hero__cutout img {
 	display: block;
 	height: 100%;

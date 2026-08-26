@@ -4,7 +4,7 @@ import Image from "next/image";
  * next/image wrapper for Faust scaffolds. Remote DreamHost URLs go through
  * the optimizer; local `/media/` paths stay same-origin.
  *
- * Hero cutouts keep a native <img> (CSS mask-image targets the img box).
+ * Home hero cutouts use fill so CSS mask-image still targets the img box.
  */
 export default function KpfImage({
   src,

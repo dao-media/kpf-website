@@ -141,13 +141,21 @@ function buildTocTree(toc) {
 }
 
 /**
- * @param {unknown} authorName
+ * Public byline from a WPGraphQL user node or a display-name string.
+ * Prefers first + last when GraphQL exposes them; otherwise the display name.
+ *
+ * @param {unknown} author
  * @returns {string}
  */
-function blogAuthorLabel(authorName) {
-  const name = stripHtml(authorName);
-  if (!name || /^admin$/i.test(name)) return "the KPF team";
-  return name;
+function blogAuthorLabel(author) {
+  if (author && typeof author === "object") {
+    const first = stripHtml(author.firstName);
+    const last = stripHtml(author.lastName);
+    const full = [first, last].filter(Boolean).join(" ");
+    if (full) return full;
+    return stripHtml(author.name);
+  }
+  return stripHtml(author);
 }
 
 /**
@@ -205,7 +213,7 @@ function normalizeBlogPostPage(post) {
     uri: String(post.uri || "").trim(),
     date: formatPostDate(post.date),
     readTime: estimateReadTime(post.content),
-    author: blogAuthorLabel(post.author?.node?.name),
+    author: blogAuthorLabel(post.author?.node),
     category,
     categorySlug,
     html,

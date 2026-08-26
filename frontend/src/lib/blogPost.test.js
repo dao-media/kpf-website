@@ -71,9 +71,13 @@ describe("blogPost", () => {
     );
   });
 
-  it("maps admin author to the KPF team", () => {
-    assert.equal(blogAuthorLabel("admin"), "the KPF team");
+  it("uses the WordPress author display name", () => {
     assert.equal(blogAuthorLabel("Maria R."), "Maria R.");
+    assert.equal(blogAuthorLabel({ name: "Maria R." }), "Maria R.");
+    assert.equal(
+      blogAuthorLabel({ firstName: "Dane", lastName: "O'Leary", name: "admin" }),
+      "Dane O'Leary",
+    );
   });
 
   it("normalizes a GraphQL post", () => {
@@ -83,7 +87,7 @@ describe("blogPost", () => {
       uri: "/a-story/",
       date: "2026-07-19T22:26:06",
       content: "<h2>One</h2><p>word ".repeat(200) + "</p>",
-      author: { node: { name: "admin" } },
+      author: { node: { name: "Maria R." } },
       categories: { nodes: [{ name: "Events", slug: "events" }] },
       commentStatus: "open",
       comments: { nodes: [] },
@@ -92,7 +96,7 @@ describe("blogPost", () => {
       },
     });
     assert.equal(page.title, "A Story");
-    assert.equal(page.author, "the KPF team");
+    assert.equal(page.author, "Maria R.");
     assert.equal(page.toc[0].id, "one");
     assert.equal(page.media.src, "https://example.test/x.jpg");
   });

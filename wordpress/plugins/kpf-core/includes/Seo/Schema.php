@@ -65,12 +65,10 @@ final class Schema {
 			);
 
 			$headline = get_the_title($post) ?: $title;
-			$author_name = get_the_author_meta('display_name', (int) $post->post_author);
+			$author_name = self::author_display_name((int) $post->post_author);
 			$author      = array(
 				'@type' => 'Person',
-				'name'  => is_string($author_name) && $author_name !== '' && ! preg_match('/^admin$/i', $author_name)
-					? $author_name
-					: 'The KPF team',
+				'name'  => $author_name !== '' ? $author_name : get_bloginfo('name'),
 			);
 
 			$article = array(
@@ -209,6 +207,19 @@ final class Schema {
 			'@context' => 'https://schema.org',
 			'@graph'   => array_values(array_filter($graph)),
 		);
+	}
+
+	/**
+	 * First + last name when set, otherwise the WordPress display name.
+	 */
+	private static function author_display_name(int $user_id): string {
+		$first = trim((string) get_the_author_meta('first_name', $user_id));
+		$last  = trim((string) get_the_author_meta('last_name', $user_id));
+		$full  = trim($first . ' ' . $last);
+		if ($full !== '') {
+			return $full;
+		}
+		return trim((string) get_the_author_meta('display_name', $user_id));
 	}
 
 	/**

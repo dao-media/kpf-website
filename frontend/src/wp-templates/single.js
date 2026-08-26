@@ -70,6 +70,8 @@ SingleTemplate.query = gql`
       author {
         node {
           name
+          firstName
+          lastName
         }
       }
       categories {

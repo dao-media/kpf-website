@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Plus, Check } from "lucide-react";
+import { Plus } from "lucide-react";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import PartnersSlider from "@/components/PartnersSlider";
 import KpfButton from "@/components/KpfButton";
-import ProgramsCheckRuntime from "@/components/ProgramsCheckRuntime";
+import ProgramsCheckRuntime, {
+  ProgramsCheckIcon,
+} from "@/components/ProgramsCheckRuntime";
 import { HOME } from "@/lib/pageCopy";
 const { normalizeLatestBlogPost } = require("@/lib/latestBlogPost");
 const { resolveMedia } = require("@/lib/scaffoldMedia");
@@ -295,7 +297,7 @@ export default function HomePageScaffold({
               {copy.programs.items.map((item) => (
                 <li key={item.title} className="kpf-programs__item">
                   <span className="kpf-programs__check" aria-hidden="true">
-                    <Check size={28} strokeWidth={2} />
+                    <ProgramsCheckIcon size={28} />
                   </span>
                   <div>
                     <h3 className="kpf-programs__item-title">{item.title}</h3>

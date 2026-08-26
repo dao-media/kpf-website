@@ -6,6 +6,31 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
 /**
+ * Lucide Check geometry, path reversed so DrawSVG 0→100% writes the mark
+ * the way a person does: short arm → corner → long arm.
+ */
+export function ProgramsCheckIcon({ size = 28 }) {
+  return (
+    <svg
+      className="lucide lucide-check"
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 12l5 5L20 6" />
+    </svg>
+  );
+}
+
+/**
  * Programs list checkmarks: on enter viewport, wait 1s, then each icon
  * disappears → draws on via stroke → subtle pop. Stagger 0.4s.
  */

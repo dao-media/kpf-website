@@ -403,10 +403,11 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
             />
             <img
               className="kpf-hero__media"
-              src="/media/events/hero.jpg"
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
               alt={heroAlt}
+              width={2400}
+              height={1601}
               decoding="async"
-              loading="lazy"
             />
           </picture>
         </div>

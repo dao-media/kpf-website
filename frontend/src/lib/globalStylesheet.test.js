@@ -31,6 +31,18 @@ describe("globalStylesheet", () => {
     assert.equal(withoutPagesLayer(css), ".kpf-btn{color:red}");
   });
 
+  it("keeps only the CMS tokens block as the public overlay", () => {
+    const { publicOverlayCss } = require("./globalStylesheet");
+    const overlay = publicOverlayCss(
+      `:root{--kpf-ember:#bb0d0d}\n/* kpf-tokens:start */\n:root{--kpf-ember:#c00}\n/* kpf-tokens:end */\n${PAGES_MARKER}\n.kpf-header{}`,
+    );
+    assert.equal(
+      overlay,
+      "/* kpf-tokens:start */\n:root{--kpf-ember:#c00}\n/* kpf-tokens:end */",
+    );
+    assert.equal(publicOverlayCss(":root{--kpf-ember:#bb0d0d}"), "");
+  });
+
   it("builds a cache-busted same-origin CSS URL from page props", () => {
     assert.equal(stylesheetHref(""), "/kpf-stylesheet.css");
     assert.equal(

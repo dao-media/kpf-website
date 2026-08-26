@@ -391,7 +391,7 @@ function Brandmark({ className = "kpf-header__mark" }) {
  * Sticky floating site header — Figma Pages Nav `616:1061`.
  * White bar: brandmark + wordmark · spacer · nav · Donate · mobile menu.
  *
- * First document load: bar fades/pops in, then badge drops from above.
+ * First document load: header is visible immediately; badge drops from above.
  * Client-side route changes keep the resting state (no replay).
  */
 export default function KpfHeader({
@@ -425,10 +425,9 @@ export default function KpfHeader({
 
     const badge = badgeEl();
 
-    // Hide-then-enter uses translate only. Never autoAlpha — CMS hover
-    // keyframes (overwrite:auto) and SPA context.revert() were restoring
-    // autoAlpha:0 and parking the anniversary mark invisible.
-    gsap.set(header, { autoAlpha: 0, y: -8, overwrite: false });
+    // Header bar is in-flow from first paint (hiding it with autoAlpha caused
+    // a visible jump). Only the badge drops in with transform.
+    gsap.set(header, { autoAlpha: 1, y: 0, overwrite: false });
     if (badge) gsap.set(badge, { y: BADGE_DROP_FROM_Y, overwrite: false });
 
     let settled = false;
@@ -449,25 +448,15 @@ export default function KpfHeader({
         onComplete: settleOnce,
       });
 
-      tl.to(header, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.5,
-        ease: "power3.out",
-        overwrite: false,
-      });
-
       if (badge) {
-        tl.to(
-          badge,
-          {
-            y: 0,
-            duration: 0.7,
-            ease: "power3.out",
-            overwrite: false,
-          },
-          "-=0.12",
-        );
+        tl.to(badge, {
+          y: 0,
+          duration: 0.7,
+          ease: "power3.out",
+          overwrite: false,
+        });
+      } else {
+        settleOnce();
       }
     }, header);
 

@@ -2,7 +2,9 @@ import Script from "next/script";
 import { useRouter } from "next/router";
 
 const {
+  allowlistedScriptSrc,
   filterSnippetsForPath,
+  isSafePublicSnippet,
   pathFromAsPath,
 } = require("@/lib/codeSnippets");
 
@@ -21,19 +23,22 @@ function SnippetMarkup({ snippet }) {
   }
 
   if (snippet.type === "js") {
+    const src = allowlistedScriptSrc(code);
+    if (!src) return null;
     const strategy =
       snippet.location === "footer" ? "lazyOnload" : "afterInteractive";
     return (
       <Script
         id={`kpf-code-js-${id}`}
+        src={src}
         strategy={strategy}
         data-kpf-code-snippet={id}
         data-kpf-code-location={snippet.location}
-      >
-        {code}
-      </Script>
+      />
     );
   }
+
+  if (!isSafePublicSnippet(snippet)) return null;
 
   return (
     <div
@@ -54,8 +59,10 @@ export default function CodeSnippetsRuntime({
 }) {
   const router = useRouter();
   const path = pathFromAsPath(router.asPath);
-  const snippets = filterSnippetsForPath(rawSnippets, path).filter((item) =>
-    slot === "footer" ? item.location === "footer" : item.location !== "footer"
+  const snippets = filterSnippetsForPath(rawSnippets, path).filter(
+    (item) =>
+      isSafePublicSnippet(item) &&
+      (slot === "footer" ? item.location === "footer" : item.location !== "footer")
   );
 
   if (!snippets.length) {

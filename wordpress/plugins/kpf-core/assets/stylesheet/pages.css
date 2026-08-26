@@ -611,14 +611,10 @@ html.kpf-scroll-smoothed body {
 
 /*
  * First load: park the badge above the viewport (scripting only) so the
- * entrance is a drop. `.kpf-nav-entered` is set when the timeline settles.
+ * entrance is a drop. Keep the header bar visible — hiding it was a layout jump.
+ * `.kpf-nav-entered` is set when the timeline settles.
  */
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-	html:not(.kpf-nav-entered) .kpf-header {
-		opacity: 0;
-		transform: translate3d(0, -8px, 0);
-	}
-
 	html:not(.kpf-nav-entered) .kpf-header [data-kpf-badge] {
 		transform: translate3d(0, -8.75rem, 0);
 	}
@@ -1905,10 +1901,25 @@ html.kpf-scroll-smoothed body {
  */
 .kpf-partners {
 	--kpf-partners-gap: 1rem; /* 16 */
+	--kpf-partners-visible: 1;
+	--kpf-partners-peek: 1.5rem; /* 24 — matches PartnersSlider PEEK_PX */
 	background: var(--kpf-parchment, #f4efea);
 	overflow: hidden;
 	padding-block: 2rem 1.75rem; /* 32 / 28 */
 	padding-inline: 0;
+}
+
+@media (min-width: 48rem) {
+	.kpf-partners {
+		--kpf-partners-visible: 3;
+		--kpf-partners-peek: 0px;
+	}
+}
+
+@media (min-width: 64rem) {
+	.kpf-partners {
+		--kpf-partners-visible: 4;
+	}
 }
 
 .kpf-partners__inner {
@@ -1929,6 +1940,8 @@ html.kpf-scroll-smoothed body {
 }
 
 .kpf-partners__viewport {
+	container-type: inline-size;
+	min-height: var(--kpf-partners-chip-height, 3.5rem);
 	overflow: hidden;
 	width: 100%;
 }
@@ -1949,6 +1962,9 @@ html.kpf-scroll-smoothed body {
 	--kpf-partners-chip-height: 3.5rem; /* 56 */
 	--kpf-partners-chip-pad-block: 0.5rem; /* 8 */
 	--kpf-partners-chip-pad-inline: 0.625rem; /* 10 */
+	--kpf-partners-chip-width: calc(
+		100cqi - var(--kpf-partners-peek) - var(--kpf-partners-gap)
+	);
 	align-items: center;
 	background: var(--kpf-color-bg-surface, #fff);
 	border-radius: var(--kpf-radius-md); /* 8 */
@@ -1956,7 +1972,7 @@ html.kpf-scroll-smoothed body {
 	color: inherit;
 	cursor: pointer;
 	display: inline-flex;
-	flex: 0 0 var(--kpf-partners-chip-width, auto);
+	flex: 0 0 var(--kpf-partners-chip-width);
 	gap: 0.375rem; /* 6 */
 	height: var(--kpf-partners-chip-height);
 	justify-content: center;
@@ -1965,7 +1981,16 @@ html.kpf-scroll-smoothed body {
 	overflow: hidden;
 	padding: var(--kpf-partners-chip-pad-block) var(--kpf-partners-chip-pad-inline);
 	text-decoration: none;
-	width: var(--kpf-partners-chip-width, auto);
+	width: var(--kpf-partners-chip-width);
+}
+
+@media (min-width: 48rem) {
+	.kpf-partners__chip {
+		--kpf-partners-chip-width: calc(
+			(100cqi - (var(--kpf-partners-visible) - 1) * var(--kpf-partners-gap)) /
+				var(--kpf-partners-visible)
+		);
+	}
 }
 
 /*

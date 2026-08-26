@@ -44,6 +44,17 @@ function shouldSkipSeoLookup(pathname) {
   );
 }
 
+const WP_LOOKUP_MS = 1500;
+
+function wpLookupSignal() {
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(WP_LOOKUP_MS);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), WP_LOOKUP_MS);
+  return controller.signal;
+}
+
 export async function middleware(request) {
   const incomingHost = (
     request.headers.get("x-forwarded-host") ||
@@ -97,15 +108,34 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  try {
-    const maintenanceLookup = await fetch(
-      `${wordpressUrl}/wp-json/kpf-designs/v1/public/maintenance`,
-      {
-        headers: { Accept: "application/json" },
-      }
-    );
+  const skipSeo = shouldSkipSeoLookup(pathname);
 
-    if (maintenanceLookup.ok) {
+  try {
+    const lookups = [
+      fetch(`${wordpressUrl}/wp-json/kpf-designs/v1/public/maintenance`, {
+        headers: { Accept: "application/json" },
+        signal: wpLookupSignal(),
+      }),
+    ];
+    if (!skipSeo) {
+      lookups.push(
+        fetch(
+          `${wordpressUrl}/wp-json/kpf-seo/v1/public/redirect?path=${encodeURIComponent(
+            pathname
+          )}`,
+          {
+            headers: { Accept: "application/json" },
+            signal: wpLookupSignal(),
+          }
+        )
+      );
+    }
+
+    const settled = await Promise.allSettled(lookups);
+    const maintenanceLookup =
+      settled[0]?.status === "fulfilled" ? settled[0].value : null;
+
+    if (maintenanceLookup?.ok) {
       const maintenance = await maintenanceLookup.json();
       if (maintenance?.enabled) {
         const targetPath = maintenance.path || "/coming-soon/";
@@ -114,25 +144,13 @@ export async function middleware(request) {
         }
       }
     }
-  } catch (error) {
-    // Fail open for maintenance checks.
-  }
 
-  if (shouldSkipSeoLookup(pathname)) {
-    return NextResponse.next();
-  }
+    if (skipSeo) {
+      return NextResponse.next();
+    }
 
-  try {
-    const lookup = await fetch(
-      `${wordpressUrl}/wp-json/kpf-seo/v1/public/redirect?path=${encodeURIComponent(
-        pathname
-      )}`,
-      {
-        headers: { Accept: "application/json" },
-      }
-    );
-
-    if (!lookup.ok) {
+    const lookup = settled[1]?.status === "fulfilled" ? settled[1].value : null;
+    if (!lookup?.ok) {
       return NextResponse.next();
     }
 

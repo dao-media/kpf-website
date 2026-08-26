@@ -223,7 +223,9 @@ export default function PartnersSlider({
               />
             ))}
           </div>
-        ) : null}
+        ) : (
+          <div className="kpf-partners__dots" aria-hidden="true" />
+        )}
       </div>
     </section>
   );

@@ -81,3 +81,36 @@ describe("filterSnippetsForPath", () => {
     );
   });
 });
+
+describe("public snippet allowlist", () => {
+  const { allowlistedScriptSrc, isSafePublicSnippet } = require("./codeSnippets.js");
+
+  it("allows https GTM script src and rejects inline JS", () => {
+    assert.equal(
+      allowlistedScriptSrc("https://www.googletagmanager.com/gtm.js?id=GTM-TEST"),
+      "https://www.googletagmanager.com/gtm.js?id=GTM-TEST"
+    );
+    assert.equal(allowlistedScriptSrc("alert(1)"), "");
+    assert.equal(
+      isSafePublicSnippet({ type: "js", code: "alert(1)" }),
+      false
+    );
+  });
+
+  it("allows reconstructed GTM HTML and rejects other scripts", () => {
+    assert.equal(
+      isSafePublicSnippet({
+        type: "html",
+        code: "<script>alert(1)</script>",
+      }),
+      false
+    );
+    assert.equal(
+      isSafePublicSnippet({
+        type: "html",
+        code: "<script src='https://www.googletagmanager.com/gtm.js?id=GTM-TEST'></script>",
+      }),
+      true
+    );
+  });
+});

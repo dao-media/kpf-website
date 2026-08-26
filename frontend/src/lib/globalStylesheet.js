@@ -11,6 +11,7 @@ const KPF_STYLESHEET_QUERY = `
 
 const PAGES_MARKER = "/* === KPF_PAGES_LAYER === */";
 const PAGES_HEADER_RE = /\/\*\*?[\s*]*KPF Pages stylesheet/;
+const TOKENS_BLOCK_RE = /\/\* kpf-tokens:start \*\/[\s\S]*?\/\* kpf-tokens:end \*\//;
 
 /**
  * Byte offset of the first pages layer (marker or the shipped file header).
@@ -30,6 +31,16 @@ function withoutPagesLayer(css) {
   const text = String(css || "");
   const index = pagesLayerIndex(text);
   return (index === -1 ? text : text.slice(0, index)).trim();
+}
+
+/**
+ * Public overlay is the CMS tokens block only. Webpack already ships
+ * foundation (components.css) and pages.css.
+ */
+function publicOverlayCss(css) {
+  const withoutPages = withoutPagesLayer(css);
+  const match = withoutPages.match(TOKENS_BLOCK_RE);
+  return match ? match[0].trim() : "";
 }
 
 function stylesheetHref(revision) {
@@ -57,4 +68,5 @@ module.exports = {
   stylesheetHref,
   stylesheetMetaFromPageProps,
   withoutPagesLayer,
+  publicOverlayCss,
 };

@@ -52,6 +52,10 @@ final class HeadlessAppearance {
 	 * @return string[]
 	 */
 	public static function map_meta_cap( array $caps, string $cap ): array {
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return $caps;
+		}
+
 		if ( in_array( $cap, array( 'install_themes', 'delete_themes', 'update_themes', 'edit_themes' ), true ) ) {
 			return array( 'do_not_allow' );
 		}

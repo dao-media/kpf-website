@@ -82,9 +82,56 @@ function filterSnippetsForPath(snippets, path) {
   return list.filter((snippet) => snippetApplies(snippet, path));
 }
 
+const ALLOWED_SCRIPT_HOSTS = new Set([
+  "www.googletagmanager.com",
+  "googletagmanager.com",
+  "www.google-analytics.com",
+  "google-analytics.com",
+  "www.googletagmanager.cn",
+]);
+
+function allowlistedScriptSrc(code) {
+  const raw = String(code || "").trim();
+  if (!raw) return "";
+
+  let url = raw;
+  const srcMatch = raw.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+  const hrefMatch = raw.match(/https:\/\/[^\s'"]+/i);
+  if (srcMatch) url = srcMatch[1];
+  else if (hrefMatch && !/^https:\/\//i.test(raw)) url = hrefMatch[0];
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") return "";
+    return ALLOWED_SCRIPT_HOSTS.has(parsed.hostname.toLowerCase())
+      ? parsed.toString()
+      : "";
+  } catch {
+    return "";
+  }
+}
+
+function isAllowlistedHtml(code) {
+  const text = String(code || "");
+  if (!/<script/i.test(text)) return true;
+  return /GTM-[A-Z0-9]+/i.test(text) && /googletagmanager\.com/i.test(text);
+}
+
+function isSafePublicSnippet(snippet) {
+  if (!snippet) return false;
+  const type = snippet.type || "html";
+  const code = String(snippet.code || "");
+  if (!code.trim()) return false;
+  if (type === "css") return true;
+  if (type === "js") return Boolean(allowlistedScriptSrc(code));
+  return isAllowlistedHtml(code);
+}
+
 module.exports = {
   KPF_CODE_SNIPPETS_QUERY,
+  allowlistedScriptSrc,
   filterSnippetsForPath,
+  isSafePublicSnippet,
   normalizePath,
   pathFromAsPath,
   pathMatches,

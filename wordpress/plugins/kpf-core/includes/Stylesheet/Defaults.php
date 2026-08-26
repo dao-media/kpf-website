@@ -147,6 +147,25 @@ final class Defaults {
 	}
 
 	/**
+	 * Public Faust overlay: managed token deltas only.
+	 * Webpack already ships foundation.css (components.css) and pages.css.
+	 */
+	public static function public_overlay_css( string $css ): string {
+		$without_pages = self::strip_pages_layer( $css );
+		if ( '' === $without_pages ) {
+			return '';
+		}
+
+		$start = \KPF\Core\Design\Tokens\Parser::MARKER_START;
+		$end   = \KPF\Core\Design\Tokens\Parser::MARKER_END;
+		if ( preg_match( '/' . preg_quote( $start, '/' ) . '.*?' . preg_quote( $end, '/' ) . '/s', $without_pages, $match ) ) {
+			return trim( $match[0] );
+		}
+
+		return '';
+	}
+
+	/**
 	 * Replace an existing pages layer block (from first header/marker to EOF).
 	 */
 	public static function replace_pages_layer( string $current, string $pages ): string {

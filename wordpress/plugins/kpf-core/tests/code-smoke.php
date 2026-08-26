@@ -135,6 +135,68 @@ if ( ! is_wp_error( $post_id ) && $post_id > 0 ) {
 	wp_delete_post( (int) $post_id, true );
 }
 
+$js_id = wp_insert_post(
+	array(
+		'post_type'   => ContentType::POST_TYPE,
+		'post_status' => 'publish',
+		'post_title'  => 'Code smoke inline js',
+	),
+	true
+);
+if ( ! is_wp_error( $js_id ) && $js_id > 0 ) {
+	Meta::update(
+		(int) $js_id,
+		array(
+			'location' => 'header',
+			'type'     => 'js',
+			'code'     => 'alert(1)',
+			'scope'    => 'global',
+			'urls'     => array(),
+		)
+	);
+	$assert(
+		0 === count(
+			array_filter(
+				GraphQL::active_snippets( '/' ),
+				static fn( array $item ): bool => (int) $item['databaseId'] === (int) $js_id
+			)
+		),
+		'Inline JS is omitted from public GraphQL'
+	);
+	wp_delete_post( (int) $js_id, true );
+}
+
+$gtm_id = wp_insert_post(
+	array(
+		'post_type'   => ContentType::POST_TYPE,
+		'post_status' => 'publish',
+		'post_title'  => 'Code smoke GTM',
+	),
+	true
+);
+if ( ! is_wp_error( $gtm_id ) && $gtm_id > 0 ) {
+	Meta::update(
+		(int) $gtm_id,
+		array(
+			'location' => 'header',
+			'type'     => 'html',
+			'code'     => '<script>alert(1)</script><script src="https://www.googletagmanager.com/gtm.js?id=GTM-TEST1"></script>',
+			'scope'    => 'global',
+			'urls'     => array(),
+		)
+	);
+	$gtm = array_values(
+		array_filter(
+			GraphQL::active_snippets( '/' ),
+			static fn( array $item ): bool => (int) $item['databaseId'] === (int) $gtm_id
+		)
+	);
+	$assert( 1 === count( $gtm ), 'GTM HTML is exposed as a reconstructed snippet' );
+	$assert( isset( $gtm[0]['code'] ) && str_contains( $gtm[0]['code'], 'GTM-TEST1' ), 'Reconstructed GTM keeps the container id' );
+	$assert( isset( $gtm[0]['code'] ) && ! str_contains( $gtm[0]['code'], 'alert(1)' ), 'Piggybacked inline JS is stripped from GTM snippets' );
+	wp_delete_post( (int) $gtm_id, true );
+}
+
 if ( $failures > 0 ) {
 	echo "Completed with {$failures} failure(s).\n";
 	exit( 1 );

@@ -97,7 +97,7 @@ final class Rest {
 	 * Raw CSS for the Faust <link> (no JSON wrapper, no Apollo payload).
 	 */
 	public static function public_css(): void {
-		$css      = Defaults::strip_pages_layer( GraphQL::resolve_css() );
+		$css      = Defaults::public_overlay_css( GraphQL::resolve_css() );
 		$revision = Meta::revision( $css );
 
 		status_header( 200 );

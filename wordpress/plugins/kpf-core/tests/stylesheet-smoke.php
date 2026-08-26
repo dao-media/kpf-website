@@ -86,6 +86,15 @@ $assert( Defaults::strip_pages_layer( (string) $info['css'] ) === Defaults::stri
 
 $dup_pages = ".kpf-btn{color:red}\n\n/**\n * KPF Pages stylesheet — layout utilities, chrome, and page section contracts\n */\n.kpf-header{}\n\n/**\n * KPF Pages stylesheet — layout utilities, chrome, and page section contracts\n */\n.kpf-header{}";
 $assert( '.kpf-btn{color:red}' === Defaults::strip_pages_layer( $dup_pages ), 'Duplicate pages headers strip from the first copy' );
+
+$tokens_overlay = "/* kpf-tokens:start */\n:root{--kpf-ember:#c00}\n/* kpf-tokens:end */\n\n" . Defaults::css();
+$assert( '' === Defaults::public_overlay_css( Defaults::css() ), 'Shipped foundation+pages is not a public overlay' );
+$assert(
+	str_contains( Defaults::public_overlay_css( $tokens_overlay ), 'kpf-tokens:start' )
+		&& str_contains( Defaults::public_overlay_css( $tokens_overlay ), '--kpf-ember:#c00' )
+		&& ! str_contains( Defaults::public_overlay_css( $tokens_overlay ), Defaults::PAGES_MARKER ),
+	'Public overlay is the CMS tokens block only'
+);
 $assert( str_contains( (string) $info['foundation'], '.kpf-btn--primary' ), 'GraphQL foundation layer ships component classes' );
 $assert( str_contains( (string) $info['pages'], Defaults::PAGES_MARKER ), 'GraphQL pages layer includes pages marker' );
 $assert( str_contains( (string) $info['pages'], '.kpf-header' ), 'GraphQL pages layer includes header contract' );

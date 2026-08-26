@@ -192,6 +192,8 @@ $redirect = Repository::create(array(
 kpf_assert(! is_wp_error($redirect), 'redirect create succeeds');
 $match = Matcher::match('/old-smoke-path');
 kpf_assert(is_array($match) && $match['target_url'] === 'http://localhost:3000/new-smoke-path', 'exact redirect matches');
+$fresh = Repository::get((int) $redirect['id']);
+kpf_assert(is_array($fresh) && 0 === (int) $fresh['hit_count'], 'public GET match does not write hit_count');
 
 $loop = Repository::create(array(
 	'source_path' => '/loop-me',

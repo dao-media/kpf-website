@@ -95,7 +95,14 @@ final class Repository {
 		return (bool) $wpdb->delete(Table::name(), array( 'id' => $id ), array( '%d' ));
 	}
 
+	/**
+	 * Kept for authenticated admin tooling. Public GET matchers must not call this.
+	 */
 	public static function increment_hits(int $id): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
 		global $wpdb;
 		$table = Table::name();
 		$wpdb->query($wpdb->prepare("UPDATE {$table} SET hit_count = hit_count + 1 WHERE id = %d", $id));

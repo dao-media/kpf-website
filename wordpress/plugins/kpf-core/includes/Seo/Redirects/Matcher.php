@@ -18,7 +18,6 @@ final class Matcher {
 		foreach ($rules as $rule) {
 			if (! $rule['is_regex']) {
 				if (Repository::normalize_path((string) $rule['source_path']) === $path) {
-					Repository::increment_hits((int) $rule['id']);
 					return $rule;
 				}
 				continue;
@@ -34,7 +33,6 @@ final class Matcher {
 					$target = str_replace('$' . $index, $value, $target);
 				}
 				$rule['target_url'] = $target;
-				Repository::increment_hits((int) $rule['id']);
 				return $rule;
 			}
 		}

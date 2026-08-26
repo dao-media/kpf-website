@@ -1,4 +1,4 @@
-const { withoutPagesLayer } = require("@/lib/globalStylesheet");
+const { publicOverlayCss } = require("@/lib/globalStylesheet");
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
   /\/$/,
@@ -15,7 +15,7 @@ async function fetchFromRest() {
   if (!response.ok) return null;
   const type = String(response.headers.get("content-type") || "");
   if (type.includes("application/json")) return null;
-  const css = withoutPagesLayer(await response.text());
+  const css = publicOverlayCss(await response.text());
   return css || null;
 }
 
@@ -31,7 +31,7 @@ async function fetchFromGraphQL() {
   });
   if (!response.ok) return null;
   const payload = await response.json();
-  return withoutPagesLayer(payload?.data?.kpfStylesheet || "");
+  return publicOverlayCss(payload?.data?.kpfStylesheet || "");
 }
 
 export default async function handler(req, res) {

@@ -35,7 +35,7 @@ final class GraphQL {
 			'kpfCodeSnippets',
 			array(
 				'type'        => array( 'list_of' => 'KpfCodeSnippet' ),
-				'description' => 'Active code snippets for the current path (or all global snippets when path is omitted).',
+				'description' => 'Allowlisted public snippets (sanitized CSS, reconstructed GTM, or https script src on known hosts). Raw admin JS is never returned.',
 				'args'        => array(
 					'path' => array(
 						'type'        => 'String',
@@ -79,16 +79,22 @@ final class GraphQL {
 			if ( '' !== $path && ! Matching::snippet_applies( $meta, $path ) ) {
 				continue;
 			}
-			// When path is empty, still return URL-scoped snippets so the client can filter.
-			$out[] = array(
-				'databaseId' => (int) $post->ID,
-				'name'       => get_the_title( $post ),
-				'location'   => (string) $meta['location'],
-				'type'       => (string) $meta['type'],
-				'code'       => (string) $meta['code'],
-				'scope'      => (string) $meta['scope'],
-				'urls'       => array_values( $meta['urls'] ),
+			$public = PublicPayload::for_public(
+				array(
+					'databaseId' => (int) $post->ID,
+					'name'       => get_the_title( $post ),
+					'location'   => (string) $meta['location'],
+					'type'       => (string) $meta['type'],
+					'code'       => (string) $meta['code'],
+					'scope'      => (string) $meta['scope'],
+					'urls'       => array_values( $meta['urls'] ),
+				)
 			);
+			if ( ! $public ) {
+				continue;
+			}
+			// When path is empty, still return URL-scoped snippets so the client can filter.
+			$out[] = $public;
 		}
 
 		return $out;

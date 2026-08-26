@@ -594,6 +594,12 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
               </div>
             </div>
 
+            <div className="kpf-content-block__actions">
+              {(featured.actions || []).map((action) => (
+                <ActionLink key={`${action.href}-${action.label}`} action={action} />
+              ))}
+            </div>
+
             <div
               ref={featuredChipsRef}
               className="kpf-featured-event__chips kpf-grantee-card__meta"
@@ -615,12 +621,6 @@ export default function EventsPageScaffold({ media = {}, events: eventNodes = []
                   />
                 );
               })}
-            </div>
-
-            <div className="kpf-content-block__actions">
-              {(featured.actions || []).map((action) => (
-                <ActionLink key={`${action.href}-${action.label}`} action={action} />
-              ))}
             </div>
           </div>
         </div>

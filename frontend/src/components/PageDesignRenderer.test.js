@@ -235,6 +235,23 @@ describe("page design templates", () => {
         { type: "html", html: "d" },
       ],
     );
+    const { promoteBlogArchiveCtaIsland } = require("./pageDesignTemplate");
+    assert.equal(
+      promoteBlogArchiveCtaIsland(
+        '<div data-kpf-scaffold="blog-archive"><p>Archive</p>{{cta-closing}}</div>',
+      ),
+      '<div data-kpf-scaffold="blog-archive"><p>Archive</p>{{cta-closing}}</div>',
+    );
+    assert.equal(
+      promoteBlogArchiveCtaIsland(
+        '<div data-kpf-scaffold="blog-archive"><p>Archive</p><section class="kpf-cta-closing kpf-section"><h2>Static</h2></section></div>',
+      ),
+      '<div data-kpf-scaffold="blog-archive"><p>Archive</p>{{cta-closing}}</div>',
+    );
+    assert.match(
+      renderDesignTemplate("<div>{{cta-closing}}</div>", model),
+      /{{cta-closing}}/,
+    );
     const { embedDesignIslands } = require("./pageDesignTemplate");
     const embedded = embedDesignIslands(
       '<div class="kpf-post-body__inner">{{post-sidebar}}<div class="kpf-post-main"></div></div>{{comments}}',

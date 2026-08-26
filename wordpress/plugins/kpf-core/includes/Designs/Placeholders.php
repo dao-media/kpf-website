@@ -36,6 +36,7 @@ final class Placeholders {
 			self::item( '{{stacked-slider:slug}}', __( 'Stacked image slider', 'kpf-core' ), __( 'Bottom-aligned photo stack driven by a design query slug. Front exits up/right on scroll and recycles to the back (−12% per layer, 4 visible). On tablet/mobile the media card owns the tartan wash; on desktop the section owns it and the media card is unstyled.', 'kpf-core' ), 'islands' ),
 			self::item( '{{partners-slider}}', __( 'Partners slider', 'kpf-core' ), __( 'Grantee logo slider on the homepage.', 'kpf-core' ), 'islands' ),
 			self::item( '{{blog-filters}}', __( 'Blog topic filters', 'kpf-core' ), __( 'Interactive topic chips that hide archive cards by category.', 'kpf-core' ), 'islands' ),
+			self::item( '{{cta-closing}}', __( 'Closing CTA (pre-footer)', 'kpf-core' ), __( 'Shared flag-band Donate / Get in touch component used across marketing pages.', 'kpf-core' ), 'islands' ),
 			self::item( '{{post-sidebar}}', __( 'Post sidebar', 'kpf-core' ), __( 'Table of contents and recent comment activity on a blog post.', 'kpf-core' ), 'islands' ),
 			self::item( '{{comments}}', __( 'Comments', 'kpf-core' ), __( 'Comment list and form on a blog post.', 'kpf-core' ), 'islands' ),
 			self::item( '{{#each queries.blog-posts}}', __( 'Blog posts loop', 'kpf-core' ), __( 'Latest published posts. Use @first for the featured row.', 'kpf-core' ), 'queries' ),

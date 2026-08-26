@@ -106,6 +106,9 @@ kpf_design_assert( in_array( '{{post-sidebar}}', $placeholder_tokens, true ), 'P
 $blog_archive_html = DesignHtml::blog_archive( array() );
 kpf_design_assert( str_contains( $blog_archive_html, '{{#each queries.blog-posts}}' ), 'Blog archive template loops queries.blog-posts' );
 kpf_design_assert( str_contains( $blog_archive_html, '{{blog-filters}}' ), 'Blog archive template includes filter island' );
+kpf_design_assert( str_contains( $blog_archive_html, '{{cta-closing}}' ), 'Blog archive template uses the closing CTA component island' );
+kpf_design_assert( ! str_contains( $blog_archive_html, 'kpf-cta-closing' ), 'Blog archive template does not inline a static pre-footer' );
+kpf_design_assert( in_array( '{{cta-closing}}', $placeholder_tokens, true ), 'Placeholder registry includes closing CTA island' );
 $blog_post_html = DesignHtml::blog_post( array() );
 kpf_design_assert( str_contains( $blog_post_html, '{{{page.content}}}' ), 'Blog post template renders page content' );
 kpf_design_assert( str_contains( $blog_post_html, '{{post-sidebar}}' ), 'Blog post template includes sidebar island' );

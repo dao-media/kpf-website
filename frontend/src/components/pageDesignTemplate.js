@@ -231,7 +231,7 @@ function renderSections(template, model) {
   return source;
 }
 
-const BARE_ISLANDS = "partners-slider|blog-filters|post-sidebar|comments";
+const BARE_ISLANDS = "partners-slider|blog-filters|post-sidebar|comments|cta-closing";
 const ISLAND_MARKER_RE = new RegExp(
   `\\{\\{\\s*(?:(form|stacked-slider):([a-z0-9_-]+)|(${BARE_ISLANDS}))\\s*\\}\\}`,
   "gi",
@@ -352,6 +352,26 @@ function splitDesignHtml(html) {
 }
 
 /**
+ * Promote a duplicated HTML pre-footer on the blog archive scaffold
+ * to the shared closing-CTA island.
+ * @param {string} html
+ * @returns {string}
+ */
+function promoteBlogArchiveCtaIsland(html) {
+  const source = String(html || "");
+  if (!source.includes('data-kpf-scaffold="blog-archive"')) {
+    return source;
+  }
+  if (/\{\{\s*cta-closing\s*\}\}/i.test(source)) {
+    return source;
+  }
+  return source.replace(
+    /<section\b[^>]*\bkpf-cta-closing\b[^>]*>[\s\S]*?<\/section>/i,
+    "{{cta-closing}}",
+  );
+}
+
+/**
  * Keep island markers in the HTML tree so React does not split a container
  * across sibling wrappers (which the parser then auto-closes).
  * @param {string} html
@@ -391,4 +411,5 @@ module.exports = {
   discoverStackedSliderSlugs,
   splitDesignHtml,
   embedDesignIslands,
+  promoteBlogArchiveCtaIsland,
 };

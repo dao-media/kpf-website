@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import CtaClosingBand from "@/components/CtaClosingBand";
 import FormRenderer from "@/components/FormRenderer";
 import PartnersSlider from "@/components/PartnersSlider";
 import StackedImageSlider from "@/components/StackedImageSlider";
@@ -13,6 +14,7 @@ import {
 const {
   renderDesignTemplate,
   embedDesignIslands,
+  promoteBlogArchiveCtaIsland,
 } = require("./pageDesignTemplate");
 const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
 const {
@@ -213,6 +215,16 @@ function renderDesignIsland(
     return <CommentsIsland post={postRuntime} />;
   }
 
+  if (island.type === "cta-closing") {
+    return (
+      <CtaClosingBand
+        titleId={
+          postRuntime ? "kpf-post-cta-title" : "kpf-blog-cta-title"
+        }
+      />
+    );
+  }
+
   return null;
 }
 
@@ -273,7 +285,9 @@ function PageDesignWithIslands({
     relatedPosts: postRuntime ? relatedPosts.slice(0, 2) : relatedPosts,
     postRuntime,
   });
-  const html = renderDesignTemplate(design.html, model);
+  const html = promoteBlogArchiveCtaIsland(
+    renderDesignTemplate(design.html, model),
+  );
   const forms = formsFromDesign(design);
   const islandPrefix = `kpf-island-${design.databaseId || "page"}`;
   const { html: embeddedHtml, islands } = useMemo(

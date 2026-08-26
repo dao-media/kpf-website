@@ -50,8 +50,9 @@ const vercelAliasRedirects = VERCEL_PRODUCTION_HOSTS.flatMap((host) => [
  **/
 module.exports = withFaust({
 	reactStrictMode: true,
-	// Let middleware keep /wp-admin/ on the CMS host (WordPress needs the slash).
+	// Keep /wp-admin/ on the CMS host; public trailing slashes are handled in middleware.
 	skipTrailingSlashRedirect: true,
+	skipMiddlewareUrlNormalize: true,
 	env: {
 		// Inlined at build time. Set to "1" on Vercel while DreamHost is missing
 		// WPGraphQL Content Blocks so Faust prerender can skip editorBlocks.

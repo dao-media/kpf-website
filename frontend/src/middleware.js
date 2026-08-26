@@ -67,8 +67,8 @@ export async function middleware(request) {
     .toLowerCase();
 
   if (shouldStripPublicTrailingSlash(incomingHost, request.nextUrl.pathname)) {
-    const dest = request.nextUrl.clone();
-    dest.pathname = request.nextUrl.pathname.replace(/\/+$/, "") || "/";
+    const stripped = request.nextUrl.pathname.replace(/\/+$/, "") || "/";
+    const dest = `${request.nextUrl.origin}${stripped}${request.nextUrl.search}`;
     return NextResponse.redirect(dest, 308);
   }
 

@@ -248,6 +248,18 @@ describe("page design templates", () => {
       ),
       '<div data-kpf-scaffold="blog-archive"><p>Archive</p>{{cta-closing}}</div>',
     );
+    assert.equal(
+      promoteBlogArchiveCtaIsland(
+        '<div data-kpf-scaffold="blog-post"><p>Post</p>{{cta-closing}}</div>',
+      ),
+      '<div data-kpf-scaffold="blog-post"><p>Post</p>{{cta-closing}}</div>',
+    );
+    assert.equal(
+      promoteBlogArchiveCtaIsland(
+        '<div data-kpf-scaffold="blog-post"><p>Post</p><section class="kpf-cta-closing kpf-section"><h2>Static</h2></section></div>',
+      ),
+      '<div data-kpf-scaffold="blog-post"><p>Post</p>{{cta-closing}}</div>',
+    );
     assert.match(
       renderDesignTemplate("<div>{{cta-closing}}</div>", model),
       /{{cta-closing}}/,

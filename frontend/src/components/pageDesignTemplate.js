@@ -352,14 +352,17 @@ function splitDesignHtml(html) {
 }
 
 /**
- * Promote a duplicated HTML pre-footer on the blog archive scaffold
+ * Promote a duplicated HTML pre-footer on blog archive / post scaffolds
  * to the shared closing-CTA island.
  * @param {string} html
  * @returns {string}
  */
 function promoteBlogArchiveCtaIsland(html) {
   const source = String(html || "");
-  if (!source.includes('data-kpf-scaffold="blog-archive"')) {
+  const isBlogScaffold =
+    source.includes('data-kpf-scaffold="blog-archive"') ||
+    source.includes('data-kpf-scaffold="blog-post"');
+  if (!isBlogScaffold) {
     return source;
   }
   if (/\{\{\s*cta-closing\s*\}\}/i.test(source)) {

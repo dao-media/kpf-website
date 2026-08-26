@@ -847,9 +847,6 @@ HTML;
 	 * @param array<string, array{sourceUrl?: string, altText?: string}> $media
 	 */
 	public static function blog_post( array $media ): string {
-		$flag       = self::cta_flag( $media );
-		$donate_btn = ChromeHtml::donate_button( 'Donate', 'kpf-btn kpf-btn--primary' );
-
 		return <<<HTML
 <div class="kpf-page kpf-page--post" data-kpf-scaffold="blog-post">
   <section class="kpf-hero kpf-hero--post kpf-section kpf-u-invert" aria-labelledby="kpf-post-title">
@@ -919,25 +916,7 @@ HTML;
   </section>
   {{/if}}
 
-  <section class="kpf-cta-closing kpf-section" aria-labelledby="kpf-post-cta-title">
-    {$flag}
-    <div class="kpf-u-container">
-      <div class="kpf-content-block kpf-u-invert kpf-cta-closing__block">
-        <div class="kpf-content-block__copy">
-          <div class="kpf-content-block__title-group">
-            <h2 id="kpf-post-cta-title" class="kpf-content-block__title kpf-content-block__title--h2">There's more than one way to make a difference.</h2>
-          </div>
-          <div class="kpf-content-block__body-group">
-            <p class="kpf-content-block__body">Volunteer a Saturday. Point us toward an org that deserves a look. Or give — every gift becomes a grant in Kevin's name.</p>
-          </div>
-        </div>
-        <div class="kpf-content-block__actions">
-          {$donate_btn}
-          <a class="kpf-btn kpf-btn--outline" href="/contact/">Get in touch</a>
-        </div>
-      </div>
-    </div>
-  </section>
+  {{cta-closing}}
 </div>
 HTML;
 	}

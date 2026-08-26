@@ -113,6 +113,8 @@ $blog_post_html = DesignHtml::blog_post( array() );
 kpf_design_assert( str_contains( $blog_post_html, '{{{page.content}}}' ), 'Blog post template renders page content' );
 kpf_design_assert( str_contains( $blog_post_html, '{{post-sidebar}}' ), 'Blog post template includes sidebar island' );
 kpf_design_assert( str_contains( $blog_post_html, '{{comments}}' ), 'Blog post template includes comments island' );
+kpf_design_assert( str_contains( $blog_post_html, '{{cta-closing}}' ), 'Blog post template uses the closing CTA component island' );
+kpf_design_assert( ! str_contains( $blog_post_html, 'kpf-cta-closing' ), 'Blog post template does not inline a static pre-footer' );
 $placeholder_groups = array_unique( array_column( Placeholders::all(), 'group' ) );
 kpf_design_assert( in_array( 'seo_patterns', $placeholder_groups, true ), 'Placeholder library includes SEO %% patterns section' );
 $seo_pattern_tokens = array_column( Placeholders::seo_pattern_items(), 'token' );

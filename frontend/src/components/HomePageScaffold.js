@@ -41,6 +41,7 @@ export default function HomePageScaffold({
   /** Outgoing panels kept open briefly while the next one expands (avoids height stutter). */
   const [heldAccordionIds, setHeldAccordionIds] = useState([]);
   const accordionHoldTimerRef = useRef(null);
+  const heroStageRef = useRef(null);
 
   useEffect(
     () => () => {
@@ -88,10 +89,9 @@ export default function HomePageScaffold({
   return (
     <div className="kpf-page-home" data-kpf-scaffold="home">
       <ProgramsCheckRuntime />
-      <HomeHeroCutoutsRuntime />
       <section className="kpf-hero kpf-hero--home" aria-labelledby="kpf-home-hero-title">
         <div className="kpf-hero__scrim" aria-hidden="true" />
-        <div className="kpf-hero__stage" aria-hidden="true">
+        <div ref={heroStageRef} className="kpf-hero__stage" aria-hidden="true">
           {(copy.hero.cutouts || []).map((cutout) => {
             const resolved = resolveMedia(media, cutout.key, cutout);
             if (!resolved.src) return null;
@@ -150,6 +150,7 @@ export default function HomePageScaffold({
           </div>
         </div>
       </section>
+      <HomeHeroCutoutsRuntime stageRef={heroStageRef} />
 
       <PartnersSlider
         items={partners}

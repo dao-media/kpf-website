@@ -5838,7 +5838,7 @@ a.kpf-blog-row:focus-visible {
 }
 
 /* Story / programs / featured collage sizing is intentional — exclude from the fluid clamp. */
-.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host):not(.kpf-archive__thumb),
+.kpf-section img:not(.kpf-story__media img):not(.kpf-programs__media img):not(.kpf-history__layer img):not(.kpf-grantee-card__photo):not(.kpf-gallery__item img):not(.kpf-featured-event__tile img):not(.kpf-event-card__host):not(.kpf-archive__thumb):not(.kpf-blog-row__thumb),
 .kpf-hero:not(.kpf-hero--about):not(.kpf-hero--events) img,
 .kpf-card__media {
 	height: auto;

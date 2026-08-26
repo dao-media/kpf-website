@@ -5,6 +5,7 @@ import {
   adminCmsDestination,
   isAdminCmsHost,
   isVercelProductionAlias,
+  shouldStripPublicTrailingSlash,
 } from "@/lib/publicSiteUrl";
 
 const wordpressUrl = (process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
@@ -64,6 +65,12 @@ export async function middleware(request) {
   )
     .split(":")[0]
     .toLowerCase();
+
+  if (shouldStripPublicTrailingSlash(incomingHost, request.nextUrl.pathname)) {
+    const dest = request.nextUrl.clone();
+    dest.pathname = request.nextUrl.pathname.replace(/\/+$/, "") || "/";
+    return NextResponse.redirect(dest, 308);
+  }
 
   // Proxy WordPress so the browser stays on admin.kevinpopkefoundation.org.
   if (isAdminCmsHost(incomingHost)) {

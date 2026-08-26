@@ -19,6 +19,11 @@ const adminCmsRewrites = [
 		destination: `${WORDPRESS_CMS_ORIGIN}/wp-admin/`,
 	},
 	{
+		source: '/wp-admin/',
+		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
+		destination: `${WORDPRESS_CMS_ORIGIN}/wp-admin/`,
+	},
+	{
 		source: '/:path*',
 		has: [{ type: 'host', value: ADMIN_CMS_HOST }],
 		destination: `${WORDPRESS_CMS_ORIGIN}/:path*`,
@@ -45,6 +50,8 @@ const vercelAliasRedirects = VERCEL_PRODUCTION_HOSTS.flatMap((host) => [
  **/
 module.exports = withFaust({
 	reactStrictMode: true,
+	// Let middleware keep /wp-admin/ on the CMS host (WordPress needs the slash).
+	skipTrailingSlashRedirect: true,
 	env: {
 		// Inlined at build time. Set to "1" on Vercel while DreamHost is missing
 		// WPGraphQL Content Blocks so Faust prerender can skip editorBlocks.
@@ -66,6 +73,11 @@ module.exports = withFaust({
 			{
 				protocol: 'https',
 				hostname: 'kpf.dreamhosters.com',
+				pathname: '/wp-content/uploads/**',
+			},
+			{
+				protocol: 'https',
+				hostname: ADMIN_CMS_HOST,
 				pathname: '/wp-content/uploads/**',
 			},
 		],

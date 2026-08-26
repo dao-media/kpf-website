@@ -8,6 +8,7 @@ const {
   isEphemeralHost,
   isVercelProductionAlias,
   rewriteSeoPublicUrls,
+  shouldStripPublicTrailingSlash,
   toPublicUrl,
 } = require("./publicSiteUrl");
 
@@ -34,6 +35,25 @@ describe("publicSiteUrl", () => {
     assert.equal(
       adminCmsDestination("/wp-login.php", "?redirect_to=%2Fwp-admin%2F"),
       `${WORDPRESS_CMS_ORIGIN}/wp-login.php?redirect_to=%2Fwp-admin%2F`
+    );
+    assert.equal(
+      adminCmsDestination("/wp-admin/"),
+      `${WORDPRESS_CMS_ORIGIN}/wp-admin/`
+    );
+  });
+
+  it("strips trailing slashes on the public site only", () => {
+    assert.equal(
+      shouldStripPublicTrailingSlash("kevinpopkefoundation.org", "/about/"),
+      true
+    );
+    assert.equal(
+      shouldStripPublicTrailingSlash("kevinpopkefoundation.org", "/about"),
+      false
+    );
+    assert.equal(
+      shouldStripPublicTrailingSlash("admin.kevinpopkefoundation.org", "/wp-admin/"),
+      false
     );
   });
 

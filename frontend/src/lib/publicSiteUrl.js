@@ -40,6 +40,13 @@ function adminCmsDestination(pathname, search = "") {
   return `${WORDPRESS_CMS_ORIGIN}${path}${search || ""}`;
 }
 
+/** Match Next.js default: strip a trailing slash on the public site, not the CMS host. */
+function shouldStripPublicTrailingSlash(host, pathname) {
+  if (isAdminCmsHost(host)) return false;
+  if (!pathname || pathname === "/") return false;
+  return pathname.length > 1 && pathname.endsWith("/");
+}
+
 function isEphemeralHost(host) {
   const name = String(host || "").toLowerCase();
   if (!name || name === "localhost" || name === "127.0.0.1") return true;
@@ -106,6 +113,7 @@ module.exports = {
   WORDPRESS_CMS_ORIGIN,
   adminCmsDestination,
   isAdminCmsHost,
+  shouldStripPublicTrailingSlash,
   isEphemeralHost,
   isEphemeralUrl,
   isVercelProductionAlias,

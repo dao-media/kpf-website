@@ -4939,14 +4939,14 @@ a.kpf-blog-row:focus-visible {
 	aspect-ratio: unset;
 	border-radius: 0;
 	display: block;
-	height: auto;
+	height: 100%;
 	inset: 0;
 	max-height: none;
 	max-width: none;
 	object-fit: cover;
 	object-position: center center;
 	position: absolute;
-	width: auto;
+	width: 100%;
 }
 
 .kpf-blog-row--featured .kpf-blog-row__thumb--empty {

@@ -59,15 +59,7 @@ export default function KpfFooter({
                           <span className="kpf-u-sr-only"> (opens in a new tab)</span>
                         </a>
                       ) : mailOrTel ? (
-                        <a href={item.href}>
-                          {item.label}
-                          {item.detail ? (
-                            <span className="kpf-footer__detail">
-                              {" "}
-                              ({item.detail})
-                            </span>
-                          ) : null}
-                        </a>
+                        <a href={item.href}>{item.label}</a>
                       ) : (
                         <Link href={item.href}>{item.label}</Link>
                       )}

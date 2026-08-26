@@ -1295,6 +1295,7 @@ html.kpf-scroll-smoothed body {
 	font-size: 0.9375rem; /* 15 */
 	font-weight: 700;
 	line-height: 1.2;
+	overflow-wrap: anywhere;
 	text-decoration-line: underline;
 	text-decoration-color: currentColor;
 	text-underline-offset: 0.12em;

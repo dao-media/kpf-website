@@ -28,7 +28,7 @@ const KPF_FOOTER_EXPLORE = [
 const KPF_FOOTER_CONNECT = [
   { href: "/contact/", label: "Contact" },
   { href: "/blog/", label: "Blog" },
-  { href: `mailto:${KPF_CONTACT_EMAIL}`, label: "Email us", detail: KPF_CONTACT_EMAIL },
+  { href: `mailto:${KPF_CONTACT_EMAIL}`, label: `Email us (${KPF_CONTACT_EMAIL})` },
 ];
 
 function normalizePath(path) {

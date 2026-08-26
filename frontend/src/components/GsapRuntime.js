@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
 
-const { pluginsForAnimations } = require("@/lib/gsapPlugins");
-
-gsap.registerPlugin(ScrollTrigger);
+const {
+  animationsUsedOnPage,
+  parseAnimation,
+  pluginsForAnimations,
+} = require("@/lib/gsapPlugins");
 
 const GSAP_PLUGIN_LOADERS = {
   CSSRulePlugin: () => import("gsap/CSSRulePlugin").then((m) => m.CSSRulePlugin),
@@ -26,18 +27,16 @@ const GSAP_PLUGIN_LOADERS = {
   ScrambleTextPlugin: () =>
     import("gsap/ScrambleTextPlugin").then((m) => m.ScrambleTextPlugin),
   ScrollToPlugin: () => import("gsap/ScrollToPlugin").then((m) => m.ScrollToPlugin),
+  ScrollTrigger: () => import("gsap/ScrollTrigger").then((m) => m.ScrollTrigger),
   SplitText: () => import("gsap/SplitText").then((m) => m.SplitText),
   TextPlugin: () => import("gsap/TextPlugin").then((m) => m.TextPlugin),
 };
 
-const loadedPlugins = {
-  ScrollTrigger,
-};
+const loadedPlugins = {};
 
 async function loadGsapPlugins(names) {
-  const plugins = [ScrollTrigger];
+  const plugins = [];
   for (const name of names || []) {
-    if (name === "ScrollTrigger") continue;
     if (loadedPlugins[name]) {
       plugins.push(loadedPlugins[name]);
       continue;
@@ -48,19 +47,10 @@ async function loadGsapPlugins(names) {
     loadedPlugins[name] = plugin;
     plugins.push(plugin);
   }
-  gsap.registerPlugin(...plugins);
+  if (plugins.length) gsap.registerPlugin(...plugins);
 }
 
-export const KPF_GSAP_QUERY = `
-  kpfGsapAnimations {
-    databaseId
-    name
-    selector
-    trigger
-    method
-    configJson
-  }
-`;
+export { KPF_GSAP_QUERY } from "@/lib/gsapQuery";
 
 export const KPF_GSAP_PREMIUM_PLUGINS = [
   "CSSRulePlugin",
@@ -84,17 +74,6 @@ export const KPF_GSAP_PREMIUM_PLUGINS = [
   "SplitText",
   "TextPlugin",
 ];
-
-function parseAnimation(animation) {
-  try {
-    return {
-      ...animation,
-      config: JSON.parse(animation.configJson || "{}"),
-    };
-  } catch {
-    return null;
-  }
-}
 
 function resolveEase(config, animationId) {
   if (config.ease === "custom" && loadedPlugins.CustomEase) {
@@ -332,7 +311,8 @@ export default function GsapRuntime({ animations = [] }) {
     const cleanups = [];
     let context;
 
-    const parsed = animations.map(parseAnimation).filter(Boolean);
+    const parsed = animationsUsedOnPage(animations, document);
+    if (!parsed.length) return undefined;
 
     async function run() {
       await loadGsapPlugins(pluginsForAnimations(parsed));
@@ -511,7 +491,7 @@ export default function GsapRuntime({ animations = [] }) {
         if (cancelled) return;
         // Visibility only — do not kill the header entrance's y drop.
         restoreHeaderBadge({ resetY: false });
-        ScrollTrigger.refresh();
+        loadedPlugins.ScrollTrigger?.refresh?.();
       });
     }
 

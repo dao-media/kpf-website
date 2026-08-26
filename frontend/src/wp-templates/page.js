@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
-import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
+import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntimeGate";
 import PageScaffold from "@/components/PageScaffold";
 import SeoHead, { KPF_SEO_FRAGMENT } from "@/components/SeoHead";
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");

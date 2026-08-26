@@ -3,7 +3,7 @@ import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import BlogPostScaffold from "@/components/BlogPostScaffold";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
 import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
-import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
+import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntimeGate";
 import SeoHead, { KPF_SEO_FRAGMENT } from "@/components/SeoHead";
 const { KPF_ACCESSIBILITY_QUERY } = require("@/lib/accessibility");
 const { KPF_BLOG_POSTS_QUERY } = require("@/lib/blogPosts");

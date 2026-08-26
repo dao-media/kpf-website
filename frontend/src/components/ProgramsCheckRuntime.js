@@ -1,9 +1,4 @@
 import { useLayoutEffect } from "react";
-import { gsap } from "gsap";
-import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
 /**
  * Lucide Check geometry, path reversed so DrawSVG 0→100% writes the mark
@@ -33,6 +28,7 @@ export function ProgramsCheckIcon({ size = 28 }) {
 /**
  * Programs list checkmarks: on enter viewport, wait 1s, then each icon
  * disappears → draws on via stroke → subtle pop. Stagger 0.4s.
+ * DrawSVG loads only when this list is on the page.
  */
 export default function ProgramsCheckRuntime({
   rootSelector = ".kpf-programs__list",
@@ -42,74 +38,84 @@ export default function ProgramsCheckRuntime({
 
     const list = document.querySelector(rootSelector);
     if (!list) return undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
 
-    const paths = gsap.utils.toArray(
-      `${rootSelector} .kpf-programs__check path`,
-    );
-    if (!paths.length) return undefined;
+    let cancelled = false;
+    let ctx;
 
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (reduceMotion) return undefined;
+    (async () => {
+      const { gsap } = await import("gsap");
+      const { DrawSVGPlugin } = await import("gsap/DrawSVGPlugin");
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      if (cancelled) return;
 
-    const ctx = gsap.context(() => {
-      const svgs = paths
-        .map((path) => path.closest("svg"))
-        .filter(Boolean);
+      const paths = gsap.utils.toArray(
+        `${rootSelector} .kpf-programs__check path`,
+      );
+      if (!paths.length) return;
 
-      gsap.set(paths, { drawSVG: 0 });
-      gsap.set(svgs, { transformOrigin: "50% 50%" });
+      gsap.registerPlugin(DrawSVGPlugin, ScrollTrigger);
 
-      const drawDuration = 0.55;
+      ctx = gsap.context(() => {
+        const svgs = paths
+          .map((path) => path.closest("svg"))
+          .filter(Boolean);
 
-      ScrollTrigger.create({
-        trigger: list,
-        start: "top 80%",
-        once: true,
-        onEnter: () => {
-          const tl = gsap.timeline({ delay: 1 });
+        gsap.set(paths, { drawSVG: 0 });
+        gsap.set(svgs, { transformOrigin: "50% 50%" });
 
-          paths.forEach((path, index) => {
-            const svg = path.closest("svg");
-            const at = index * 0.4;
+        const drawDuration = 0.55;
 
-            // Draw the check stroke into place.
-            tl.fromTo(
-              path,
-              { drawSVG: 0 },
-              {
-                drawSVG: "100%",
-                duration: drawDuration,
-                ease: "power2.inOut",
-              },
-              at,
-            );
+        ScrollTrigger.create({
+          trigger: list,
+          start: "top 80%",
+          once: true,
+          onEnter: () => {
+            const tl = gsap.timeline({ delay: 1 });
 
-            // Pulse only the checkmark SVG (not the red tile), starting
-            // the instant the stroke finishes drawing.
-            if (svg) {
+            paths.forEach((path, index) => {
+              const svg = path.closest("svg");
+              const at = index * 0.4;
+
               tl.fromTo(
-                svg,
-                { scale: 1 },
+                path,
+                { drawSVG: 0 },
                 {
-                  scale: 1.2,
-                  duration: 0.32,
-                  ease: "sine.inOut",
-                  yoyo: true,
-                  repeat: 1,
+                  drawSVG: "100%",
+                  duration: drawDuration,
+                  ease: "power2.inOut",
                 },
-                at + drawDuration,
+                at,
               );
-            }
-          });
-        },
-      });
-    }, list);
 
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+              if (svg) {
+                tl.fromTo(
+                  svg,
+                  { scale: 1 },
+                  {
+                    scale: 1.2,
+                    duration: 0.32,
+                    ease: "sine.inOut",
+                    yoyo: true,
+                    repeat: 1,
+                  },
+                  at + drawDuration,
+                );
+              }
+            });
+          },
+        });
+      }, list);
 
-    return () => ctx.revert();
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    })();
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
   }, [rootSelector]);
 
   return null;

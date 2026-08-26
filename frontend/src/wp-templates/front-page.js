@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import { KPF_EDITOR_BLOCKS_QUERY } from "@/components/BlockRenderer";
 import { KPF_STYLESHEET_QUERY } from "@/components/GlobalStylesheet";
-import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntime";
+import GsapRuntime, { KPF_GSAP_QUERY } from "@/components/GsapRuntimeGate";
 import HomePageScaffold from "@/components/HomePageScaffold";
 import PageDesignRenderer from "@/components/PageDesignRenderer";
 import SeoHead from "@/components/SeoHead";

@@ -1,6 +1,17 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
-const { pluginsForAnimations } = require("./gsapPlugins");
+const {
+  animationsUsedOnPage,
+  pluginsForAnimations,
+} = require("./gsapPlugins");
+
+function fakeRoot(hits) {
+  return {
+    querySelectorAll(selector) {
+      return hits.includes(selector) ? [{}] : [];
+    },
+  };
+}
 
 describe("pluginsForAnimations", () => {
   it("loads nothing when there are no animations", () => {
@@ -18,18 +29,61 @@ describe("pluginsForAnimations", () => {
     assert.deepEqual([...names].sort(), ["ScrollTrigger"]);
   });
 
-  it("loads DrawSVG and CustomEase when the animation asks for them", () => {
+  it("loads DrawSVG and CustomEase only when this animation asks for them", () => {
     const names = pluginsForAnimations([
       {
+        trigger: "hover",
         config: { ease: "custom", svg: { effect: "draw" } },
       },
     ]);
     assert.ok(names.includes("DrawSVGPlugin"));
     assert.ok(names.includes("CustomEase"));
-    assert.ok(names.includes("ScrollTrigger"));
+    assert.ok(!names.includes("ScrollTrigger"));
     assert.ok(!names.includes("MorphSVGPlugin"));
     assert.ok(!names.includes("Physics2DPlugin"));
     assert.ok(!names.includes("Flip"));
     assert.ok(!names.includes("ScrollSmoother"));
+  });
+});
+
+describe("animationsUsedOnPage", () => {
+  it("keeps only animations whose selector exists on the page", () => {
+    const used = animationsUsedOnPage(
+      [
+        {
+          databaseId: 1,
+          selector: ".kpf-hero",
+          trigger: "in-view",
+          configJson: '{"svg":{"effect":"morph"}}',
+        },
+        {
+          databaseId: 2,
+          selector: ".kpf-about-only",
+          trigger: "in-view",
+          configJson: '{"svg":{"effect":"draw"}}',
+        },
+      ],
+      fakeRoot([".kpf-hero"]),
+    );
+    assert.equal(used.length, 1);
+    assert.equal(used[0].databaseId, 1);
+    assert.deepEqual(pluginsForAnimations(used).sort(), [
+      "MorphSVGPlugin",
+      "ScrollTrigger",
+    ]);
+  });
+
+  it("returns nothing when the page has no matching targets", () => {
+    const used = animationsUsedOnPage(
+      [
+        {
+          selector: ".kpf-about-only",
+          configJson: "{}",
+        },
+      ],
+      fakeRoot([]),
+    );
+    assert.deepEqual(used, []);
+    assert.deepEqual(pluginsForAnimations(used), []);
   });
 });

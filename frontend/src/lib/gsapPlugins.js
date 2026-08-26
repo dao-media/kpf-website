@@ -1,7 +1,6 @@
 /**
- * Which GSAP Club plugins a CMS animation actually needs.
- * GsapRuntime dynamic-imports only these — MorphSVG/Physics/Flip stay out
- * of the default Faust chunk.
+ * Which GSAP Club plugins a CMS animation actually needs, and whether that
+ * animation has targets on the current page.
  */
 
 const EFFECT_PLUGINS = {
@@ -21,6 +20,45 @@ const EASE_PLUGINS = {
   customBounce: ["CustomEase", "CustomBounce"],
 };
 
+function parseAnimation(animation) {
+  if (!animation || typeof animation !== "object") return null;
+  if (animation.config && typeof animation.config === "object") {
+    return animation;
+  }
+  try {
+    return {
+      ...animation,
+      config: JSON.parse(animation.configJson || "{}"),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function animationMatchesDocument(animation, root) {
+  const selector = String(animation?.selector || "").trim();
+  if (!selector || !root || typeof root.querySelectorAll !== "function") {
+    return false;
+  }
+  try {
+    return root.querySelectorAll(selector).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * CMS animations whose selectors exist on this page.
+ * @param {unknown[]} animations
+ * @param {{ querySelectorAll: (selector: string) => { length: number } }} [root]
+ */
+function animationsUsedOnPage(animations, root) {
+  return (animations || []).map(parseAnimation).filter((animation) => {
+    if (!animation) return false;
+    return animationMatchesDocument(animation, root);
+  });
+}
+
 /**
  * @param {Array<{ trigger?: string, config?: Record<string, unknown> }>} animations
  * @returns {string[]}
@@ -30,19 +68,24 @@ function pluginsForAnimations(animations) {
   for (const animation of animations || []) {
     if (!animation) continue;
     if (animation.trigger === "in-view") names.add("ScrollTrigger");
-    const config = animation.config && typeof animation.config === "object" ? animation.config : {};
+    const config =
+      animation.config && typeof animation.config === "object"
+        ? animation.config
+        : {};
     const ease = String(config.ease || "");
     for (const plugin of EASE_PLUGINS[ease] || []) names.add(plugin);
     const svg = config.svg && typeof config.svg === "object" ? config.svg : {};
     const effect = String(svg.effect || "");
     if (EFFECT_PLUGINS[effect]) names.add(EFFECT_PLUGINS[effect]);
   }
-  if (names.size > 0) names.add("ScrollTrigger");
   return [...names];
 }
 
 module.exports = {
   EFFECT_PLUGINS,
   EASE_PLUGINS,
+  parseAnimation,
+  animationMatchesDocument,
+  animationsUsedOnPage,
   pluginsForAnimations,
 };

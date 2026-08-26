@@ -1,10 +1,12 @@
-import AboutPageScaffold from "@/components/AboutPageScaffold";
-import BlogPageScaffold from "@/components/BlogPageScaffold";
-import ContactPageScaffold from "@/components/ContactPageScaffold";
-import EventsPageScaffold from "@/components/EventsPageScaffold";
-import PageDesignRenderer from "@/components/PageDesignRenderer";
-import PrivacyPageScaffold from "@/components/PrivacyPageScaffold";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+
+const AboutPageScaffold = dynamic(() => import("@/components/AboutPageScaffold"));
+const BlogPageScaffold = dynamic(() => import("@/components/BlogPageScaffold"));
+const ContactPageScaffold = dynamic(() => import("@/components/ContactPageScaffold"));
+const EventsPageScaffold = dynamic(() => import("@/components/EventsPageScaffold"));
+const PageDesignRenderer = dynamic(() => import("@/components/PageDesignRenderer"));
+const PrivacyPageScaffold = dynamic(() => import("@/components/PrivacyPageScaffold"));
 
 /**
  * Prefer slug-matched React scaffolds (interactive 1:1 builds);
@@ -12,6 +14,10 @@ import { useRouter } from "next/router";
  *
  * Route path wins over `page.slug` so a stalled Faust template query cannot
  * leave the previous scaffold on screen after client-side nav.
+ *
+ * Scaffolds are next/dynamic so Faust’s shared template graph does not
+ * download About/Events/Blog GSAP (CustomEase, history carousel, DrawSVG)
+ * on pages that never mount those trees.
  */
 export default function PageScaffold({
   page,

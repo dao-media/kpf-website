@@ -1,12 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { CustomEase } from "gsap/CustomEase";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import CtaClosingFlag from "@/components/CtaClosingFlag";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import KpfButton from "@/components/KpfButton";
-
-gsap.registerPlugin(CustomEase, ScrollTrigger);
 
 const COPY_EASE = "0.22,1,0.36,1";
 const TITLE_DURATION = 0.6;
@@ -49,68 +44,84 @@ export default function CtaClosingBand({
     ).matches;
     if (reduceMotion) return undefined;
 
-    const title = section.querySelector(".kpf-content-block__title");
-    const follow = gsap.utils.toArray(
-      section.querySelectorAll(
+    const titleEl = section.querySelector(".kpf-content-block__title");
+    const follow = [
+      ...section.querySelectorAll(
         ".kpf-content-block__body, .kpf-content-block__actions",
       ),
-    );
-    if (!title && !follow.length) return undefined;
+    ];
+    if (!titleEl && !follow.length) return undefined;
 
-    const copyEase = CustomEase.create("kpf-cta-closing-copy", COPY_EASE);
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        defaults: { overwrite: "auto" },
-        scrollTrigger: {
-          trigger: section,
-          start: "top 80%",
-          once: true,
-        },
-      });
+    let cancelled = false;
+    let ctx;
 
-      const isMobile = window.matchMedia("(max-width: 47.99rem)").matches;
-      const titleOrigin = isMobile ? "0% 0%" : "50% 0%";
+    (async () => {
+      const { gsap } = await import("gsap");
+      const { CustomEase } = await import("gsap/CustomEase");
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      if (cancelled) return;
 
-      if (title) {
-        // Drop in from a parallel plane in front of the viewport (z + y), 600ms.
-        gsap.set(title, {
-          transformPerspective: 960,
-          transformOrigin: titleOrigin,
-          force3D: true,
+      gsap.registerPlugin(CustomEase, ScrollTrigger);
+      const copyEase = CustomEase.create("kpf-cta-closing-copy", COPY_EASE);
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({
+          defaults: { overwrite: "auto" },
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            once: true,
+          },
         });
-        tl.from(
-          title,
-          {
-            y: -56,
-            z: 140,
-            autoAlpha: 0,
-            duration: TITLE_DURATION,
-            ease: "power3.out",
+
+        const isMobile = window.matchMedia("(max-width: 47.99rem)").matches;
+        const titleOrigin = isMobile ? "0% 0%" : "50% 0%";
+
+        if (titleEl) {
+          // Drop in from a parallel plane in front of the viewport (z + y), 600ms.
+          gsap.set(titleEl, {
+            transformPerspective: 960,
+            transformOrigin: titleOrigin,
             force3D: true,
-          },
-          0,
-        );
-      }
+          });
+          tl.from(
+            titleEl,
+            {
+              y: -56,
+              z: 140,
+              autoAlpha: 0,
+              duration: TITLE_DURATION,
+              ease: "power3.out",
+              force3D: true,
+            },
+            0,
+          );
+        }
 
-      if (follow.length) {
-        // Hold the from-state until the title lands; timeline `from` at t>0
-        // would leave these visible during the heading drop.
-        gsap.set(follow, { y: 42, autoAlpha: 0 });
-        tl.to(
-          follow,
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.9,
-            stagger: 0.08,
-            ease: copyEase,
-          },
-          title ? TITLE_DURATION : 0,
-        );
-      }
-    }, section);
+        if (follow.length) {
+          // Hold the from-state until the title lands; timeline `from` at t>0
+          // would leave these visible during the heading drop.
+          gsap.set(follow, { y: 42, autoAlpha: 0 });
+          tl.to(
+            follow,
+            {
+              y: 0,
+              autoAlpha: 1,
+              duration: 0.9,
+              stagger: 0.08,
+              ease: copyEase,
+            },
+            titleEl ? TITLE_DURATION : 0,
+          );
+        }
+      }, section);
 
-    return () => ctx.revert();
+      if (cancelled) ctx.revert();
+    })();
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
   }, []);
 
   return (

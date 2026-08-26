@@ -1,7 +1,7 @@
 {
   "core": null,
   "plugins": [
-    "https://downloads.wordpress.org/plugin/wp-graphql.2.19.0.zip",
+    "https://downloads.wordpress.org/plugin/wp-graphql.2.20.0.zip",
     "https://github.com/wpengine/wp-graphql-content-blocks/releases/download/v4.8.6/wp-graphql-content-blocks.zip",
     "https://downloads.wordpress.org/plugin/faustwp.latest-stable.zip",
     "./wordpress/plugins/kpf-core"

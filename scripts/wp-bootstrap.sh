@@ -20,8 +20,8 @@ $WP rewrite structure '/%postname%/' --hard --skip-plugins --skip-themes
 # Dashboard "Update" often fails in wp-env ("could not remove the old plugin") and
 # can empty the mounted folder — restore from the release zip without deleting the dir.
 WPGRAPHQL_DIR="wp-content/plugins/wp-graphql"
-WPGRAPHQL_ZIP_URL="https://downloads.wordpress.org/plugin/wp-graphql.2.19.0.zip"
-WPGRAPHQL_VERSION="2.19.0"
+WPGRAPHQL_ZIP_URL="https://downloads.wordpress.org/plugin/wp-graphql.2.20.0.zip"
+WPGRAPHQL_VERSION="2.20.0"
 NEED_WPGRAPHQL_RESTORE=0
 if ! npx wp-env run cli bash -lc "test -f ${WPGRAPHQL_DIR}/wp-graphql.php" >/dev/null 2>&1; then
   NEED_WPGRAPHQL_RESTORE=1
@@ -52,7 +52,7 @@ fi
 
 # Dashboard/plugin-zip swaps can leave dependents inactive. Re-activate the
 # GraphQL stack Faust and kpf-core need after any restore.
-for dep in wp-graphql-content-blocks faustwp.latest-stable faustwp kpf-core; do
+for dep in wp-graphql-content-blocks faustwp.latest-stable faustwp kpf-core wpgraphql-acf; do
   if npx wp-env run cli bash -lc "test -e wp-content/plugins/${dep} || test -e wp-content/plugins/${dep}.php" >/dev/null 2>&1; then
     if ! $WP plugin is-active "${dep}" >/dev/null 2>&1; then
       $WP plugin activate "${dep}" || echo "WARNING: could not activate ${dep}." >&2

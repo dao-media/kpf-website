@@ -114,6 +114,13 @@ if ( ! function_exists( 'kpf_admin_host_is_vanity' ) ) {
 }
 
 if ( function_exists( 'add_filter' ) ) {
+	if ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST && ( ! defined( 'WP_CLI' ) || ! WP_CLI ) ) {
+		status_header( 403 );
+		header( 'Content-Type: text/plain; charset=UTF-8' );
+		header( 'X-Content-Type-Options: nosniff' );
+		echo 'XML-RPC is disabled.';
+		exit;
+	}
 	if ( 'cli' !== PHP_SAPI && kpf_admin_host_is_vanity() ) {
 		$_SERVER['HTTP_HOST']      = KPF_ADMIN_HOST;
 		$_SERVER['HTTPS']          = 'on';

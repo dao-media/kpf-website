@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { ArrowRight, CalendarHeart, Gift } from "lucide-react";
+import { CalendarHeart, Gift, Globe } from "lucide-react";
 import ExternalExitTooltip from "@/components/ExternalExitTooltip";
 
 function canHoverFlip() {
@@ -409,7 +409,7 @@ export default function GranteeCard({
                 >
                   <span className="kpf-grantee-card__chip-label">Website</span>
                   <span className="kpf-grantee-card__chip-icon" aria-hidden="true">
-                    <ArrowRight size={16} strokeWidth={1.75} absoluteStrokeWidth />
+                    <Globe size={16} strokeWidth={1.75} absoluteStrokeWidth />
                   </span>
                 </a>
               </ExternalExitTooltip>

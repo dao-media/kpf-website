@@ -1,17 +1,15 @@
 import Head from "next/head";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import KpfImage from "@/components/KpfImage";
 import KpfButton from "@/components/KpfButton";
+import PartnersSlider from "@/components/PartnersSlider";
 import ProgramsCheckRuntime, {
   ProgramsCheckIcon,
 } from "@/components/ProgramsCheckRuntime";
 import HomeHeroCutoutsRuntime from "@/components/HomeHeroCutoutsRuntime";
 import { HOME } from "@/lib/pageCopy";
-
-const PartnersSlider = dynamic(() => import("@/components/PartnersSlider"));
 const { normalizeLatestBlogPost } = require("@/lib/latestBlogPost");
 const { resolveMedia } = require("@/lib/scaffoldMedia");
 const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
@@ -189,6 +187,7 @@ export default function HomePageScaffold({
               width={640}
               height={760}
               sizes="(min-width: 64rem) 640px, (min-width: 48rem) 55vw, 100vw"
+              priority
             />
           ) : null}
         </div>

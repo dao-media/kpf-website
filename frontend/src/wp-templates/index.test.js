@@ -9,11 +9,11 @@ describe("wp-templates index", () => {
     assert.match(src, /next\/dynamic/);
     assert.match(src, /function bindTemplate/);
     assert.match(src, /Template\.query/);
-    assert.match(src, /GET_HOME_PAGE/);
     assert.match(src, /GET_POST/);
     assert.match(src, /pageVariables/);
-    assert.doesNotMatch(src, /import FrontPageTemplate from/);
+    assert.match(src, /import FrontPageTemplate from/);
     assert.doesNotMatch(src, /import SingleTemplate from/);
+    assert.doesNotMatch(src, /import\("\.\/front-page"\)/);
     assert.match(
       src,
       /Faust treats next\/dynamic templates as client-only/,
@@ -28,6 +28,6 @@ describe("homepage payload", () => {
       "utf8",
     );
     assert.doesNotMatch(src, /lucide-react/);
-    assert.match(src, /dynamic\(\(\) => import\("@\/components\/PartnersSlider"\)\)/);
+    assert.match(src, /import PartnersSlider from "@\/components\/PartnersSlider"/);
   });
 });

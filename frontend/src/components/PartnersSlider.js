@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import KpfImage from "@/components/KpfImage";
 import { HOME } from "@/lib/pageCopy";
 
 const AUTO_MS = 3000;
@@ -303,14 +304,14 @@ export default function PartnersSlider({
   function renderChip(item, loopKey) {
     const content = (
       <>
-        <img
+        <KpfImage
           className="kpf-partners__logo"
           src={item.logoUrl}
           alt={item.logoAlt || item.name}
-          width={40}
-          height={40}
+          width={80}
+          height={80}
+          sizes="40px"
           loading="lazy"
-          decoding="async"
           draggable={false}
         />
         <span className="kpf-partners__name" aria-hidden="true">

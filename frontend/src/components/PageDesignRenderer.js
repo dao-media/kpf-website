@@ -28,6 +28,7 @@ const {
   toDesignQueryItem,
 } = require("@/lib/blogPosts");
 const { normalizeBlogPostPage } = require("@/lib/blogPost");
+const { ensureImgAltAttributes } = require("@/lib/imageAlt");
 
 function textOnly(value) {
   return String(value || "").replace(/<[^>]*>/g, "").trim();
@@ -312,7 +313,9 @@ function PageDesignWithIslands({
       ) : null}
       <div
         data-kpf-design={design.databaseId}
-        dangerouslySetInnerHTML={{ __html: embeddedHtml }}
+        dangerouslySetInnerHTML={{
+          __html: ensureImgAltAttributes(embeddedHtml),
+        }}
       />
       {islands.map((island) => (
         <DesignIslandPortal

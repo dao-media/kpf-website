@@ -4,6 +4,7 @@
 
 const { stripHtml } = require("./searchDocuments");
 const { formatPostDate, estimateReadTime } = require("./latestBlogPost");
+const { ensureImgAltAttributes } = require("./imageAlt");
 
 const STORY_LINKS = [
   {
@@ -99,7 +100,7 @@ function prepareArticleHtml(html) {
     },
   );
 
-  return { html: linkKnownEntities(withIds), toc };
+  return { html: ensureImgAltAttributes(linkKnownEntities(withIds)), toc };
 }
 
 /**

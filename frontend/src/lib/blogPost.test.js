@@ -100,4 +100,9 @@ describe("blogPost", () => {
     assert.equal(page.toc[0].id, "one");
     assert.equal(page.media.src, "https://example.test/x.jpg");
   });
+
+  it("adds alt=\"\" to article images that omit the attribute", () => {
+    const { html } = prepareArticleHtml('<p><img src="/photo.jpg"></p>');
+    assert.match(html, /alt=""/);
+  });
 });

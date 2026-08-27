@@ -351,7 +351,7 @@ export default function GranteeCard({
         <img
           className="kpf-grantee-card__logo kpf-grantee-card__logo--hero"
           src={logoUrl}
-          alt=""
+          alt={name}
           loading="lazy"
           decoding="async"
         />
@@ -375,6 +375,7 @@ export default function GranteeCard({
                 height={84}
                 loading="lazy"
                 decoding="async"
+                aria-hidden="true"
               />
             ) : null}
             <h3 className="kpf-h3 kpf-grantee-card__name">{name}</h3>

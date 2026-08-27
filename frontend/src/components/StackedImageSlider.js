@@ -185,7 +185,7 @@ export default function StackedImageSlider({
 								data-stack-index={index}
 							>
 								{/* eslint-disable-next-line @next/next/no-img-element */}
-								<img src={slide.src} alt={slide.alt} draggable={false} />
+								<img src={slide.src} alt={slide.alt || ""} draggable={false} />
 								{slide.caption ? (
 									<figcaption className="kpf-stacked-slider__caption">
 										{slide.caption}

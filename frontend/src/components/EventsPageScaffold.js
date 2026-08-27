@@ -234,7 +234,7 @@ function EventCard({ event, fallbackMarkSrc = "", fallbackMarkAlt = "" }) {
                   <img
                     className="kpf-event-card__host"
                     src={host.src}
-                    alt={host.alt}
+                    alt={host.alt || ""}
                     width={48}
                     height={48}
                     loading="lazy"

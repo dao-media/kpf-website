@@ -11,6 +11,7 @@ const {
   buildAccessibilityCss,
   normalizeAccessibility,
 } = require("@/lib/accessibility");
+const { ensureDomImageAlts } = require("@/lib/imageAlt");
 
 const AccessibilityContext = createContext(
   normalizeAccessibility({
@@ -116,16 +117,20 @@ export default function AccessibilityRuntime({ config: rawConfig, children }) {
   ]);
 
   useEffect(() => {
-    if (!config.content.announceNewWindows || typeof document === "undefined") {
+    if (typeof document === "undefined") {
       return undefined;
     }
 
     const root = document.querySelector(".kpf-site-chrome") || document.body;
-    announceNewWindowLinks(root);
+    function apply() {
+      ensureDomImageAlts(root);
+      if (config.content.announceNewWindows) {
+        announceNewWindowLinks(root);
+      }
+    }
+    apply();
 
-    const observer = new MutationObserver(() => {
-      announceNewWindowLinks(root);
-    });
+    const observer = new MutationObserver(apply);
     observer.observe(root, { childList: true, subtree: true });
     return () => observer.disconnect();
   }, [config.content.announceNewWindows, router.asPath]);

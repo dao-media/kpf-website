@@ -1,5 +1,7 @@
 import BlockRenderer from "@/components/BlockRenderer";
 
+const { ensureImgAltAttributes } = require("@/lib/imageAlt");
+
 export default function WordPressContent({
 	title,
 	content,
@@ -27,7 +29,9 @@ export default function WordPressContent({
 						className="kpf-content"
 						// WordPress applies KSES when editor content is saved. Only
 						// trusted WordPress authors can supply this rendered HTML.
-						dangerouslySetInnerHTML={{ __html: content }}
+						dangerouslySetInnerHTML={{
+							__html: ensureImgAltAttributes(content),
+						}}
 					/>
 				) : null}
 			</article>

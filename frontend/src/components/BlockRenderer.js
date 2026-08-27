@@ -7,6 +7,7 @@ const {
   containerClassName,
   safeUrl,
 } = require("./blockData");
+const { ensureImgAltAttributes } = require("@/lib/imageAlt");
 
 const KPF_EDITOR_BLOCKS_QUERY_BODY = `
   editorBlocks(flat: true) {
@@ -535,7 +536,9 @@ function HtmlFallback({ block }) {
   return (
     <div
       data-wp-block={block.name || undefined}
-      dangerouslySetInnerHTML={{ __html: block.renderedHtml }}
+        dangerouslySetInnerHTML={{
+          __html: ensureImgAltAttributes(block.renderedHtml),
+        }}
     />
   );
 }

@@ -600,7 +600,7 @@ export default function KevinHistoryCarousel({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={slide.src}
-              alt={slide.alt}
+              alt={slide.alt || ""}
               width={1120}
               height={1296}
               loading="lazy"

@@ -184,7 +184,7 @@ export default function HomePageScaffold({
           {kevin.src ? (
             <KpfImage
               src={kevin.src}
-              alt={kevin.alt}
+              alt={kevin.alt || ""}
               width={640}
               height={760}
               sizes="(min-width: 64rem) 640px, (min-width: 48rem) 55vw, 100vw"
@@ -344,7 +344,7 @@ export default function HomePageScaffold({
               <KpfImage
                 className="kpf-programs__dunes"
                 src={dunes.src}
-                alt={dunes.alt}
+                alt={dunes.alt || ""}
                 width={1200}
                 height={800}
                 sizes="(min-width: 64rem) 42vw, 100vw"

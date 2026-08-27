@@ -568,7 +568,7 @@ const EVENTS = {
     cardMark: {
       key: "events.cardMark",
       src: "/media/brand/50-badge.webp",
-      alt: "",
+      alt: "Kevin Popke Foundation 50 badge",
     },
     items: [
       {
@@ -633,7 +633,7 @@ const NOTFOUND = {
     media: {
       key: "notfound.planes",
       src: "/media/404/fighter-planes.webp",
-      alt: "",
+      alt: "Silhouettes of fighter planes",
     },
   },
 };

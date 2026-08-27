@@ -354,7 +354,6 @@ function Brandmark({ className = "kpf-header__mark" }) {
         viewBox="0 0 320 480"
         width={86}
         height={129}
-        role="img"
         aria-hidden="true"
         focusable="false"
       >

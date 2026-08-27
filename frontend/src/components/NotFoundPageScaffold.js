@@ -52,7 +52,7 @@ export default function NotFoundPageScaffold({ media = {} }) {
           <div className="kpf-hero--404__planes" aria-hidden="true">
             <img
               src={planes.src}
-              alt=""
+              alt={planes.alt || "Silhouettes of fighter planes"}
               width={1600}
               height={1070}
               decoding="async"

@@ -159,6 +159,8 @@ export default function AboutPageScaffold({
     userExpandedRef.current = false;
     setEnterKeys([]);
     setIsInsertingTiles(false);
+    columnCountRef.current = cols;
+    preferLongestRef.current = longest;
     setColumns(
       packMosaicColumns(
         shuffled.slice(0, Math.min(next.initial, shuffled.length)),
@@ -174,7 +176,8 @@ export default function AboutPageScaffold({
     const apply = () => {
       const cols = galleryColumnCount();
       const longest = mosaicPrefersLongestColumn();
-      setPaging(galleryPagingForViewport());
+      const next = galleryPagingForViewport();
+      setPaging(next);
       if (
         cols === columnCountRef.current &&
         longest === preferLongestRef.current
@@ -185,20 +188,22 @@ export default function AboutPageScaffold({
       preferLongestRef.current = longest;
       setColumnCount(cols);
       setPreferLongest(longest);
-      setColumns(
-        packMosaicColumns(
-          mosaicTilesInPoolOrder(shuffledRef.current, columnsRef.current),
-          cols,
-          longest,
-        ),
-      );
+      const pool = shuffledRef.current;
+      // First paint / unexpanded: keep the viewport initial count. After more-click,
+      // keep every already-pinned tile and only change column layout.
+      const tiles = userExpandedRef.current
+        ? mosaicTilesInPoolOrder(pool, columnsRef.current)
+        : pool.slice(0, Math.min(next.initial, pool.length));
+      setColumns(packMosaicColumns(tiles, cols, longest));
     };
     const pagingQuery = window.matchMedia(GALLERY_MOBILE_QUERY);
     const portraitQuery = window.matchMedia(GALLERY_ORIENTATION_PORTRAIT_QUERY);
     pagingQuery.addEventListener("change", apply);
     portraitQuery.addEventListener("change", apply);
     window.addEventListener("orientationchange", apply);
-    apply();
+    // Do not call apply() on mount — the signature effect owns the first pack.
+    // Calling it here raced that pack and kept the SSR desktop initial count (9)
+    // on mobile portrait.
     return () => {
       pagingQuery.removeEventListener("change", apply);
       portraitQuery.removeEventListener("change", apply);

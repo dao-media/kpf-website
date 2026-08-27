@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import { Check, ChevronDown, LoaderCircle, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
 import ChipCursorTooltip from "@/components/ChipCursorTooltip";
@@ -142,9 +141,13 @@ export default function AboutPageScaffold({
       window.matchMedia(query),
     );
     queries.forEach((mq) => mq.addEventListener("change", apply));
+    window.addEventListener("resize", apply);
+    window.addEventListener("orientationchange", apply);
     apply();
     return () => {
       queries.forEach((mq) => mq.removeEventListener("change", apply));
+      window.removeEventListener("resize", apply);
+      window.removeEventListener("orientationchange", apply);
     };
   }, [galleryTiles.length]);
 
@@ -168,13 +171,13 @@ export default function AboutPageScaffold({
     userExpandedRef.current = true;
     setIsFetchingTiles(true);
 
-    try {
-      let pool = shuffledTiles;
-      let offset = fetchOffset;
-      let exhausted = remoteExhausted;
-      let total = tileTotal;
-      const need = visibleTileCount + loadBatch;
+    let pool = shuffledTiles;
+    let offset = fetchOffset;
+    let exhausted = remoteExhausted;
+    let total = tileTotal;
+    const need = visibleTileCount + loadBatch;
 
+    try {
       while (pool.length < need && usingScrapbookQuery && !exhausted) {
         const page = await fetchScrapbookTiles({
           first: SCRAPBOOK_TILES_PAGE,
@@ -202,24 +205,31 @@ export default function AboutPageScaffold({
           exhausted = true;
         }
       }
+    } catch {
+      exhausted = true;
+    }
 
-      const revealTo = Math.min(
-        need,
-        pool.length,
-        total > 0 ? total : pool.length,
-      );
+    const revealTo = Math.min(
+      need,
+      pool.length,
+      total > 0 ? total : pool.length,
+    );
 
-      flushSync(() => {
-        setShuffledTiles(pool);
-        setFetchOffset(offset);
-        setRemoteExhausted(exhausted);
-        setTileTotal(Math.max(total, pool.length));
-        setVisibleTileCount(revealTo);
+    setShuffledTiles(pool);
+    setFetchOffset(offset);
+    setRemoteExhausted(exhausted);
+    setTileTotal(Math.max(total, pool.length));
+    setVisibleTileCount(revealTo);
+
+    try {
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(resolve);
+        });
       });
-
       await waitForMosaicImages(mosaicRef.current);
     } catch {
-      setRemoteExhausted(true);
+      // Tiles are already on screen even if a decode wait fails.
     } finally {
       setIsFetchingTiles(false);
       fetchLockRef.current = false;

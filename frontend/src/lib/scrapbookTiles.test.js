@@ -21,11 +21,21 @@ describe("gallery paging", () => {
     assert.equal(GALLERY_BATCH_NARROW, 3);
   });
 
-  it("defaults to desktop/tablet paging without a window", () => {
-    assert.deepEqual(galleryPagingForViewport(), {
-      initial: GALLERY_INITIAL_WIDE,
-      batch: GALLERY_BATCH_WIDE,
-    });
+  it("treats short landscape and sub-768 widths as phone paging", () => {
+    const original = global.window;
+    global.window = {
+      innerWidth: 844,
+      innerHeight: 390,
+      matchMedia: () => ({ matches: false }),
+    };
+    try {
+      assert.deepEqual(galleryPagingForViewport(), {
+        initial: GALLERY_INITIAL_NARROW,
+        batch: GALLERY_BATCH_NARROW,
+      });
+    } finally {
+      global.window = original;
+    }
   });
 
   it("labels remaining photos, including the singular", () => {

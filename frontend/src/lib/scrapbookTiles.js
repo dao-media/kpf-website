@@ -140,7 +140,15 @@ function scrapbookTileTooltip(tile) {
 }
 
 function isGalleryPhoneViewport() {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  if (Number.isFinite(width) && Number.isFinite(height)) {
+    return width < 768 || (height <= 480 && width > height);
+  }
+  if (typeof window.matchMedia !== "function") {
     return false;
   }
   return (

@@ -132,11 +132,15 @@ function contrastBoostCss() {
   --kpf-color-text-muted: #3d2c2d;
 }
 .kpf-site-chrome .kpf-mute,
-.kpf-site-chrome .kpf-footer__legal,
-.kpf-site-chrome .kpf-footer__copy,
 .kpf-site-chrome .kpf-field__help,
 .kpf-site-chrome .kpf-search__status {
   color: #3d2c2d;
+}
+.kpf-site-chrome .kpf-footer__brand-note,
+.kpf-site-chrome .kpf-footer__bar,
+.kpf-site-chrome .kpf-footer__legal,
+.kpf-site-chrome .kpf-footer__copy {
+  color: #bcb6b6;
 }
 `;
 }

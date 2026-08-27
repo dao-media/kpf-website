@@ -83,5 +83,6 @@ describe("accessibility utilities", () => {
     );
     assert.match(css, /min-height:\s*44px/);
     assert.match(css, /--kpf-mute:\s*#3d2c2d/);
+    assert.match(css, /\.kpf-footer__copy \{\s*color:\s*#bcb6b6;/);
   });
 });

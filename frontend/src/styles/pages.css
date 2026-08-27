@@ -1147,7 +1147,11 @@ html.kpf-scroll-smoothed body {
 	background: var(--kpf-ink, #12090a);
 	/* Ember rule is ::before (not border-top) so it scrolls with the ink fill
 	   under ScrollSmoother — border-top was compositing over the CTA video. */
-	color: color-mix(in srgb, var(--kpf-parchment) 88%, transparent);
+	/* Opaque mix — transparent parchment fails axe/PSI on the dark fill. */
+	color: color-mix(in srgb, var(--kpf-parchment) 88%, var(--kpf-ink, #12090a));
+	/* Light-surface brass-text (#83673c) fails AA on ink; invert uses brass. */
+	--kpf-color-text-link: var(--kpf-brass, #c9a15b);
+	--kpf-color-text-link-hover: var(--kpf-parchment, #f4efea);
 	isolation: isolate;
 	padding-block: 0;
 	padding-inline: 0;
@@ -1225,7 +1229,8 @@ html.kpf-scroll-smoothed body {
 }
 
 .kpf-footer__brand-note {
-	color: var(--kpf-mute, #6b5c5c); /* beat global `p` ink on dark footer */
+	/* Mute (#6b5c5c) is for parchment; on ink it fails AA (~3:1). */
+	color: var(--kpf-ink-50, #bcb6b6);
 	margin: 0;
 	max-width: 22rem;
 }
@@ -1273,6 +1278,8 @@ html.kpf-scroll-smoothed body {
 	background: var(--kpf-color-bg-surface, #fff);
 	border-radius: var(--kpf-radius-md);
 	color: var(--kpf-ink, #12090a);
+	--kpf-color-text-link: var(--kpf-brass-text, #83673c);
+	--kpf-color-text-link-hover: var(--kpf-ember, #bb0d0d);
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
@@ -1300,11 +1307,11 @@ html.kpf-scroll-smoothed body {
 	width: auto;
 }
 
-/* Nav link labels — default + visited use link color; hover stays parchment */
+/* Nav link labels — brass on ink (AA); hover stays parchment */
 .kpf-footer__list a,
 .kpf-footer__list a:link,
 .kpf-footer__list a:visited {
-	color: var(--kpf-color-text-link);
+	color: var(--kpf-color-text-link, var(--kpf-brass, #c9a15b));
 	font-size: 0.9375rem; /* 15 */
 	font-weight: 700;
 	line-height: 1.2;
@@ -1327,11 +1334,11 @@ html.kpf-scroll-smoothed body {
 	overflow-wrap: anywhere;
 }
 
-/* Subfooter — Figma 416:175 (mute caption on ink; beat global `p` ink color) */
+/* Subfooter — light ink caption on ink fill (AA); beat global `p` */
 .kpf-footer__bar {
 	align-items: flex-start;
 	box-sizing: border-box;
-	color: var(--kpf-mute, #6b5c5c);
+	color: var(--kpf-ink-50, #bcb6b6);
 	display: flex;
 	flex-direction: column;
 	font-size: 0.75rem; /* Figma ui-caption 12 */
@@ -1349,7 +1356,7 @@ html.kpf-scroll-smoothed body {
 
 .kpf-footer__copy,
 .kpf-footer__legal {
-	color: var(--kpf-mute, #6b5c5c);
+	color: var(--kpf-ink-50, #bcb6b6);
 	font-size: 0.75rem; /* Figma ui-caption 12 — beat global `p` */
 	line-height: 1.35;
 	margin: 0;

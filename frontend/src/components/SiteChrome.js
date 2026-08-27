@@ -239,9 +239,9 @@ export default function SiteChrome({
         <CodeSnippetsRuntime snippets={snippets} slot="header" />
         <div id="smooth-wrapper" className="kpf-smooth-wrapper">
           <div id="smooth-content" className="kpf-smooth-content">
-            <div id="main" className="kpf-site-chrome__main" tabIndex={-1}>
+            <main id="main" className="kpf-site-chrome__main" tabIndex={-1}>
               {children}
-            </div>
+            </main>
             {footer ? (
               <ChromeFooter component={footer} useScaffold={useFooterScaffold} />
             ) : null}

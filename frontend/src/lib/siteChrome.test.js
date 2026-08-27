@@ -157,3 +157,14 @@ describe("class helpers", () => {
     assert.match(classes, /contained/);
   });
 });
+
+describe("SiteChrome landmark", () => {
+  it("exposes one main landmark that skip-to-content can still target", () => {
+    const src = require("fs").readFileSync(
+      require("path").join(__dirname, "../components/SiteChrome.js"),
+      "utf8",
+    );
+    assert.match(src, /<main id="main" className="kpf-site-chrome__main"/);
+    assert.doesNotMatch(src, /<div id="main"/);
+  });
+});

@@ -2,6 +2,9 @@
 /**
  * Seed sitewide scroll entrances tuned to scfo.de body-copy motion (no pin/scrub).
  *
+ * Faust GsapRuntime upgrades these `from { autoAlpha: 0 }` tweens to fromTo
+ * (0→1) with lazy:false so ScrollTrigger cannot skip the fade.
+ *
  * Reference (https://scfo.de/ — Framer Motion variants, Y inverted to fade in/down):
  *   hidden: { opacity: 0, y: -42 }
  *   show:   { opacity: 1, y: 0, transition: { duration: 0.9, delay: i*0.08, ease: [0.22, 1, 0.36, 1] } }

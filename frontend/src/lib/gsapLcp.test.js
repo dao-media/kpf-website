@@ -13,7 +13,7 @@ function fakeNode(chain) {
 }
 
 describe("isHeroLcpNode", () => {
-  it("protects hero copy and not cutouts", () => {
+  it("protects hero copy identity for docs; Gate waits for LCP so tweens may still fade", () => {
     const body = fakeNode({
       ".kpf-hero": {},
       ".kpf-hero__stage, .kpf-hero__cutout": null,

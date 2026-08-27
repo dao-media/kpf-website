@@ -1,6 +1,7 @@
 /**
- * Hero copy is the LCP candidate. CMS `from { autoAlpha: 0 }` on those
- * nodes delays Largest Contentful Paint until GSAP runs. Cutouts still fade.
+ * Hero copy is the LCP candidate. GsapRuntimeGate waits for LCP before
+ * booting Club GSAP, so entrance tweens must still fade (autoAlpha 0→1).
+ * Do not strip hide props here — that left a y-shift with no opacity.
  */
 function isHeroLcpNode(node) {
   if (!node || typeof node.closest !== "function") return false;

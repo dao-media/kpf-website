@@ -4,6 +4,11 @@ import { gsap } from "gsap";
 import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
 
 const { isHeroLcpNode } = require("@/lib/gsapLcp");
+const {
+  inViewEntranceExtra,
+  normalizeEntranceTween,
+  stripHideProps,
+} = require("@/lib/gsapEntrance");
 
 const {
   animationsUsedOnPage,
@@ -129,37 +134,20 @@ function resolveTweenTargets(triggerTargets, config) {
   });
 }
 
-function stripHideProps(vars) {
-  if (!vars || typeof vars !== "object" || Array.isArray(vars)) return vars;
-  const next = { ...vars };
-  delete next.autoAlpha;
-  delete next.opacity;
-  delete next.visibility;
-  return next;
-}
-
 function createTween(targets, animation, extra = {}) {
   const { config } = animation;
   const tweenTargets = resolveTweenTargets(targets, config);
   const nodes = gsap.utils.toArray(tweenTargets);
   if (!nodes.length) return null;
-  const lcpNodes = nodes.filter(isHeroLcpNode);
-  if (lcpNodes.length && lcpNodes.length < nodes.length) {
-    const rest = nodes.filter((node) => !isHeroLcpNode(node));
-    createTween(lcpNodes, animation, extra);
-    return createTween(rest, animation, extra);
-  }
-  const protectLcp = lcpNodes.length === nodes.length;
   const protectBadge = nodes.some(isHeaderBadgeNode);
   const ease = resolveEase(config, animation.databaseId);
-  const method = animation.method || config.method || "from";
   const origin =
     config.from?.transformOrigin ||
     config.to?.transformOrigin ||
     config.keyframes?.find((frame) => frame?.props?.transformOrigin)?.props
       ?.transformOrigin;
   if (origin) {
-    // GSAP writes an inline `transform` when touch transformOrigin. A bare
+    // GSAP writes an inline `transform` when touching transformOrigin. A bare
     // translate(0,0) overrides CSS resting transforms (e.g. nav underline
     // scaleX:0) and leaves every link looking active. Seed `from` for paused
     // hover tweens so the resting state stays correct.
@@ -172,6 +160,18 @@ function createTween(targets, animation, extra = {}) {
     gsap.set(tweenTargets, setProps);
   }
   const overwrite = extra.overwrite ?? (extra.paused || protectBadge ? false : "auto");
+  const {
+    method: resolvedMethod,
+    fromVars,
+    toVars,
+    extra: tweenExtra,
+  } = normalizeEntranceTween({
+    method: animation.method || config.method || "from",
+    from: config.from,
+    to: config.to,
+    hideProtected: protectBadge,
+    extra,
+  });
   const common = {
     duration: config.duration,
     delay: config.delay,
@@ -180,7 +180,7 @@ function createTween(targets, animation, extra = {}) {
     repeat: config.repeat || 0,
     yoyo: Boolean(config.yoyo),
     overwrite,
-    ...extra,
+    ...tweenExtra,
     overwrite,
   };
   const svg = config.svg || {};
@@ -227,11 +227,24 @@ function createTween(targets, animation, extra = {}) {
     const animateKey = svg.splitAnimate || "chars";
     const parts = splits.flatMap((split) => split[animateKey] || split.chars || []);
     const splitFrom = config.from || { y: -24, autoAlpha: 0 };
-    const tween = gsap.from(parts, {
-      ...(protectBadge || protectLcp ? stripHideProps(splitFrom) : splitFrom),
-      ...common,
-      stagger: Number(svg.splitStagger ?? config.stagger) || 0.03,
+    const splitTween = normalizeEntranceTween({
+      method: "from",
+      from: splitFrom,
+      hideProtected: protectBadge,
+      extra,
     });
+    const tween =
+      splitTween.method === "fromTo"
+        ? gsap.fromTo(parts, splitTween.fromVars, {
+            ...splitTween.toVars,
+            ...common,
+            stagger: Number(svg.splitStagger ?? config.stagger) || 0.03,
+          })
+        : gsap.from(parts, {
+            ...splitTween.fromVars,
+            ...common,
+            stagger: Number(svg.splitStagger ?? config.stagger) || 0.03,
+          });
     tween.eventCallback("onComplete", () => {
       // Keep split markup in place after entrance animations.
     });
@@ -276,30 +289,26 @@ function createTween(targets, animation, extra = {}) {
     });
   }
 
-  const hideProtected = protectBadge || protectLcp;
-  const fromVars = hideProtected ? stripHideProps(config.from) : config.from;
-  const toVars = hideProtected ? stripHideProps(config.to) : config.to;
-
-  if (method === "to") {
+  if (resolvedMethod === "to") {
     return gsap.to(tweenTargets, { ...(toVars || {}), ...common });
   }
-  if (method === "fromTo") {
+  if (resolvedMethod === "fromTo") {
     return gsap.fromTo(tweenTargets, fromVars || {}, {
       ...(toVars || {}),
       ...common,
     });
   }
-  if (method === "keyframes") {
+  if (resolvedMethod === "keyframes") {
     return gsap.to(tweenTargets, {
       keyframes: (config.keyframes || []).map((frame) => ({
-        ...((protectBadge || protectLcp ? stripHideProps(frame.props) : frame.props) || {}),
+        ...(protectBadge ? stripHideProps(frame.props) : frame.props || {}),
         duration: frame.duration,
         ease: frame.ease,
       })),
       repeat: common.repeat,
       yoyo: common.yoyo,
       stagger: common.stagger,
-      ...extra,
+      ...tweenExtra,
       overwrite,
     });
   }
@@ -351,7 +360,7 @@ export default function GsapRuntime({ animations = [] }) {
               const scroll = animation.config.scroll || {};
               const scrub = Number(scroll.scrub) || false;
               const once = scroll.once !== false;
-              createTween(target, animation, {
+              createTween(target, animation, inViewEntranceExtra({
                 scrollTrigger: {
                   trigger: target,
                   start: scroll.start || "top 85%",
@@ -365,7 +374,7 @@ export default function GsapRuntime({ animations = [] }) {
                       : "play none none reverse",
                   id: `kpf-animation-${animation.databaseId}-${index}`,
                 },
-              });
+              }));
             });
             return;
           }

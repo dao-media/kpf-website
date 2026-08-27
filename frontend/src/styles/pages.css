@@ -1317,14 +1317,19 @@ html.kpf-scroll-smoothed body {
 	line-height: 1.2;
 	overflow-wrap: anywhere;
 	text-decoration-line: underline;
-	text-decoration-color: currentColor;
-	text-underline-offset: 0.12em;
+	text-decoration-color: color-mix(
+		in srgb,
+		var(--kpf-color-text-link, var(--kpf-brass, #c9a15b)) 45%,
+		transparent
+	);
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.18em;
 }
 
 .kpf-footer__list a:hover,
 .kpf-footer__list a:focus-visible {
 	color: var(--kpf-parchment, #f4efea);
-	text-decoration-color: var(--kpf-color-text-link-hover, var(--kpf-ember, #bb0d0d));
+	text-decoration-color: var(--kpf-ember, #bb0d0d);
 }
 
 .kpf-footer__detail {
@@ -1376,6 +1381,10 @@ html.kpf-scroll-smoothed body {
 .kpf-footer__legal a:hover,
 .kpf-footer__legal a:focus-visible {
 	color: var(--kpf-parchment, #f4efea);
+	text-decoration-line: underline;
+	text-decoration-color: var(--kpf-ember, #bb0d0d);
+	text-decoration-thickness: 0.08em;
+	text-underline-offset: 0.18em;
 }
 
 @media (min-width: 48rem) {

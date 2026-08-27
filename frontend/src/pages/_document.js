@@ -1,5 +1,4 @@
 import { Html, Head, Main, NextScript } from "next/document";
-import Script from "next/script";
 
 const { analyticsScriptsToLoad } = require("@/lib/thirdPartyIdle");
 
@@ -37,9 +36,10 @@ export default function Document() {
                 title="Google Tag Manager"
               />
             </noscript>
-            <Script id="kpf-gtm" strategy="beforeInteractive">
-              {GTM_BOOTSTRAP}
-            </Script>
+            <script
+              id="kpf-gtm"
+              dangerouslySetInnerHTML={{ __html: GTM_BOOTSTRAP }}
+            />
           </>
         ) : null}
         <Main />

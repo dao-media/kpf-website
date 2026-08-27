@@ -5,7 +5,10 @@ const {
 	VERCEL_PRODUCTION_HOSTS,
 	WORDPRESS_CMS_ORIGIN,
 } = require('./src/lib/publicSiteUrl');
-const { createKpfSecureHeaders } = require('./src/lib/secureHeaders');
+const {
+	createKpfSecureHeaders,
+	kpfHstsHeader,
+} = require('./src/lib/secureHeaders');
 
 const adminCmsRewrites = [
 	{
@@ -90,6 +93,11 @@ module.exports = withFaust({
 	},
 	async headers() {
 		return [
+			{
+				source: '/:path*',
+				has: [{ type: 'host', value: ADMIN_CMS_HOST }],
+				headers: [kpfHstsHeader()],
+			},
 			{
 				source: '/:path*',
 				missing: [{ type: 'host', value: ADMIN_CMS_HOST }],

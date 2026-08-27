@@ -13,5 +13,9 @@ describe("secureHeaders", () => {
     assert.match(csp, /kpf\.dreamhosters\.com/);
     assert.match(csp, /www\.paypal\.com/);
     assert.doesNotMatch(csp, /unsafe-eval/);
+    assert.equal(
+      map["Strict-Transport-Security"],
+      "max-age=63072000; includeSubDomains; preload",
+    );
   });
 });

@@ -13,17 +13,26 @@ const {
 } = require("@/lib/grantsQuery");
 const {
   GALLERY_BATCH_WIDE,
+  GALLERY_COLUMNS_WIDE_QUERY,
+  GALLERY_ENTER_STAGGER_MS,
   GALLERY_INITIAL_WIDE,
   GALLERY_MOBILE_QUERY,
   SCRAPBOOK_TILES_INITIAL,
   SCRAPBOOK_TILES_PAGE,
+  appendToShortestColumn,
+  decodeTileSizes,
   fetchScrapbookTiles,
+  galleryColumnCount,
   galleryPagingForViewport,
   morePhotosLabel,
+  mosaicTilesInPoolOrder,
+  mosaicVisibleCount,
   nextGalleryBatch,
+  packMosaicColumns,
   remainingPhotoCount,
   scrapbookTileTooltip,
-  waitForMosaicImages,
+  tileKey,
+  waitMs,
 } = require("@/lib/scrapbookTiles");
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
@@ -94,9 +103,13 @@ export default function AboutPageScaffold({
     initial: GALLERY_INITIAL_WIDE,
     batch: GALLERY_BATCH_WIDE,
   });
+  const [columnCount, setColumnCount] = useState(3);
   const [shuffledTiles, setShuffledTiles] = useState(galleryTiles);
-  const [visibleTileCount, setVisibleTileCount] = useState(
-    Math.min(GALLERY_INITIAL_WIDE, galleryTiles.length),
+  const [columns, setColumns] = useState(() =>
+    packMosaicColumns(
+      galleryTiles.slice(0, GALLERY_INITIAL_WIDE),
+      3,
+    ),
   );
   const [fetchOffset, setFetchOffset] = useState(galleryTiles.length);
   const [tileTotal, setTileTotal] = useState(
@@ -106,14 +119,21 @@ export default function AboutPageScaffold({
     !usingScrapbookQuery || galleryTiles.length < SCRAPBOOK_TILES_INITIAL,
   );
   const [isFetchingTiles, setIsFetchingTiles] = useState(false);
+  const [isInsertingTiles, setIsInsertingTiles] = useState(false);
   const fetchLockRef = useRef(false);
   const userExpandedRef = useRef(false);
   const mosaicRef = useRef(null);
+  const packGenRef = useRef(0);
   const [enterKeys, setEnterKeys] = useState([]);
-  const [enterPlay, setEnterPlay] = useState(false);
 
   useLayoutEffect(() => {
-    setShuffledTiles(shuffleTiles(galleryTiles));
+    packGenRef.current += 1;
+    const cols = galleryColumnCount();
+    const next = galleryPagingForViewport();
+    const shuffled = shuffleTiles(galleryTiles);
+    setColumnCount(cols);
+    setPaging(next);
+    setShuffledTiles(shuffled);
     setFetchOffset(galleryTiles.length);
     setRemoteExhausted(
       !usingScrapbookQuery || galleryTiles.length < SCRAPBOOK_TILES_INITIAL,
@@ -121,35 +141,49 @@ export default function AboutPageScaffold({
     setTileTotal(Math.max(Number(scrapbookTilesCount) || 0, galleryTiles.length));
     userExpandedRef.current = false;
     setEnterKeys([]);
-    setEnterPlay(false);
-    const next = galleryPagingForViewport();
-    setPaging(next);
-    setVisibleTileCount(Math.min(next.initial, galleryTiles.length));
+    setIsInsertingTiles(false);
+    setColumns(
+      packMosaicColumns(shuffled.slice(0, Math.min(next.initial, shuffled.length)), cols),
+    );
     // galleryTiles identity changes every Faust render; the signature is the content key.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
   }, [gallerySignature, usingScrapbookQuery, scrapbookTilesCount]);
 
   useLayoutEffect(() => {
     const apply = () => {
+      const cols = galleryColumnCount();
       const next = galleryPagingForViewport();
       setPaging(next);
-      if (!userExpandedRef.current) {
-        setVisibleTileCount(Math.min(next.initial, galleryTiles.length));
-      }
+      setColumnCount(cols);
+      setColumns((current) => {
+        if (!userExpandedRef.current) {
+          return packMosaicColumns(
+            shuffledTiles.slice(0, Math.min(next.initial, shuffledTiles.length)),
+            cols,
+          );
+        }
+        return packMosaicColumns(
+          mosaicTilesInPoolOrder(shuffledTiles, current),
+          cols,
+        );
+      });
     };
-    const query = window.matchMedia(GALLERY_MOBILE_QUERY);
-    query.addEventListener("change", apply);
+    const pagingQuery = window.matchMedia(GALLERY_MOBILE_QUERY);
+    const columnsQuery = window.matchMedia(GALLERY_COLUMNS_WIDE_QUERY);
+    pagingQuery.addEventListener("change", apply);
+    columnsQuery.addEventListener("change", apply);
     window.addEventListener("resize", apply);
     window.addEventListener("orientationchange", apply);
     apply();
     return () => {
-      query.removeEventListener("change", apply);
+      pagingQuery.removeEventListener("change", apply);
+      columnsQuery.removeEventListener("change", apply);
       window.removeEventListener("resize", apply);
       window.removeEventListener("orientationchange", apply);
     };
-  }, [galleryTiles.length]);
+  }, [shuffledTiles]);
 
-  const visibleTiles = shuffledTiles.slice(0, visibleTileCount);
+  const visibleTileCount = mosaicVisibleCount(columns);
   const remainingTiles = remainingPhotoCount({
     visible: visibleTileCount,
     loaded: shuffledTiles.length,
@@ -212,33 +246,41 @@ export default function AboutPageScaffold({
       pool.length,
       total > 0 ? total : pool.length,
     );
-    const newKeys = pool
-      .slice(visibleTileCount, revealTo)
-      .map((tile) => tile.id || tile.src)
-      .filter(Boolean);
+    const newcomers = pool.slice(visibleTileCount, revealTo);
+    const gen = packGenRef.current;
 
     setShuffledTiles(pool);
     setFetchOffset(offset);
     setRemoteExhausted(exhausted);
     setTileTotal(Math.max(total, pool.length));
-    setEnterKeys(newKeys);
-    setEnterPlay(false);
-    setVisibleTileCount(revealTo);
+    setIsFetchingTiles(false);
 
+    let sized = newcomers;
     try {
-      await new Promise((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(resolve);
-        });
-      });
-      await waitForMosaicImages(mosaicRef.current);
+      sized = await decodeTileSizes(newcomers);
     } catch {
-      // Tiles are already on screen even if a decode wait fails.
-    } finally {
-      setEnterPlay(true);
-      setIsFetchingTiles(false);
-      fetchLockRef.current = false;
+      sized = newcomers;
     }
+    if (gen !== packGenRef.current) {
+      fetchLockRef.current = false;
+      return;
+    }
+    if (sized.length) {
+      setIsInsertingTiles(true);
+      for (let i = 0; i < sized.length; i += 1) {
+        if (gen !== packGenRef.current) break;
+        if (i > 0) await waitMs(GALLERY_ENTER_STAGGER_MS);
+        if (gen !== packGenRef.current) break;
+        const tile = sized[i];
+        const key = tileKey(tile);
+        setColumns((current) => appendToShortestColumn(current, tile));
+        if (key) setEnterKeys((current) => [...current, key]);
+      }
+    }
+    if (gen === packGenRef.current) {
+      setIsInsertingTiles(false);
+    }
+    fetchLockRef.current = false;
   }, [
     loadBatch,
     shuffledTiles,
@@ -508,59 +550,58 @@ export default function AboutPageScaffold({
           </div>
 
           <div className="kpf-gallery__wall">
-          {visibleTiles.length > 0 ? (
+          {visibleTileCount > 0 ? (
             <div
               ref={mosaicRef}
               className="kpf-gallery__mosaic"
+              data-columns={columnCount}
               aria-live="polite"
-              aria-busy={isFetchingTiles || undefined}
+              aria-busy={isFetchingTiles || isInsertingTiles || undefined}
             >
-              {visibleTiles.map((item, index) => {
-                const tip = scrapbookTileTooltip(item);
-                const tileKey = item.id || item.src;
-                const enterIndex = enterKeys.indexOf(tileKey);
-                const isEnter = enterIndex >= 0;
-                const image = (
-                  <img
-                    src={item.src}
-                    alt={item.alt || ""}
-                    loading={index < paging.initial ? "lazy" : "eager"}
-                    decoding="async"
-                  />
-                );
-                return (
-                  <figure
-                    key={tileKey}
-                    className={
-                      isEnter
-                        ? `kpf-gallery__item${enterPlay ? " is-enter-in" : " is-enter"}`
-                        : "kpf-gallery__item"
-                    }
-                    style={
-                      isEnter
-                        ? { "--kpf-gallery-stagger": `${enterIndex * 200}ms` }
-                        : undefined
-                    }
-                  >
-                    {tip ? (
-                      <ChipCursorTooltip
-                        label={tip.label}
-                        labelSoft={tip.labelSoft}
-                        className="kpf-gallery__item-tip"
-                        desktopOnly
+              {columns.map((col, colIndex) => (
+                <div key={colIndex} className="kpf-gallery__column">
+                  {col.map((item) => {
+                    const tip = scrapbookTileTooltip(item);
+                    const key = tileKey(item);
+                    const isEnter = enterKeys.includes(key);
+                    const image = (
+                      <img
+                        src={item.src}
+                        alt={item.alt || ""}
+                        loading={isEnter ? "eager" : "lazy"}
+                        decoding="async"
+                      />
+                    );
+                    return (
+                      <figure
+                        key={key}
+                        className={
+                          isEnter
+                            ? "kpf-gallery__item is-enter-in"
+                            : "kpf-gallery__item"
+                        }
                       >
-                        {image}
-                      </ChipCursorTooltip>
-                    ) : (
-                      image
-                    )}
-                  </figure>
-                );
-              })}
+                        {tip ? (
+                          <ChipCursorTooltip
+                            label={tip.label}
+                            labelSoft={tip.labelSoft}
+                            className="kpf-gallery__item-tip"
+                            desktopOnly
+                          >
+                            {image}
+                          </ChipCursorTooltip>
+                        ) : (
+                          image
+                        )}
+                      </figure>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           ) : null}
 
-          {hasMoreTiles || isFetchingTiles ? (
+          {hasMoreTiles || isFetchingTiles || isInsertingTiles ? (
             <div className="kpf-gallery__more">
               {isFetchingTiles ? (
                 <span
@@ -571,6 +612,8 @@ export default function AboutPageScaffold({
                   <span className="kpf-gallery__more-spinner" aria-hidden="true" />
                   <span className="kpf-u-sr-only">Loading more photos</span>
                 </span>
+              ) : isInsertingTiles ? (
+                <span className="kpf-gallery__more-status" aria-hidden="true" />
               ) : (
                 <button
                   type="button"

@@ -4447,15 +4447,31 @@ a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
 }
 
 .kpf-gallery__mosaic {
-	column-count: 2; /* mobile portrait — 50/50 */
-	column-gap: 1.5rem; /* 24 */
+	align-items: flex-start;
+	display: flex;
+	gap: 1.5rem; /* 24 */
 	min-width: 0;
 	width: 100%;
 }
 
+.kpf-gallery__column {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	gap: 1.5rem;
+	min-width: 0;
+}
+
+/* WP design preview still dumps figures as direct children. */
+.kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) {
+	display: block;
+	column-count: 2;
+	column-gap: 1.5rem;
+}
+
 @media (min-width: 30rem) {
-	.kpf-gallery__mosaic {
-		column-count: 3; /* mobile-L / tablet / desktop — max ~1/3 */
+	.kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) {
+		column-count: 3;
 	}
 }
 
@@ -4463,18 +4479,16 @@ a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
 	border-radius: var(--kpf-radius-md);
 	break-inside: avoid;
 	display: block;
-	margin: 0 0 1.5rem; /* 24 vertical gap */
+	margin: 0;
 	overflow: clip;
 	width: 100%;
 }
 
-.kpf-gallery__item.is-enter {
-	opacity: 0;
-	transform: translateY(64px);
+.kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) .kpf-gallery__item {
+	margin: 0 0 1.5rem;
 }
 
 .kpf-gallery__item.is-enter-in {
-	animation-delay: var(--kpf-gallery-stagger, 0ms), var(--kpf-gallery-stagger, 0ms);
 	animation-duration: 400ms, 500ms;
 	animation-fill-mode: both, both;
 	animation-name: kpf-gallery-enter-y, kpf-gallery-enter-fade;
@@ -4515,10 +4529,14 @@ a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
 	display: flex;
 	flex-shrink: 0;
 	justify-content: center;
-	margin-top: -1.5rem; /* cancel trailing mosaic item margin */
+	margin-top: 0;
 	min-height: var(--kpf-control-height, 2.75rem);
 	padding-top: 32px;
 	width: 100%;
+}
+
+.kpf-gallery__wall:not(:has(.kpf-gallery__column)) .kpf-gallery__more {
+	margin-top: -1.5rem;
 }
 
 .kpf-gallery__more-btn {

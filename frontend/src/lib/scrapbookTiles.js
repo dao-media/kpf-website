@@ -15,6 +15,8 @@ const SCRAPBOOK_TILE_FIELDS = `
   eventDate
   datePrecision
   title
+  width
+  height
 `;
 
 /** Photos fetched on first paint / SSR (9 shown + one +6 click, with headroom). */
@@ -35,6 +37,12 @@ const GALLERY_BATCH_NARROW = 3;
 /** Phone portrait, or short landscape phones (not tablet). */
 const GALLERY_MOBILE_QUERY =
   "(max-width: 47.99rem), (max-height: 47.99rem) and (orientation: landscape) and (max-width: 63.99rem)";
+
+/** Two mosaic columns below 30rem; three from mobile-L up. */
+const GALLERY_COLUMNS_WIDE_QUERY = "(min-width: 30rem)";
+
+/** New photos land 200ms apart, each in the then-shortest column. */
+const GALLERY_ENTER_STAGGER_MS = 200;
 
 const KPF_SCRAPBOOK_TILES_QUERY = `
   kpfScrapbookTilesCount
@@ -73,6 +81,8 @@ function normalizeScrapbookTiles(tiles) {
         datePrecision: String(tile?.datePrecision || "unknown")
           .trim()
           .toLowerCase(),
+        width: Math.max(0, Number(tile?.width) || 0),
+        height: Math.max(0, Number(tile?.height) || 0),
       };
     })
     .filter(Boolean);
@@ -168,6 +178,143 @@ function galleryPagingForViewport() {
     return { initial: GALLERY_INITIAL_NARROW, batch: GALLERY_BATCH_NARROW };
   }
   return { initial: GALLERY_INITIAL_WIDE, batch: GALLERY_BATCH_WIDE };
+}
+
+/**
+ * Mosaic columns: 2 on small portrait, 3 from 30rem up (matches CSS).
+ * @param {(query: string) => { matches: boolean }} [media]
+ */
+function galleryColumnCount(media) {
+  const matchMedia =
+    typeof media === "function"
+      ? media
+      : typeof globalThis.matchMedia === "function"
+        ? globalThis.matchMedia.bind(globalThis)
+        : null;
+  if (!matchMedia) return 3;
+  try {
+    return matchMedia(GALLERY_COLUMNS_WIDE_QUERY).matches ? 3 : 2;
+  } catch {
+    return 3;
+  }
+}
+
+function tileKey(tile) {
+  return String(tile?.id || tile?.src || "");
+}
+
+/**
+ * Relative column height from intrinsic ratio. Missing sizes count as square.
+ * @param {{ width?: number, height?: number }} tile
+ */
+function tileAspectHeight(tile) {
+  const width = Number(tile?.width) || 0;
+  const height = Number(tile?.height) || 0;
+  if (width > 0 && height > 0) return height / width;
+  return 1;
+}
+
+function emptyMosaicColumns(columnCount) {
+  const count = Math.max(1, Math.floor(Number(columnCount) || 1));
+  return Array.from({ length: count }, () => []);
+}
+
+/**
+ * Place one tile into the current shortest column (left-most on a tie).
+ * @param {unknown[][]} columns
+ * @param {unknown} tile
+ */
+function appendToShortestColumn(columns, tile) {
+  const next = Array.isArray(columns) && columns.length
+    ? columns.map((col) => (Array.isArray(col) ? [...col] : []))
+    : emptyMosaicColumns(1);
+  if (!tile) return next;
+  let shortest = 0;
+  let shortestHeight = Infinity;
+  for (let i = 0; i < next.length; i += 1) {
+    const height = next[i].reduce(
+      (sum, item) => sum + tileAspectHeight(item),
+      0,
+    );
+    if (height < shortestHeight) {
+      shortest = i;
+      shortestHeight = height;
+    }
+  }
+  next[shortest].push(tile);
+  return next;
+}
+
+/**
+ * Left-to-right shortest-column pack. Used for the first paint and resize.
+ * @param {unknown[]} items
+ * @param {number} columnCount
+ */
+function packMosaicColumns(items, columnCount) {
+  let columns = emptyMosaicColumns(columnCount);
+  for (const item of items || []) {
+    columns = appendToShortestColumn(columns, item);
+  }
+  return columns;
+}
+
+function mosaicVisibleCount(columns) {
+  if (!Array.isArray(columns)) return 0;
+  return columns.reduce(
+    (sum, col) => sum + (Array.isArray(col) ? col.length : 0),
+    0,
+  );
+}
+
+function mosaicTilesInPoolOrder(pool, columns) {
+  const have = new Set();
+  for (const col of columns || []) {
+    for (const tile of col || []) {
+      const key = tileKey(tile);
+      if (key) have.add(key);
+    }
+  }
+  return (pool || []).filter((tile) => have.has(tileKey(tile)));
+}
+
+function waitMs(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, Math.max(0, Number(ms) || 0));
+  });
+}
+
+/**
+ * Fill missing width/height from a decoded image so packing uses real ratios.
+ * @param {Array<{ src?: string, width?: number, height?: number }>} tiles
+ */
+async function decodeTileSizes(tiles) {
+  const list = Array.isArray(tiles) ? tiles : [];
+  if (typeof Image !== "function") return list;
+  return Promise.all(
+    list.map(
+      (tile) =>
+        new Promise((resolve) => {
+          if ((Number(tile?.width) || 0) > 0 && (Number(tile?.height) || 0) > 0) {
+            resolve(tile);
+            return;
+          }
+          const src = String(tile?.src || "").trim();
+          if (!src) {
+            resolve(tile);
+            return;
+          }
+          const img = new Image();
+          img.onload = () =>
+            resolve({
+              ...tile,
+              width: img.naturalWidth || 0,
+              height: img.naturalHeight || 0,
+            });
+          img.onerror = () => resolve(tile);
+          img.src = src;
+        }),
+    ),
+  );
 }
 
 /**
@@ -279,6 +426,8 @@ async function fetchScrapbookTiles({
 module.exports = {
   GALLERY_BATCH_NARROW,
   GALLERY_BATCH_WIDE,
+  GALLERY_COLUMNS_WIDE_QUERY,
+  GALLERY_ENTER_STAGGER_MS,
   GALLERY_INITIAL_NARROW,
   GALLERY_INITIAL_WIDE,
   GALLERY_MOBILE_QUERY,
@@ -286,14 +435,23 @@ module.exports = {
   SCRAPBOOK_TILE_FIELDS,
   SCRAPBOOK_TILES_INITIAL,
   SCRAPBOOK_TILES_PAGE,
+  appendToShortestColumn,
+  decodeTileSizes,
   fetchScrapbookTiles,
   formatScrapbookTileDate,
+  galleryColumnCount,
   galleryPagingForViewport,
   isGalleryMobile,
   morePhotosLabel,
+  mosaicTilesInPoolOrder,
+  mosaicVisibleCount,
   nextGalleryBatch,
   normalizeScrapbookTiles,
+  packMosaicColumns,
   remainingPhotoCount,
   scrapbookTileTooltip,
+  tileAspectHeight,
+  tileKey,
   waitForMosaicImages,
+  waitMs,
 };

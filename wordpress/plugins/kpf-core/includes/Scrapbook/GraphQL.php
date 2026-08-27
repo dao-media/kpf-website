@@ -128,6 +128,8 @@ final class GraphQL {
 					'eventDate'     => array( 'type' => 'String' ),
 					'datePrecision' => array( 'type' => 'KpfScrapbookDatePrecisionEnum' ),
 					'title'         => array( 'type' => 'String' ),
+					'width'         => array( 'type' => 'Int' ),
+					'height'        => array( 'type' => 'Int' ),
 				),
 			)
 		);
@@ -351,6 +353,8 @@ final class GraphQL {
 					'eventDate'     => (string) ( $details['eventDate'] ?? '' ),
 					'datePrecision' => (string) ( $details['datePrecision'] ?? 'unknown' ),
 					'title'         => $title,
+					'width'         => (int) ( $image['width'] ?? 0 ),
+					'height'        => (int) ( $image['height'] ?? 0 ),
 				);
 			}
 		}

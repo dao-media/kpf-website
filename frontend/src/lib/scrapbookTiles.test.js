@@ -3,13 +3,19 @@ const assert = require("node:assert/strict");
 const {
   GALLERY_BATCH_NARROW,
   GALLERY_BATCH_WIDE,
+  GALLERY_COLUMNS_WIDE_QUERY,
+  GALLERY_ENTER_STAGGER_MS,
   GALLERY_INITIAL_NARROW,
   GALLERY_INITIAL_WIDE,
   GALLERY_MOBILE_QUERY,
   KPF_SCRAPBOOK_TILES_QUERY,
+  appendToShortestColumn,
+  galleryColumnCount,
   galleryPagingForViewport,
   morePhotosLabel,
+  mosaicVisibleCount,
   nextGalleryBatch,
+  packMosaicColumns,
   remainingPhotoCount,
   waitForMosaicImages,
 } = require("./scrapbookTiles");
@@ -120,6 +126,38 @@ describe("About scrapbook query", () => {
   it("asks for the remaining-count field next to the first tile page", () => {
     assert.match(KPF_SCRAPBOOK_TILES_QUERY, /kpfScrapbookTilesCount/);
     assert.match(KPF_SCRAPBOOK_TILES_QUERY, /kpfScrapbookTiles\(first: 24, offset: 0\)/);
+    assert.match(KPF_SCRAPBOOK_TILES_QUERY, /\bwidth\b/);
+    assert.match(KPF_SCRAPBOOK_TILES_QUERY, /\bheight\b/);
+  });
+});
+
+describe("mosaic shortest-column pack", () => {
+  it("drops each tile into the shortest column, left-most on a tie", () => {
+    const tall = { id: "tall", width: 100, height: 200 };
+    const shortA = { id: "a", width: 100, height: 50 };
+    const shortB = { id: "b", width: 100, height: 50 };
+    const packed = packMosaicColumns([tall, shortA, shortB], 2);
+    assert.deepEqual(
+      packed.map((col) => col.map((tile) => tile.id)),
+      [["tall"], ["a", "b"]],
+    );
+    const next = appendToShortestColumn(packed, { id: "c", width: 100, height: 40 });
+    assert.equal(next[1][2].id, "c");
+    assert.equal(mosaicVisibleCount(next), 4);
+  });
+
+  it("uses 2 columns below 30rem and 3 from mobile-L up", () => {
+    assert.equal(GALLERY_ENTER_STAGGER_MS, 200);
+    assert.equal(
+      galleryColumnCount(() => ({ matches: false })),
+      2,
+    );
+    assert.equal(
+      galleryColumnCount((query) => ({
+        matches: query === GALLERY_COLUMNS_WIDE_QUERY,
+      })),
+      3,
+    );
   });
 });
 
@@ -141,9 +179,10 @@ describe("About mosaic control", () => {
     assert.match(src, /ChevronDown/);
     assert.match(src, /kpf-gallery__more-status/);
     assert.match(src, /kpf-gallery__more-spinner/);
-    assert.match(src, /waitForMosaicImages/);
+    assert.match(src, /appendToShortestColumn/);
+    assert.match(src, /kpf-gallery__column/);
     assert.match(src, /is-enter-in/);
-    assert.match(src, /--kpf-gallery-stagger/);
+    assert.match(src, /GALLERY_ENTER_STAGGER_MS/);
     assert.doesNotMatch(src, /copy\.gallery\.seeMore/);
     assert.doesNotMatch(src, /LoaderCircle/);
     assert.match(css, /padding-top: 32px;/);
@@ -155,6 +194,7 @@ describe("About mosaic control", () => {
     assert.match(css, /translateY\(64px\)/);
     assert.match(css, /animation-duration: 400ms, 500ms;/);
     assert.match(css, /ease-out, ease-out/);
+    assert.match(css, /\.kpf-gallery__column \{/);
   });
 });
 

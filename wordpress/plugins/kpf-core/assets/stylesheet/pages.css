@@ -4307,10 +4307,12 @@ a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
 	left: 0;
 	letter-spacing: 0.01em;
 	line-height: 1.25;
+	opacity: 0;
 	padding: 0.45rem 0.85rem;
 	pointer-events: none !important;
 	position: fixed;
 	top: 0;
+	visibility: hidden;
 	white-space: nowrap;
 	will-change: transform, opacity;
 	z-index: 240;

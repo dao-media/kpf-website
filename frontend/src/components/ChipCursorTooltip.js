@@ -10,7 +10,6 @@ const {
 } = require("@/lib/chipTooltipProximity");
 
 const DURATION = 0.2;
-const TRAVEL = 16;
 const TIP_GAP = 12;
 const VIEWPORT_PAD = 8;
 // Leave starts the 0.2s exit immediately. An inner buffer already eases
@@ -83,23 +82,14 @@ function attachChipCursorTooltip(
     autoAlpha: 0,
     xPercent: -50,
     yPercent: -100,
-    y: TRAVEL,
+    x: 0,
+    y: 0,
     scale: SCALE_EXIT,
     transformOrigin: "50% 100%",
     force3D: true,
     pointerEvents: "none",
   });
 
-  let xTo = gsap.quickTo(tip, "left", {
-    duration: 0.12,
-    ease: "power3.out",
-    overwrite: "auto",
-  });
-  let yTo = gsap.quickTo(tip, "top", {
-    duration: 0.12,
-    ease: "power3.out",
-    overwrite: "auto",
-  });
   let visible = false;
   let hideTimer = null;
   let belowCursor = false;
@@ -108,13 +98,14 @@ function attachChipCursorTooltip(
     if (belowCursor === nextBelow) return;
     belowCursor = nextBelow;
     gsap.set(tip, {
+      x: 0,
+      y: 0,
+      xPercent: -50,
       yPercent: nextBelow ? 0 : -100,
       transformOrigin: nextBelow ? "50% 0%" : "50% 100%",
     });
     tip.classList.toggle("kpf-chip-tip--below", nextBelow);
   };
-
-  const travelY = () => (belowCursor ? -TRAVEL : TRAVEL);
 
   const clearHideTimer = () => {
     if (hideTimer != null) {
@@ -150,12 +141,9 @@ function attachChipCursorTooltip(
     applySide(clientY - TIP_GAP - tipH < VIEWPORT_PAD);
     const left = clientX;
     const top = belowCursor ? clientY + TIP_GAP : clientY - TIP_GAP;
-    if (xTo && yTo && visible) {
-      xTo(left);
-      yTo(top);
-    } else {
-      gsap.set(tip, { left, top });
-    }
+    /* Pin instantly. Tweening left/top interpolates from CSS 0,0 and the
+     * tip flies in from the top of the viewport (loud on The Work mosaic). */
+    gsap.set(tip, { left, top });
   };
 
   const placeOverHost = () => {
@@ -172,17 +160,7 @@ function attachChipCursorTooltip(
   const animateIn = (clientX, clientY) => {
     const dur = prefersReducedMotion() ? 0 : DURATION;
     const pose = poseForPoint(clientX, clientY);
-    gsap.killTweensOf(tip, "autoAlpha,y,scale");
-    gsap.fromTo(
-      tip,
-      { y: travelY() },
-      {
-        y: 0,
-        duration: dur,
-        ease: "power2.out",
-        overwrite: "auto",
-      },
-    );
+    gsap.killTweensOf(tip, "autoAlpha,scale");
     gsap.fromTo(
       tip,
       { autoAlpha: 0, scale: SCALE_EXIT },
@@ -198,10 +176,9 @@ function attachChipCursorTooltip(
 
   const animateOut = () => {
     const dur = prefersReducedMotion() ? 0 : DURATION;
-    gsap.killTweensOf(tip, "autoAlpha,y,scale");
+    gsap.killTweensOf(tip, "autoAlpha,scale");
     gsap.to(tip, {
       autoAlpha: 0,
-      y: travelY(),
       scale: SCALE_EXIT,
       duration: dur,
       ease: "power2.out",
@@ -328,8 +305,6 @@ function attachChipCursorTooltip(
     releaseActiveTip(host);
     host.removeAttribute("data-kpf-tip-open");
     gsap.killTweensOf(tip);
-    xTo = null;
-    yTo = null;
     visible = false;
   };
 }

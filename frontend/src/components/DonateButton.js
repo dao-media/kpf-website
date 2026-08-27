@@ -32,9 +32,8 @@ export function PayPalMark() {
       className="kpf-btn__paypal"
       src="/media/brand/paypal-icon.png"
       alt="PayPal"
-      width={16}
-      height={20}
-      decoding="async"
+      width={122}
+      height={150}
       draggable={false}
     />
   );

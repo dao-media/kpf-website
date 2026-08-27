@@ -61,6 +61,8 @@ export default function CigarSmoke({
             ? "Illustrated cigar associated with Kevin Popke"
             : cigarAlt
         }
+        width={718}
+        height={282}
       />
       {smoke ? (
         <video

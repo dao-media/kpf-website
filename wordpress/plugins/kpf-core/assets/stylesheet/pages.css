@@ -2119,7 +2119,9 @@ a.kpf-partners__chip:focus-visible {
 		var(--kpf-partners-chip-height) - 2 * var(--kpf-partners-chip-pad-block)
 	);
 	object-fit: contain;
-	width: auto;
+	width: calc(
+		var(--kpf-partners-chip-height) - 2 * var(--kpf-partners-chip-pad-block)
+	);
 }
 
 .kpf-partners__name {

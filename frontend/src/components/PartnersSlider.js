@@ -110,7 +110,6 @@ export default function PartnersSlider({
       if (nextVisible === 1) {
         chipWidth = Math.max(180, Math.round(viewW * MOBILE_CHIP_RATIO));
         const sideInset = Math.max(0, (viewW - chipWidth) / 2);
-        track.style.paddingInline = `${sideInset}px`;
         /* Peeks already sit inside the full-bleed rail — do not shift cards.
          * Mask 80% stop is the peek *card* inside edge (inset minus gap). */
         peekExtend = 0;
@@ -120,7 +119,6 @@ export default function PartnersSlider({
           120,
           (viewW - (nextVisible - 1) * gap) / nextVisible,
         );
-        track.style.paddingInline = "0px";
         const rect = viewport.getBoundingClientRect();
         const peekLeft = Math.max(0, rect.left);
         const peekRight = Math.max(0, window.innerWidth - rect.right);
@@ -128,11 +126,33 @@ export default function PartnersSlider({
         peek = Math.max(8, peekExtend - gap);
       }
 
+      const laidOutChip = track.querySelector(".kpf-partners__chip");
+      const laidOutWidth = laidOutChip
+        ? laidOutChip.getBoundingClientRect().width
+        : 0;
+      const usedWidth =
+        laidOutWidth > 0 && Math.abs(laidOutWidth - chipWidth) < 1
+          ? laidOutWidth
+          : chipWidth;
+      if (Math.abs(laidOutWidth - chipWidth) >= 1) {
+        track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
+      }
+
+      if (nextVisible === 1) {
+        const sideInset = Math.max(0, (viewW - usedWidth) / 2);
+        const currentPad =
+          parseFloat(window.getComputedStyle(track).paddingInlineStart) || 0;
+        if (Math.abs(currentPad - sideInset) >= 1) {
+          track.style.paddingInline = `${sideInset}px`;
+        }
+      } else if (track.style.paddingInline !== "0px") {
+        track.style.paddingInline = "0px";
+      }
+
       viewport.style.setProperty("--kpf-partners-peek", `${Math.round(peek)}px`);
       viewport.style.setProperty("--kpf-partners-peek-extend", `${Math.round(peekExtend)}px`);
-      track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
 
-      const nextStep = Math.max(1, Math.round(chipWidth + gap));
+      const nextStep = Math.max(1, Math.round(usedWidth + gap));
       setVisible(nextVisible);
       setStep(nextStep);
       setIndex((current) => (count >= 2 ? count + logicalIndex(current, count) : 0));

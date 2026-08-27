@@ -1358,13 +1358,14 @@ a.kpf-btn--donate .kpf-btn__label {
  */
 .kpf-btn--donate .kpf-btn__paypal-clip {
 	display: grid;
-	flex: 0 0 auto;
+	flex: 0 0 var(--kpf-paypal-w);
 	grid-template-columns: 1fr;
 	margin-inline-start: var(--kpf-paypal-gap);
 	max-width: var(--kpf-paypal-w);
 	min-width: 0;
 	overflow: hidden;
 	pointer-events: none;
+	width: var(--kpf-paypal-w);
 }
 
 .kpf-btn--donate .kpf-btn__paypal-clip > * {
@@ -1374,11 +1375,10 @@ a.kpf-btn--donate .kpf-btn__label {
 .kpf-btn--donate .kpf-btn__icon--paypal {
 	align-items: center;
 	display: inline-flex;
-	flex-shrink: 1;
+	flex-shrink: 0;
 	height: var(--kpf-paypal-h);
 	justify-content: center;
 	margin: 0;
-	min-width: 0;
 	overflow: hidden;
 	transform: none;
 	transform-origin: 100% 50%;
@@ -1386,11 +1386,10 @@ a.kpf-btn--donate .kpf-btn__label {
 }
 
 .kpf-btn--donate .kpf-btn__paypal {
+	aspect-ratio: 122 / 150;
 	display: block;
-	flex-shrink: 1;
+	flex-shrink: 0;
 	height: var(--kpf-paypal-h);
-	max-width: 100%;
-	min-width: 0;
 	object-fit: contain;
 	width: var(--kpf-paypal-w);
 }
@@ -1562,6 +1561,7 @@ button.kpf-button__link {
 }
 
 .kpf-cigar__image {
+	aspect-ratio: 718 / 282;
 	display: block;
 	height: auto;
 	width: 100%;

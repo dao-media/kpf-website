@@ -44,6 +44,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_ABOUT_PAGE, /kpfQuery\(slug: "grants"\)/);
     assert.match(GET_ABOUT_PAGE, /kpfKevinSlides/);
     assert.match(GET_ABOUT_PAGE, /kpfScrapbookTiles/);
+    assert.match(GET_ABOUT_PAGE, /kpfScrapbookTilesCount/);
     assert.match(GET_ABOUT_PAGE, /kpfScaffoldMedia\(prefixes: \["about\.", "cta\."\]\)/);
     assertOmits(
       GET_ABOUT_PAGE,

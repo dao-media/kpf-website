@@ -15,13 +15,23 @@ const SCRAPBOOK_TILE_FIELDS = `
   title
 `;
 
-/** Photos shown on first paint / SSR. */
-const SCRAPBOOK_TILES_INITIAL = 12;
+/** Photos fetched on first paint / SSR (enough for desktop 9 + one +6 click). */
+const SCRAPBOOK_TILES_INITIAL = 18;
 
-/** Default GraphQL page size when fetching more for “See more”. */
-const SCRAPBOOK_TILES_PAGE = 18;
+/** GraphQL page size when fetching more photos. */
+const SCRAPBOOK_TILES_PAGE = 12;
+
+/** First paint: desktop / tablet. */
+const GALLERY_INITIAL_WIDE = 9;
+/** First paint: mobile portrait and landscape. */
+const GALLERY_INITIAL_NARROW = 6;
+/** Each “more photos” click: desktop / tablet. */
+const GALLERY_BATCH_WIDE = 6;
+/** Each “more photos” click: mobile portrait and landscape. */
+const GALLERY_BATCH_NARROW = 3;
 
 const KPF_SCRAPBOOK_TILES_QUERY = `
+  kpfScrapbookTilesCount
   kpfScrapbookTiles(first: ${SCRAPBOOK_TILES_INITIAL}, offset: 0) {
     ${SCRAPBOOK_TILE_FIELDS}
   }
@@ -129,59 +139,148 @@ function scrapbookTileTooltip(tile) {
   };
 }
 
+function isGalleryPhoneViewport() {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return (
+    window.matchMedia("(max-width: 47.99rem)").matches ||
+    window.matchMedia("(orientation: landscape) and (max-height: 30rem)").matches
+  );
+}
+
 /**
- * Fetch another page of scrapbook mosaic tiles (client “See more”).
+ * @returns {{ initial: number, batch: number }}
+ */
+function galleryPagingForViewport() {
+  if (isGalleryPhoneViewport()) {
+    return { initial: GALLERY_INITIAL_NARROW, batch: GALLERY_BATCH_NARROW };
+  }
+  return { initial: GALLERY_INITIAL_WIDE, batch: GALLERY_BATCH_WIDE };
+}
+
+/**
+ * @param {number} count
+ */
+function morePhotosLabel(count) {
+  const n = Math.max(0, Math.floor(Number(count) || 0));
+  if (n === 1) return "1 more photo";
+  return `${n} more photos`;
+}
+
+/**
+ * @param {{ visible: number, loaded: number, total?: number, remoteExhausted?: boolean, batch?: number }} opts
+ */
+function remainingPhotoCount({
+  visible,
+  loaded,
+  total,
+  remoteExhausted,
+  batch,
+} = {}) {
+  const shown = Math.max(0, Number(visible) || 0);
+  const have = Math.max(0, Number(loaded) || 0);
+  const knownTotal = Number(total);
+  if (Number.isFinite(knownTotal) && knownTotal > 0) {
+    return Math.max(0, knownTotal - shown);
+  }
+  const local = Math.max(0, have - shown);
+  if (local > 0) return local;
+  if (remoteExhausted) return 0;
+  return Math.max(1, Number(batch) || GALLERY_BATCH_WIDE);
+}
+
+/**
+ * @param {number} remaining
+ * @param {number} batch
+ */
+function nextGalleryBatch(remaining, batch) {
+  return Math.max(0, Math.min(Number(batch) || 0, Number(remaining) || 0));
+}
+
+/**
+ * Wait until mosaic <img> nodes have loaded (or failed), or until timeout.
+ * @param {ParentNode | null | undefined} root
+ * @param {{ timeoutMs?: number }} [opts]
+ */
+function waitForMosaicImages(root, { timeoutMs = 8000 } = {}) {
+  if (!root || typeof root.querySelectorAll !== "function") {
+    return Promise.resolve();
+  }
+  const pending = Array.from(root.querySelectorAll("img")).filter(
+    (img) => !img.complete,
+  );
+  if (!pending.length) {
+    return Promise.resolve();
+  }
+
+  return Promise.race([
+    Promise.all(
+      pending.map(
+        (img) =>
+          new Promise((resolve) => {
+            let settled = false;
+            const done = () => {
+              if (settled) return;
+              settled = true;
+              resolve();
+            };
+            img.addEventListener("load", done, { once: true });
+            img.addEventListener("error", done, { once: true });
+            if (img.complete) done();
+          }),
+      ),
+    ),
+    new Promise((resolve) => {
+      setTimeout(resolve, Math.max(0, Number(timeoutMs) || 8000));
+    }),
+  ]);
+}
+
+/**
+ * Fetch another page of scrapbook mosaic tiles via the same-origin API
+ * (browser → WordPress GraphQL is blocked by CORS on production).
  * @param {{ first?: number, offset?: number }} [opts]
- * @returns {Promise<Array<{ id: string, src: string, alt: string, caption: string, title: string }>>}
+ * @returns {Promise<{ tiles: Array, total: number }>}
  */
 async function fetchScrapbookTiles({
   first = SCRAPBOOK_TILES_PAGE,
   offset = 0,
 } = {}) {
-  const base = String(process.env.NEXT_PUBLIC_WORDPRESS_URL || "").replace(
-    /\/$/,
-    "",
-  );
-  if (!base) {
-    return [];
-  }
-
-  const response = await fetch(`${base}/graphql`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: `
-        query KpfScrapbookTilesPage($first: Int, $offset: Int) {
-          kpfScrapbookTiles(first: $first, offset: $offset) {
-            ${SCRAPBOOK_TILE_FIELDS}
-          }
-        }
-      `,
-      variables: { first, offset },
-    }),
+  const params = new URLSearchParams({
+    first: String(first),
+    offset: String(offset),
   });
-
+  const response = await fetch(`/api/scrapbook-tiles?${params}`, {
+    headers: { Accept: "application/json" },
+  });
   if (!response.ok) {
-    return [];
+    return { tiles: [], total: 0 };
   }
-
   const payload = await response.json();
-  if (payload?.errors?.length) {
-    return [];
-  }
-
-  return normalizeScrapbookTiles(payload?.data?.kpfScrapbookTiles);
+  return {
+    tiles: normalizeScrapbookTiles(payload?.tiles),
+    total: Math.max(0, Number(payload?.total) || 0),
+  };
 }
 
 module.exports = {
+  GALLERY_BATCH_NARROW,
+  GALLERY_BATCH_WIDE,
+  GALLERY_INITIAL_NARROW,
+  GALLERY_INITIAL_WIDE,
   KPF_SCRAPBOOK_TILES_QUERY,
+  SCRAPBOOK_TILE_FIELDS,
   SCRAPBOOK_TILES_INITIAL,
   SCRAPBOOK_TILES_PAGE,
-  normalizeScrapbookTiles,
   fetchScrapbookTiles,
   formatScrapbookTileDate,
+  galleryPagingForViewport,
+  isGalleryPhoneViewport,
+  morePhotosLabel,
+  nextGalleryBatch,
+  normalizeScrapbookTiles,
+  remainingPhotoCount,
   scrapbookTileTooltip,
+  waitForMosaicImages,
 };

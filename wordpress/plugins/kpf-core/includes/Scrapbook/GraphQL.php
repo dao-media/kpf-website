@@ -145,7 +145,7 @@ final class GraphQL {
 					),
 					'offset' => array(
 						'type'        => 'Int',
-						'description' => 'Number of tiles to skip (for infinite load).',
+						'description' => 'Number of tiles to skip (for “more photos”).',
 					),
 				),
 				'resolve'     => static function ( $source, array $args ): array {
@@ -153,6 +153,18 @@ final class GraphQL {
 					$first  = isset( $args['first'] ) ? (int) $args['first'] : 48;
 					$offset = isset( $args['offset'] ) ? (int) $args['offset'] : 0;
 					return self::tile_list( $first, $offset );
+				},
+			)
+		);
+
+		register_graphql_field(
+			'RootQuery',
+			'kpfScrapbookTilesCount',
+			array(
+				'type'        => 'Int',
+				'description' => 'Total flattened scrapbook images for The Work mosaic remaining-count label.',
+				'resolve'     => static function (): int {
+					return self::tile_count();
 				},
 			)
 		);
@@ -261,7 +273,23 @@ final class GraphQL {
 	public static function tile_list( int $first = 48, int $offset = 0 ): array {
 		$first  = max( 1, min( 200, $first > 0 ? $first : 48 ) );
 		$offset = max( 0, $offset );
+		$tiles  = self::collect_tiles();
 
+		if ( $offset >= count( $tiles ) ) {
+			return array();
+		}
+
+		return array_values( array_slice( $tiles, $offset, $first ) );
+	}
+
+	public static function tile_count(): int {
+		return count( self::collect_tiles() );
+	}
+
+	/**
+	 * @return list<array<string, mixed>>
+	 */
+	private static function collect_tiles(): array {
 		$query = new \WP_Query(
 			array(
 				'post_type'              => ContentType::POST_TYPE,
@@ -327,11 +355,7 @@ final class GraphQL {
 			}
 		}
 
-		if ( $offset >= count( $tiles ) ) {
-			return array();
-		}
-
-		return array_values( array_slice( $tiles, $offset, $first ) );
+		return $tiles;
 	}
 
 	/**

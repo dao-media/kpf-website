@@ -21,6 +21,7 @@ export default function PageScaffold({
   grants = [],
   grantsTotal = "",
   scrapbookTiles = [],
+  scrapbookTilesCount = 0,
   events = [],
   posts = null,
 }) {
@@ -43,6 +44,7 @@ export default function PageScaffold({
         grants={grants}
         grantsTotal={grantsTotal}
         scrapbookTiles={scrapbookTiles}
+        scrapbookTilesCount={scrapbookTilesCount}
       />
     );
   }

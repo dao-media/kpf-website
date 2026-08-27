@@ -2932,6 +2932,7 @@
     "RootQuery.kpfQuery",
     "RootQuery.kpfScaffoldMedia",
     "RootQuery.kpfScrapbookTiles",
+    "RootQuery.kpfScrapbookTilesCount",
     "RootQuery.kpfSeoHome",
     "RootQuery.kpfSiteChrome",
     "RootQuery.kpfSiteTags",

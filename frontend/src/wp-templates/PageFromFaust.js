@@ -25,9 +25,17 @@ export default function PageFromFaust(props) {
   const grantsTotal = fallbackGrantsTotal(
     String(props?.data?.kpfGrantsTotal?.label || "").trim(),
   );
-  const scrapbookTiles = fallbackScrapbook(
-    normalizeScrapbookTiles(props?.data?.kpfScrapbookTiles),
+  const liveScrapbookTiles = normalizeScrapbookTiles(
+    props?.data?.kpfScrapbookTiles,
   );
+  const scrapbookTiles = fallbackScrapbook(liveScrapbookTiles);
+  const liveScrapbookCount = Number(props?.data?.kpfScrapbookTilesCount);
+  const scrapbookTilesCount =
+    liveScrapbookTiles.length > 0 &&
+    Number.isFinite(liveScrapbookCount) &&
+    liveScrapbookCount > 0
+      ? liveScrapbookCount
+      : scrapbookTiles.length;
   const events = fallbackEvents(props?.data?.foundationEvents?.nodes || []);
   const posts = props?.data?.kpfBlogPosts || null;
 
@@ -44,6 +52,7 @@ export default function PageFromFaust(props) {
         grants={grants}
         grantsTotal={grantsTotal}
         scrapbookTiles={scrapbookTiles}
+        scrapbookTilesCount={scrapbookTilesCount}
         events={events}
         posts={posts}
       />

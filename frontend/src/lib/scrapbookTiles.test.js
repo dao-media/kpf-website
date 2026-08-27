@@ -3,19 +3,22 @@ const assert = require("node:assert/strict");
 const {
   GALLERY_BATCH_NARROW,
   GALLERY_BATCH_WIDE,
-  GALLERY_COLUMNS_WIDE_QUERY,
   GALLERY_ENTER_STAGGER_MS,
   GALLERY_INITIAL_NARROW,
   GALLERY_INITIAL_WIDE,
   GALLERY_MOBILE_QUERY,
+  GALLERY_ORIENTATION_PORTRAIT_QUERY,
   KPF_SCRAPBOOK_TILES_QUERY,
+  appendToLongestColumn,
   appendToShortestColumn,
   galleryColumnCount,
   galleryPagingForViewport,
   morePhotosLabel,
+  mosaicPrefersLongestColumn,
   mosaicVisibleCount,
   nextGalleryBatch,
   packMosaicColumns,
+  pickColumnIndex,
   remainingPhotoCount,
   waitForMosaicImages,
 } = require("./scrapbookTiles");
@@ -146,18 +149,56 @@ describe("mosaic shortest-column pack", () => {
     assert.equal(mosaicVisibleCount(next), 4);
   });
 
-  it("uses 2 columns below 30rem and 3 from mobile-L up", () => {
+  it("uses 3 columns on tablet+, 2 on mobile landscape, 1 on mobile portrait", () => {
     assert.equal(GALLERY_ENTER_STAGGER_MS, 200);
     assert.equal(
       galleryColumnCount(() => ({ matches: false })),
+      3,
+    );
+    assert.equal(
+      galleryColumnCount((query) => ({
+        matches: query === GALLERY_MOBILE_QUERY,
+      })),
       2,
     );
     assert.equal(
       galleryColumnCount((query) => ({
-        matches: query === GALLERY_COLUMNS_WIDE_QUERY,
+        matches:
+          query === GALLERY_MOBILE_QUERY ||
+          query === GALLERY_ORIENTATION_PORTRAIT_QUERY,
       })),
-      3,
+      1,
     );
+    assert.equal(
+      mosaicPrefersLongestColumn((query) => ({
+        matches:
+          query === GALLERY_MOBILE_QUERY ||
+          query === GALLERY_ORIENTATION_PORTRAIT_QUERY,
+      })),
+      true,
+    );
+    assert.equal(
+      mosaicPrefersLongestColumn((query) => ({
+        matches: query === GALLERY_MOBILE_QUERY,
+      })),
+      false,
+    );
+  });
+
+  it("pins portrait cards to the longest stack so they never enter a hidden column", () => {
+    const tall = { id: "tall", width: 100, height: 200 };
+    const shortA = { id: "a", width: 100, height: 50 };
+    const shortB = { id: "b", width: 100, height: 50 };
+    const packed = packMosaicColumns([tall, shortA, shortB], 2, true);
+    assert.deepEqual(
+      packed.map((col) => col.map((tile) => tile.id)),
+      [["tall", "a", "b"], []],
+    );
+    const next = appendToLongestColumn(packed, { id: "c", width: 100, height: 40 });
+    assert.equal(next[0][3].id, "c");
+    assert.equal(next[1].length, 0);
+    assert.equal(pickColumnIndex([120, 0], true), 0);
+    assert.equal(pickColumnIndex([120, 0], false), 1);
   });
 });
 
@@ -179,7 +220,8 @@ describe("About mosaic control", () => {
     assert.match(src, /ChevronDown/);
     assert.match(src, /kpf-gallery__more-status/);
     assert.match(src, /kpf-gallery__more-spinner/);
-    assert.match(src, /appendToShortestColumn/);
+    assert.match(src, /appendToColumn/);
+    assert.match(src, /mosaicPrefersLongestColumn/);
     assert.match(src, /kpf-gallery__column/);
     assert.match(src, /is-enter-in/);
     assert.match(src, /GALLERY_ENTER_STAGGER_MS/);
@@ -195,6 +237,8 @@ describe("About mosaic control", () => {
     assert.match(css, /animation-duration: 400ms, 500ms;/);
     assert.match(css, /ease-out, ease-out/);
     assert.match(css, /\.kpf-gallery__column \{/);
+    assert.match(css, /\.kpf-gallery__column:empty \{/);
+    assert.match(css, /data-columns="1"/);
   });
 });
 

@@ -4449,6 +4449,7 @@ a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
 .kpf-gallery__mosaic {
 	align-items: flex-start;
 	display: flex;
+	flex-direction: row;
 	gap: 1.5rem; /* 24 */
 	min-width: 0;
 	width: 100%;
@@ -4460,18 +4461,41 @@ a.kpf-chip-tip-host.kpf-exit-tip:not(.kpf-btn):not(.kpf-grantee-card__chip) {
 	flex-direction: column;
 	gap: 1.5rem;
 	min-width: 0;
+	width: 0;
+}
+
+.kpf-gallery__mosaic[data-columns="1"] .kpf-gallery__column {
+	flex: 1 1 auto;
+	width: 100%;
+}
+
+/* Extra empty tracks must not take space or receive “shortest column” photos. */
+.kpf-gallery__column:empty {
+	display: none;
 }
 
 /* WP design preview still dumps figures as direct children. */
 .kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) {
 	display: block;
-	column-count: 2;
+	column-count: 1;
 	column-gap: 1.5rem;
 }
 
-@media (min-width: 30rem) {
+@media (orientation: landscape) {
+	.kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) {
+		column-count: 2;
+	}
+}
+
+@media (min-width: 48rem) {
 	.kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) {
 		column-count: 3;
+	}
+}
+
+@media (max-height: 47.99rem) and (orientation: landscape) and (max-width: 63.99rem) {
+	.kpf-gallery__mosaic:not(:has(.kpf-gallery__column)) {
+		column-count: 2;
 	}
 }
 

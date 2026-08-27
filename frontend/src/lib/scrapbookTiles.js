@@ -38,10 +38,13 @@ const GALLERY_BATCH_NARROW = 3;
 const GALLERY_MOBILE_QUERY =
   "(max-width: 47.99rem), (max-height: 47.99rem) and (orientation: landscape) and (max-width: 63.99rem)";
 
-/** Two mosaic columns below 30rem; three from mobile-L up. */
+/** Two mosaic columns below 30rem; three from mobile-L up (WP CSS-column fallback). */
 const GALLERY_COLUMNS_WIDE_QUERY = "(min-width: 30rem)";
 
-/** New photos land 200ms apart, each in the then-shortest column. */
+/** Mobile portrait uses one stack; landscape uses two. */
+const GALLERY_ORIENTATION_PORTRAIT_QUERY = "(orientation: portrait)";
+
+/** New photos land 200ms apart, each pinned in its chosen column. */
 const GALLERY_ENTER_STAGGER_MS = 200;
 
 const KPF_SCRAPBOOK_TILES_QUERY = `
@@ -181,21 +184,47 @@ function galleryPagingForViewport() {
 }
 
 /**
- * Mosaic columns: 2 on small portrait, 3 from 30rem up (matches CSS).
+ * @param {(query: string) => { matches: boolean }} [media]
+ * @returns {((query: string) => { matches: boolean }) | null}
+ */
+function resolveMatchMedia(media) {
+  if (typeof media === "function") return media;
+  if (typeof globalThis.matchMedia === "function") {
+    return globalThis.matchMedia.bind(globalThis);
+  }
+  return null;
+}
+
+/**
+ * Mosaic columns: 3 tablet+, 2 mobile landscape, 1 mobile portrait.
+ * Portrait is a single stack so new cards cannot land in a hidden extra column.
  * @param {(query: string) => { matches: boolean }} [media]
  */
 function galleryColumnCount(media) {
-  const matchMedia =
-    typeof media === "function"
-      ? media
-      : typeof globalThis.matchMedia === "function"
-        ? globalThis.matchMedia.bind(globalThis)
-        : null;
+  const matchMedia = resolveMatchMedia(media);
   if (!matchMedia) return 3;
   try {
-    return matchMedia(GALLERY_COLUMNS_WIDE_QUERY).matches ? 3 : 2;
+    if (!matchMedia(GALLERY_MOBILE_QUERY).matches) return 3;
+    return matchMedia(GALLERY_ORIENTATION_PORTRAIT_QUERY).matches ? 1 : 2;
   } catch {
     return 3;
+  }
+}
+
+/**
+ * Mobile portrait appends to the longest (visible) stack.
+ * @param {(query: string) => { matches: boolean }} [media]
+ */
+function mosaicPrefersLongestColumn(media) {
+  const matchMedia = resolveMatchMedia(media);
+  if (!matchMedia) return false;
+  try {
+    return (
+      matchMedia(GALLERY_MOBILE_QUERY).matches &&
+      matchMedia(GALLERY_ORIENTATION_PORTRAIT_QUERY).matches
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -219,41 +248,157 @@ function emptyMosaicColumns(columnCount) {
   return Array.from({ length: count }, () => []);
 }
 
+function cloneMosaicColumns(columns) {
+  return Array.isArray(columns) && columns.length
+    ? columns.map((col) => (Array.isArray(col) ? [...col] : []))
+    : emptyMosaicColumns(1);
+}
+
+function columnAspectHeights(columns) {
+  return cloneMosaicColumns(columns).map((col) =>
+    col.reduce((sum, item) => sum + tileAspectHeight(item), 0),
+  );
+}
+
+/**
+ * Left-most on a tie. Longest keeps portrait cards in the visible stack.
+ * @param {number[]} heights
+ * @param {boolean} [preferLongest]
+ */
+function pickColumnIndex(heights, preferLongest = false) {
+  const list = Array.isArray(heights) ? heights.map((h) => Number(h) || 0) : [];
+  if (!list.length) return 0;
+  let index = 0;
+  for (let i = 1; i < list.length; i += 1) {
+    if (preferLongest ? list[i] > list[index] : list[i] < list[index]) {
+      index = i;
+    }
+  }
+  return index;
+}
+
+/**
+ * @param {unknown[][]} columns
+ * @param {number} index
+ * @param {unknown} tile
+ */
+function appendToColumn(columns, index, tile) {
+  const next = cloneMosaicColumns(columns);
+  if (!tile) return next;
+  const i = Math.max(0, Math.min(next.length - 1, Math.floor(Number(index) || 0)));
+  next[i].push(tile);
+  return next;
+}
+
+function appendToPickedColumn(columns, tile, preferLongest) {
+  const next = cloneMosaicColumns(columns);
+  if (!tile) return next;
+  const index = pickColumnIndex(columnAspectHeights(next), preferLongest);
+  next[index].push(tile);
+  return next;
+}
+
 /**
  * Place one tile into the current shortest column (left-most on a tie).
  * @param {unknown[][]} columns
  * @param {unknown} tile
  */
 function appendToShortestColumn(columns, tile) {
-  const next = Array.isArray(columns) && columns.length
-    ? columns.map((col) => (Array.isArray(col) ? [...col] : []))
-    : emptyMosaicColumns(1);
-  if (!tile) return next;
-  let shortest = 0;
-  let shortestHeight = Infinity;
-  for (let i = 0; i < next.length; i += 1) {
-    const height = next[i].reduce(
-      (sum, item) => sum + tileAspectHeight(item),
-      0,
-    );
-    if (height < shortestHeight) {
-      shortest = i;
-      shortestHeight = height;
-    }
-  }
-  next[shortest].push(tile);
-  return next;
+  return appendToPickedColumn(columns, tile, false);
 }
 
 /**
- * Left-to-right shortest-column pack. Used for the first paint and resize.
+ * Place one tile into the current longest column (left-most on a tie).
+ * @param {unknown[][]} columns
+ * @param {unknown} tile
+ */
+function appendToLongestColumn(columns, tile) {
+  return appendToPickedColumn(columns, tile, true);
+}
+
+/**
+ * @param {ParentNode | null | undefined} root
+ * @returns {number[]}
+ */
+function measureMosaicColumnHeights(root) {
+  if (!root || !root.children) return [];
+  return Array.from(root.children)
+    .filter((node) => node.classList && node.classList.contains("kpf-gallery__column"))
+    .map((node) => {
+      if (typeof node.getBoundingClientRect === "function") {
+        return node.getBoundingClientRect().height;
+      }
+      return Number(node.offsetHeight) || 0;
+    });
+}
+
+/**
+ * @param {unknown[][]} columns
+ * @param {ParentNode | null | undefined} root
+ * @returns {number[]}
+ */
+function mosaicColumnHeights(columns, root) {
+  const measured = measureMosaicColumnHeights(root);
+  const count = Array.isArray(columns) ? columns.length : 0;
+  if (count > 0 && measured.length === count) return measured;
+  return columnAspectHeights(columns);
+}
+
+function waitForPaint() {
+  if (typeof requestAnimationFrame !== "function") {
+    return waitMs(0);
+  }
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(resolve);
+    });
+  });
+}
+
+/**
+ * @param {ParentNode | null | undefined} root
+ * @param {{ src?: string }} tile
+ */
+function waitForTileImage(root, tile) {
+  if (!root || typeof root.querySelectorAll !== "function") {
+    return Promise.resolve();
+  }
+  const src = String(tile?.src || "").trim();
+  if (!src) return Promise.resolve();
+  const img = Array.from(root.querySelectorAll("img")).find(
+    (node) => node.getAttribute("src") === src,
+  );
+  if (!img || img.complete) return Promise.resolve();
+  return Promise.race([
+    new Promise((resolve) => {
+      img.addEventListener("load", resolve, { once: true });
+      img.addEventListener("error", resolve, { once: true });
+    }),
+    waitMs(8000),
+  ]);
+}
+
+/**
+ * @param {{ width?: number, height?: number }} tile
+ * @returns {{ aspectRatio: string } | undefined}
+ */
+function tileAspectRatioStyle(tile) {
+  const width = Number(tile?.width) || 0;
+  const height = Number(tile?.height) || 0;
+  if (width > 0 && height > 0) return { aspectRatio: `${width} / ${height}` };
+  return undefined;
+}
+
+/**
+ * First paint / breakpoint change only. More-click must pin, not re-pack.
  * @param {unknown[]} items
  * @param {number} columnCount
+ * @param {boolean} [preferLongest]
  */
-function packMosaicColumns(items, columnCount) {
+function packMosaicColumns(items, columnCount, preferLongest = false) {
   let columns = emptyMosaicColumns(columnCount);
   for (const item of items || []) {
-    columns = appendToShortestColumn(columns, item);
+    columns = appendToPickedColumn(columns, item, preferLongest);
   }
   return columns;
 }
@@ -431,10 +576,13 @@ module.exports = {
   GALLERY_INITIAL_NARROW,
   GALLERY_INITIAL_WIDE,
   GALLERY_MOBILE_QUERY,
+  GALLERY_ORIENTATION_PORTRAIT_QUERY,
   KPF_SCRAPBOOK_TILES_QUERY,
   SCRAPBOOK_TILE_FIELDS,
   SCRAPBOOK_TILES_INITIAL,
   SCRAPBOOK_TILES_PAGE,
+  appendToColumn,
+  appendToLongestColumn,
   appendToShortestColumn,
   decodeTileSizes,
   fetchScrapbookTiles,
@@ -442,16 +590,23 @@ module.exports = {
   galleryColumnCount,
   galleryPagingForViewport,
   isGalleryMobile,
+  measureMosaicColumnHeights,
   morePhotosLabel,
+  mosaicColumnHeights,
+  mosaicPrefersLongestColumn,
   mosaicTilesInPoolOrder,
   mosaicVisibleCount,
   nextGalleryBatch,
   normalizeScrapbookTiles,
   packMosaicColumns,
+  pickColumnIndex,
   remainingPhotoCount,
   scrapbookTileTooltip,
   tileAspectHeight,
+  tileAspectRatioStyle,
   tileKey,
   waitForMosaicImages,
+  waitForPaint,
+  waitForTileImage,
   waitMs,
 };

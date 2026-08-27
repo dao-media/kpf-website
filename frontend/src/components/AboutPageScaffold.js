@@ -13,25 +13,31 @@ const {
 } = require("@/lib/grantsQuery");
 const {
   GALLERY_BATCH_WIDE,
-  GALLERY_COLUMNS_WIDE_QUERY,
   GALLERY_ENTER_STAGGER_MS,
   GALLERY_INITIAL_WIDE,
   GALLERY_MOBILE_QUERY,
+  GALLERY_ORIENTATION_PORTRAIT_QUERY,
   SCRAPBOOK_TILES_INITIAL,
   SCRAPBOOK_TILES_PAGE,
-  appendToShortestColumn,
+  appendToColumn,
   decodeTileSizes,
   fetchScrapbookTiles,
   galleryColumnCount,
   galleryPagingForViewport,
   morePhotosLabel,
+  mosaicColumnHeights,
+  mosaicPrefersLongestColumn,
   mosaicTilesInPoolOrder,
   mosaicVisibleCount,
   nextGalleryBatch,
   packMosaicColumns,
+  pickColumnIndex,
   remainingPhotoCount,
   scrapbookTileTooltip,
+  tileAspectRatioStyle,
   tileKey,
+  waitForPaint,
+  waitForTileImage,
   waitMs,
 } = require("@/lib/scrapbookTiles");
 
@@ -104,6 +110,7 @@ export default function AboutPageScaffold({
     batch: GALLERY_BATCH_WIDE,
   });
   const [columnCount, setColumnCount] = useState(3);
+  const [preferLongest, setPreferLongest] = useState(false);
   const [shuffledTiles, setShuffledTiles] = useState(galleryTiles);
   const [columns, setColumns] = useState(() =>
     packMosaicColumns(
@@ -124,14 +131,24 @@ export default function AboutPageScaffold({
   const userExpandedRef = useRef(false);
   const mosaicRef = useRef(null);
   const packGenRef = useRef(0);
+  const shuffledRef = useRef(shuffledTiles);
+  const columnsRef = useRef(columns);
+  const columnCountRef = useRef(columnCount);
+  const preferLongestRef = useRef(preferLongest);
+  shuffledRef.current = shuffledTiles;
+  columnsRef.current = columns;
+  columnCountRef.current = columnCount;
+  preferLongestRef.current = preferLongest;
   const [enterKeys, setEnterKeys] = useState([]);
 
   useLayoutEffect(() => {
     packGenRef.current += 1;
     const cols = galleryColumnCount();
+    const longest = mosaicPrefersLongestColumn();
     const next = galleryPagingForViewport();
     const shuffled = shuffleTiles(galleryTiles);
     setColumnCount(cols);
+    setPreferLongest(longest);
     setPaging(next);
     setShuffledTiles(shuffled);
     setFetchOffset(galleryTiles.length);
@@ -143,7 +160,11 @@ export default function AboutPageScaffold({
     setEnterKeys([]);
     setIsInsertingTiles(false);
     setColumns(
-      packMosaicColumns(shuffled.slice(0, Math.min(next.initial, shuffled.length)), cols),
+      packMosaicColumns(
+        shuffled.slice(0, Math.min(next.initial, shuffled.length)),
+        cols,
+        longest,
+      ),
     );
     // galleryTiles identity changes every Faust render; the signature is the content key.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
@@ -152,36 +173,38 @@ export default function AboutPageScaffold({
   useLayoutEffect(() => {
     const apply = () => {
       const cols = galleryColumnCount();
-      const next = galleryPagingForViewport();
-      setPaging(next);
+      const longest = mosaicPrefersLongestColumn();
+      setPaging(galleryPagingForViewport());
+      if (
+        cols === columnCountRef.current &&
+        longest === preferLongestRef.current
+      ) {
+        return;
+      }
+      columnCountRef.current = cols;
+      preferLongestRef.current = longest;
       setColumnCount(cols);
-      setColumns((current) => {
-        if (!userExpandedRef.current) {
-          return packMosaicColumns(
-            shuffledTiles.slice(0, Math.min(next.initial, shuffledTiles.length)),
-            cols,
-          );
-        }
-        return packMosaicColumns(
-          mosaicTilesInPoolOrder(shuffledTiles, current),
+      setPreferLongest(longest);
+      setColumns(
+        packMosaicColumns(
+          mosaicTilesInPoolOrder(shuffledRef.current, columnsRef.current),
           cols,
-        );
-      });
+          longest,
+        ),
+      );
     };
     const pagingQuery = window.matchMedia(GALLERY_MOBILE_QUERY);
-    const columnsQuery = window.matchMedia(GALLERY_COLUMNS_WIDE_QUERY);
+    const portraitQuery = window.matchMedia(GALLERY_ORIENTATION_PORTRAIT_QUERY);
     pagingQuery.addEventListener("change", apply);
-    columnsQuery.addEventListener("change", apply);
-    window.addEventListener("resize", apply);
+    portraitQuery.addEventListener("change", apply);
     window.addEventListener("orientationchange", apply);
     apply();
     return () => {
       pagingQuery.removeEventListener("change", apply);
-      columnsQuery.removeEventListener("change", apply);
-      window.removeEventListener("resize", apply);
+      portraitQuery.removeEventListener("change", apply);
       window.removeEventListener("orientationchange", apply);
     };
-  }, [shuffledTiles]);
+  }, []);
 
   const visibleTileCount = mosaicVisibleCount(columns);
   const remainingTiles = remainingPhotoCount({
@@ -273,8 +296,16 @@ export default function AboutPageScaffold({
         if (gen !== packGenRef.current) break;
         const tile = sized[i];
         const key = tileKey(tile);
-        setColumns((current) => appendToShortestColumn(current, tile));
+        setColumns((current) => {
+          const index = pickColumnIndex(
+            mosaicColumnHeights(current, mosaicRef.current),
+            preferLongestRef.current,
+          );
+          return appendToColumn(current, index, tile);
+        });
         if (key) setEnterKeys((current) => [...current, key]);
+        await waitForPaint();
+        await waitForTileImage(mosaicRef.current, tile);
       }
     }
     if (gen === packGenRef.current) {
@@ -553,8 +584,9 @@ export default function AboutPageScaffold({
           {visibleTileCount > 0 ? (
             <div
               ref={mosaicRef}
-              className="kpf-gallery__mosaic"
+              className="kpf-gallery__mosaic kpf-gallery__mosaic--masonry"
               data-columns={columnCount}
+              data-pack={preferLongest ? "longest" : "shortest"}
               aria-live="polite"
               aria-busy={isFetchingTiles || isInsertingTiles || undefined}
             >
@@ -580,6 +612,7 @@ export default function AboutPageScaffold({
                             ? "kpf-gallery__item is-enter-in"
                             : "kpf-gallery__item"
                         }
+                        style={tileAspectRatioStyle(item)}
                       >
                         {tip ? (
                           <ChipCursorTooltip

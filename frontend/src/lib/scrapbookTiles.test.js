@@ -136,14 +136,17 @@ describe("About mosaic control", () => {
       "utf8",
     );
     assert.match(src, /morePhotosLabel/);
-    assert.match(src, /kpf-gallery__more-btn/);
+    assert.match(src, /aria-label=\{morePhotosLabel/);
+    assert.match(src, /kpf-btn--outline kpf-gallery__more-btn/);
+    assert.match(src, /ChevronDown/);
     assert.match(src, /kpf-gallery__more-status/);
     assert.match(src, /kpf-gallery__more-spinner/);
     assert.match(src, /waitForMosaicImages/);
     assert.doesNotMatch(src, /copy\.gallery\.seeMore/);
-    assert.doesNotMatch(src, /ChevronDown/);
     assert.doesNotMatch(src, /LoaderCircle/);
     assert.match(css, /padding-top: 2rem; \/\* 32px \*\//);
+    assert.match(css, /\.kpf-gallery__more \{[\s\S]*?justify-content: center;/);
+    assert.match(css, /--kpf-btn-radius: 50%;/);
     assert.match(css, /\.kpf-gallery__more-btn \{/);
     assert.match(css, /\.kpf-gallery__more-spinner \{/);
   });

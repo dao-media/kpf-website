@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { Check, ChevronDown, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
 import ChipCursorTooltip from "@/components/ChipCursorTooltip";
 import CtaClosingBand from "@/components/CtaClosingBand";
@@ -548,12 +548,18 @@ export default function AboutPageScaffold({
               ) : (
                 <button
                   type="button"
-                  className="kpf-gallery__more-btn"
+                  className="kpf-btn kpf-btn--outline kpf-gallery__more-btn"
                   onClick={() => {
                     void revealOrFetchMore();
                   }}
+                  aria-label={morePhotosLabel(remainingTiles)}
                 >
-                  {morePhotosLabel(remainingTiles)}
+                  <ChevronDown
+                    size={20}
+                    strokeWidth={2}
+                    absoluteStrokeWidth
+                    aria-hidden="true"
+                  />
                 </button>
               )}
             </div>

@@ -1,9 +1,7 @@
 /**
- * Defer GTM/gtag until after first paint, then idle or first input.
- * dataLayer events queued before then still flush when the container loads.
+ * Choose GTM xor gtag. Dual load is two long GTM tasks in PageSpeed.
+ * GTM itself is injected from pages/_document.js (first HTML, no idle delay).
  */
-
-const INTERACTION_EVENTS = ["pointerdown", "keydown", "scroll", "touchstart"];
 
 function isGtmContainerSrc(src) {
   return /googletagmanager\.com\/gtm\.js/i.test(String(src || ""));
@@ -44,7 +42,6 @@ function shouldSkipSnippetAnalyticsSrc(src, gtmId, gaId) {
 }
 
 module.exports = {
-  INTERACTION_EVENTS,
   analyticsScriptsToLoad,
   isGoogleTagSrc,
   isGtagSrc,

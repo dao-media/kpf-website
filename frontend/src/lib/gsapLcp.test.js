@@ -13,24 +13,34 @@ function fakeNode(chain) {
 }
 
 describe("isHeroLcpNode", () => {
-  it("protects hero copy identity for docs; Gate waits for LCP so tweens may still fade", () => {
+  it("protects hero copy, the hero box, and dad/alumni; runner and later sections stay tweenable", () => {
+    const hero = fakeNode({
+      ".kpf-hero": {},
+      ".kpf-hero__stage, .kpf-hero__cutout": null,
+    });
     const body = fakeNode({
       ".kpf-hero": {},
       ".kpf-hero__stage, .kpf-hero__cutout": null,
-      ".kpf-hero__content, .kpf-hero__layout, .kpf-content-block": {},
     });
-    const cutout = fakeNode({
+    const dad = fakeNode({
       ".kpf-hero": {},
+      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni": {},
       ".kpf-hero__stage, .kpf-hero__cutout": {},
-      ".kpf-hero__content, .kpf-hero__layout, .kpf-content-block": null,
+    });
+    const runner = fakeNode({
+      ".kpf-hero": {},
+      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni": null,
+      ".kpf-hero__stage, .kpf-hero__cutout": {},
     });
     const story = fakeNode({
       ".kpf-hero": null,
+      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni": null,
       ".kpf-hero__stage, .kpf-hero__cutout": null,
-      ".kpf-hero__content, .kpf-hero__layout, .kpf-content-block": {},
     });
+    assert.equal(isHeroLcpNode(hero), true);
     assert.equal(isHeroLcpNode(body), true);
-    assert.equal(isHeroLcpNode(cutout), false);
+    assert.equal(isHeroLcpNode(dad), true);
+    assert.equal(isHeroLcpNode(runner), false);
     assert.equal(isHeroLcpNode(story), false);
     assert.equal(isHeroLcpNode(null), false);
   });

@@ -2,10 +2,7 @@ import { useEffect } from "react";
 
 const ENTERED_CLASS = "kpf-hero-cutouts-entered";
 const DESKTOP_MQ = "(min-width: 64rem)";
-const CUTOUT_ANIMATIONS = new Set([
-  "kpf-hero-cutout-dad",
-  "kpf-hero-cutout-runner",
-]);
+const CUTOUT_ANIMATIONS = new Set(["kpf-hero-cutout-runner"]);
 
 function markEntered() {
   if (typeof document === "undefined") return;
@@ -13,8 +10,8 @@ function markEntered() {
 }
 
 /**
- * Homepage hero cutouts: CSS slides dad + runner in from off-stage left.
- * Alumni stays at rest from first paint so it can be LCP.
+ * Homepage hero cutouts: CSS slides the runner in from off-stage left.
+ * Dad and alumni stay painted from first frame (desktop/tablet LCP).
  * This runtime only flips html.kpf-hero-cutouts-entered — it does not load GSAP.
  */
 export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {

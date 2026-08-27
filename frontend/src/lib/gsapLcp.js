@@ -1,13 +1,17 @@
 /**
- * Hero copy is the LCP candidate. GsapRuntimeGate waits for LCP before
- * booting Club GSAP, so entrance tweens must still fade (autoAlpha 0→1).
- * Do not strip hide props here — that left a y-shift with no opacity.
+ * Home hero copy (and the hero box itself) is the mobile LCP. CMS in-view
+ * fades that boot after LCP re-hide already-painted text and push LCP to ~4–5s.
+ * Dad and alumni cutouts stay painted (desktop/tablet LCP). The runner
+ * can still tween.
  */
 function isHeroLcpNode(node) {
   if (!node || typeof node.closest !== "function") return false;
   if (!node.closest(".kpf-hero")) return false;
+  if (node.closest(".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni")) {
+    return true;
+  }
   if (node.closest(".kpf-hero__stage, .kpf-hero__cutout")) return false;
-  return Boolean(node.closest(".kpf-hero__content, .kpf-hero__layout, .kpf-content-block"));
+  return true;
 }
 
 module.exports = { isHeroLcpNode };

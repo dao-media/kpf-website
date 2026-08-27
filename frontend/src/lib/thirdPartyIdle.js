@@ -4,7 +4,7 @@
  * gtm.js itself waits until LCP so it does not contend with the hero paint.
  */
 
-const GTM_FALLBACK_MS = 2500;
+const GTM_FALLBACK_MS = 8000;
 
 function isGtmContainerSrc(src) {
   return /googletagmanager\.com\/gtm\.js/i.test(String(src || ""));

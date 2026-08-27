@@ -1913,23 +1913,10 @@ html.kpf-scroll-smoothed body {
 }
 
 /*
- * Dad/runner slide in via CSS (expo.out). Alumni stays painted from first
- * frame — it is the LCP image on tablet/desktop. Travel matches the old
- * GSAP xPercent (dad 0.28/36.74% width, runner 1.05/30.83%).
+ * Runner slides in via CSS (expo.out). Dad and alumni stay painted from
+ * first frame — dad is the desktop LCP, alumni is the tablet LCP.
  * `.kpf-hero-cutouts-entered` freezes the rest pose after the animation.
  */
-@keyframes kpf-hero-cutout-dad {
-	from {
-		opacity: 0;
-		transform: translate3d(-76.21%, 0, 0);
-	}
-
-	to {
-		opacity: 1;
-		transform: none;
-	}
-}
-
 @keyframes kpf-hero-cutout-runner {
 	from {
 		opacity: 0;
@@ -1943,10 +1930,6 @@ html.kpf-scroll-smoothed body {
 }
 
 @media (min-width: 64rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--dad {
-		animation: kpf-hero-cutout-dad 1.55s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-	}
-
 	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--runner {
 		animation: kpf-hero-cutout-runner 1.55s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 	}

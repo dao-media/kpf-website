@@ -85,9 +85,15 @@ export default function HomePageScaffold({
   }
 
   const partners = normalizePartnerGrantees(partnerGrantees);
+  const dadCutout = (copy.hero.cutouts || []).find(
+    (cutout) => cutout.key === "home.kevinDad",
+  );
   const alumniCutout = (copy.hero.cutouts || []).find(
     (cutout) => cutout.key === "home.kevinAlumni",
   );
+  const dadSrc = dadCutout
+    ? resolveMedia(media, dadCutout.key, dadCutout).src
+    : "";
   const alumniSrc = alumniCutout
     ? resolveMedia(media, alumniCutout.key, alumniCutout).src
     : "";
@@ -95,12 +101,21 @@ export default function HomePageScaffold({
   return (
     <div className="kpf-page-home" data-kpf-scaffold="home">
       <Head>
+        {dadSrc ? (
+          <link
+            rel="preload"
+            as="image"
+            href={dadSrc}
+            media="(min-width: 64rem)"
+            fetchPriority="high"
+          />
+        ) : null}
         {alumniSrc ? (
           <link
             rel="preload"
             as="image"
             href={alumniSrc}
-            media="(min-width: 48rem)"
+            media="(min-width: 48rem) and (max-width: 63.99rem)"
             fetchPriority="high"
           />
         ) : null}
@@ -113,6 +128,7 @@ export default function HomePageScaffold({
             const resolved = resolveMedia(media, cutout.key, cutout);
             if (!resolved.src) return null;
             const isAlumni = cutout.key === "home.kevinAlumni";
+            const isDad = cutout.key === "home.kevinDad";
             return (
               <div key={cutout.key} className={cutout.className}>
                 <KpfImage
@@ -124,7 +140,8 @@ export default function HomePageScaffold({
                       ? "(max-width: 47.99rem) 16px, (max-width: 63.99rem) 110vw, 42vw"
                       : "(max-width: 63.99rem) 16px, 38vw"
                   }
-                  loading="lazy"
+                  loading={isDad || isAlumni ? "eager" : "lazy"}
+                  fetchPriority={isDad || isAlumni ? "high" : "auto"}
                 />
               </div>
             );
@@ -187,7 +204,7 @@ export default function HomePageScaffold({
               width={640}
               height={760}
               sizes="(min-width: 64rem) 640px, (min-width: 48rem) 55vw, 100vw"
-              priority
+              loading="lazy"
             />
           ) : null}
         </div>

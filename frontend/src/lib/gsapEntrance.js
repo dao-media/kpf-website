@@ -6,8 +6,9 @@
  * never applies the hidden start — only the slide plays. Force fromTo with an
  * explicit 0→1 alpha, immediateRender, and lazy:false.
  *
- * Hero copy used to strip autoAlpha for LCP. GsapRuntimeGate already waits for
- * LCP, so that strip now causes the same “shift with no fade” on the hero.
+ * Hero copy used to strip autoAlpha for LCP. Re-applying autoAlpha 0 after
+ * the LCP gate hid already-painted text and moved mobile LCP to ~4.6s.
+ * GsapRuntime now skips hero LCP nodes instead of fading them.
  */
 
 const AXIS_KEYS = ["x", "y", "xPercent", "yPercent"];

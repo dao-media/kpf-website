@@ -138,7 +138,10 @@ function resolveTweenTargets(triggerTargets, config) {
 function createTween(targets, animation, extra = {}) {
   const { config } = animation;
   const tweenTargets = resolveTweenTargets(targets, config);
-  const nodes = gsap.utils.toArray(tweenTargets).filter(isDisplayedForTween);
+  const nodes = gsap.utils
+    .toArray(tweenTargets)
+    .filter(isDisplayedForTween)
+    .filter((node) => !isHeroLcpNode(node));
   if (!nodes.length) return null;
   const protectBadge = nodes.some(isHeaderBadgeNode);
   const ease = resolveEase(config, animation.databaseId);
@@ -358,6 +361,7 @@ export default function GsapRuntime({ animations = [] }) {
                 return;
               }
               if (!isDisplayedForTween(target)) return;
+              if (isHeroLcpNode(target)) return;
               const scroll = animation.config.scroll || {};
               const scrub = Number(scroll.scrub) || false;
               const once = scroll.once !== false;

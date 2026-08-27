@@ -69,7 +69,7 @@ describe("gtmBootstrapScript", () => {
     assert.match(src, /GTM-KV8778H5/);
     assert.match(src, /PerformanceObserver/);
     assert.match(src, /largest-contentful-paint/);
-    assert.match(src, /setTimeout\(g,2500\)/);
+    assert.match(src, /setTimeout\(g,8000\)/);
   });
 
   it("rejects non-GTM ids", () => {

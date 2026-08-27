@@ -20,15 +20,17 @@ export function isHeaderBadgeNode(node) {
  */
 export function restoreHeaderBadge({ resetY = true, gsap = null } = {}) {
   if (typeof document === "undefined") return;
+  const entering = document.documentElement.classList.contains("kpf-nav-entering");
+  const applyY = resetY && !entering;
   document.querySelectorAll(HEADER_BADGE_SELECTOR).forEach((badge) => {
     if (gsap) {
       gsap.killTweensOf(
         badge,
-        resetY ? "autoAlpha,opacity,visibility,y" : "autoAlpha,opacity,visibility",
+        applyY ? "autoAlpha,opacity,visibility,y" : "autoAlpha,opacity,visibility",
       );
       gsap.set(badge, {
         autoAlpha: 1,
-        ...(resetY ? { y: 0 } : {}),
+        ...(applyY ? { y: 0 } : {}),
         overwrite: false,
       });
     }

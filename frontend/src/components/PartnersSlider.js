@@ -65,6 +65,7 @@ export default function PartnersSlider({
   const indexRef = useRef(0);
   const stepRef = useRef(0);
   const countRef = useRef(0);
+  const padRef = useRef(null);
   const suppressClickRef = useRef(false);
   const dragRef = useRef({
     pointerId: null,
@@ -99,19 +100,18 @@ export default function PartnersSlider({
       return undefined;
     }
 
-    function measure() {
+    function apply(viewW) {
+      if (!(viewW > 0)) return;
       const nextVisible = visibleCountForViewport();
       const gap = GAP_PX;
-      const viewW = viewport.clientWidth;
       let chipWidth;
-      let peek;
-      let peekExtend;
+      let peek = null;
+      let peekExtend = null;
+      let sideInset = 0;
 
       if (nextVisible === 1) {
         chipWidth = Math.max(180, Math.round(viewW * MOBILE_CHIP_RATIO));
-        const sideInset = Math.max(0, (viewW - chipWidth) / 2);
-        /* Peeks already sit inside the full-bleed rail — do not shift cards.
-         * Mask 80% stop is the peek *card* inside edge (inset minus gap). */
+        sideInset = Math.max(0, (viewW - chipWidth) / 2);
         peekExtend = 0;
         peek = Math.max(8, sideInset - gap);
       } else {
@@ -119,53 +119,47 @@ export default function PartnersSlider({
           120,
           (viewW - (nextVisible - 1) * gap) / nextVisible,
         );
-        const rect = viewport.getBoundingClientRect();
-        const peekLeft = Math.max(0, rect.left);
-        const peekRight = Math.max(0, window.innerWidth - rect.right);
-        peekExtend = Math.max(peekLeft, peekRight, 8);
-        peek = Math.max(8, peekExtend - gap);
       }
 
-      const laidOutChip = track.querySelector(".kpf-partners__chip");
-      const laidOutWidth = laidOutChip
-        ? laidOutChip.getBoundingClientRect().width
-        : 0;
-      const usedWidth =
-        laidOutWidth > 0 && Math.abs(laidOutWidth - chipWidth) < 1
-          ? laidOutWidth
-          : chipWidth;
-      if (Math.abs(laidOutWidth - chipWidth) >= 1) {
-        track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
-      }
+      track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
 
       if (nextVisible === 1) {
-        const sideInset = Math.max(0, (viewW - usedWidth) / 2);
-        const currentPad =
-          parseFloat(window.getComputedStyle(track).paddingInlineStart) || 0;
-        if (Math.abs(currentPad - sideInset) >= 1) {
+        if (padRef.current == null || Math.abs(padRef.current - sideInset) >= 1) {
           track.style.paddingInline = `${sideInset}px`;
+          padRef.current = sideInset;
         }
-      } else if (track.style.paddingInline !== "0px") {
+      } else if (padRef.current !== 0) {
         track.style.paddingInline = "0px";
+        padRef.current = 0;
       }
 
-      viewport.style.setProperty("--kpf-partners-peek", `${Math.round(peek)}px`);
-      viewport.style.setProperty("--kpf-partners-peek-extend", `${Math.round(peekExtend)}px`);
+      if (peek != null) {
+        viewport.style.setProperty("--kpf-partners-peek", `${Math.round(peek)}px`);
+        viewport.style.setProperty(
+          "--kpf-partners-peek-extend",
+          `${Math.round(peekExtend)}px`,
+        );
+      } else {
+        viewport.style.removeProperty("--kpf-partners-peek");
+        viewport.style.removeProperty("--kpf-partners-peek-extend");
+      }
 
-      const nextStep = Math.max(1, Math.round(usedWidth + gap));
+      const nextStep = Math.max(1, Math.round(chipWidth + gap));
       setVisible(nextVisible);
       setStep(nextStep);
       setIndex((current) => (count >= 2 ? count + logicalIndex(current, count) : 0));
     }
 
-    measure();
-    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
-    observer?.observe(viewport);
-    window.addEventListener("resize", measure);
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener("resize", measure);
-    };
+    if (typeof ResizeObserver === "undefined") {
+      apply(viewport.clientWidth);
+      return undefined;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      apply(entries[0]?.contentRect?.width || 0);
+    });
+    observer.observe(viewport);
+    return () => observer.disconnect();
   }, [count]);
 
   useEffect(() => {

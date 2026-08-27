@@ -9,10 +9,11 @@ import {
 } from "@/lib/navigation";
 import { restoreHeaderBadge } from "@/lib/headerBadge";
 
+const { scheduleAfterLcp } = require("@/lib/thirdPartyIdle");
+
 const BRAND_BADGE_SRC = "/media/brand/50-badge.webp";
 const BRAND_LABEL_FULL = "Kevin Popke Foundation";
-/** Joint starts off-page here, then drops to y:0. Same cord length. */
-const BADGE_DROP_FROM_Y = -140;
+const BADGE_DROP_ANIMATION = "kpf-header-badge-drop";
 
 /**
  * Two-line wordmark — keeps the full name readable in the compact nav bar
@@ -53,29 +54,17 @@ function settleHeaderEntrance(header, badge) {
   if (!header) return;
   if (typeof document !== "undefined") {
     document.documentElement.classList.add("kpf-nav-entered");
+    document.documentElement.classList.remove("kpf-nav-entering");
   }
-  if (headerGsap) {
-    headerGsap.set(header, {
-      autoAlpha: 1,
-      y: 0,
-      overwrite: "auto",
-      clearProps: "transform",
-    });
-  } else {
-    header.style.opacity = "";
-    header.style.visibility = "";
-  }
+  header.style.opacity = "";
+  header.style.visibility = "";
   if (badge) {
     if (headerGsap) {
       headerGsap.killTweensOf(badge, "autoAlpha,opacity,visibility,y");
-      headerGsap.set(badge, {
-        autoAlpha: 1,
-        y: 0,
-        overwrite: false,
-      });
     }
     badge.style.opacity = "";
     badge.style.visibility = "";
+    badge.style.transform = "";
   } else {
     restoreHeaderBadge({ gsap: headerGsap });
   }
@@ -111,9 +100,11 @@ function Brandmark({ className = "kpf-header__mark" }) {
     let cancelled = false;
     let revert = () => {};
 
-    import("gsap").then(({ gsap }) => {
+    const startBreeze = () => {
       if (cancelled) return;
-      headerGsap = gsap;
+      import("gsap").then(({ gsap }) => {
+        if (cancelled) return;
+        headerGsap = gsap;
       const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: reduce)", () => {
       displacement.setAttribute("scale", "0");
@@ -289,9 +280,12 @@ function Brandmark({ className = "kpf-header__mark" }) {
 
       revert = () => mm.revert();
     });
+    };
 
+    const cancelLcp = scheduleAfterLcp(startBreeze);
     return () => {
       cancelled = true;
+      cancelLcp();
       revert();
     };
   }, []);
@@ -426,14 +420,15 @@ export default function KpfHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef(null);
 
-  // useLayoutEffect: park the badge above the viewport before paint so the
-  // first frame is not the resting hang (which read as a lift into place).
+  // CSS parks the badge above the bar (`html:not(.kpf-nav-entered)`). Adding
+  // kpf-nav-entering starts the drop without GSAP measuring a position:fixed
+  // descendant (PSI forced reflow).
   useLayoutEffect(() => {
     const header = headerRef.current;
     if (!header) return undefined;
 
-    // Re-query on settle — Brandmark may remount with a new node.
     const badgeEl = () => header.querySelector("[data-kpf-badge]");
+    const html = document.documentElement;
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -445,56 +440,36 @@ export default function KpfHeader({
       return undefined;
     }
 
-    let cancelled = false;
-    let ctx = null;
     let settled = false;
     let safetyTimer = 0;
+    const badge = badgeEl();
 
     const settleOnce = () => {
       if (settled) return;
       settled = true;
       window.clearTimeout(safetyTimer);
+      html.classList.remove("kpf-nav-entering");
       settle();
     };
 
-    import("gsap").then(({ gsap }) => {
-      if (cancelled) return;
-      headerGsap = gsap;
-      const badge = badgeEl();
+    html.classList.add("kpf-nav-entering");
+    safetyTimer = window.setTimeout(settleOnce, 1600);
 
-      // Header bar is in-flow from first paint (hiding it with autoAlpha caused
-      // a visible jump). Only the badge drops in with transform.
-      gsap.set(header, { autoAlpha: 1, y: 0, overwrite: false });
-      if (badge) gsap.set(badge, { y: BADGE_DROP_FROM_Y, overwrite: false });
+    const onEnd = (event) => {
+      if (event.target !== badge) return;
+      if (event.animationName && event.animationName !== BADGE_DROP_ANIMATION) {
+        return;
+      }
+      settleOnce();
+    };
+    badge?.addEventListener("animationend", onEnd);
 
-      // If the timeline is killed (Strict Mode, route remount, CMS overwrite),
-      // still force the badge visible — never park at autoAlpha 0.
-      safetyTimer = window.setTimeout(settleOnce, 1600);
-
-      ctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          defaults: { ease: "power3.out", overwrite: false },
-          onComplete: settleOnce,
-        });
-
-        if (badge) {
-          tl.to(badge, {
-            y: 0,
-            duration: 0.7,
-            ease: "power3.out",
-            overwrite: false,
-          });
-        } else {
-          settleOnce();
-        }
-      }, header);
-    });
+    if (!badge) settleOnce();
 
     return () => {
-      cancelled = true;
       window.clearTimeout(safetyTimer);
-      ctx?.revert();
-      // Treat interrupt as "entrance done" so remounts never re-hide the badge.
+      badge?.removeEventListener("animationend", onEnd);
+      html.classList.remove("kpf-nav-entering");
       settleOnce();
     };
   }, []);

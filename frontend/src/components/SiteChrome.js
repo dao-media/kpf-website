@@ -54,7 +54,6 @@ function ChromeHeader({ component, useScaffold }) {
       setHeight(next);
     });
     observer.observe(node);
-    setHeight(Math.round(node.getBoundingClientRect().height) || 0);
     return () => observer.disconnect();
   }, [component?.html, useScaffold]);
 

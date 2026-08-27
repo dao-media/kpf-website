@@ -612,11 +612,26 @@ html.kpf-scroll-smoothed body {
 /*
  * First load: park the badge above the viewport (scripting only) so the
  * entrance is a drop. Keep the header bar visible — hiding it was a layout jump.
- * `.kpf-nav-entered` is set when the timeline settles.
+ * `.kpf-nav-entering` plays the CSS drop (power3.out). `.kpf-nav-entered`
+ * is set when that animation settles — no GSAP measure of the fixed header.
  */
+@keyframes kpf-header-badge-drop {
+	from {
+		transform: translate3d(0, -8.75rem, 0);
+	}
+
+	to {
+		transform: translate3d(0, 0, 0);
+	}
+}
+
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
 	html:not(.kpf-nav-entered) .kpf-header [data-kpf-badge] {
 		transform: translate3d(0, -8.75rem, 0);
+	}
+
+	html.kpf-nav-entering:not(.kpf-nav-entered) .kpf-header [data-kpf-badge] {
+		animation: kpf-header-badge-drop 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) both;
 	}
 }
 

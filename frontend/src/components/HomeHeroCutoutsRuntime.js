@@ -1,14 +1,16 @@
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 
 const ENTERED_CLASS = "kpf-hero-cutouts-entered";
+const DESKTOP_MQ = "(min-width: 64rem)";
 
 /**
- * Depth-graded entrance: same clock, different travel (fraction of stage width).
- * Rear (dad) crawls; front (runner) covers the most ground, from off-stage left.
+ * Depth-graded entrance: same clock, different travel as a percent of the
+ * cutout’s own width (avoids measuring stage.clientWidth). Values match
+ * travel / CSS width at 64rem+: dad 0.28 / 36.74%, runner 1.05 / 30.83%.
  */
 const LAYERS = [
-  { selector: ".kpf-hero__cutout--dad", travel: 0.28 },
-  { selector: ".kpf-hero__cutout--runner", travel: 1.05 },
+  { selector: ".kpf-hero__cutout--dad", xPercent: -76.21 },
+  { selector: ".kpf-hero__cutout--runner", xPercent: -340.58 },
 ];
 
 const DURATION = 1.55;
@@ -42,9 +44,13 @@ function resolveGsap(mod) {
  * Skipped when the user prefers reduced motion; CSS then shows all at rest.
  */
 export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (typeof window === "undefined") return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      markEntered();
+      return undefined;
+    }
+    if (!window.matchMedia(DESKTOP_MQ).matches) {
       markEntered();
       return undefined;
     }
@@ -56,12 +62,10 @@ export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {
       return undefined;
     }
 
-    const stageWidth = stage.clientWidth || 0;
     const visible = LAYERS.map((layer) => {
       const node = stage.querySelector(layer.selector);
       if (!node) return null;
-      if (getComputedStyle(node).display === "none") return null;
-      return { node, x: -Math.round(stageWidth * layer.travel) };
+      return { node, xPercent: layer.xPercent };
     }).filter(Boolean);
 
     if (!visible.length) {
@@ -83,12 +87,12 @@ export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {
       }
 
       const ctx = gsap.context(() => {
-        visible.forEach(({ node, x }) => {
+        visible.forEach(({ node, xPercent }) => {
           gsap.fromTo(
             node,
-            { x, autoAlpha: 0 },
+            { xPercent, autoAlpha: 0 },
             {
-              x: 0,
+              xPercent: 0,
               autoAlpha: 1,
               duration: DURATION,
               delay: DELAY,

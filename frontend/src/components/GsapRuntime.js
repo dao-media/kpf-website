@@ -12,6 +12,7 @@ const {
 
 const {
   animationsUsedOnPage,
+  isDisplayedForTween,
   parseAnimation,
   pluginsForAnimations,
 } = require("@/lib/gsapPlugins");
@@ -137,7 +138,7 @@ function resolveTweenTargets(triggerTargets, config) {
 function createTween(targets, animation, extra = {}) {
   const { config } = animation;
   const tweenTargets = resolveTweenTargets(targets, config);
-  const nodes = gsap.utils.toArray(tweenTargets);
+  const nodes = gsap.utils.toArray(tweenTargets).filter(isDisplayedForTween);
   if (!nodes.length) return null;
   const protectBadge = nodes.some(isHeaderBadgeNode);
   const ease = resolveEase(config, animation.databaseId);
@@ -157,7 +158,7 @@ function createTween(targets, animation, extra = {}) {
     if (extra.paused && config.from && typeof config.from === "object") {
       Object.assign(setProps, stripHideProps(config.from));
     }
-    gsap.set(tweenTargets, setProps);
+    gsap.set(nodes, setProps);
   }
   const overwrite = extra.overwrite ?? (extra.paused || protectBadge ? false : "auto");
   const {
@@ -188,7 +189,7 @@ function createTween(targets, animation, extra = {}) {
 
   if (effect === "draw") {
     return gsap.fromTo(
-      tweenTargets,
+      nodes,
       { drawSVG: svg.drawFrom || "0% 0%" },
       {
         drawSVG: svg.drawTo || "0% 100%",
@@ -198,14 +199,14 @@ function createTween(targets, animation, extra = {}) {
     );
   }
   if (effect === "morph" && svg.morphTarget) {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       morphSVG: { shape: svg.morphTarget, type: "rotational" },
       transformOrigin: svg.transformOrigin || "50% 50%",
       ...common,
     });
   }
   if (effect === "motionPath" && svg.pathSelector) {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       motionPath: {
         path: svg.pathSelector,
         align: svg.pathSelector,
@@ -217,7 +218,6 @@ function createTween(targets, animation, extra = {}) {
   }
   if (effect === "splitText" && loadedPlugins.SplitText) {
     const SplitText = loadedPlugins.SplitText;
-    const nodes = gsap.utils.toArray(tweenTargets);
     const splits = nodes.map(
       (node) =>
         new SplitText(node, {
@@ -251,7 +251,7 @@ function createTween(targets, animation, extra = {}) {
     return tween;
   }
   if (effect === "scrambleText") {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       scrambleText: {
         text: svg.scrambleText || undefined,
         chars: svg.scrambleChars || "upperCase",
@@ -261,7 +261,7 @@ function createTween(targets, animation, extra = {}) {
     });
   }
   if (effect === "text") {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       text: {
         value: svg.textValue || "",
         delimiter: svg.textDelimiter || "",
@@ -270,7 +270,7 @@ function createTween(targets, animation, extra = {}) {
     });
   }
   if (effect === "physics2D") {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       physics2D: {
         velocity: Number(svg.physicsVelocity) || 200,
         angle: Number(svg.physicsAngle) || -90,
@@ -281,7 +281,7 @@ function createTween(targets, animation, extra = {}) {
     });
   }
   if (effect === "physicsProps") {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       physicsProps: svg.physicsProps || {
         y: { acceleration: 500, friction: 0.1, velocity: -200 },
       },
@@ -290,16 +290,16 @@ function createTween(targets, animation, extra = {}) {
   }
 
   if (resolvedMethod === "to") {
-    return gsap.to(tweenTargets, { ...(toVars || {}), ...common });
+    return gsap.to(nodes, { ...(toVars || {}), ...common });
   }
   if (resolvedMethod === "fromTo") {
-    return gsap.fromTo(tweenTargets, fromVars || {}, {
+    return gsap.fromTo(nodes, fromVars || {}, {
       ...(toVars || {}),
       ...common,
     });
   }
   if (resolvedMethod === "keyframes") {
-    return gsap.to(tweenTargets, {
+    return gsap.to(nodes, {
       keyframes: (config.keyframes || []).map((frame) => ({
         ...(protectBadge ? stripHideProps(frame.props) : frame.props || {}),
         duration: frame.duration,
@@ -312,7 +312,7 @@ function createTween(targets, animation, extra = {}) {
       overwrite,
     });
   }
-  return gsap.from(tweenTargets, { ...(fromVars || {}), ...common });
+  return gsap.from(nodes, { ...(fromVars || {}), ...common });
 }
 
 
@@ -357,6 +357,7 @@ export default function GsapRuntime({ animations = [] }) {
               ) {
                 return;
               }
+              if (!isDisplayedForTween(target)) return;
               const scroll = animation.config.scroll || {};
               const scrub = Number(scroll.scrub) || false;
               const once = scroll.once !== false;
@@ -383,6 +384,7 @@ export default function GsapRuntime({ animations = [] }) {
             targets.forEach((target) => {
               // Chip/card is the control; do not paint org names as text links.
               if (isPartnersChip(target)) return;
+              if (!isDisplayedForTween(target)) return;
               const tween = createTween(target, animation, {
                 paused: true,
                 // Apply `from` so resting state matches CSS (nav underlines

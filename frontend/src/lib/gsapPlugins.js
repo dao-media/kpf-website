@@ -48,6 +48,30 @@ function animationMatchesDocument(animation, root) {
 }
 
 /**
+ * Skip display:none / visibility:hidden targets so GSAP CSSPlugin does not
+ * unhide them to measure offsetParent (forced reflow). Opacity 0 stays
+ * eligible — CMS/CSS parks still need the fade hardener.
+ *
+ * @param {Element | null | undefined} node
+ * @returns {boolean}
+ */
+function isDisplayedForTween(node) {
+  if (!node || node.nodeType !== 1) return false;
+  if (typeof node.checkVisibility === "function") {
+    try {
+      return node.checkVisibility({
+        checkOpacity: false,
+        checkVisibilityCSS: true,
+        contentVisibilityAuto: true,
+      });
+    } catch {
+      return true;
+    }
+  }
+  return true;
+}
+
+/**
  * CMS animations whose selectors exist on this page.
  * @param {unknown[]} animations
  * @param {{ querySelectorAll: (selector: string) => { length: number } }} [root]
@@ -87,5 +111,6 @@ module.exports = {
   parseAnimation,
   animationMatchesDocument,
   animationsUsedOnPage,
+  isDisplayedForTween,
   pluginsForAnimations,
 };

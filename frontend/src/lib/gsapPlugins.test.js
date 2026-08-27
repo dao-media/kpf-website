@@ -2,6 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
   animationsUsedOnPage,
+  isDisplayedForTween,
   pluginsForAnimations,
 } = require("./gsapPlugins");
 
@@ -85,5 +86,36 @@ describe("animationsUsedOnPage", () => {
     );
     assert.deepEqual(used, []);
     assert.deepEqual(pluginsForAnimations(used), []);
+  });
+});
+
+describe("isDisplayedForTween", () => {
+  it("rejects non-elements", () => {
+    assert.equal(isDisplayedForTween(null), false);
+    assert.equal(isDisplayedForTween({ nodeType: 3 }), false);
+  });
+
+  it("skips display:none via checkVisibility without requiring getComputedStyle", () => {
+    assert.equal(
+      isDisplayedForTween({
+        nodeType: 1,
+        checkVisibility: (opts) => {
+          assert.equal(opts.checkOpacity, false);
+          return false;
+        },
+      }),
+      false,
+    );
+    assert.equal(
+      isDisplayedForTween({
+        nodeType: 1,
+        checkVisibility: () => true,
+      }),
+      true,
+    );
+  });
+
+  it("treats elements without checkVisibility as displayed", () => {
+    assert.equal(isDisplayedForTween({ nodeType: 1 }), true);
   });
 });

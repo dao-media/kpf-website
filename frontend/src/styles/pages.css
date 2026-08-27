@@ -610,10 +610,9 @@ html.kpf-scroll-smoothed body {
 }
 
 /*
- * First load: park the badge above the viewport (scripting only) so the
- * entrance is a drop. Keep the header bar visible — hiding it was a layout jump.
- * `.kpf-nav-entering` plays the CSS drop (power3.out). `.kpf-nav-entered`
- * is set when that animation settles — no GSAP measure of the fixed header.
+ * First load: CSS drop (power3.out). `both` parks the first frame above the
+ * bar and holds the rest pose — no GSAP measure of the fixed header, and the
+ * badge is not stuck if JS is late. `.kpf-nav-entered` freezes the rest pose.
  */
 @keyframes kpf-header-badge-drop {
 	from {
@@ -627,10 +626,6 @@ html.kpf-scroll-smoothed body {
 
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
 	html:not(.kpf-nav-entered) .kpf-header [data-kpf-badge] {
-		transform: translate3d(0, -8.75rem, 0);
-	}
-
-	html.kpf-nav-entering:not(.kpf-nav-entered) .kpf-header [data-kpf-badge] {
 		animation: kpf-header-badge-drop 0.7s cubic-bezier(0.215, 0.61, 0.355, 1) both;
 	}
 }
@@ -1918,15 +1913,42 @@ html.kpf-scroll-smoothed body {
 }
 
 /*
- * Park dad/runner until HomeHeroCutoutsRuntime (or the safety timeout)
- * marks html.kpf-hero-cutouts-entered. Alumni stays painted from first
- * frame — it is the LCP image on tablet/desktop. GSAP still slides the
- * outer layers; hiding alumni delayed LCP until JS ran.
+ * Dad/runner slide in via CSS (expo.out). Alumni stays painted from first
+ * frame — it is the LCP image on tablet/desktop. Travel matches the old
+ * GSAP xPercent (dad 0.28/36.74% width, runner 1.05/30.83%).
+ * `.kpf-hero-cutouts-entered` freezes the rest pose after the animation.
  */
-@media (min-width: 64rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--dad,
-	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--runner {
+@keyframes kpf-hero-cutout-dad {
+	from {
 		opacity: 0;
+		transform: translate3d(-76.21%, 0, 0);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes kpf-hero-cutout-runner {
+	from {
+		opacity: 0;
+		transform: translate3d(-340.58%, 0, 0);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (min-width: 64rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--dad {
+		animation: kpf-hero-cutout-dad 1.55s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+	}
+
+	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--runner {
+		animation: kpf-hero-cutout-runner 1.55s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 }
 

@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useEffect } from "react";
 
 /**
  * Lucide Check geometry, path reversed so DrawSVG 0→100% writes the mark
@@ -33,7 +33,7 @@ export function ProgramsCheckIcon({ size = 28 }) {
 export default function ProgramsCheckRuntime({
   rootSelector = ".kpf-programs__list",
 }) {
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (typeof document === "undefined") return undefined;
 
     const list = document.querySelector(rootSelector);
@@ -44,8 +44,11 @@ export default function ProgramsCheckRuntime({
 
     let cancelled = false;
     let ctx;
+    let started = false;
 
-    (async () => {
+    const run = async () => {
+      if (cancelled || started) return;
+      started = true;
       const { gsap } = await import("gsap");
       const { DrawSVGPlugin } = await import("gsap/DrawSVGPlugin");
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
@@ -110,10 +113,29 @@ export default function ProgramsCheckRuntime({
       }, list);
 
       requestAnimationFrame(() => ScrollTrigger.refresh());
-    })();
+    };
+
+    if (typeof IntersectionObserver === "undefined") {
+      run();
+      return () => {
+        cancelled = true;
+        ctx?.revert();
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        run();
+      },
+      { rootMargin: "25% 0px" },
+    );
+    observer.observe(list);
 
     return () => {
       cancelled = true;
+      observer.disconnect();
       ctx?.revert();
     };
   }, [rootSelector]);

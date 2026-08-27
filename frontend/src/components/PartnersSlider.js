@@ -121,7 +121,10 @@ export default function PartnersSlider({
         );
       }
 
-      track.style.setProperty("--kpf-partners-chip-width", `${chipWidth}px`);
+      const widthPx = `${chipWidth}px`;
+      if (track.style.getPropertyValue("--kpf-partners-chip-width") !== widthPx) {
+        track.style.setProperty("--kpf-partners-chip-width", widthPx);
+      }
 
       if (nextVisible === 1) {
         if (padRef.current == null || Math.abs(padRef.current - sideInset) >= 1) {
@@ -134,20 +137,29 @@ export default function PartnersSlider({
       }
 
       if (peek != null) {
-        viewport.style.setProperty("--kpf-partners-peek", `${Math.round(peek)}px`);
-        viewport.style.setProperty(
-          "--kpf-partners-peek-extend",
-          `${Math.round(peekExtend)}px`,
-        );
+        const peekPx = `${Math.round(peek)}px`;
+        const peekExtendPx = `${Math.round(peekExtend)}px`;
+        if (viewport.style.getPropertyValue("--kpf-partners-peek") !== peekPx) {
+          viewport.style.setProperty("--kpf-partners-peek", peekPx);
+        }
+        if (
+          viewport.style.getPropertyValue("--kpf-partners-peek-extend") !==
+          peekExtendPx
+        ) {
+          viewport.style.setProperty("--kpf-partners-peek-extend", peekExtendPx);
+        }
       } else {
-        viewport.style.removeProperty("--kpf-partners-peek");
-        viewport.style.removeProperty("--kpf-partners-peek-extend");
+        if (viewport.style.getPropertyValue("--kpf-partners-peek")) {
+          viewport.style.removeProperty("--kpf-partners-peek");
+        }
+        if (viewport.style.getPropertyValue("--kpf-partners-peek-extend")) {
+          viewport.style.removeProperty("--kpf-partners-peek-extend");
+        }
       }
 
       const nextStep = Math.max(1, Math.round(chipWidth + gap));
-      setVisible(nextVisible);
-      setStep(nextStep);
-      setIndex((current) => (count >= 2 ? count + logicalIndex(current, count) : 0));
+      setVisible((prev) => (prev === nextVisible ? prev : nextVisible));
+      setStep((prev) => (prev === nextStep ? prev : nextStep));
     }
 
     if (typeof ResizeObserver === "undefined") {

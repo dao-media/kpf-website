@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import CtaClosingFlag from "@/components/CtaClosingFlag";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import KpfButton from "@/components/KpfButton";
@@ -35,7 +35,7 @@ export default function CtaClosingBand({
     ? actions
     : CTA_CLOSING_DEFAULTS.actions;
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const section = sectionRef.current;
     if (!section || typeof window === "undefined") return undefined;
 
@@ -54,8 +54,11 @@ export default function CtaClosingBand({
 
     let cancelled = false;
     let ctx;
+    let started = false;
 
-    (async () => {
+    const run = async () => {
+      if (cancelled || started) return;
+      started = true;
       const { gsap } = await import("gsap");
       const { CustomEase } = await import("gsap/CustomEase");
       const { ScrollTrigger } = await import("gsap/ScrollTrigger");
@@ -118,10 +121,29 @@ export default function CtaClosingBand({
       }, section);
 
       if (cancelled) ctx.revert();
-    })();
+    };
+
+    if (typeof IntersectionObserver === "undefined") {
+      run();
+      return () => {
+        cancelled = true;
+        ctx?.revert();
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        run();
+      },
+      { rootMargin: "25% 0px" },
+    );
+    observer.observe(section);
 
     return () => {
       cancelled = true;
+      observer.disconnect();
       ctx?.revert();
     };
   }, []);

@@ -9,8 +9,6 @@ import {
 } from "@/lib/navigation";
 import { restoreHeaderBadge } from "@/lib/headerBadge";
 
-const { scheduleAfterLcp } = require("@/lib/thirdPartyIdle");
-
 const BRAND_BADGE_SRC = "/media/brand/50-badge.webp";
 const BRAND_LABEL_FULL = "Kevin Popke Foundation";
 const BADGE_DROP_ANIMATION = "kpf-header-badge-drop";
@@ -54,7 +52,6 @@ function settleHeaderEntrance(header, badge) {
   if (!header) return;
   if (typeof document !== "undefined") {
     document.documentElement.classList.add("kpf-nav-entered");
-    document.documentElement.classList.remove("kpf-nav-entering");
   }
   header.style.opacity = "";
   header.style.visibility = "";
@@ -89,203 +86,192 @@ function Brandmark({ className = "kpf-header__mark" }) {
     const ribbons = badge.querySelector(".kpf-header__mark-ribbons");
     if (!turbulence || !displacement || !ribbons) return undefined;
 
-    const hoverRoot =
-      badge.closest(".kpf-header__brand") || badge;
+    const hoverRoot = badge.closest(".kpf-header__brand") || badge;
+    const canBreeze =
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+      window.matchMedia("(min-width: 64rem)").matches &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!canBreeze) {
       displacement.setAttribute("scale", "0");
       return undefined;
     }
 
     let cancelled = false;
     let revert = () => {};
+    let started = false;
 
     const startBreeze = () => {
-      if (cancelled) return;
+      if (cancelled || started) return;
+      started = true;
       import("gsap").then(({ gsap }) => {
         if (cancelled) return;
         headerGsap = gsap;
-      const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: reduce)", () => {
-      displacement.setAttribute("scale", "0");
-      gsap.set(ribbons, { clearProps: "transform" });
-    });
-
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      // Soft cloth sway: keep frequency fixed (animating it morphs the pattern
-      // into a glitch). ~12% above the prior soft gust for a bit more cloth.
-      const INTENSITY = 1.12;
-      const breeze = { scale: 0 };
-      const applyBreeze = () => {
-        displacement.setAttribute("scale", String(breeze.scale));
-      };
-
-      applyBreeze();
-      gsap.set(ribbons, { transformOrigin: "50% 8%" });
-
-      const peak = 7 * INTENSITY; // ~7.84
-      const mid = 3 * INTENSITY; // ~3.36
-      const crest = 5.5 * INTENSITY; // ~6.16
-      const echo = 4.2 * INTENSITY; // ~4.7 — extra half-sway before settle
-      const rotPeak = 1.1 * INTENSITY;
-      const rotMid = -0.5 * INTENSITY;
-      const rotCrest = 0.7 * INTENSITY;
-      const rotEcho = -0.45 * INTENSITY;
-      const yPeak = 1.5 * INTENSITY;
-      const yMid = 0.6 * INTENSITY;
-      const yCrest = 1.1 * INTENSITY;
-      const yEcho = 0.55 * INTENSITY;
-      // 30% faster than the prior timing.
-      const SPEED = 0.7;
-      const d = (seconds) => seconds * SPEED;
-
-      function buildGust(vars = {}) {
-        const tl = gsap.timeline({
-          defaults: { ease: "sine.inOut", onUpdate: applyBreeze },
-          ...vars,
+        const mm = gsap.matchMedia();
+        mm.add("(prefers-reduced-motion: reduce)", () => {
+          displacement.setAttribute("scale", "0");
+          gsap.set(ribbons, { clearProps: "transform" });
         });
 
-        tl.to(breeze, { scale: peak, duration: d(1.1) })
-          .to(
-            ribbons,
-            {
-              rotation: rotPeak,
-              y: yPeak,
-              duration: d(1.1),
-              ease: "sine.inOut",
-            },
-            "<",
-          )
-          .to(breeze, { scale: mid, duration: d(0.7) })
-          .to(
-            ribbons,
-            {
-              rotation: rotMid,
-              y: yMid,
-              duration: d(0.7),
-              ease: "sine.inOut",
-            },
-            "<",
-          )
-          .to(breeze, { scale: crest, duration: d(0.9) })
-          .to(
-            ribbons,
-            {
-              rotation: rotCrest,
-              y: yCrest,
-              duration: d(0.9),
-              ease: "sine.inOut",
-            },
-            "<",
-          )
-          // One more back-and-forth before settle.
-          .to(breeze, { scale: mid * 0.85, duration: d(0.65) })
-          .to(
-            ribbons,
-            {
-              rotation: rotEcho,
-              y: yEcho,
-              duration: d(0.65),
-              ease: "sine.inOut",
-            },
-            "<",
-          )
-          .to(breeze, { scale: echo, duration: d(0.75) })
-          .to(
-            ribbons,
-            {
-              rotation: rotCrest * 0.75,
-              y: yCrest * 0.7,
-              duration: d(0.75),
-              ease: "sine.inOut",
-            },
-            "<",
-          )
-          .to(breeze, { scale: 0, duration: d(1.4), ease: "sine.out" })
-          .to(
-            ribbons,
-            { rotation: 0, y: 0, duration: d(1.4), ease: "sine.out" },
-            "<",
-          );
+        mm.add("(prefers-reduced-motion: no-preference)", () => {
+          const INTENSITY = 1.12;
+          const breeze = { scale: 0 };
+          const applyBreeze = () => {
+            displacement.setAttribute("scale", String(breeze.scale));
+          };
 
-        return tl;
-      }
+          applyBreeze();
+          gsap.set(ribbons, { transformOrigin: "50% 8%" });
 
-      const idle = buildGust({
-        repeat: -1,
-        repeatDelay: gsap.utils.random(3.2, 5.8),
-        delay: gsap.utils.random(0.8, 1.8),
-      });
+          const peak = 7 * INTENSITY;
+          const mid = 3 * INTENSITY;
+          const crest = 5.5 * INTENSITY;
+          const echo = 4.2 * INTENSITY;
+          const rotPeak = 1.1 * INTENSITY;
+          const rotMid = -0.5 * INTENSITY;
+          const rotCrest = 0.7 * INTENSITY;
+          const rotEcho = -0.45 * INTENSITY;
+          const yPeak = 1.5 * INTENSITY;
+          const yMid = 0.6 * INTENSITY;
+          const yCrest = 1.1 * INTENSITY;
+          const yEcho = 0.55 * INTENSITY;
+          const SPEED = 0.7;
+          const d = (seconds) => seconds * SPEED;
 
-      idle.eventCallback("onRepeat", () => {
-        idle.repeatDelay(gsap.utils.random(3.2, 5.8));
-      });
+          function buildGust(vars = {}) {
+            const tl = gsap.timeline({
+              defaults: { ease: "sine.inOut", onUpdate: applyBreeze },
+              ...vars,
+            });
 
-      let hoverGust = null;
-      let hovered = false;
+            tl.to(breeze, { scale: peak, duration: d(1.1) })
+              .to(
+                ribbons,
+                {
+                  rotation: rotPeak,
+                  y: yPeak,
+                  duration: d(1.1),
+                  ease: "sine.inOut",
+                },
+                "<",
+              )
+              .to(breeze, { scale: mid, duration: d(0.7) })
+              .to(
+                ribbons,
+                {
+                  rotation: rotMid,
+                  y: yMid,
+                  duration: d(0.7),
+                  ease: "sine.inOut",
+                },
+                "<",
+              )
+              .to(breeze, { scale: crest, duration: d(0.9) })
+              .to(
+                ribbons,
+                {
+                  rotation: rotCrest,
+                  y: yCrest,
+                  duration: d(0.9),
+                  ease: "sine.inOut",
+                },
+                "<",
+              )
+              .to(breeze, { scale: mid * 0.85, duration: d(0.65) })
+              .to(
+                ribbons,
+                {
+                  rotation: rotEcho,
+                  y: yEcho,
+                  duration: d(0.65),
+                  ease: "sine.inOut",
+                },
+                "<",
+              )
+              .to(breeze, { scale: echo, duration: d(0.75) })
+              .to(
+                ribbons,
+                {
+                  rotation: rotCrest * 0.75,
+                  y: yCrest * 0.7,
+                  duration: d(0.75),
+                  ease: "sine.inOut",
+                },
+                "<",
+              )
+              .to(breeze, { scale: 0, duration: d(1.4), ease: "sine.out" })
+              .to(
+                ribbons,
+                { rotation: 0, y: 0, duration: d(1.4), ease: "sine.out" },
+                "<",
+              );
 
-      const playHoverGust = () => {
-        if (hovered) return;
-        hovered = true;
-        idle.pause(0);
-        breeze.scale = 0;
-        applyBreeze();
-        gsap.set(ribbons, { rotation: 0, y: 0 });
-        hoverGust?.kill();
-        // Hover: same shape, slightly snappier lead-in so it feels responsive.
-        hoverGust = buildGust({
-          onComplete: () => {
-            hoverGust = null;
-            if (!hovered) {
-              idle.restart(true);
+            return tl;
+          }
+
+          let hoverGust = null;
+          let hovered = false;
+
+          const playHoverGust = () => {
+            if (hovered) return;
+            hovered = true;
+            breeze.scale = 0;
+            applyBreeze();
+            gsap.set(ribbons, { rotation: 0, y: 0 });
+            hoverGust?.kill();
+            hoverGust = buildGust({
+              onComplete: () => {
+                hoverGust = null;
+              },
+            });
+          };
+
+          const endHover = (event) => {
+            if (!hovered) return;
+            if (
+              event?.type === "focusout" &&
+              event.relatedTarget &&
+              hoverRoot.contains(event.relatedTarget)
+            ) {
+              return;
             }
-          },
+            hovered = false;
+          };
+
+          hoverRoot.addEventListener("mouseenter", playHoverGust);
+          hoverRoot.addEventListener("mouseleave", endHover);
+          hoverRoot.addEventListener("focusin", playHoverGust);
+          hoverRoot.addEventListener("focusout", endHover);
+
+          if (
+            hoverRoot.matches(":hover") ||
+            hoverRoot.contains(document.activeElement)
+          ) {
+            playHoverGust();
+          }
+
+          return () => {
+            hoverRoot.removeEventListener("mouseenter", playHoverGust);
+            hoverRoot.removeEventListener("mouseleave", endHover);
+            hoverRoot.removeEventListener("focusin", playHoverGust);
+            hoverRoot.removeEventListener("focusout", endHover);
+            hoverGust?.kill();
+            breeze.scale = 0;
+            applyBreeze();
+            gsap.set(ribbons, { clearProps: "transform" });
+          };
         });
-      };
 
-      const endHover = (event) => {
-        if (!hovered) return;
-        // Ignore focus moves that stay inside the brand link.
-        if (
-          event?.type === "focusout" &&
-          event.relatedTarget &&
-          hoverRoot.contains(event.relatedTarget)
-        ) {
-          return;
-        }
-        hovered = false;
-        // If hover gust already finished, resume idle; otherwise it resumes in onComplete.
-        if (!hoverGust) {
-          idle.restart(true);
-        }
-      };
-
-      hoverRoot.addEventListener("mouseenter", playHoverGust);
-      hoverRoot.addEventListener("mouseleave", endHover);
-      hoverRoot.addEventListener("focusin", playHoverGust);
-      hoverRoot.addEventListener("focusout", endHover);
-
-      return () => {
-        hoverRoot.removeEventListener("mouseenter", playHoverGust);
-        hoverRoot.removeEventListener("mouseleave", endHover);
-        hoverRoot.removeEventListener("focusin", playHoverGust);
-        hoverRoot.removeEventListener("focusout", endHover);
-        hoverGust?.kill();
-        idle.kill();
-        breeze.scale = 0;
-        applyBreeze();
-        gsap.set(ribbons, { clearProps: "transform" });
-      };
-    });
-
-      revert = () => mm.revert();
-    });
+        revert = () => mm.revert();
+      });
     };
 
-    const cancelLcp = scheduleAfterLcp(startBreeze);
+    hoverRoot.addEventListener("pointerenter", startBreeze, { once: true });
+    hoverRoot.addEventListener("focusin", startBreeze, { once: true });
     return () => {
       cancelled = true;
-      cancelLcp();
+      hoverRoot.removeEventListener("pointerenter", startBreeze);
+      hoverRoot.removeEventListener("focusin", startBreeze);
       revert();
     };
   }, []);
@@ -420,15 +406,13 @@ export default function KpfHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef(null);
 
-  // CSS parks the badge above the bar (`html:not(.kpf-nav-entered)`). Adding
-  // kpf-nav-entering starts the drop without GSAP measuring a position:fixed
-  // descendant (PSI forced reflow).
+  // CSS plays the drop on html:not(.kpf-nav-entered). This only freezes the
+  // rest pose so SPA remounts do not replay — no GSAP on the header.
   useLayoutEffect(() => {
     const header = headerRef.current;
     if (!header) return undefined;
 
     const badgeEl = () => header.querySelector("[data-kpf-badge]");
-    const html = document.documentElement;
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
@@ -448,11 +432,9 @@ export default function KpfHeader({
       if (settled) return;
       settled = true;
       window.clearTimeout(safetyTimer);
-      html.classList.remove("kpf-nav-entering");
       settle();
     };
 
-    html.classList.add("kpf-nav-entering");
     safetyTimer = window.setTimeout(settleOnce, 1600);
 
     const onEnd = (event) => {
@@ -469,7 +451,6 @@ export default function KpfHeader({
     return () => {
       window.clearTimeout(safetyTimer);
       badge?.removeEventListener("animationend", onEnd);
-      html.classList.remove("kpf-nav-entering");
       settleOnce();
     };
   }, []);

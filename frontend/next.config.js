@@ -1,3 +1,4 @@
+const path = require('path');
 const { withFaust, getWpHostname } = require('@faustwp/core');
 const {
 	ADMIN_CMS_HOST,
@@ -67,6 +68,24 @@ module.exports = withFaust({
 	transpilePackages: ['geist'],
 	experimental: {
 		optimizePackageImports: ['lucide-react'],
+	},
+	// Next still injects polyfill-module for every browser. Our browserslist
+	// already matches Next 16's modern target, so those Baseline polyfills are
+	// unused (PSI ~16 KiB on the framework chunk).
+	turbopack: {
+		resolveAlias: {
+			'../build/polyfills/polyfill-module': './src/lib/empty-polyfill.js',
+			'next/dist/build/polyfills/polyfill-module': './src/lib/empty-polyfill.js',
+		},
+	},
+	webpack(config) {
+		const emptyPolyfill = path.join(__dirname, 'src/lib/empty-polyfill.js');
+		config.resolve.alias = {
+			...config.resolve.alias,
+			'../build/polyfills/polyfill-module': emptyPolyfill,
+			'next/dist/build/polyfills/polyfill-module': emptyPolyfill,
+		};
+		return config;
 	},
 	images: {
 		formats: ['image/avif', 'image/webp'],

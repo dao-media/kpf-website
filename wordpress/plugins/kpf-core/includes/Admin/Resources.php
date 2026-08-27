@@ -162,7 +162,7 @@ final class Resources {
 			array(
 				'label'       => __( 'Pages', 'kpf-core' ),
 				'description' => __(
-					'Public site pages. HTML copy is edited under Pages → Designs (Edit code & copy). Home, About, Events, Blog, Contact, and Privacy use built-in layouts, so their headlines and body copy do not come from that editor.',
+					'Public site pages. Pages → Designs → Edit code & copy scrapes visible text into the left column; those fields write back into the HTML file on the right when you save. Home, About, Events, Blog, Contact, and Privacy still render from a built-in layout on the public site, so visitors do not see that HTML.',
 					'kpf-core'
 				),
 			),
@@ -325,7 +325,7 @@ final class Resources {
 				'id'          => 'page-content',
 				'title'       => __( 'Page content', 'kpf-core' ),
 				'description' => __(
-					'Change the text on HTML page designs. Built-in layouts (Home, About, Events, Blog, Contact, Privacy) do not use this editor.',
+					'Change text in HTML page designs. Left-hand copy fields write into the file on the right. Built-in layouts (Home, About, Events, Blog, Contact, Privacy) still ignore that file on the public site.',
 					'kpf-core'
 				),
 				'cards'       => array(
@@ -464,9 +464,9 @@ final class Resources {
 				array(
 					'title' => __( 'Edit the text', 'kpf-core' ),
 					'items' => array(
-						__( 'The left column is <strong>Page copy</strong>. Each field is one heading, paragraph, link, or button from the page.', 'kpf-core' ),
-						__( 'Change those fields. You usually do not need the HTML or CSS on the right.', 'kpf-core' ),
-						__( 'Use <strong>Find copy…</strong> if the list is long.', 'kpf-core' ),
+						__( 'The left column is <strong>Page copy</strong>. Each field is one heading, paragraph, link, or button scraped from the HTML on the right.', 'kpf-core' ),
+						__( 'Change those fields. Each keystroke patches the matching text in the HTML file. You usually do not need to type in the HTML or CSS editors.', 'kpf-core' ),
+						__( 'Use <strong>Find copy…</strong> if the list is long. Switch to the HTML tab to confirm the file on the right updated.', 'kpf-core' ),
 					),
 				),
 				array(
@@ -474,14 +474,15 @@ final class Resources {
 					'items' => array(
 						__( 'Click <strong>Save design</strong> at the top right.', 'kpf-core' ),
 						__( 'Wait until the status says <strong>All changes saved</strong> (it reads Unsaved changes until you save).', 'kpf-core' ),
-						__( 'Hard-refresh the public page if you still see old copy.', 'kpf-core' ),
+						__( 'That save writes the HTML/CSS files. It does not by itself update Home, About, Events, Blog, Contact, or Privacy on the public site.', 'kpf-core' ),
 					),
 				),
 				array(
 					'title' => __( 'What this does not change', 'kpf-core' ),
 					'items' => array(
-						__( 'Even if <strong>Home, About, Events, Blog, Contact, or Privacy</strong> show as Ready, the public page still uses a built-in layout. Copy you save here will not appear on those live pages.', 'kpf-core' ),
-						__( 'For those pages, use the other Resources cards (scrapbook photos, Kevin slides, grants, events) or ask a developer to change template copy.', 'kpf-core' ),
+						__( 'Copy fields <strong>are</strong> saved into the HTML (and CSS) files on the right. That is the design file, not the React layout visitors see.', 'kpf-core' ),
+						__( 'Even if <strong>Home, About, Events, Blog, Contact, or Privacy</strong> show as Ready, the public URL still uses a built-in layout. Saving this design updates the file; it does not change those live pages.', 'kpf-core' ),
+						__( 'For photos, grants, events, and Kevin slides on those pages, use the other Resources cards. To change live headlines and body copy, a developer has to update the built-in layout.', 'kpf-core' ),
 						__( 'If a row says <strong>No design</strong>, <strong>Edit code & copy</strong> is not available until an HTML design is applied.', 'kpf-core' ),
 						__( 'Page title, slug, and SEO live on the page itself: <strong>Pages → All Pages</strong> → open the page → <strong>Save page</strong>.', 'kpf-core' ),
 					),

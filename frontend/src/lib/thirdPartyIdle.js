@@ -5,10 +5,15 @@
  */
 
 const GTM_FALLBACK_MS = 8000;
+/** Wait after the last LCP candidate so gtm.js does not contend with hero paint. */
+const GTM_LCP_SETTLE_MS = 500;
+/** Idle timeout after LCP settles; interaction still loads GTM immediately. */
+const GTM_IDLE_TIMEOUT_MS = 2000;
 /** GSAP in-view/load can wait on LCP; hover cannot use the GTM 8s cap. */
 const GSAP_FALLBACK_MS = 1200;
 /** Hover/click GSAP binds soon, but not on the first-paint / LCP path. */
 const GSAP_INTERACTIVE_IDLE_MS = 400;
+const HOVER_GSAP_MQ = "(hover: hover) and (pointer: fine)";
 
 function isGtmContainerSrc(src) {
   return /googletagmanager\.com\/gtm\.js/i.test(String(src || ""));
@@ -55,15 +60,35 @@ function sanitizeGtmId(gtmId) {
 
 /**
  * Official GTM snippet for _document. Pushes gtm.start immediately (Tag Assistant
- * greps this) but inserts gtm.js after LCP (8s cap) so Slow 4G LCP is not
- * competing with ~280 KiB of tag-manager JS.
+ * greps this) but inserts gtm.js after LCP settles + idle (8s cap) so Slow 4G
+ * LCP is not competing with ~280 KiB of tag-manager JS. The first LCP entry is
+ * often an early candidate; loading on that callback races the real hero paint.
  * @param {string} gtmId
  */
 function gtmBootstrapScript(gtmId) {
   const id = sanitizeGtmId(gtmId);
   if (!id) return "";
   return `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var n=0;function g(){if(n)return;n=1;var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);}try{if(w.PerformanceObserver){var o=new PerformanceObserver(function(){g();});o.observe({type:'largest-contentful-paint',buffered:true});}}catch(e){}w.addEventListener('pointerdown',g,{once:true});w.addEventListener('keydown',g,{once:true});setTimeout(g,${GTM_FALLBACK_MS});})(window,document,'script','dataLayer','${id}');`;
+new Date().getTime(),event:'gtm.js'});var n=0,t;function g(){if(n)return;n=1;if(t)clearTimeout(t);var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);}function idle(){if(n)return;if(w.requestIdleCallback)w.requestIdleCallback(g,{timeout:${GTM_IDLE_TIMEOUT_MS}});else setTimeout(g,200);}function later(){if(n)return;clearTimeout(t);t=setTimeout(idle,${GTM_LCP_SETTLE_MS});}try{if(w.PerformanceObserver){var o=new PerformanceObserver(later);o.observe({type:'largest-contentful-paint',buffered:true});}}catch(e){}w.addEventListener('pointerdown',g,{once:true});w.addEventListener('keydown',g,{once:true});setTimeout(g,${GTM_FALLBACK_MS});})(window,document,'script','dataLayer','${id}');`;
+}
+
+/**
+ * Badge / CMS hover GSAP is desktop-only. Phones still get in-view after LCP.
+ * @param {(query: string) => { matches: boolean }} [media]
+ */
+function canBindHoverGsap(media) {
+  const matchMedia =
+    typeof media === "function"
+      ? media
+      : typeof globalThis.matchMedia === "function"
+        ? globalThis.matchMedia.bind(globalThis)
+        : null;
+  if (!matchMedia) return true;
+  try {
+    return Boolean(matchMedia(HOVER_GSAP_MQ).matches);
+  } catch {
+    return true;
+  }
 }
 
 /**
@@ -147,9 +172,13 @@ function scheduleIdle(callback, timeoutMs) {
 
 module.exports = {
   GTM_FALLBACK_MS,
+  GTM_IDLE_TIMEOUT_MS,
+  GTM_LCP_SETTLE_MS,
   GSAP_FALLBACK_MS,
   GSAP_INTERACTIVE_IDLE_MS,
+  HOVER_GSAP_MQ,
   analyticsScriptsToLoad,
+  canBindHoverGsap,
   gtmBootstrapScript,
   isGoogleTagSrc,
   isGtagSrc,

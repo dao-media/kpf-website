@@ -9,7 +9,7 @@ import {
 } from "@/lib/navigation";
 import { restoreHeaderBadge } from "@/lib/headerBadge";
 
-const BRAND_BADGE_SRC = "/media/brand/50-badge.webp";
+const BRAND_BADGE_SRC = "/media/brand/50-badge-258.webp";
 const BRAND_LABEL_FULL = "Kevin Popke Foundation";
 const BADGE_DROP_ANIMATION = "kpf-header-badge-drop";
 

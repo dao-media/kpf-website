@@ -49,6 +49,21 @@ describe("isHeroLcpNode", () => {
 });
 
 describe("homepage LCP wiring", () => {
+  it("keeps donate-band copy opaque parchment on deep, not ember", () => {
+    const css = fs.readFileSync(
+      path.join(__dirname, "../styles/pages.css"),
+      "utf8",
+    );
+    assert.match(
+      css,
+      /\.kpf-donate--band \.kpf-donate__note\s*\{[^}]*--kpf-parchment/,
+    );
+    assert.doesNotMatch(
+      css,
+      /\.kpf-donate__note\s*\{[^}]*color:\s*var\(--kpf-ember/,
+    );
+  });
+
   it("preloads the desktop runner and does not autoplay footer smoke", () => {
     const home = fs.readFileSync(
       path.join(__dirname, "../components/HomePageScaffold.js"),
@@ -72,5 +87,14 @@ describe("homepage LCP wiring", () => {
     assert.match(cigar, /preload="none"/);
     assert.doesNotMatch(cigar, /autoPlay/);
     assert.match(cigar, /playVideoWhenVisible/);
+  });
+
+  it("ships a display-sized anniversary badge, not the 1422px master", () => {
+    const header = fs.readFileSync(
+      path.join(__dirname, "../components/KpfHeader.js"),
+      "utf8",
+    );
+    assert.match(header, /50-badge-258\.webp/);
+    assert.doesNotMatch(header, /BRAND_BADGE_SRC = "\/media\/brand\/50-badge\.webp"/);
   });
 });

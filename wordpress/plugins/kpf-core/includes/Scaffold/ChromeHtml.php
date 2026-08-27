@@ -52,7 +52,7 @@ final class ChromeHtml {
 	}
 
 	public static function brandmark_html(): string {
-		$src = FrontendUrl::base() . 'media/brand/50-badge.webp';
+		$src = FrontendUrl::base() . 'media/brand/50-badge-258.webp';
 
 		$strings  = '<svg class="kpf-header__badge-strings" viewBox="0 0 86 177" width="86" height="177" aria-hidden="true" focusable="false">';
 		$strings .= '<defs><filter id="kpf-badge-string-shadow" x="-40%" y="-20%" width="180%" height="140%" color-interpolation-filters="sRGB">';
@@ -65,7 +65,7 @@ final class ChromeHtml {
 		$strings .= '</svg>';
 
 		return '<span class="kpf-header__badge" data-kpf-badge="">' . $strings
-			. '<img class="kpf-header__mark" src="' . esc_url( $src ) . '" alt="" width="320" height="480" decoding="async" aria-hidden="true" /></span>';
+			. '<img class="kpf-header__mark" src="' . esc_url( $src ) . '" alt="" width="258" height="387" decoding="async" aria-hidden="true" /></span>';
 	}
 
 	/** @deprecated Use brandmark_html(). */

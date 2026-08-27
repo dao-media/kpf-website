@@ -102,6 +102,8 @@ describe("GsapRuntimeGate wiring", () => {
     assert.match(src, /GSAP_FALLBACK_MS/);
     assert.match(src, /scheduleIdle/);
     assert.match(src, /GSAP_INTERACTIVE_IDLE_MS/);
+    assert.match(src, /canBindHoverGsap/);
+    assert.match(src, /deferred/);
     assert.doesNotMatch(src, /GTM_FALLBACK_MS/);
   });
 });

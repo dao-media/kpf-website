@@ -567,7 +567,7 @@ const EVENTS = {
       "We announce events a few months out. The best way to hear first is to follow along, or reach out if you'd like to help put one together.",
     cardMark: {
       key: "events.cardMark",
-      src: "/media/brand/50-badge.webp",
+      src: "/media/brand/50-badge-258.webp",
       alt: "Kevin Popke Foundation 50 badge",
     },
     items: [

@@ -2849,7 +2849,15 @@ a.kpf-archive__card:focus-visible {
 	}
 }
 
+/* Opaque parchment on deep — transparent invert mixes and ember fail AA here. */
+.kpf-donate--band .kpf-u-invert {
+	--kpf-color-text-secondary: var(--kpf-parchment, #f4efea);
+	--kpf-color-text-muted: color-mix(in srgb, var(--kpf-parchment, #f4efea) 92%, var(--kpf-deep, #640f0e));
+	--kpf-color-text-brand: var(--kpf-parchment, #f4efea);
+}
+
 .kpf-donate--band .kpf-content-block__eyebrow,
+.kpf-donate--band .kpf-content-block__title,
 .kpf-donate--band .kpf-h2,
 .kpf-donate--band .kpf-content-block__body {
 	color: var(--kpf-parchment, #f4efea);
@@ -2861,11 +2869,14 @@ a.kpf-archive__card:focus-visible {
 }
 
 .kpf-donate__note {
-	color: var(--kpf-ember, #bb0d0d);
 	font-size: 0.75rem;
 	font-weight: 500;
 	letter-spacing: 0.02em;
 	margin-top: 1rem;
+}
+
+.kpf-donate--band .kpf-donate__note {
+	color: var(--kpf-parchment, #f4efea);
 }
 
 .kpf-donate__impact {

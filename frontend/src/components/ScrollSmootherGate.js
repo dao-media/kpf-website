@@ -51,15 +51,17 @@ function HashClickRuntime({ smooth }) {
 }
 
 /**
- * Load ScrollSmoother only when motion is allowed. Reduced-motion still
- * intercepts same-page hashes so the sticky header does not cover targets.
+ * Load ScrollSmoother only when motion is allowed and the viewport is tablet+.
+ * Phones skip the GSAP bundle (PageSpeed mobile LCP) and still get header-aware
+ * hash clicks.
  */
 export default function ScrollSmootherGate() {
   const [mode, setMode] = useState("unknown");
 
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setMode(reduce ? "reduce" : "motion");
+    const phone = window.matchMedia("(max-width: 47.99rem)").matches;
+    setMode(reduce || phone ? "reduce" : "motion");
   }, []);
 
   if (mode === "motion") {

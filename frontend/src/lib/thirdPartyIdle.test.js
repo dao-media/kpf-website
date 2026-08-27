@@ -2,6 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
   analyticsScriptsToLoad,
+  gtmBootstrapScript,
   shouldSkipSnippetAnalyticsSrc,
 } = require("./thirdPartyIdle");
 
@@ -57,5 +58,22 @@ describe("shouldSkipSnippetAnalyticsSrc", () => {
       ),
       false,
     );
+  });
+});
+
+describe("gtmBootstrapScript", () => {
+  it("keeps the official gtm.start snippet and delays gtm.js until LCP", () => {
+    const src = gtmBootstrapScript("GTM-KV8778H5");
+    assert.match(src, /gtm\.start/);
+    assert.match(src, /gtm\.js\?id='\+i/);
+    assert.match(src, /GTM-KV8778H5/);
+    assert.match(src, /PerformanceObserver/);
+    assert.match(src, /largest-contentful-paint/);
+    assert.match(src, /setTimeout\(g,2500\)/);
+  });
+
+  it("rejects non-GTM ids", () => {
+    assert.equal(gtmBootstrapScript("G-P4XMC78DPK"), "");
+    assert.equal(gtmBootstrapScript(""), "");
   });
 });

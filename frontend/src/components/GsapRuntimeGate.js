@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { KPF_GSAP_QUERY } from "@/lib/gsapQuery";
 
 const { animationsUsedOnPage } = require("@/lib/gsapPlugins");
+const { scheduleAfterLcp } = require("@/lib/thirdPartyIdle");
 
 const GsapRuntime = dynamic(() => import("@/components/GsapRuntime"), {
   ssr: false,
@@ -19,8 +20,9 @@ function usedKey(list) {
 
 /**
  * Loads GsapRuntime (and Club plugins) only when this page has matching
- * animation targets. The CMS list is site-wide; unused selectors never
- * download MorphSVG / Physics / Flip / DrawSVG / etc.
+ * animation targets, and only after LCP so Club GSAP is not on the
+ * LCP path. The CMS list is site-wide; unused selectors never download
+ * MorphSVG / Physics / Flip / DrawSVG / etc.
  */
 export default function GsapRuntimeGate({ animations = [] }) {
   const router = useRouter();
@@ -43,11 +45,10 @@ export default function GsapRuntimeGate({ animations = [] }) {
       setUsed((prev) => (usedKey(prev) === usedKey(next) ? prev : next));
     }
 
-    scan();
-    const frame = requestAnimationFrame(scan);
+    const cancelPaint = scheduleAfterLcp(scan);
     return () => {
       cancelled = true;
-      cancelAnimationFrame(frame);
+      cancelPaint();
     };
   }, [ids, router.asPath]);
 

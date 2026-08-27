@@ -1,3 +1,4 @@
+import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
@@ -85,9 +86,26 @@ export default function HomePageScaffold({
   }
 
   const partners = normalizePartnerGrantees(partnerGrantees);
+  const alumniCutout = (copy.hero.cutouts || []).find(
+    (cutout) => cutout.key === "home.kevinAlumni",
+  );
+  const alumniSrc = alumniCutout
+    ? resolveMedia(media, alumniCutout.key, alumniCutout).src
+    : "";
 
   return (
     <div className="kpf-page-home" data-kpf-scaffold="home">
+      <Head>
+        {alumniSrc ? (
+          <link
+            rel="preload"
+            as="image"
+            href={alumniSrc}
+            media="(min-width: 48rem)"
+            fetchPriority="high"
+          />
+        ) : null}
+      </Head>
       <ProgramsCheckRuntime />
       <section className="kpf-hero kpf-hero--home" aria-labelledby="kpf-home-hero-title">
         <div className="kpf-hero__scrim" aria-hidden="true" />
@@ -107,8 +125,7 @@ export default function HomePageScaffold({
                       ? "(max-width: 47.99rem) 16px, (max-width: 63.99rem) 110vw, 42vw"
                       : "(max-width: 63.99rem) 16px, 38vw"
                   }
-                  priority={isAlumni}
-                  loading={isAlumni ? undefined : "lazy"}
+                  loading="lazy"
                 />
               </div>
             );

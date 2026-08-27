@@ -12,6 +12,9 @@ const {
   fallbackKevin,
   fallbackEvents,
 } = require("@/lib/wpContentFallback");
+const { pageVariables } = require("./pageQueries");
+
+export { pageVariables };
 
 /**
  * Shared Faust page renderer. Each wp-template supplies its own query.
@@ -58,10 +61,4 @@ export default function PageFromFaust(props) {
       />
     </>
   );
-}
-
-export function pageVariables(seedQuery) {
-  return {
-    uri: seedQuery?.uri,
-  };
 }

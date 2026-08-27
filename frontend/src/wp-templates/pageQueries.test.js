@@ -8,6 +8,7 @@ const {
   GET_BLOG_PAGE,
   GET_PRIVACY_PAGE,
   GET_PAGE,
+  GET_POST,
 } = require("./pageQueries");
 
 function assertOmits(query, needles, label) {
@@ -121,6 +122,19 @@ describe("slug Faust page queries", () => {
         /editorBlocks/,
       ],
       "GetPage",
+    );
+  });
+
+  it("GetPost fetches editor blocks, related posts, and SEO — not design HTML", () => {
+    assert.match(GET_POST, /query GetPost/);
+    assert.match(GET_POST, /editorBlocks\(flat: true\)/);
+    assert.match(GET_POST, /kpfBlogPosts/);
+    assert.match(GET_POST, /kpfSeo/);
+    assert.match(GET_POST, /kpfGsapAnimations/);
+    assertOmits(
+      GET_POST,
+      [/kpfPageDesign/, /kpfKevinSlides/, /kpfForm/, /foundationEvents/],
+      "GetPost",
     );
   });
 });

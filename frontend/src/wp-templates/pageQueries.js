@@ -10,6 +10,13 @@ const { KPF_BLOG_POSTS_QUERY } = require("../lib/blogPosts");
 const { KPF_SCAFFOLD_MEDIA_QUERY, scaffoldMediaQuery } = require("../lib/scaffoldMedia");
 const { KPF_PARTNER_GRANTEES_QUERY } = require("../lib/partnerGrantees");
 const { KPF_LATEST_BLOG_POST_QUERY } = require("../lib/latestBlogPost");
+const { KPF_STYLESHEET_QUERY } = require("../lib/globalStylesheet");
+const { KPF_SITE_CHROME_QUERY } = require("../lib/siteChrome");
+const { KPF_ACCESSIBILITY_QUERY } = require("../lib/accessibility");
+const { KPF_CODE_SNIPPETS_QUERY } = require("../lib/codeSnippets");
+const { KPF_GSAP_QUERY } = require("../lib/gsapQuery");
+const { KPF_SEO_FRAGMENT } = require("../lib/seoFragment");
+const { KPF_EDITOR_BLOCKS_QUERY } = require("../lib/editorBlocksQuery");
 
 const KPF_KEVIN_SLIDES_QUERY = `
   kpfKevinSlides(first: 12) {
@@ -148,6 +155,68 @@ const GET_PAGE = `
   }
 `;
 
+const GET_POST = `
+  query GetPost($uri: ID!) {
+    ${KPF_STYLESHEET_QUERY}
+    ${scaffoldMediaQuery(["cta."])}
+    ${KPF_SITE_CHROME_QUERY}
+    ${KPF_ACCESSIBILITY_QUERY}
+    ${KPF_CODE_SNIPPETS_QUERY}
+    ${KPF_GSAP_QUERY}
+    ${KPF_BLOG_POSTS_QUERY}
+    post(id: $uri, idType: URI) {
+      id
+      databaseId
+      title
+      content
+      date
+      uri
+      slug
+      commentStatus
+      ${KPF_EDITOR_BLOCKS_QUERY}
+      ${KPF_SEO_FRAGMENT}
+      author {
+        node {
+          name
+          firstName
+          lastName
+        }
+      }
+      categories {
+        nodes {
+          name
+          slug
+        }
+      }
+      featuredImage {
+        node {
+          sourceUrl
+          altText
+        }
+      }
+      comments(first: 20) {
+        nodes {
+          id
+          databaseId
+          content
+          date
+          author {
+            node {
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+function pageVariables(seedQuery) {
+  return {
+    uri: seedQuery?.uri,
+  };
+}
+
 module.exports = {
   GET_HOME_PAGE,
   GET_ABOUT_PAGE,
@@ -156,4 +225,6 @@ module.exports = {
   GET_BLOG_PAGE,
   GET_PRIVACY_PAGE,
   GET_PAGE,
+  GET_POST,
+  pageVariables,
 };

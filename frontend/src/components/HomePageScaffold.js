@@ -1,16 +1,17 @@
 import Head from "next/head";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { Plus } from "lucide-react";
 import DonateButton, { isDonateAction } from "@/components/DonateButton";
 import KpfImage from "@/components/KpfImage";
-import PartnersSlider from "@/components/PartnersSlider";
 import KpfButton from "@/components/KpfButton";
 import ProgramsCheckRuntime, {
   ProgramsCheckIcon,
 } from "@/components/ProgramsCheckRuntime";
 import HomeHeroCutoutsRuntime from "@/components/HomeHeroCutoutsRuntime";
 import { HOME } from "@/lib/pageCopy";
+
+const PartnersSlider = dynamic(() => import("@/components/PartnersSlider"));
 const { normalizeLatestBlogPost } = require("@/lib/latestBlogPost");
 const { resolveMedia } = require("@/lib/scaffoldMedia");
 const { normalizePartnerGrantees } = require("@/lib/partnerGrantees");
@@ -492,12 +493,22 @@ export default function HomePageScaffold({
                     >
                       <h4 className="kpf-accordion__title">{item.title}</h4>
                       <span className="kpf-accordion__icon" aria-hidden="true">
-                        <Plus
-                          size={24}
-                          strokeWidth={1.75}
-                          absoluteStrokeWidth
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          focusable="false"
                           style={{ transformOrigin: "50% 50%" }}
-                        />
+                        >
+                          <path d="M5 12h14" />
+                          <path d="M12 5v14" />
+                        </svg>
                       </span>
                     </button>
                     <div

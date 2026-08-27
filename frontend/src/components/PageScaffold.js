@@ -1,10 +1,20 @@
-import AboutPageScaffold from "@/components/AboutPageScaffold";
-import BlogPageScaffold from "@/components/BlogPageScaffold";
-import ContactPageScaffold from "@/components/ContactPageScaffold";
-import ContentPageScaffold from "@/components/ContentPageScaffold";
-import EventsPageScaffold from "@/components/EventsPageScaffold";
-import PrivacyPageScaffold from "@/components/PrivacyPageScaffold";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+
+const AboutPageScaffold = dynamic(() => import("@/components/AboutPageScaffold"));
+const BlogPageScaffold = dynamic(() => import("@/components/BlogPageScaffold"));
+const ContactPageScaffold = dynamic(
+  () => import("@/components/ContactPageScaffold"),
+);
+const ContentPageScaffold = dynamic(
+  () => import("@/components/ContentPageScaffold"),
+);
+const EventsPageScaffold = dynamic(
+  () => import("@/components/EventsPageScaffold"),
+);
+const PrivacyPageScaffold = dynamic(
+  () => import("@/components/PrivacyPageScaffold"),
+);
 
 /**
  * Prefer slug-matched React scaffolds (interactive 1:1 builds).

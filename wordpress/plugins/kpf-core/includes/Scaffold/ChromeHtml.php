@@ -176,7 +176,7 @@ final class ChromeHtml {
 		$html .= '<div class="kpf-footer__brand"><p class="kpf-footer__brand-name">' . esc_html( $brand ) . '</p>';
 		$html .= '<p class="kpf-footer__brand-note">A 501(c)(3) nonprofit organization serving Tampa Bay &amp; Florida.</p>';
 		$html .= '<div class="kpf-cigar kpf-footer__cigar" aria-hidden="true">';
-		$html .= '<img class="kpf-cigar__image" src="/media/cigar/Cigar.webp" alt="Illustrated cigar associated with Kevin Popke" width="718" height="282"/>';
+		$html .= '<img class="kpf-cigar__image" src="/media/cigar/Cigar-360.webp" srcset="/media/cigar/Cigar-360.webp 360w, /media/cigar/Cigar-540.webp 540w, /media/cigar/Cigar.webp 718w" sizes="(min-width: 48rem) 12.5rem, 22rem" alt="Illustrated cigar associated with Kevin Popke" width="718" height="282" loading="lazy" decoding="async"/>';
 		$html .= '<video class="kpf-cigar__smoke" autoplay loop muted playsinline preload="auto" aria-hidden="true"><source src="/media/cigar/smoke.mp4" type="video/mp4"/></video>';
 		$html .= '</div></div>';
 		$html .= '<div class="kpf-footer__columns"><div><p class="kpf-footer__heading">Explore</p><ul class="kpf-footer__list">' . $explore_lis . '</ul></div>';

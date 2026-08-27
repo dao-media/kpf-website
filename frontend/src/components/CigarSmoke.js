@@ -1,5 +1,11 @@
 import { useEffect, useRef } from "react";
 
+const {
+  DEFAULT_CIGAR_SRC,
+  DEFAULT_CIGAR_SRCSET,
+  DEFAULT_CIGAR_SIZES,
+} = require("@/lib/cigarMedia");
+
 /**
  * Lit cigar with a looping smoke overlay. Width follows the parent;
  * smoke position is percentage-based so the ember alignment holds at any size.
@@ -9,11 +15,13 @@ export default function CigarSmoke({
   smokeSrc = "",
   cigarAlt = "",
   className = "",
+  sizes = DEFAULT_CIGAR_SIZES,
   id,
   decorative,
 }) {
   const videoRef = useRef(null);
-  const src = cigarSrc || "/media/cigar/Cigar.webp";
+  const usingDefault = !cigarSrc;
+  const src = cigarSrc || DEFAULT_CIGAR_SRC;
   const smoke = smokeSrc || "/media/cigar/smoke.mp4";
   const isDecorative = decorative ?? !cigarAlt;
 
@@ -56,6 +64,8 @@ export default function CigarSmoke({
       <img
         className="kpf-cigar__image"
         src={src}
+        srcSet={usingDefault ? DEFAULT_CIGAR_SRCSET : undefined}
+        sizes={usingDefault ? sizes : undefined}
         alt={
           isDecorative
             ? "Illustrated cigar associated with Kevin Popke"
@@ -63,6 +73,8 @@ export default function CigarSmoke({
         }
         width={718}
         height={282}
+        loading="lazy"
+        decoding="async"
       />
       {smoke ? (
         <video

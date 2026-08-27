@@ -31,7 +31,7 @@ foreach ( array( 'Pages', 'Scrapbook', 'Events', 'Hosts', 'Grants', 'Grantees' )
 }
 kpf_resources_assert( is_array( $data['techStack'] ) && count( $data['techStack'] ) >= 10, 'Resources includes a tech stack' );
 $stack_labels = array_map( static fn( array $row ): string => (string) ( $row['label'] ?? '' ), $data['techStack'] );
-foreach ( array( 'Public site', 'CMS', 'GraphQL', 'kpf-core', 'Motion', 'Design', 'Source' ) as $expected_label ) {
+foreach ( array( 'Public site', 'CMS', 'GraphQL', 'kpf-core', 'Motion', 'Source' ) as $expected_label ) {
 	kpf_resources_assert( in_array( $expected_label, $stack_labels, true ), "Tech stack includes {$expected_label}" );
 }
 kpf_resources_assert( is_array( $data['groups'] ) && count( $data['groups'] ) >= 4, 'Resources includes at least four topic groups' );

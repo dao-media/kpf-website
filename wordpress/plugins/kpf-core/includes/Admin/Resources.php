@@ -254,13 +254,6 @@ final class Resources {
 				),
 			),
 			array(
-				'label'       => __( 'Design', 'kpf-core' ),
-				'description' => __(
-					'Figma is the source of truth. Global CSS lives in Design → Stylesheet; page CSS twins live in the plugin and Faust (foundation.css / pages.css).',
-					'kpf-core'
-				),
-			),
-			array(
 				'label'       => __( 'Search', 'kpf-core' ),
 				'description' => __(
 					'MiniSearch builds a static index at frontend compile time for public site search.',

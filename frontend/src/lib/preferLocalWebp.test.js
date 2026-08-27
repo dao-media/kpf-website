@@ -9,7 +9,7 @@ describe("preferLocalWebp", () => {
       "/media/content/388-SFHF.webp",
     );
     assert.equal(
-      preferLocalWebp("https://kpf.dreamhosters.com/wp-content/uploads/2026/08/388-SFHF.png"),
+      preferLocalWebp("https://kpf.dreamhosters.com/wp-content/uploads/2026/08/388-SFHF-300x300.png"),
       "/media/content/388-SFHF.webp",
     );
     assert.equal(

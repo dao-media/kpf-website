@@ -39,7 +39,7 @@ function scaffoldMediaMap(items) {
   for (const item of items || []) {
     if (!item?.key || !item?.sourceUrl) continue;
     map[item.key] = {
-      sourceUrl: item.sourceUrl,
+      sourceUrl: preferLocalWebp(item.sourceUrl),
       altText: item.altText || "",
       title: item.title || "",
       databaseId: item.databaseId || 0,

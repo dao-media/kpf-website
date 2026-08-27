@@ -10,13 +10,13 @@ function preferLocalWebp(src) {
   if (!raw) return raw;
 
   const path = raw.split(/[?#]/)[0];
-  if (/(?:^|\/)388-SFHF\.png$/i.test(path)) {
+  if (/(?:^|\/)388-SFHF(?:-\d+x\d+)?\.png$/i.test(path)) {
     return "/media/content/388-SFHF.webp";
   }
-  if (/(?:^|\/)541-hero\.jpe?g$/i.test(path)) {
+  if (/(?:^|\/)541-hero(?:-\d+x\d+)?\.jpe?g$/i.test(path)) {
     return "/media/content/541-hero.webp";
   }
-  if (/(?:^|\/)home\/hero\.jpe?g$/i.test(path)) {
+  if (/(?:^|\/)home\/hero(?:-\d+x\d+)?\.jpe?g$/i.test(path)) {
     return "/media/home/hero.webp";
   }
 

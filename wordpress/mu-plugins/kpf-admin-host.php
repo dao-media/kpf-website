@@ -111,6 +111,37 @@ if ( ! function_exists( 'kpf_admin_host_is_vanity' ) ) {
 
 		return str_replace( 'https://kpf.dreamhosters.com', $origin, $location );
 	}
+
+	/**
+	 * REST must live on siteurl (CMS), never home (public Faust host).
+	 * home ≠ siteurl on vanity admin and whenever option_home is forced public.
+	 *
+	 * @param mixed $url REST URL.
+	 * @return mixed
+	 */
+	function kpf_admin_host_fix_rest_url( $url ) {
+		if ( ! is_string( $url ) || '' === $url ) {
+			return $url;
+		}
+
+		$home = home_url( '/' );
+		$site = site_url( '/' );
+		if ( ! is_string( $home ) || ! is_string( $site ) || $home === $site ) {
+			return $url;
+		}
+
+		$home_origin = untrailingslashit( $home );
+		$site_origin = untrailingslashit( $site );
+		if ( str_starts_with( $url, $home_origin ) ) {
+			return $site_origin . substr( $url, strlen( $home_origin ) );
+		}
+
+		if ( str_starts_with( $url, KPF_PUBLIC_ORIGIN ) ) {
+			return $site_origin . substr( $url, strlen( KPF_PUBLIC_ORIGIN ) );
+		}
+
+		return $url;
+	}
 }
 
 if ( function_exists( 'add_filter' ) ) {
@@ -185,4 +216,6 @@ if ( function_exists( 'add_filter' ) ) {
 		},
 		1
 	);
+
+	add_filter( 'rest_url', 'kpf_admin_host_fix_rest_url', 10, 1 );
 }

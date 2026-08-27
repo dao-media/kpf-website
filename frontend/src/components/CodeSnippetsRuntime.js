@@ -1,5 +1,6 @@
 import Script from "next/script";
 import { useRouter } from "next/router";
+import useThirdPartyIdle from "@/lib/useThirdPartyIdle";
 
 const {
   allowlistedScriptSrc,
@@ -7,8 +8,12 @@ const {
   isSafePublicSnippet,
   pathFromAsPath,
 } = require("@/lib/codeSnippets");
+const { isGoogleTagSrc, shouldSkipSnippetAnalyticsSrc } = require("@/lib/thirdPartyIdle");
 
-function SnippetMarkup({ snippet }) {
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || "";
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "";
+
+function SnippetMarkup({ snippet, thirdPartyIdle }) {
   const id = snippet.databaseId || snippet.name || "snippet";
   const code = String(snippet.code || "");
 
@@ -25,8 +30,12 @@ function SnippetMarkup({ snippet }) {
   if (snippet.type === "js") {
     const src = allowlistedScriptSrc(code);
     if (!src) return null;
+    if (shouldSkipSnippetAnalyticsSrc(src, GTM_ID, GA_ID)) return null;
+    if (isGoogleTagSrc(src) && !thirdPartyIdle) return null;
     const strategy =
-      snippet.location === "footer" ? "lazyOnload" : "afterInteractive";
+      snippet.location === "footer" || isGoogleTagSrc(src)
+        ? "lazyOnload"
+        : "afterInteractive";
     return (
       <Script
         id={`kpf-code-js-${id}`}
@@ -58,6 +67,7 @@ export default function CodeSnippetsRuntime({
   slot = "header",
 }) {
   const router = useRouter();
+  const thirdPartyIdle = useThirdPartyIdle();
   const path = pathFromAsPath(router.asPath);
   const snippets = filterSnippetsForPath(rawSnippets, path).filter(
     (item) =>
@@ -75,6 +85,7 @@ export default function CodeSnippetsRuntime({
         <SnippetMarkup
           key={`${slot}-${snippet.databaseId || snippet.name}`}
           snippet={snippet}
+          thirdPartyIdle={thirdPartyIdle}
         />
       ))}
     </div>

@@ -542,7 +542,7 @@ HTML;
           </div>
         </div>
         <div class="kpf-content-block__actions">
-          {$donate_btn}
+          <button type="button" class="kpf-btn kpf-btn--primary" data-kpf-href="/contact/?inquiry=partnership" onclick="(function(el){var h=el.getAttribute('data-kpf-href');if(!h)return;if(el.getAttribute('data-kpf-external')==='true'&&!/^mailto:|^tel:/i.test(h)){window.open(h,'_blank','noopener,noreferrer');return;}location.assign(h);})(this)">Let's connect</button>
         </div>
       </div>
       <div class="kpf-events-partner__paths kpf-donate__list">

@@ -468,7 +468,10 @@ const EVENTS = {
       "Our events happen because businesses and individuals decide to put their name behind them. Sponsorship puts your business in front of a room that cares who's in it, and it funds grants directly.",
       "There's also room for other ideas. If you want to run a fundraiser, host a collection, or partner on an event of your own, we'd like to hear it.",
     ],
-    cta: { donate: true, label: "Donate" },
+    cta: {
+      href: "/contact/?inquiry=partnership",
+      label: "Let's connect",
+    },
     paths: [
       {
         id: "sponsor",

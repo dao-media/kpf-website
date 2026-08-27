@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, LoaderCircle, Plus } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { ABOUT } from "@/lib/pageCopy";
 import ChipCursorTooltip from "@/components/ChipCursorTooltip";
 import CtaClosingBand from "@/components/CtaClosingBand";
@@ -13,25 +13,21 @@ const {
 } = require("@/lib/grantsQuery");
 const {
   GALLERY_BATCH_WIDE,
-  GALLERY_INITIAL_WIDE,
+  GALLERY_INITIAL,
   SCRAPBOOK_TILES_INITIAL,
   SCRAPBOOK_TILES_PAGE,
   fetchScrapbookTiles,
   galleryPagingForViewport,
-  morePhotosLabel,
   nextGalleryBatch,
   remainingPhotoCount,
   scrapbookTileTooltip,
-  waitForMosaicImages,
 } = require("@/lib/scrapbookTiles");
 
 /** Match --kpf-accordion-duration; hold outgoing panel so section height doesn’t dip. */
 const ACCORDION_HOLD_MS = 180;
 
-const GALLERY_PHONE_QUERIES = [
-  "(max-width: 47.99rem)",
-  "(orientation: landscape) and (max-height: 30rem)",
-];
+const GALLERY_PHONE_QUERY =
+  "(max-width: 47.99rem) and (orientation: portrait)";
 
 function shuffleTiles(items) {
   const next = [...items];
@@ -95,12 +91,12 @@ export default function AboutPageScaffold({
   );
 
   const [paging, setPaging] = useState({
-    initial: GALLERY_INITIAL_WIDE,
+    initial: GALLERY_INITIAL,
     batch: GALLERY_BATCH_WIDE,
   });
   const [shuffledTiles, setShuffledTiles] = useState(galleryTiles);
   const [visibleTileCount, setVisibleTileCount] = useState(
-    Math.min(GALLERY_INITIAL_WIDE, galleryTiles.length),
+    Math.min(GALLERY_INITIAL, galleryTiles.length),
   );
   const [fetchOffset, setFetchOffset] = useState(galleryTiles.length);
   const [tileTotal, setTileTotal] = useState(
@@ -112,7 +108,6 @@ export default function AboutPageScaffold({
   const [isFetchingTiles, setIsFetchingTiles] = useState(false);
   const fetchLockRef = useRef(false);
   const userExpandedRef = useRef(false);
-  const mosaicRef = useRef(null);
 
   useLayoutEffect(() => {
     setShuffledTiles(shuffleTiles(galleryTiles));
@@ -137,15 +132,13 @@ export default function AboutPageScaffold({
         setVisibleTileCount(Math.min(next.initial, galleryTiles.length));
       }
     };
-    const queries = GALLERY_PHONE_QUERIES.map((query) =>
-      window.matchMedia(query),
-    );
-    queries.forEach((mq) => mq.addEventListener("change", apply));
+    const query = window.matchMedia(GALLERY_PHONE_QUERY);
+    query.addEventListener("change", apply);
     window.addEventListener("resize", apply);
     window.addEventListener("orientationchange", apply);
     apply();
     return () => {
-      queries.forEach((mq) => mq.removeEventListener("change", apply));
+      query.removeEventListener("change", apply);
       window.removeEventListener("resize", apply);
       window.removeEventListener("orientationchange", apply);
     };
@@ -169,13 +162,17 @@ export default function AboutPageScaffold({
 
     fetchLockRef.current = true;
     userExpandedRef.current = true;
-    setIsFetchingTiles(true);
 
     let pool = shuffledTiles;
     let offset = fetchOffset;
     let exhausted = remoteExhausted;
     let total = tileTotal;
     const need = visibleTileCount + loadBatch;
+    const needsFetch = pool.length < need && usingScrapbookQuery && !exhausted;
+
+    if (needsFetch) {
+      setIsFetchingTiles(true);
+    }
 
     try {
       while (pool.length < need && usingScrapbookQuery && !exhausted) {
@@ -207,30 +204,18 @@ export default function AboutPageScaffold({
       }
     } catch {
       exhausted = true;
-    }
-
-    const revealTo = Math.min(
-      need,
-      pool.length,
-      total > 0 ? total : pool.length,
-    );
-
-    setShuffledTiles(pool);
-    setFetchOffset(offset);
-    setRemoteExhausted(exhausted);
-    setTileTotal(Math.max(total, pool.length));
-    setVisibleTileCount(revealTo);
-
-    try {
-      await new Promise((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(resolve);
-        });
-      });
-      await waitForMosaicImages(mosaicRef.current);
-    } catch {
-      // Tiles are already on screen even if a decode wait fails.
     } finally {
+      const revealTo = Math.min(
+        need,
+        pool.length,
+        total > 0 ? total : pool.length,
+      );
+
+      setShuffledTiles(pool);
+      setFetchOffset(offset);
+      setRemoteExhausted(exhausted);
+      setTileTotal(Math.max(total, pool.length));
+      setVisibleTileCount(revealTo);
       setIsFetchingTiles(false);
       fetchLockRef.current = false;
     }
@@ -504,7 +489,6 @@ export default function AboutPageScaffold({
 
           {visibleTiles.length > 0 ? (
             <div
-              ref={mosaicRef}
               className="kpf-gallery__mosaic"
               aria-live="polite"
               aria-busy={isFetchingTiles || undefined}
@@ -540,37 +524,16 @@ export default function AboutPageScaffold({
           ) : null}
 
           {hasMoreTiles ? (
-            <div className="kpf-gallery__more">
+            <div className="kpf-gallery__more kpf-u-invert">
               <button
                 type="button"
-                className="kpf-gallery__more-btn kpf-body--s"
-                disabled={isFetchingTiles}
-                aria-busy={isFetchingTiles}
-                aria-label={`Load ${loadBatch} more photo${loadBatch === 1 ? "" : "s"}`}
+                className="kpf-link"
+                aria-busy={isFetchingTiles || undefined}
                 onClick={() => {
                   void revealOrFetchMore();
                 }}
               >
-                <span className="kpf-gallery__more-label">
-                  {morePhotosLabel(remainingTiles)}
-                </span>
-                {isFetchingTiles ? (
-                  <LoaderCircle
-                    className="kpf-gallery__more-icon kpf-gallery__more-icon--spin"
-                    size={18}
-                    strokeWidth={1.75}
-                    absoluteStrokeWidth
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <ChevronDown
-                    className="kpf-gallery__more-icon"
-                    size={18}
-                    strokeWidth={1.75}
-                    absoluteStrokeWidth
-                    aria-hidden="true"
-                  />
-                )}
+                {copy.gallery.seeMore}
               </button>
             </div>
           ) : null}

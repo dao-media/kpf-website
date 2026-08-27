@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { gsap } from "gsap";
 import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
 
-const { isHeroLcpNode } = require("@/lib/gsapLcp");
+const { isGalleryEnterNode, isHeroLcpNode } = require("@/lib/gsapLcp");
 const {
   inViewEntranceExtra,
   normalizeEntranceTween,
@@ -141,7 +141,7 @@ function createTween(targets, animation, extra = {}) {
   const nodes = gsap.utils
     .toArray(tweenTargets)
     .filter(isDisplayedForTween)
-    .filter((node) => !isHeroLcpNode(node));
+    .filter((node) => !isHeroLcpNode(node) && !isGalleryEnterNode(node));
   if (!nodes.length) return null;
   const protectBadge = nodes.some(isHeaderBadgeNode);
   const ease = resolveEase(config, animation.databaseId);
@@ -361,7 +361,7 @@ export default function GsapRuntime({ animations = [] }) {
                 return;
               }
               if (!isDisplayedForTween(target)) return;
-              if (isHeroLcpNode(target)) return;
+              if (isHeroLcpNode(target) || isGalleryEnterNode(target)) return;
               const scroll = animation.config.scroll || {};
               const scrub = Number(scroll.scrub) || false;
               const once = scroll.once !== false;

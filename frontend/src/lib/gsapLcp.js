@@ -17,4 +17,12 @@ function isHeroLcpNode(node) {
   return true;
 }
 
-module.exports = { isHeroLcpNode };
+/** More-photos tiles own a CSS fade/rise; CMS in-view GSAP must not re-hide them. */
+function isGalleryEnterNode(node) {
+  if (!node || typeof node.closest !== "function") return false;
+  return Boolean(
+    node.closest(".kpf-gallery__item.is-enter, .kpf-gallery__item.is-enter-in"),
+  );
+}
+
+module.exports = { isGalleryEnterNode, isHeroLcpNode };

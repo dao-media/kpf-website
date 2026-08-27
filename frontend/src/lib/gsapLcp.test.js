@@ -2,7 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
 const path = require("path");
-const { isHeroLcpNode } = require("./gsapLcp");
+const { isGalleryEnterNode, isHeroLcpNode } = require("./gsapLcp");
 
 function fakeNode(chain) {
   return {
@@ -45,6 +45,20 @@ describe("isHeroLcpNode", () => {
     assert.equal(isHeroLcpNode(runner), true);
     assert.equal(isHeroLcpNode(story), false);
     assert.equal(isHeroLcpNode(null), false);
+  });
+});
+
+describe("isGalleryEnterNode", () => {
+  it("skips mosaic tiles while they play the more-photos enter", () => {
+    const entering = fakeNode({
+      ".kpf-gallery__item.is-enter, .kpf-gallery__item.is-enter-in": {},
+    });
+    const rest = fakeNode({
+      ".kpf-gallery__item.is-enter, .kpf-gallery__item.is-enter-in": null,
+    });
+    assert.equal(isGalleryEnterNode(entering), true);
+    assert.equal(isGalleryEnterNode(rest), false);
+    assert.equal(isGalleryEnterNode(null), false);
   });
 });
 

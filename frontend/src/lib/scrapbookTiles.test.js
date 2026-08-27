@@ -142,13 +142,19 @@ describe("About mosaic control", () => {
     assert.match(src, /kpf-gallery__more-status/);
     assert.match(src, /kpf-gallery__more-spinner/);
     assert.match(src, /waitForMosaicImages/);
+    assert.match(src, /is-enter-in/);
+    assert.match(src, /--kpf-gallery-stagger/);
     assert.doesNotMatch(src, /copy\.gallery\.seeMore/);
     assert.doesNotMatch(src, /LoaderCircle/);
-    assert.match(css, /padding-top: 2rem; \/\* 32px \*\//);
+    assert.match(css, /padding-top: 32px;/);
     assert.match(css, /\.kpf-gallery__more \{[\s\S]*?justify-content: center;/);
     assert.match(css, /--kpf-btn-radius: 50%;/);
     assert.match(css, /\.kpf-gallery__more-btn \{/);
     assert.match(css, /\.kpf-gallery__more-spinner \{/);
+    assert.match(css, /@keyframes kpf-gallery-enter-y/);
+    assert.match(css, /translateY\(64px\)/);
+    assert.match(css, /animation-duration: 400ms, 500ms;/);
+    assert.match(css, /ease-out, ease-out/);
   });
 });
 

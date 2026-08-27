@@ -109,6 +109,8 @@ export default function AboutPageScaffold({
   const fetchLockRef = useRef(false);
   const userExpandedRef = useRef(false);
   const mosaicRef = useRef(null);
+  const [enterKeys, setEnterKeys] = useState([]);
+  const [enterPlay, setEnterPlay] = useState(false);
 
   useLayoutEffect(() => {
     setShuffledTiles(shuffleTiles(galleryTiles));
@@ -118,6 +120,8 @@ export default function AboutPageScaffold({
     );
     setTileTotal(Math.max(Number(scrapbookTilesCount) || 0, galleryTiles.length));
     userExpandedRef.current = false;
+    setEnterKeys([]);
+    setEnterPlay(false);
     const next = galleryPagingForViewport();
     setPaging(next);
     setVisibleTileCount(Math.min(next.initial, galleryTiles.length));
@@ -208,11 +212,17 @@ export default function AboutPageScaffold({
       pool.length,
       total > 0 ? total : pool.length,
     );
+    const newKeys = pool
+      .slice(visibleTileCount, revealTo)
+      .map((tile) => tile.id || tile.src)
+      .filter(Boolean);
 
     setShuffledTiles(pool);
     setFetchOffset(offset);
     setRemoteExhausted(exhausted);
     setTileTotal(Math.max(total, pool.length));
+    setEnterKeys(newKeys);
+    setEnterPlay(false);
     setVisibleTileCount(revealTo);
 
     try {
@@ -225,6 +235,7 @@ export default function AboutPageScaffold({
     } catch {
       // Tiles are already on screen even if a decode wait fails.
     } finally {
+      setEnterPlay(true);
       setIsFetchingTiles(false);
       fetchLockRef.current = false;
     }
@@ -506,6 +517,9 @@ export default function AboutPageScaffold({
             >
               {visibleTiles.map((item, index) => {
                 const tip = scrapbookTileTooltip(item);
+                const tileKey = item.id || item.src;
+                const enterIndex = enterKeys.indexOf(tileKey);
+                const isEnter = enterIndex >= 0;
                 const image = (
                   <img
                     src={item.src}
@@ -515,7 +529,19 @@ export default function AboutPageScaffold({
                   />
                 );
                 return (
-                  <figure key={item.id || item.src} className="kpf-gallery__item">
+                  <figure
+                    key={tileKey}
+                    className={
+                      isEnter
+                        ? `kpf-gallery__item${enterPlay ? " is-enter-in" : " is-enter"}`
+                        : "kpf-gallery__item"
+                    }
+                    style={
+                      isEnter
+                        ? { "--kpf-gallery-stagger": `${enterIndex * 200}ms` }
+                        : undefined
+                    }
+                  >
                     {tip ? (
                       <ChipCursorTooltip
                         label={tip.label}

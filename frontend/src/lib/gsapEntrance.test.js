@@ -88,6 +88,7 @@ describe("GsapRuntime wiring", () => {
     assert.match(src, /normalizeEntranceTween/);
     assert.match(src, /inViewEntranceExtra/);
     assert.match(src, /isHeroLcpNode\(target\)/);
+    assert.match(src, /isGalleryEnterNode\(target\)/);
   });
 });
 

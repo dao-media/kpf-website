@@ -1,0 +1,19 @@
+---
+description: Keep the live Site Review canvas in sync after site, CMS, or audit work.
+alwaysApply: true
+---
+
+# Site Review stays current
+
+The KPF live site review is the canvas
+`/Users/daneoleary/.cursor/projects/Users-daneoleary-Documents-Work-Kevin-Popke-Foundation/canvases/kpf-live-site-review.canvas.tsx`.
+
+After any prompt that ships, fixes, or verifies something on the public site, DreamHost CMS, Faust/wp-env pins, GraphQL, performance, a11y, or security:
+
+1. Open that canvas and update it in the same turn — do not wait to be asked.
+2. Mark matching `OPEN` todos `completed` (or `cancelled` if dropped). Add a `COMPLETED` row with the date and what actually went live.
+3. Remove or rewrite `PROBLEMS` / `IMPLEMENT` / `WP_CONFLICTS` / Sequence / callouts so they match live + git, not the old snapshot.
+4. Skip the canvas for work that does not change the review (copy-only chat, unrelated files, masters/, local-only experiments that never ship).
+5. When you mention the canvas, link the `.canvas.tsx` file.
+
+Never dump the review as a chat markdown table instead of updating the canvas.

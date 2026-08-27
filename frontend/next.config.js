@@ -110,6 +110,27 @@ module.exports = withFaust({
 				],
 			},
 			{
+				source: '/robots.txt',
+				headers: [
+					{
+						key: 'Content-Type',
+						value: 'text/plain; charset=utf-8',
+					},
+					{
+						key: 'Cache-Control',
+						value: 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=86400',
+					},
+					{
+						key: 'CDN-Cache-Control',
+						value: 'public, max-age=600, s-maxage=86400, stale-while-revalidate=604800, stale-if-error=86400',
+					},
+					{
+						key: 'X-Content-Type-Options',
+						value: 'nosniff',
+					},
+				],
+			},
+			{
 				source: '/llms.txt',
 				headers: [
 					{

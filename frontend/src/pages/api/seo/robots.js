@@ -1,17 +1,42 @@
 import { fetchSeoPublic } from "@/lib/wordpressPublic";
 
-const { rewriteEphemeralHostsInText } = require("@/lib/publicSiteUrl");
+const {
+  applyRobotsHeaders,
+  fallbackRobotsTxt,
+  sanitizeRobotsTxt,
+} = require("@/lib/robotsTxt");
+const { publicSiteOrigin, rewriteEphemeralHostsInText } = require("@/lib/publicSiteUrl");
+
+export const config = {
+  maxDuration: 8,
+};
 
 export default async function handler(req, res) {
-  try {
-    const data = await fetchSeoPublic("/public/robots");
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
-    res.status(200).send(
-      rewriteEphemeralHostsInText(data.body || "User-agent: *\nAllow: /\n")
-    );
-  } catch (error) {
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.status(200).send("User-agent: *\nAllow: /\n");
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.setHeader("Allow", "GET, HEAD");
+    res.status(405).end();
+    return;
   }
+
+  applyRobotsHeaders(res);
+
+  if (req.method === "HEAD") {
+    res.status(200).end();
+    return;
+  }
+
+  const origin = publicSiteOrigin();
+  let body = fallbackRobotsTxt(origin);
+
+  try {
+    const data = await fetchSeoPublic("/public/robots", { timeoutMs: 800 });
+    body = sanitizeRobotsTxt(
+      rewriteEphemeralHostsInText(data.body || "") || "",
+      origin
+    );
+  } catch {
+    body = fallbackRobotsTxt(origin);
+  }
+
+  res.status(200).send(body);
 }

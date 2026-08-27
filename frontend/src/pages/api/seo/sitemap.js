@@ -4,7 +4,7 @@ const { toPublicUrl } = require("@/lib/publicSiteUrl");
 
 export default async function handler(req, res) {
   try {
-    const data = await fetchSeoPublic("/public/sitemap");
+    const data = await fetchSeoPublic("/public/sitemap", { timeoutMs: 2000 });
     const body = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${(data.sitemaps || [])

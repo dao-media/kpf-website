@@ -7,7 +7,8 @@ export default async function handler(req, res) {
 
   try {
     const data = await fetchSeoPublic(
-      `/public/sitemap/${encodeURIComponent(type)}/${encodeURIComponent(page)}`
+      `/public/sitemap/${encodeURIComponent(type)}/${encodeURIComponent(page)}`,
+      { timeoutMs: 2000 }
     );
 
     const urls = (data.urls || [])

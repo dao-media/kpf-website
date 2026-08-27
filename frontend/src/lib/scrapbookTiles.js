@@ -17,18 +17,24 @@ const SCRAPBOOK_TILE_FIELDS = `
   title
 `;
 
-/** Photos fetched on first paint / SSR (12 shown + one +9 click). */
+/** Photos fetched on first paint / SSR (9 shown + one +6 click, with headroom). */
 const SCRAPBOOK_TILES_INITIAL = 24;
 
 /** GraphQL page size when fetching more photos. */
 const SCRAPBOOK_TILES_PAGE = 12;
 
-/** First paint on every breakpoint. */
-const GALLERY_INITIAL = 12;
-/** Each “See more”: desktop, tablet, mobile-landscape. */
-const GALLERY_BATCH_WIDE = 9;
-/** Each “See more”: mobile-portrait. */
-const GALLERY_BATCH_NARROW = 6;
+/** First paint: desktop / tablet. */
+const GALLERY_INITIAL_WIDE = 9;
+/** First paint: mobile landscape and portrait. */
+const GALLERY_INITIAL_NARROW = 6;
+/** Each click: desktop / tablet. */
+const GALLERY_BATCH_WIDE = 6;
+/** Each click: mobile landscape and portrait. */
+const GALLERY_BATCH_NARROW = 3;
+
+/** Phone portrait, or short landscape phones (not tablet). */
+const GALLERY_MOBILE_QUERY =
+  "(max-width: 47.99rem), (max-height: 47.99rem) and (orientation: landscape) and (max-width: 63.99rem)";
 
 const KPF_SCRAPBOOK_TILES_QUERY = `
   kpfScrapbookTilesCount
@@ -139,33 +145,38 @@ function scrapbookTileTooltip(tile) {
   };
 }
 
-function isGalleryPhonePortrait() {
+function isGalleryMobile() {
   if (typeof window === "undefined") {
     return false;
   }
   if (typeof window.matchMedia === "function") {
-    return window.matchMedia(
-      "(max-width: 47.99rem) and (orientation: portrait)",
-    ).matches;
+    return window.matchMedia(GALLERY_MOBILE_QUERY).matches;
   }
   const width = window.innerWidth;
   const height = window.innerHeight;
-  return (
-    Number.isFinite(width) &&
-    Number.isFinite(height) &&
-    width < 768 &&
-    height >= width
-  );
+  if (!Number.isFinite(width) || !Number.isFinite(height)) {
+    return false;
+  }
+  return width < 768 || (height < 768 && width > height && width < 1024);
 }
 
 /**
  * @returns {{ initial: number, batch: number }}
  */
 function galleryPagingForViewport() {
-  if (isGalleryPhonePortrait()) {
-    return { initial: GALLERY_INITIAL, batch: GALLERY_BATCH_NARROW };
+  if (isGalleryMobile()) {
+    return { initial: GALLERY_INITIAL_NARROW, batch: GALLERY_BATCH_NARROW };
   }
-  return { initial: GALLERY_INITIAL, batch: GALLERY_BATCH_WIDE };
+  return { initial: GALLERY_INITIAL_WIDE, batch: GALLERY_BATCH_WIDE };
+}
+
+/**
+ * @param {number} count
+ */
+function morePhotosLabel(count) {
+  const n = Math.max(0, Math.floor(Number(count) || 0));
+  if (n === 1) return "1 more photo";
+  return `${n} more photos`;
 }
 
 /**
@@ -208,7 +219,7 @@ function waitForMosaicImages(root, { timeoutMs = 8000 } = {}) {
     return Promise.resolve();
   }
   const pending = Array.from(root.querySelectorAll("img")).filter(
-    (img) => !img.complete,
+    (img) => !img.complete && img.getAttribute("loading") !== "lazy",
   );
   if (!pending.length) {
     return Promise.resolve();
@@ -253,6 +264,7 @@ async function fetchScrapbookTiles({
   });
   const response = await fetch(`/api/scrapbook-tiles?${params}`, {
     headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(12000),
   });
   if (!response.ok) {
     return { tiles: [], total: 0 };
@@ -267,7 +279,9 @@ async function fetchScrapbookTiles({
 module.exports = {
   GALLERY_BATCH_NARROW,
   GALLERY_BATCH_WIDE,
-  GALLERY_INITIAL,
+  GALLERY_INITIAL_NARROW,
+  GALLERY_INITIAL_WIDE,
+  GALLERY_MOBILE_QUERY,
   KPF_SCRAPBOOK_TILES_QUERY,
   SCRAPBOOK_TILE_FIELDS,
   SCRAPBOOK_TILES_INITIAL,
@@ -275,7 +289,8 @@ module.exports = {
   fetchScrapbookTiles,
   formatScrapbookTileDate,
   galleryPagingForViewport,
-  isGalleryPhonePortrait,
+  isGalleryMobile,
+  morePhotosLabel,
   nextGalleryBatch,
   normalizeScrapbookTiles,
   remainingPhotoCount,

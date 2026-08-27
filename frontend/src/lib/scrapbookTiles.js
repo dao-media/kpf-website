@@ -3,6 +3,8 @@
  * Never includes Kevin slides (kpf_kevin). GraphQL: kpfScrapbookTiles.
  */
 
+const { preferLocalWebp } = require("./preferLocalWebp");
+
 const SCRAPBOOK_TILE_FIELDS = `
   id
   databaseId
@@ -48,7 +50,7 @@ function normalizeScrapbookTiles(tiles) {
 
   return tiles
     .map((tile, index) => {
-      const src = String(tile?.sourceUrl || "").trim();
+      const src = preferLocalWebp(String(tile?.sourceUrl || "").trim());
       if (!src) {
         return null;
       }

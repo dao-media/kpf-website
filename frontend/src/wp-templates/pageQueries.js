@@ -1,5 +1,6 @@
 const {
   KPF_PAGE_SHELL_QUERY,
+  KPF_PAGE_SHELL_WITH_GSAP_QUERY,
   KPF_PAGE_NODE_CORE,
 } = require("./pageChrome");
 const { KPF_GRANTS_QUERY, KPF_GRANTS_TOTAL_QUERY } = require("../lib/grantsQuery");
@@ -32,7 +33,7 @@ const KPF_CONTACT_FORM_QUERY = `
 
 const GET_HOME_PAGE = `
   query GetHomePage {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     ${KPF_SCAFFOLD_MEDIA_QUERY}
     ${KPF_PARTNER_GRANTEES_QUERY}
     ${KPF_LATEST_BLOG_POST_QUERY}
@@ -82,7 +83,7 @@ const GET_HOME_PAGE = `
 
 const GET_ABOUT_PAGE = `
   query GetAboutPage($uri: ID!) {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     ${scaffoldMediaQuery(["about.", "cta."])}
     ${KPF_GRANTS_QUERY}
     ${KPF_GRANTS_TOTAL_QUERY}
@@ -107,7 +108,7 @@ const GET_CONTACT_PAGE = `
 
 const GET_EVENTS_PAGE = `
   query GetEventsPage($uri: ID!) {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     ${scaffoldMediaQuery(["events.", "cta."])}
     ${KPF_EVENTS_QUERY}
     page(id: $uri, idType: URI) {
@@ -139,7 +140,7 @@ const GET_PRIVACY_PAGE = `
 
 const GET_PAGE = `
   query GetPage($uri: ID!) {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}
       content

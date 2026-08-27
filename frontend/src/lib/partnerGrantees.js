@@ -2,6 +2,8 @@
  * Homepage partners / grantee slider query helpers.
  */
 
+const { preferLocalWebp } = require("./preferLocalWebp");
+
 const KPF_PARTNER_GRANTEES_QUERY = `
   kpfPartnerGrantees(first: 24) {
     databaseId
@@ -27,7 +29,7 @@ function normalizePartnerGrantees(nodes) {
 
   for (const node of nodes) {
     const name = String(node?.name || "").trim();
-    const logoUrl = String(node?.logoUrl || "").trim();
+    const logoUrl = preferLocalWebp(String(node?.logoUrl || "").trim());
     if (!name || !logoUrl) continue;
 
     const key = normalizePartnerNameKey(name) || `id:${Number(node?.databaseId) || name}`;

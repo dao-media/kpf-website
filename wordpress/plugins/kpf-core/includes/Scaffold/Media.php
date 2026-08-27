@@ -16,7 +16,7 @@ final class Media {
 	 */
 	public static function catalog(): array {
 		return array(
-			'home.hero'           => '541-hero.jpg',
+			'home.hero'           => '541-hero.webp',
 			'home.kevin'          => 'kevin.jpg',
 			'home.kevinDad'       => 'kevin-with-dad.png',
 			'home.kevinRunner'    => 'kevin-runner.png',
@@ -63,7 +63,7 @@ final class Media {
 		return array(
 			/* Prefer PNG cutout: WP WebP thumbs often flatten alpha to opaque black. */
 			'home.kevinDoubleExposure' => array( 'kevin-double-exposure-cutout.png', 'kevin-double-exposure.png', 'kevin-double-exposure-cutout.webp' ),
-			'home.hero'    => array( '541-hero.jpg', 'hero.jpg', 'hero.webp' ),
+			'home.hero'    => array( '541-hero.webp', 'hero.webp', '541-hero.jpg', 'hero.jpg' ),
 			'events.hero'  => array(
 				'events-hero-performer.webp',
 				'events-hero-performer.jpg',

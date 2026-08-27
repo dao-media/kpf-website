@@ -3,10 +3,11 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"predev": "npm run search:generate",
+		"predev": "npm run css:bundle && npm run search:generate",
 		"dev": "PORT=3010 faust dev --webpack",
-		"prebuild": "npm run search:generate",
+		"prebuild": "npm run css:bundle && npm run search:generate",
 		"build": "faust build",
+		"css:bundle": "node scripts/bundle-site-css.mjs",
 		"generate": "faust generatePossibleTypes",
 		"search:generate": "node scripts/generate-search-index.mjs",
 		"postinstall": "node scripts/patch-next-hmr.mjs",

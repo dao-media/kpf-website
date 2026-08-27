@@ -1,6 +1,7 @@
 /**
- * Single entry so Faust/Next emit one render-blocking stylesheet instead of
- * two sequential CSS round-trips on FCP.
+ * Human-readable entry. Production and `npm run dev` import site.bundle.css
+ * (concatenated by scripts/bundle-site-css.mjs) so Turbopack cannot emit two
+ * render-blocking CSS chunks from these @imports.
  */
 @import "./components.css";
 @import "./pages.css";

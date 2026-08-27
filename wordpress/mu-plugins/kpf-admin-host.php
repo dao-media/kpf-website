@@ -121,6 +121,9 @@ if ( function_exists( 'add_filter' ) ) {
 		$_SERVER['REQUEST_SCHEME'] = 'https';
 	}
 
+	add_filter( 'xmlrpc_enabled', '__return_false' );
+	add_filter( 'xmlrpc_methods', '__return_empty_array' );
+
 	add_filter(
 		'pre_option_home',
 		static function ( $value ) {

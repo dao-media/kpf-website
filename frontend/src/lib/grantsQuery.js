@@ -6,6 +6,8 @@
  * GraphQL: kpfGrantsTotal { amount, label }
  */
 
+const { preferLocalWebp } = require("./preferLocalWebp");
+
 const KPF_GRANTS_QUERY = `
   kpfQuery(slug: "grants") {
     slug
@@ -142,7 +144,7 @@ function normalizeGrantQueryItems(queryResult) {
     if (!name) continue;
 
     const photoUrl = String(node?.checkPhotoUrl || node?.featuredImage?.url || "").trim();
-    const logoUrl = String(node?.logoUrl || "").trim();
+    const logoUrl = preferLocalWebp(String(node?.logoUrl || "").trim());
     const href = String(node?.website || "").trim();
 
     out.push({

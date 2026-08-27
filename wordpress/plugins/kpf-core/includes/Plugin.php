@@ -79,6 +79,7 @@ use KPF\Core\Performance\Images as PerformanceImages;
 use KPF\Core\Performance\Optimizations as PerformanceOptimizations;
 use KPF\Core\Performance\Rest as PerformanceRest;
 use KPF\Core\Performance\Settings as PerformanceSettings;
+use KPF\Core\Security\Xmlrpc as XmlrpcGuard;
 use KPF\Core\DynamicContent\Admin as DynamicContentAdmin;
 use KPF\Core\DynamicContent\GraphQL as DynamicContentGraphQL;
 use KPF\Core\DynamicContent\Registration as DynamicContentRegistration;
@@ -301,6 +302,7 @@ final class Plugin {
 		PerformanceHeaders::register();
 		PerformanceImages::register();
 		PerformanceOptimizations::register();
+		XmlrpcGuard::register();
 		PerformanceAdminBar::register();
 		PerformanceSettings::ensure_defaults();
 

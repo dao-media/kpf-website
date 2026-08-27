@@ -27,6 +27,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_HOME_PAGE, /kpfLatestBlogPost/);
     assert.match(GET_HOME_PAGE, /kpfFrontPage/);
     assert.match(GET_HOME_PAGE, /kpfSeoHome/);
+    assert.match(GET_HOME_PAGE, /kpfGsapAnimations/);
     assertOmits(
       GET_HOME_PAGE,
       [/kpfPageDesign/, /foundationEvents/, /kpfForm/, /editorBlocks/],
@@ -45,6 +46,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_ABOUT_PAGE, /kpfKevinSlides/);
     assert.match(GET_ABOUT_PAGE, /kpfScrapbookTiles/);
     assert.match(GET_ABOUT_PAGE, /kpfScrapbookTilesCount/);
+    assert.match(GET_ABOUT_PAGE, /kpfGsapAnimations/);
     assert.match(GET_ABOUT_PAGE, /kpfScaffoldMedia\(prefixes: \["about\.", "cta\."\]\)/);
     assertOmits(
       GET_ABOUT_PAGE,
@@ -58,7 +60,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_CONTACT_PAGE, /kpfForm\(slug: "contact"\)/);
     assertOmits(
       GET_CONTACT_PAGE,
-      [/foundationEvents/, /kpfQuery/, /kpfKevinSlides/, /kpfPageDesign/, /kpfBlogPosts/],
+      [/foundationEvents/, /kpfQuery/, /kpfKevinSlides/, /kpfPageDesign/, /kpfBlogPosts/, /kpfGsapAnimations/],
       "GetContactPage",
     );
   });
@@ -67,6 +69,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_EVENTS_PAGE, /query GetEventsPage/);
     assert.match(GET_EVENTS_PAGE, /foundationEvents/);
     assert.match(GET_EVENTS_PAGE, /kpfScaffoldMedia\(prefixes: \["events\.", "cta\."\]\)/);
+    assert.match(GET_EVENTS_PAGE, /kpfGsapAnimations/);
     assertOmits(
       GET_EVENTS_PAGE,
       [/kpfQuery/, /kpfKevinSlides/, /kpfPageDesign/, /kpfForm/, /kpfBlogPosts/],
@@ -86,6 +89,7 @@ describe("slug Faust page queries", () => {
         /kpfQuery\(slug: "grants"\)/,
         /kpfKevinSlides/,
         /kpfForm/,
+        /kpfGsapAnimations/,
       ],
       "GetBlogPage",
     );
@@ -96,7 +100,7 @@ describe("slug Faust page queries", () => {
     assert.match(GET_PRIVACY_PAGE, /^\s+content$/m);
     assertOmits(
       GET_PRIVACY_PAGE,
-      [/kpfPageDesign/, /foundationEvents/, /kpfBlogPosts/, /kpfForm/],
+      [/kpfPageDesign/, /foundationEvents/, /kpfBlogPosts/, /kpfForm/, /kpfGsapAnimations/],
       "GetPrivacyPage",
     );
   });
@@ -104,6 +108,7 @@ describe("slug Faust page queries", () => {
   it("fallback GetPage fetches Gutenberg content, not Mustache design HTML", () => {
     assert.match(GET_PAGE, /query GetPage/);
     assert.match(GET_PAGE, /^\s+content$/m);
+    assert.match(GET_PAGE, /kpfGsapAnimations/);
     assertOmits(
       GET_PAGE,
       [

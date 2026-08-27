@@ -5,7 +5,7 @@ import GlobalStylesheet from "@/components/GlobalStylesheet";
 import SiteChrome from "@/components/SiteChrome";
 import { kpfFontClassName } from "@/lib/kpfFonts";
 import "../../faust.config";
-import "@/styles/site.css";
+import "@/styles/site.bundle.css";
 
 const { stylesheetMetaFromPageProps } = require("@/lib/globalStylesheet");
 

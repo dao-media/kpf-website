@@ -12,7 +12,7 @@
             "body": "Flies WWII, Korean, and Vietnam War veterans to Washington, D.C., to visit the memorials dedicated to honoring their service and ultimate sacrifices.",
             "date": "Aug 2026",
             "amount": "$10,000",
-            "logoUrl": "/media/content/388-SFHF.png",
+            "logoUrl": "/media/content/388-SFHF.webp",
             "photoUrl": "/media/content/701-SEFloridaHighFlyers_08-2026.jpg",
             "photoAlt": "Southeastern Florida Honor Flight",
             "href": "https://honorflightsefl.org/"
@@ -99,7 +99,7 @@
     "scrapbookTiles": [
         {
             "id": "797-541-0",
-            "src": "/media/content/541-hero.jpg",
+            "src": "/media/content/541-hero.webp",
             "alt": "Group photo taken at the Other Side of the Dunes KPF event",
             "caption": "Guests gather at a Kevin Popke Foundation fundraising event supporting Florida veterans.",
             "title": "Other Side of the Dunes",
@@ -235,7 +235,7 @@
             "databaseId": 0,
             "name": "Southeastern Florida Honor Flight",
             "website": "https://honorflightsefl.org/",
-            "logoUrl": "/media/content/388-SFHF.png",
+            "logoUrl": "/media/content/388-SFHF.webp",
             "logoAlt": "Southeastern Florida Honor Flight"
         },
         {

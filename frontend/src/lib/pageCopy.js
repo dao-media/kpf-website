@@ -68,7 +68,7 @@ const HOME = {
         title: "Donate to Kevin’s Cause",
         body: "Every dollar goes out as a grant to a Florida organization we’ve vetted ourselves.",
         cta: { donate: true, label: "Donate" },
-        media: { key: "home.hero", src: "/media/home/hero.jpg", alt: "Tampa Bay shoreline at dusk" },
+        media: { key: "home.hero", src: "/media/home/hero.webp", alt: "Tampa Bay shoreline at dusk" },
       },
       {
         eyebrow: "What You Can Do",

@@ -1,3 +1,5 @@
+const { preferLocalWebp } = require("./preferLocalWebp");
+
 const KPF_SCAFFOLD_MEDIA_FIELDS = `
     key
     databaseId
@@ -56,12 +58,12 @@ function resolveMedia(map, key, fallback = {}) {
   const hit = map?.[key];
   if (hit?.sourceUrl) {
     return {
-      src: hit.sourceUrl,
+      src: preferLocalWebp(hit.sourceUrl),
       alt: hit.altText || fallback.alt || "",
     };
   }
   return {
-    src: fallback.src || "",
+    src: preferLocalWebp(fallback.src || ""),
     alt: fallback.alt || "",
   };
 }

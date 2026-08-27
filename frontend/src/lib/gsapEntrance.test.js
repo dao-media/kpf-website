@@ -90,3 +90,15 @@ describe("GsapRuntime wiring", () => {
     assert.match(src, /isHeroLcpNode\(target\)/);
   });
 });
+
+describe("GsapRuntimeGate wiring", () => {
+  it("binds hover animations before the LCP gate", () => {
+    const src = fs.readFileSync(
+      path.join(__dirname, "../components/GsapRuntimeGate.js"),
+      "utf8",
+    );
+    assert.match(src, /partitionGsapAnimations/);
+    assert.match(src, /interactive\.length/);
+    assert.match(src, /GSAP_FALLBACK_MS/);
+  });
+});

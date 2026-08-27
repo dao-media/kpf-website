@@ -84,6 +84,25 @@ function animationsUsedOnPage(animations, root) {
 }
 
 /**
+ * Hover/click must bind without waiting for LCP. In-view/load can wait.
+ * @param {Array<{ trigger?: string }>} animations
+ * @returns {{ interactive: unknown[], deferred: unknown[] }}
+ */
+function partitionGsapAnimations(animations) {
+  const interactive = [];
+  const deferred = [];
+  for (const animation of animations || []) {
+    if (!animation) continue;
+    if (animation.trigger === "hover" || animation.trigger === "click") {
+      interactive.push(animation);
+    } else {
+      deferred.push(animation);
+    }
+  }
+  return { interactive, deferred };
+}
+
+/**
  * @param {Array<{ trigger?: string, config?: Record<string, unknown> }>} animations
  * @returns {string[]}
  */
@@ -112,5 +131,6 @@ module.exports = {
   animationMatchesDocument,
   animationsUsedOnPage,
   isDisplayedForTween,
+  partitionGsapAnimations,
   pluginsForAnimations,
 };

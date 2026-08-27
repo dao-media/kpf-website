@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   analyticsScriptsToLoad,
   gtmBootstrapScript,
+  GSAP_FALLBACK_MS,
   shouldSkipSnippetAnalyticsSrc,
 } = require("./thirdPartyIdle");
 
@@ -70,6 +71,10 @@ describe("gtmBootstrapScript", () => {
     assert.match(src, /PerformanceObserver/);
     assert.match(src, /largest-contentful-paint/);
     assert.match(src, /setTimeout\(g,8000\)/);
+  });
+
+  it("keeps the GSAP LCP fallback well under the GTM 8s cap", () => {
+    assert.equal(GSAP_FALLBACK_MS, 1200);
   });
 
   it("rejects non-GTM ids", () => {

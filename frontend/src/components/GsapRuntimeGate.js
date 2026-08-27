@@ -3,8 +3,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { KPF_GSAP_QUERY } from "@/lib/gsapQuery";
 
-const { animationsUsedOnPage } = require("@/lib/gsapPlugins");
-const { scheduleAfterLcp } = require("@/lib/thirdPartyIdle");
+const {
+  animationsUsedOnPage,
+  partitionGsapAnimations,
+} = require("@/lib/gsapPlugins");
+const { GSAP_FALLBACK_MS, scheduleAfterLcp } = require("@/lib/thirdPartyIdle");
 
 const GsapRuntime = dynamic(() => import("@/components/GsapRuntime"), {
   ssr: false,
@@ -19,10 +22,9 @@ function usedKey(list) {
 }
 
 /**
- * Loads GsapRuntime (and Club plugins) only when this page has matching
- * animation targets, and only after LCP so Club GSAP is not on the
- * LCP path. The CMS list is site-wide; unused selectors never download
- * MorphSVG / Physics / Flip / DrawSVG / etc.
+ * Hover/click bind immediately (badge swing, nav underlines). In-view/load
+ * wait for LCP so Club GSAP stays off the LCP path. Unused CMS selectors
+ * never download MorphSVG / Physics / Flip / DrawSVG / etc.
  */
 export default function GsapRuntimeGate({ animations = [] }) {
   const router = useRouter();
@@ -39,13 +41,21 @@ export default function GsapRuntimeGate({ animations = [] }) {
     }
 
     let cancelled = false;
-    function scan() {
+    function apply(list) {
       if (cancelled) return;
-      const next = animationsUsedOnPage(listRef.current, document);
-      setUsed((prev) => (usedKey(prev) === usedKey(next) ? prev : next));
+      setUsed((prev) => (usedKey(prev) === usedKey(list) ? prev : list));
+    }
+    function usedNow() {
+      return animationsUsedOnPage(listRef.current, document);
     }
 
-    const cancelPaint = scheduleAfterLcp(scan);
+    const { interactive } = partitionGsapAnimations(usedNow());
+    if (interactive.length) apply(interactive);
+
+    const cancelPaint = scheduleAfterLcp(() => {
+      apply(usedNow());
+    }, GSAP_FALLBACK_MS);
+
     return () => {
       cancelled = true;
       cancelPaint();

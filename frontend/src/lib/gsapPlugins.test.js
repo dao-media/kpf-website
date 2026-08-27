@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   animationsUsedOnPage,
   isDisplayedForTween,
+  partitionGsapAnimations,
   pluginsForAnimations,
 } = require("./gsapPlugins");
 
@@ -117,5 +118,21 @@ describe("isDisplayedForTween", () => {
 
   it("treats elements without checkVisibility as displayed", () => {
     assert.equal(isDisplayedForTween({ nodeType: 1 }), true);
+  });
+});
+
+describe("partitionGsapAnimations", () => {
+  it("splits hover/click from in-view/load so the badge can bind before LCP", () => {
+    const { interactive, deferred } = partitionGsapAnimations([
+      { trigger: "hover", selector: ".kpf-header__brand" },
+      { trigger: "click", selector: ".kpf-btn" },
+      { trigger: "in-view", selector: ".kpf-hero" },
+      { trigger: "load", selector: ".kpf-hero--about" },
+      null,
+    ]);
+    assert.equal(interactive.length, 2);
+    assert.equal(deferred.length, 2);
+    assert.equal(interactive[0].trigger, "hover");
+    assert.equal(deferred[0].trigger, "in-view");
   });
 });

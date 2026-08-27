@@ -5,6 +5,8 @@
  */
 
 const GTM_FALLBACK_MS = 8000;
+/** GSAP in-view/load can wait on LCP; hover cannot use the GTM 8s cap. */
+const GSAP_FALLBACK_MS = 1200;
 
 function isGtmContainerSrc(src) {
   return /googletagmanager\.com\/gtm\.js/i.test(String(src || ""));
@@ -51,7 +53,7 @@ function sanitizeGtmId(gtmId) {
 
 /**
  * Official GTM snippet for _document. Pushes gtm.start immediately (Tag Assistant
- * greps this) but inserts gtm.js after LCP (2.5s cap) so Slow 4G LCP is not
+ * greps this) but inserts gtm.js after LCP (8s cap) so Slow 4G LCP is not
  * competing with ~280 KiB of tag-manager JS.
  * @param {string} gtmId
  */
@@ -68,12 +70,14 @@ new Date().getTime(),event:'gtm.js'});var n=0;function g(){if(n)return;n=1;var f
  * @param {number} [timeoutMs]
  */
 function scheduleAfterLcp(callback, timeoutMs) {
-  const timeout = Number.isFinite(timeoutMs) ? timeoutMs : GTM_FALLBACK_MS;
+  const timeout = Number.isFinite(timeoutMs) ? timeoutMs : GSAP_FALLBACK_MS;
   if (typeof callback !== "function") return function noop() {};
   let done = false;
+  const listeners = [];
   function run() {
     if (done) return;
     done = true;
+    listeners.forEach(([target, type, fn]) => target.removeEventListener(type, fn));
     callback();
   }
   let observer;
@@ -83,20 +87,36 @@ function scheduleAfterLcp(callback, timeoutMs) {
         run();
       });
       observer.observe({ type: "largest-contentful-paint", buffered: true });
+    } else {
+      run();
+      return function cancel() {
+        done = true;
+      };
     }
   } catch {
-    observer = null;
+    run();
+    return function cancel() {
+      done = true;
+    };
+  }
+  if (typeof window !== "undefined") {
+    ["pointerdown", "keydown"].forEach((type) => {
+      window.addEventListener(type, run, { once: true });
+      listeners.push([window, type, run]);
+    });
   }
   const timer = setTimeout(run, timeout);
   return function cancel() {
     done = true;
     clearTimeout(timer);
+    listeners.forEach(([target, type, fn]) => target.removeEventListener(type, fn));
     if (observer) observer.disconnect();
   };
 }
 
 module.exports = {
   GTM_FALLBACK_MS,
+  GSAP_FALLBACK_MS,
   analyticsScriptsToLoad,
   gtmBootstrapScript,
   isGoogleTagSrc,

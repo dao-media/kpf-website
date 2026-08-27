@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 
 const ENTERED_CLASS = "kpf-hero-cutouts-entered";
-const DESKTOP_MQ = "(min-width: 64rem)";
-const CUTOUT_ANIMATIONS = new Set(["kpf-hero-cutout-runner"]);
 
 function markEntered() {
   if (typeof document === "undefined") return;
@@ -10,50 +8,14 @@ function markEntered() {
 }
 
 /**
- * Homepage hero cutouts: CSS slides the runner in from off-stage left.
- * Dad and alumni stay painted from first frame (desktop/tablet LCP).
- * This runtime only flips html.kpf-hero-cutouts-entered — it does not load GSAP.
+ * Homepage hero cutouts paint from the first frame (desktop runner is LCP).
+ * This runtime only flips html.kpf-hero-cutouts-entered so leftover CSS
+ * entrance rules cannot hide the runner. It does not load GSAP.
  */
-export default function HomeHeroCutoutsRuntime({ stageRef } = {}) {
+export default function HomeHeroCutoutsRuntime() {
   useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      markEntered();
-      return undefined;
-    }
-    if (!window.matchMedia(DESKTOP_MQ).matches) {
-      markEntered();
-      return undefined;
-    }
-
-    const stage =
-      (stageRef && stageRef.current) ||
-      document.querySelector(".kpf-hero--home .kpf-hero__stage");
-    if (!stage) {
-      markEntered();
-      return undefined;
-    }
-
-    let settled = false;
-    const settle = () => {
-      if (settled) return;
-      settled = true;
-      markEntered();
-    };
-
-    const onEnd = (event) => {
-      if (!CUTOUT_ANIMATIONS.has(event.animationName)) return;
-      settle();
-    };
-
-    stage.addEventListener("animationend", onEnd);
-    const safety = window.setTimeout(settle, 2400);
-    return () => {
-      window.clearTimeout(safety);
-      stage.removeEventListener("animationend", onEnd);
-      settle();
-    };
-  }, [stageRef]);
+    markEntered();
+  }, []);
 
   return null;
 }

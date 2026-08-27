@@ -1920,27 +1920,10 @@ html.kpf-scroll-smoothed body {
 }
 
 /*
- * Runner slides in via CSS (expo.out). Dad and alumni stay painted from
- * first frame — dad is the desktop LCP, alumni is the tablet LCP.
- * `.kpf-hero-cutouts-entered` freezes the rest pose after the animation.
+ * Cutouts paint from the first frame. The runner used to slide in from
+ * off-stage (opacity 0 + 0.4s delay + fill-mode both), which made it the
+ * desktop LCP at ~1.8s. Keep the rest pose only.
  */
-@keyframes kpf-hero-cutout-runner {
-	from {
-		opacity: 0;
-		transform: translate3d(-340.58%, 0, 0);
-	}
-
-	to {
-		opacity: 1;
-		transform: none;
-	}
-}
-
-@media (min-width: 64rem) and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-	html:not(.kpf-hero-cutouts-entered) .kpf-hero--home .kpf-hero__cutout--runner {
-		animation: kpf-hero-cutout-runner 1.55s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-	}
-}
 
 /* Partners chips — Figma 426:477
  * Visible slots: 4 desktop · 3 tablet · 1 mobile (80% card, prev/next peek).

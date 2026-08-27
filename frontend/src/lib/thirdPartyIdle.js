@@ -7,6 +7,8 @@
 const GTM_FALLBACK_MS = 8000;
 /** GSAP in-view/load can wait on LCP; hover cannot use the GTM 8s cap. */
 const GSAP_FALLBACK_MS = 1200;
+/** Hover/click GSAP binds soon, but not on the first-paint / LCP path. */
+const GSAP_INTERACTIVE_IDLE_MS = 400;
 
 function isGtmContainerSrc(src) {
   return /googletagmanager\.com\/gtm\.js/i.test(String(src || ""));
@@ -114,9 +116,39 @@ function scheduleAfterLcp(callback, timeoutMs) {
   };
 }
 
+/**
+ * Run on idle (or a short timeout) so hover GSAP is not competing with LCP.
+ * Still well under the GTM 8s cap — badge swing must not wait for gtm.js.
+ * @param {() => void} callback
+ * @param {number} [timeoutMs]
+ */
+function scheduleIdle(callback, timeoutMs) {
+  const timeout = Number.isFinite(timeoutMs) ? timeoutMs : GSAP_INTERACTIVE_IDLE_MS;
+  if (typeof callback !== "function") return function noop() {};
+  let done = false;
+  function run() {
+    if (done) return;
+    done = true;
+    callback();
+  }
+  if (typeof requestIdleCallback === "function") {
+    const id = requestIdleCallback(run, { timeout });
+    return function cancel() {
+      done = true;
+      if (typeof cancelIdleCallback === "function") cancelIdleCallback(id);
+    };
+  }
+  const timer = setTimeout(run, timeout);
+  return function cancel() {
+    done = true;
+    clearTimeout(timer);
+  };
+}
+
 module.exports = {
   GTM_FALLBACK_MS,
   GSAP_FALLBACK_MS,
+  GSAP_INTERACTIVE_IDLE_MS,
   analyticsScriptsToLoad,
   gtmBootstrapScript,
   isGoogleTagSrc,
@@ -124,5 +156,6 @@ module.exports = {
   isGtmContainerSrc,
   sanitizeGtmId,
   scheduleAfterLcp,
+  scheduleIdle,
   shouldSkipSnippetAnalyticsSrc,
 };

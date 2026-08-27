@@ -7,7 +7,12 @@ const {
   animationsUsedOnPage,
   partitionGsapAnimations,
 } = require("@/lib/gsapPlugins");
-const { GSAP_FALLBACK_MS, scheduleAfterLcp } = require("@/lib/thirdPartyIdle");
+const {
+  GSAP_FALLBACK_MS,
+  GSAP_INTERACTIVE_IDLE_MS,
+  scheduleAfterLcp,
+  scheduleIdle,
+} = require("@/lib/thirdPartyIdle");
 
 const GsapRuntime = dynamic(() => import("@/components/GsapRuntime"), {
   ssr: false,
@@ -22,9 +27,10 @@ function usedKey(list) {
 }
 
 /**
- * Hover/click bind immediately (badge swing, nav underlines). In-view/load
- * wait for LCP so Club GSAP stays off the LCP path. Unused CMS selectors
- * never download MorphSVG / Physics / Flip / DrawSVG / etc.
+ * Hover/click bind on idle (~400ms), not on first paint — badge swing must
+ * not wait for GTM’s 8s cap. In-view/load wait for LCP so Club GSAP stays
+ * off the LCP path. Unused CMS selectors never download MorphSVG / Physics
+ * / Flip / DrawSVG / etc.
  */
 export default function GsapRuntimeGate({ animations = [] }) {
   const router = useRouter();
@@ -49,8 +55,10 @@ export default function GsapRuntimeGate({ animations = [] }) {
       return animationsUsedOnPage(listRef.current, document);
     }
 
-    const { interactive } = partitionGsapAnimations(usedNow());
-    if (interactive.length) apply(interactive);
+    const cancelIdle = scheduleIdle(() => {
+      const { interactive } = partitionGsapAnimations(usedNow());
+      if (interactive.length) apply(interactive);
+    }, GSAP_INTERACTIVE_IDLE_MS);
 
     const cancelPaint = scheduleAfterLcp(() => {
       apply(usedNow());
@@ -58,6 +66,7 @@ export default function GsapRuntimeGate({ animations = [] }) {
 
     return () => {
       cancelled = true;
+      cancelIdle();
       cancelPaint();
     };
   }, [ids, router.asPath]);

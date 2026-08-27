@@ -4,6 +4,7 @@ const {
   analyticsScriptsToLoad,
   gtmBootstrapScript,
   GSAP_FALLBACK_MS,
+  GSAP_INTERACTIVE_IDLE_MS,
   shouldSkipSnippetAnalyticsSrc,
 } = require("./thirdPartyIdle");
 
@@ -75,6 +76,7 @@ describe("gtmBootstrapScript", () => {
 
   it("keeps the GSAP LCP fallback well under the GTM 8s cap", () => {
     assert.equal(GSAP_FALLBACK_MS, 1200);
+    assert.equal(GSAP_INTERACTIVE_IDLE_MS, 400);
   });
 
   it("rejects non-GTM ids", () => {

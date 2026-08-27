@@ -5,6 +5,7 @@ const {
   DEFAULT_CIGAR_SRCSET,
   DEFAULT_CIGAR_SIZES,
 } = require("@/lib/cigarMedia");
+const { playVideoWhenVisible } = require("@/lib/playVideoWhenVisible");
 
 /**
  * Lit cigar with a looping smoke overlay. Width follows the parent;
@@ -26,25 +27,7 @@ export default function CigarSmoke({
   const isDecorative = decorative ?? !cigarAlt;
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return undefined;
-
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    function syncPlayback() {
-      if (media.matches) {
-        video.pause();
-        return;
-      }
-      const play = video.play();
-      if (play && typeof play.catch === "function") {
-        play.catch(() => {});
-      }
-    }
-
-    syncPlayback();
-    media.addEventListener("change", syncPlayback);
-    return () => media.removeEventListener("change", syncPlayback);
+    return playVideoWhenVisible(videoRef.current);
   }, [smoke]);
 
   if (!src) {
@@ -80,11 +63,10 @@ export default function CigarSmoke({
         <video
           ref={videoRef}
           className="kpf-cigar__smoke"
-          autoPlay
           loop
           muted
           playsInline
-          preload="auto"
+          preload="none"
           aria-hidden="true"
           disablePictureInPicture
         >

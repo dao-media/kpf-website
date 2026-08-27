@@ -92,7 +92,7 @@ describe("GsapRuntime wiring", () => {
 });
 
 describe("GsapRuntimeGate wiring", () => {
-  it("binds hover animations before the LCP gate", () => {
+  it("binds hover animations on idle, not on the GTM 8s cap", () => {
     const src = fs.readFileSync(
       path.join(__dirname, "../components/GsapRuntimeGate.js"),
       "utf8",
@@ -100,5 +100,8 @@ describe("GsapRuntimeGate wiring", () => {
     assert.match(src, /partitionGsapAnimations/);
     assert.match(src, /interactive\.length/);
     assert.match(src, /GSAP_FALLBACK_MS/);
+    assert.match(src, /scheduleIdle/);
+    assert.match(src, /GSAP_INTERACTIVE_IDLE_MS/);
+    assert.doesNotMatch(src, /GTM_FALLBACK_MS/);
   });
 });

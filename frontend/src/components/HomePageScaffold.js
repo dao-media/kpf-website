@@ -41,7 +41,6 @@ export default function HomePageScaffold({
   /** Outgoing panels kept open briefly while the next one expands (avoids height stutter). */
   const [heldAccordionIds, setHeldAccordionIds] = useState([]);
   const accordionHoldTimerRef = useRef(null);
-  const heroStageRef = useRef(null);
 
   useEffect(
     () => () => {
@@ -85,27 +84,27 @@ export default function HomePageScaffold({
   }
 
   const partners = normalizePartnerGrantees(partnerGrantees);
-  const dadCutout = (copy.hero.cutouts || []).find(
-    (cutout) => cutout.key === "home.kevinDad",
-  );
   const alumniCutout = (copy.hero.cutouts || []).find(
     (cutout) => cutout.key === "home.kevinAlumni",
   );
-  const dadSrc = dadCutout
-    ? resolveMedia(media, dadCutout.key, dadCutout).src
-    : "";
+  const runnerCutout = (copy.hero.cutouts || []).find(
+    (cutout) => cutout.key === "home.kevinRunner",
+  );
   const alumniSrc = alumniCutout
     ? resolveMedia(media, alumniCutout.key, alumniCutout).src
+    : "";
+  const runnerSrc = runnerCutout
+    ? resolveMedia(media, runnerCutout.key, runnerCutout).src
     : "";
 
   return (
     <div className="kpf-page-home" data-kpf-scaffold="home">
       <Head>
-        {dadSrc ? (
+        {runnerSrc ? (
           <link
             rel="preload"
             as="image"
-            href={dadSrc}
+            href={runnerSrc}
             media="(min-width: 64rem)"
             fetchPriority="high"
           />
@@ -123,12 +122,13 @@ export default function HomePageScaffold({
       <ProgramsCheckRuntime />
       <section className="kpf-hero kpf-hero--home" aria-labelledby="kpf-home-hero-title">
         <div className="kpf-hero__scrim" aria-hidden="true" />
-        <div ref={heroStageRef} className="kpf-hero__stage" aria-hidden="true">
+        <div className="kpf-hero__stage" aria-hidden="true">
           {(copy.hero.cutouts || []).map((cutout) => {
             const resolved = resolveMedia(media, cutout.key, cutout);
             if (!resolved.src) return null;
             const isAlumni = cutout.key === "home.kevinAlumni";
             const isDad = cutout.key === "home.kevinDad";
+            const isRunner = cutout.key === "home.kevinRunner";
             return (
               <div key={cutout.key} className={cutout.className}>
                 <KpfImage
@@ -140,8 +140,8 @@ export default function HomePageScaffold({
                       ? "(max-width: 47.99rem) 16px, (max-width: 63.99rem) 110vw, 42vw"
                       : "(max-width: 63.99rem) 16px, 38vw"
                   }
-                  loading={isDad || isAlumni ? "eager" : "lazy"}
-                  fetchPriority={isDad || isAlumni ? "high" : "auto"}
+                  loading={isDad || isAlumni || isRunner ? "eager" : "lazy"}
+                  fetchPriority={isRunner || isAlumni ? "high" : "auto"}
                 />
               </div>
             );
@@ -187,7 +187,7 @@ export default function HomePageScaffold({
           </div>
         </div>
       </section>
-      <HomeHeroCutoutsRuntime stageRef={heroStageRef} />
+      <HomeHeroCutoutsRuntime />
 
       <PartnersSlider
         items={partners}

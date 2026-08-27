@@ -1,5 +1,7 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("fs");
+const path = require("path");
 const { isHeroLcpNode } = require("./gsapLcp");
 
 function fakeNode(chain) {
@@ -13,7 +15,7 @@ function fakeNode(chain) {
 }
 
 describe("isHeroLcpNode", () => {
-  it("protects hero copy, the hero box, and dad/alumni; runner and later sections stay tweenable", () => {
+  it("protects hero copy, the hero box, and dad/alumni/runner; later sections stay tweenable", () => {
     const hero = fakeNode({
       ".kpf-hero": {},
       ".kpf-hero__stage, .kpf-hero__cutout": null,
@@ -24,24 +26,51 @@ describe("isHeroLcpNode", () => {
     });
     const dad = fakeNode({
       ".kpf-hero": {},
-      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni": {},
+      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni, .kpf-hero__cutout--runner": {},
       ".kpf-hero__stage, .kpf-hero__cutout": {},
     });
     const runner = fakeNode({
       ".kpf-hero": {},
-      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni": null,
+      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni, .kpf-hero__cutout--runner": {},
       ".kpf-hero__stage, .kpf-hero__cutout": {},
     });
     const story = fakeNode({
       ".kpf-hero": null,
-      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni": null,
+      ".kpf-hero__cutout--dad, .kpf-hero__cutout--alumni, .kpf-hero__cutout--runner": null,
       ".kpf-hero__stage, .kpf-hero__cutout": null,
     });
     assert.equal(isHeroLcpNode(hero), true);
     assert.equal(isHeroLcpNode(body), true);
     assert.equal(isHeroLcpNode(dad), true);
-    assert.equal(isHeroLcpNode(runner), false);
+    assert.equal(isHeroLcpNode(runner), true);
     assert.equal(isHeroLcpNode(story), false);
     assert.equal(isHeroLcpNode(null), false);
+  });
+});
+
+describe("homepage LCP wiring", () => {
+  it("preloads the desktop runner and does not autoplay footer smoke", () => {
+    const home = fs.readFileSync(
+      path.join(__dirname, "../components/HomePageScaffold.js"),
+      "utf8",
+    );
+    assert.match(home, /href=\{runnerSrc\}/);
+    assert.match(home, /isRunner \|\| isAlumni \? "high"/);
+    assert.match(home, /isDad \|\| isAlumni \|\| isRunner/);
+    assert.doesNotMatch(home, /href=\{dadSrc\}/);
+
+    const pages = fs.readFileSync(
+      path.join(__dirname, "../styles/pages.css"),
+      "utf8",
+    );
+    assert.doesNotMatch(pages, /@keyframes kpf-hero-cutout-runner/);
+
+    const cigar = fs.readFileSync(
+      path.join(__dirname, "../components/CigarSmoke.js"),
+      "utf8",
+    );
+    assert.match(cigar, /preload="none"/);
+    assert.doesNotMatch(cigar, /autoPlay/);
+    assert.match(cigar, /playVideoWhenVisible/);
   });
 });

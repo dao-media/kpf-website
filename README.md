@@ -86,6 +86,8 @@ Avoid `import * as Icons from 'lucide-react'` in hot paths.
 
 Credentials are applied automatically by `scripts/wp-bootstrap.sh` whenever `wp-env` starts. Bootstrap also pins Faust + SEO frontend URLs to port **3010** and writes `frontend/.env.local`.
 
+FaustWP **1.8.12** and WPGraphQL **2.20.0** are pinned in `.wp-env.json` and `wordpress/pinned-plugins.json`. `wordpress/mu-plugins/kpf-guard.php` blocks Dashboard auto-updates of Faust, WPGraphQL, and SCF. After bumping those pins, run `npm run graphql:dump` and commit `wordpress/graphql-schema-fields.json` plus `frontend/possibleTypes.json`.
+
 ## SEO suite
 
 Top-level **SEO** menu in wp-admin covers site defaults, content types, social sharing, structured data, sitemaps, redirects, and automatic placeholders. Its help text is written for non-technical editors. Per-page/post overrides live in the **Search & sharing** editor panel.
@@ -140,6 +142,7 @@ npm run test:seo
 npm run test:scrapbook
 npm run test:components
 npm run test:blocks-graphql
+npm run test:graphql
 npm run test:inbox
 ```
 
@@ -157,6 +160,8 @@ npm run test:inbox
 | `npm run test:scrapbook` | Run Scrapbook model, REST, GraphQL, and SEO integration checks |
 | `npm run test:components` | Run reusable block, hierarchy, pattern, and accessibility checks |
 | `npm run test:blocks-graphql` | Verify Gutenberg blocks and nested relationships over WPGraphQL |
+| `npm run test:graphql` | Dump schema vs pin baseline, smoke home/about/blog queries (fails on field removal) |
+| `npm run graphql:dump` | Refresh `wordpress/graphql-schema-fields.json` after a Faust/WPGraphQL bump |
 | `npm run test:inbox` | Run Inbox menu, forms, and unread badge checks |
 
 ## Page scaffolds (Faust)

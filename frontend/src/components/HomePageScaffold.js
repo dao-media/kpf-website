@@ -473,7 +473,7 @@ export default function HomePageScaffold({
                       aria-controls={panelId}
                       onClick={() => selectAccordion(item.id)}
                     >
-                      <h5 className="kpf-accordion__title">{item.title}</h5>
+                      <h4 className="kpf-accordion__title">{item.title}</h4>
                       <span className="kpf-accordion__icon" aria-hidden="true">
                         <Plus
                           size={24}

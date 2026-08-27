@@ -8,6 +8,7 @@ on:
       - "wordpress/plugins/kpf-core/**"
       - "wordpress/themes/kpf-blank/**"
       - "wordpress/mu-plugins/**"
+      - "wordpress/pinned-plugins.json"
       - "scripts/deploy-dreamhost-wp.sh"
       - ".github/workflows/deploy-dreamhost-wp.yml"
 

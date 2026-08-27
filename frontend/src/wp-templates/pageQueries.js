@@ -6,7 +6,9 @@ const { KPF_GRANTS_QUERY, KPF_GRANTS_TOTAL_QUERY } = require("../lib/grantsQuery
 const { KPF_SCRAPBOOK_TILES_QUERY } = require("../lib/scrapbookTiles");
 const { KPF_EVENTS_QUERY } = require("../lib/eventsQuery");
 const { KPF_BLOG_POSTS_QUERY } = require("../lib/blogPosts");
-const { scaffoldMediaQuery } = require("../lib/scaffoldMedia");
+const { KPF_SCAFFOLD_MEDIA_QUERY, scaffoldMediaQuery } = require("../lib/scaffoldMedia");
+const { KPF_PARTNER_GRANTEES_QUERY } = require("../lib/partnerGrantees");
+const { KPF_LATEST_BLOG_POST_QUERY } = require("../lib/latestBlogPost");
 
 const KPF_KEVIN_SLIDES_QUERY = `
   kpfKevinSlides(first: 12) {
@@ -25,6 +27,56 @@ const KPF_CONTACT_FORM_QUERY = `
     title
     slug
     definitionJson
+  }
+`;
+
+const GET_HOME_PAGE = `
+  query GetHomePage {
+    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_SCAFFOLD_MEDIA_QUERY}
+    ${KPF_PARTNER_GRANTEES_QUERY}
+    ${KPF_LATEST_BLOG_POST_QUERY}
+    home: kpfFrontPage {
+      id
+      databaseId
+      title
+      slug
+      uri
+    }
+    kpfSeoHome {
+      title
+      description
+      canonical
+      robots {
+        index
+        follow
+        noarchive
+        nosnippet
+      }
+      openGraph {
+        title
+        description
+        imageUrl
+        type
+        url
+      }
+      twitter {
+        card
+        site
+        title
+        description
+        imageUrl
+      }
+      customMeta {
+        name
+        property
+        content
+        rel
+        href
+        media
+      }
+      schemaJson
+    }
   }
 `;
 
@@ -96,6 +148,7 @@ const GET_PAGE = `
 `;
 
 module.exports = {
+  GET_HOME_PAGE,
   GET_ABOUT_PAGE,
   GET_CONTACT_PAGE,
   GET_EVENTS_PAGE,

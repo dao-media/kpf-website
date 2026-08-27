@@ -1,0 +1,24 @@
+{
+  "comment": "Canonical pins for Faust, WPGraphQL, and SCF. Dashboard auto-updates are blocked by mu-plugins/kpf-guard.php. Bump versions here and in .wp-env.json together, then run GraphQL CI.",
+  "plugins": [
+    {
+      "slug": "faustwp",
+      "file": "faustwp/faustwp.php",
+      "version": "1.8.12",
+      "zip": "https://downloads.wordpress.org/plugin/faustwp.1.8.12.zip"
+    },
+    {
+      "slug": "wp-graphql",
+      "file": "wp-graphql/wp-graphql.php",
+      "version": "2.20.0",
+      "zip": "https://downloads.wordpress.org/plugin/wp-graphql.2.20.0.zip"
+    },
+    {
+      "slug": "secure-custom-fields",
+      "file": "secure-custom-fields/secure-custom-fields.php",
+      "version": null,
+      "zip": null,
+      "note": "Installed on DreamHost CMS only. Guard still blocks auto-updates."
+    }
+  ]
+}

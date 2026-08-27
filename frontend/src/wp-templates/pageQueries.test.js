@@ -1,6 +1,7 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
+  GET_HOME_PAGE,
   GET_ABOUT_PAGE,
   GET_CONTACT_PAGE,
   GET_EVENTS_PAGE,
@@ -20,6 +21,19 @@ function assertOmits(query, needles, label) {
 }
 
 describe("slug Faust page queries", () => {
+  it("Home fetches partners, latest post, front page, and home SEO", () => {
+    assert.match(GET_HOME_PAGE, /query GetHomePage/);
+    assert.match(GET_HOME_PAGE, /kpfPartnerGrantees/);
+    assert.match(GET_HOME_PAGE, /kpfLatestBlogPost/);
+    assert.match(GET_HOME_PAGE, /kpfFrontPage/);
+    assert.match(GET_HOME_PAGE, /kpfSeoHome/);
+    assertOmits(
+      GET_HOME_PAGE,
+      [/kpfPageDesign/, /foundationEvents/, /kpfForm/, /editorBlocks/],
+      "GetHomePage",
+    );
+  });
+
   it("keeps CSS bodies out of the page shell", () => {
     assert.match(GET_ABOUT_PAGE, /kpfStylesheetInfo/);
     assert.doesNotMatch(GET_ABOUT_PAGE, /\bkpfStylesheet\s*\{/);

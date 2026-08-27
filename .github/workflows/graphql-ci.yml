@@ -1,0 +1,62 @@
+name: GraphQL schema
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".wp-env.json"
+      - "wordpress/pinned-plugins.json"
+      - "wordpress/graphql-schema-fields.json"
+      - "wordpress/plugins/kpf-core/**"
+      - "wordpress/mu-plugins/kpf-guard.php"
+      - "frontend/possibleTypes.json"
+      - "frontend/src/wp-templates/**"
+      - "frontend/src/lib/**"
+      - "scripts/graphql-ci.mjs"
+      - "scripts/wp-bootstrap.sh"
+      - ".github/workflows/graphql-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".wp-env.json"
+      - "wordpress/pinned-plugins.json"
+      - "wordpress/graphql-schema-fields.json"
+      - "wordpress/plugins/kpf-core/**"
+      - "wordpress/mu-plugins/kpf-guard.php"
+      - "frontend/possibleTypes.json"
+      - "frontend/src/wp-templates/**"
+      - "frontend/src/lib/**"
+      - "scripts/graphql-ci.mjs"
+      - "scripts/wp-bootstrap.sh"
+      - ".github/workflows/graphql-ci.yml"
+
+jobs:
+  graphql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: |
+          npm ci
+          npm ci --prefix frontend
+
+      - name: Start wp-env
+        run: npx wp-env start
+
+      - name: Dump schema, fail on field removal, smoke home/about/blog
+        run: node scripts/graphql-ci.mjs
+
+      - name: Faust generatePossibleTypes
+        env:
+          NEXT_PUBLIC_WORDPRESS_URL: http://127.0.0.1:8888
+        run: npm --prefix frontend run generate
+
+      - name: possibleTypes.json must be committed after Faust/WPGraphQL bumps
+        run: git diff --exit-code -- frontend/possibleTypes.json

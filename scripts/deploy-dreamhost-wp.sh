@@ -25,6 +25,7 @@ USER="${DH_USER:-daneoleary}"
 PLUGIN_PATH="${DH_PLUGIN_PATH:-kpf.dreamhosters.com/wp-content/plugins/kpf-core}"
 THEME_PATH="${DH_THEME_PATH:-kpf.dreamhosters.com/wp-content/themes/kpf-blank}"
 MU_PATH="${DH_MU_PATH:-kpf.dreamhosters.com/wp-content/mu-plugins}"
+PINNED_JSON_PATH="${DH_PINNED_JSON_PATH:-kpf.dreamhosters.com/wp-content/kpf-pinned-plugins.json}"
 KEY_FILE="${DH_SSH_KEY_FILE:-}"
 REF="${KPF_DEPLOY_REF:-HEAD}"
 FROM_WORKDIR="${KPF_DEPLOY_FROM_WORKDIR:-0}"
@@ -124,6 +125,7 @@ REMOTE
 SRC_PLUGIN=""
 SRC_THEME=""
 SRC_MU=""
+SRC_PINNED=""
 
 if [[ "$FROM_WORKDIR" == "1" ]]; then
   echo "→ deploying working tree (KPF_DEPLOY_FROM_WORKDIR=1)"
@@ -131,10 +133,12 @@ if [[ "$FROM_WORKDIR" == "1" ]]; then
     refuse_dirty "wordpress/plugins/kpf-core"
     refuse_dirty "wordpress/themes/kpf-blank"
     refuse_dirty "wordpress/mu-plugins"
+    refuse_dirty "wordpress/pinned-plugins.json"
   fi
   SRC_PLUGIN="$ROOT/wordpress/plugins/kpf-core/"
   SRC_THEME="$ROOT/wordpress/themes/kpf-blank/"
   SRC_MU="$ROOT/wordpress/mu-plugins/"
+  SRC_PINNED="$ROOT/wordpress/pinned-plugins.json"
 else
   if ! git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "Not a git work tree. Refusing to rsync the working directory." >&2
@@ -149,10 +153,12 @@ else
     wordpress/plugins/kpf-core \
     wordpress/themes/kpf-blank \
     wordpress/mu-plugins \
+    wordpress/pinned-plugins.json \
     | tar -x -C "$STAGE"
   SRC_PLUGIN="$STAGE/wordpress/plugins/kpf-core/"
   SRC_THEME="$STAGE/wordpress/themes/kpf-blank/"
   SRC_MU="$STAGE/wordpress/mu-plugins/"
+  SRC_PINNED="$STAGE/wordpress/pinned-plugins.json"
   if [[ ! -d "$SRC_PLUGIN" || ! -d "$SRC_THEME" ]]; then
     echo "git archive ${REF} did not produce plugin/theme trees." >&2
     exit 1
@@ -180,6 +186,14 @@ if [[ -d "$SRC_MU" ]]; then
     -e "$WRAPPER" \
     "$SRC_MU" \
     "${USER}@${HOST}:${MU_PATH}/"
+fi
+
+if [[ -f "$SRC_PINNED" ]]; then
+  echo "→ pinned plugins ${USER}@${HOST}:${PINNED_JSON_PATH}"
+  rsync -az ${RSYNC_DRY:+$RSYNC_DRY} \
+    -e "$WRAPPER" \
+    "$SRC_PINNED" \
+    "${USER}@${HOST}:${PINNED_JSON_PATH}"
 fi
 
 echo "DreamHost WordPress plugin/theme sync complete."

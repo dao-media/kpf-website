@@ -3,12 +3,17 @@
   "plugins": [
     "https://downloads.wordpress.org/plugin/wp-graphql.2.20.0.zip",
     "https://github.com/wpengine/wp-graphql-content-blocks/releases/download/v4.8.6/wp-graphql-content-blocks.zip",
-    "https://downloads.wordpress.org/plugin/faustwp.latest-stable.zip",
+    "https://downloads.wordpress.org/plugin/faustwp.1.8.12.zip",
     "./wordpress/plugins/kpf-core"
   ],
   "themes": [
     "./wordpress/themes/kpf-blank"
   ],
+  "mappings": {
+    "wp-content/mu-plugins/kpf-guard.php": "./wordpress/mu-plugins/kpf-guard.php",
+    "wp-content/mu-plugins/kpf-admin-host.php": "./wordpress/mu-plugins/kpf-admin-host.php",
+    "wp-content/kpf-pinned-plugins.json": "./wordpress/pinned-plugins.json"
+  },
   "port": 8888,
   "testsEnvironment": false,
   "config": {

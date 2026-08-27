@@ -52,6 +52,35 @@ fi
 
 # Dashboard/plugin-zip swaps can leave dependents inactive. Re-activate the
 # GraphQL stack Faust and kpf-core need after any restore.
+# Pin FaustWP to the zip in .wp-env.json / wordpress/pinned-plugins.json.
+FAUSTWP_DIR="wp-content/plugins/faustwp"
+FAUSTWP_ZIP_URL="https://downloads.wordpress.org/plugin/faustwp.1.8.12.zip"
+FAUSTWP_VERSION="1.8.12"
+NEED_FAUSTWP_RESTORE=0
+if ! npx wp-env run cli bash -lc "test -f ${FAUSTWP_DIR}/faustwp.php" >/dev/null 2>&1; then
+  NEED_FAUSTWP_RESTORE=1
+elif ! npx wp-env run cli bash -lc "grep -q \"Version: ${FAUSTWP_VERSION}\" ${FAUSTWP_DIR}/faustwp.php" >/dev/null 2>&1; then
+  echo "FaustWP is not ${FAUSTWP_VERSION}; restoring from release zip..."
+  NEED_FAUSTWP_RESTORE=1
+fi
+if [ "${NEED_FAUSTWP_RESTORE}" -eq 1 ]; then
+  echo "Restoring FaustWP ${FAUSTWP_VERSION} into ${FAUSTWP_DIR}..."
+  npx wp-env run cli bash -lc "
+    set -e
+    TARGET=/var/www/html/${FAUSTWP_DIR}
+    ZIP=/tmp/faustwp-restore.zip
+    EXTRACT=/tmp/faustwp-restore
+    mkdir -p \"\$TARGET\"
+    curl -fsSL '${FAUSTWP_ZIP_URL}' -o \"\$ZIP\"
+    rm -rf \"\$EXTRACT\"
+    mkdir -p \"\$EXTRACT\"
+    unzip -qo \"\$ZIP\" -d \"\$EXTRACT\"
+    SRC=\$(find \"\$EXTRACT\" -type f -name 'faustwp.php' | head -1 | xargs dirname)
+    find \"\$TARGET\" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+    cp -a \"\$SRC\"/. \"\$TARGET\"/
+  "
+fi
+
 for dep in wp-graphql-content-blocks faustwp.latest-stable faustwp kpf-core wpgraphql-acf; do
   if npx wp-env run cli bash -lc "test -e wp-content/plugins/${dep} || test -e wp-content/plugins/${dep}.php" >/dev/null 2>&1; then
     if ! $WP plugin is-active "${dep}" >/dev/null 2>&1; then

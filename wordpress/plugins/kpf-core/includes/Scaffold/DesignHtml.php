@@ -176,15 +176,15 @@ final class DesignHtml {
         <h3 class="kpf-h4">How your donations are used</h3>
         <div class="kpf-donate__list">
           <details class="kpf-accordion">
-            <summary class="kpf-accordion__header"><h5 class="kpf-accordion__title">Housing</h5><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
+            <summary class="kpf-accordion__header"><h4 class="kpf-accordion__title">Housing</h4><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
             <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Transitional and permanent housing for veterans who don’t currently have any.</p></div></div>
           </details>
           <details class="kpf-accordion">
-            <summary class="kpf-accordion__header"><h5 class="kpf-accordion__title">Work</h5><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
+            <summary class="kpf-accordion__header"><h4 class="kpf-accordion__title">Work</h4><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
             <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Job training and workforce programs that turn service experience into a career.</p></div></div>
           </details>
           <details class="kpf-accordion">
-            <summary class="kpf-accordion__header"><h5 class="kpf-accordion__title">Family</h5><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
+            <summary class="kpf-accordion__header"><h4 class="kpf-accordion__title">Family</h4><span class="kpf-accordion__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12h14"/><path d="M12 5v14"/></svg></span></summary>
             <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Emergency financial help and support for veterans’ families, including Special Operations families in crisis.</p></div></div>
           </details>
         </div>
@@ -371,7 +371,7 @@ HTML;
       <div class="kpf-mission__criteria kpf-donate__list">
         <div class="kpf-accordion is-open">
           <button type="button" class="kpf-accordion__header" aria-expanded="true">
-            <h5 class="kpf-accordion__title">Leadership in the work</h5>
+            <h3 class="kpf-accordion__title">Leadership in the work</h3>
           </button>
           <div class="kpf-accordion__body">
             <div class="kpf-accordion__content">
@@ -381,7 +381,7 @@ HTML;
         </div>
         <div class="kpf-accordion">
           <button type="button" class="kpf-accordion__header" aria-expanded="false">
-            <h5 class="kpf-accordion__title">Dollars that reach veterans</h5>
+            <h3 class="kpf-accordion__title">Dollars that reach veterans</h3>
           </button>
           <div class="kpf-accordion__body" aria-hidden="true">
             <div class="kpf-accordion__content">
@@ -391,7 +391,7 @@ HTML;
         </div>
         <div class="kpf-accordion">
           <button type="button" class="kpf-accordion__header" aria-expanded="false">
-            <h5 class="kpf-accordion__title">Built to last</h5>
+            <h3 class="kpf-accordion__title">Built to last</h3>
           </button>
           <div class="kpf-accordion__body" aria-hidden="true">
             <div class="kpf-accordion__content">
@@ -401,7 +401,7 @@ HTML;
         </div>
         <div class="kpf-accordion">
           <button type="button" class="kpf-accordion__header" aria-expanded="false">
-            <h5 class="kpf-accordion__title">Close enough to see</h5>
+            <h3 class="kpf-accordion__title">Close enough to see</h3>
           </button>
           <div class="kpf-accordion__body" aria-hidden="true">
             <div class="kpf-accordion__content">
@@ -547,15 +547,15 @@ HTML;
       </div>
       <div class="kpf-events-partner__paths kpf-donate__list">
         <div class="kpf-accordion is-open">
-          <button type="button" class="kpf-accordion__header" aria-expanded="true"><h5 class="kpf-accordion__title">Sponsor a night</h5></button>
+          <button type="button" class="kpf-accordion__header" aria-expanded="true"><h3 class="kpf-accordion__title">Sponsor a night</h3></button>
           <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Put your name behind a room that cares who's in it. Packages start where you are and fund grants directly.</p></div></div>
         </div>
         <div class="kpf-accordion">
-          <button type="button" class="kpf-accordion__header" aria-expanded="false"><h5 class="kpf-accordion__title">Host a fundraiser</h5></button>
+          <button type="button" class="kpf-accordion__header" aria-expanded="false"><h3 class="kpf-accordion__title">Host a fundraiser</h3></button>
           <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Run a collection, a dinner, or a night of your own. We'll help you point every dollar toward Florida veterans.</p></div></div>
         </div>
         <div class="kpf-accordion">
-          <button type="button" class="kpf-accordion__header" aria-expanded="false"><h5 class="kpf-accordion__title">Corporate match</h5></button>
+          <button type="button" class="kpf-accordion__header" aria-expanded="false"><h3 class="kpf-accordion__title">Corporate match</h3></button>
           <div class="kpf-accordion__body"><div class="kpf-accordion__content"><p>Double the impact of employee giving with a corporate match tied to an event or a year-round partnership.</p></div></div>
         </div>
       </div>

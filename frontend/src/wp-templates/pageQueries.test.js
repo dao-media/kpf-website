@@ -56,12 +56,13 @@ describe("slug Faust page queries", () => {
     );
   });
 
-  it("Contact fetches the contact form only", () => {
+  it("Contact fetches the contact form and sitewide GSAP chrome", () => {
     assert.match(GET_CONTACT_PAGE, /query GetContactPage/);
     assert.match(GET_CONTACT_PAGE, /kpfForm\(slug: "contact"\)/);
+    assert.match(GET_CONTACT_PAGE, /kpfGsapAnimations/);
     assertOmits(
       GET_CONTACT_PAGE,
-      [/foundationEvents/, /kpfQuery/, /kpfKevinSlides/, /kpfPageDesign/, /kpfBlogPosts/, /kpfGsapAnimations/],
+      [/foundationEvents/, /kpfQuery/, /kpfKevinSlides/, /kpfPageDesign/, /kpfBlogPosts/],
       "GetContactPage",
     );
   });
@@ -78,9 +79,10 @@ describe("slug Faust page queries", () => {
     );
   });
 
-  it("Blog fetches posts, not Mustache design HTML", () => {
+  it("Blog fetches posts and sitewide GSAP chrome, not Mustache design HTML", () => {
     assert.match(GET_BLOG_PAGE, /query GetBlogPage/);
     assert.match(GET_BLOG_PAGE, /kpfBlogPosts/);
+    assert.match(GET_BLOG_PAGE, /kpfGsapAnimations/);
     assertOmits(
       GET_BLOG_PAGE,
       [
@@ -90,18 +92,18 @@ describe("slug Faust page queries", () => {
         /kpfQuery\(slug: "grants"\)/,
         /kpfKevinSlides/,
         /kpfForm/,
-        /kpfGsapAnimations/,
       ],
       "GetBlogPage",
     );
   });
 
-  it("Privacy fetches Gutenberg content, not design HTML", () => {
+  it("Privacy fetches Gutenberg content and sitewide GSAP chrome, not design HTML", () => {
     assert.match(GET_PRIVACY_PAGE, /query GetPrivacyPage/);
     assert.match(GET_PRIVACY_PAGE, /^\s+content$/m);
+    assert.match(GET_PRIVACY_PAGE, /kpfGsapAnimations/);
     assertOmits(
       GET_PRIVACY_PAGE,
-      [/kpfPageDesign/, /foundationEvents/, /kpfBlogPosts/, /kpfForm/, /kpfGsapAnimations/],
+      [/kpfPageDesign/, /foundationEvents/, /kpfBlogPosts/, /kpfForm/],
       "GetPrivacyPage",
     );
   });

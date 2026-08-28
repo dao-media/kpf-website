@@ -57,11 +57,13 @@ function settleHeaderEntrance(header, badge) {
   header.style.visibility = "";
   if (badge) {
     if (headerGsap) {
-      headerGsap.killTweensOf(badge, "autoAlpha,opacity,visibility,y");
+      headerGsap.killTweensOf(badge, "autoAlpha,opacity,visibility,y,x");
+      headerGsap.set(badge, { autoAlpha: 1, x: 0, y: 0, overwrite: false });
     }
     badge.style.opacity = "";
     badge.style.visibility = "";
     badge.style.transform = "";
+    badge.style.animation = "";
   } else {
     restoreHeaderBadge({ gsap: headerGsap });
   }

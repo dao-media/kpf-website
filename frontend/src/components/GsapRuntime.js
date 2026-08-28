@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { gsap } from "gsap";
-import { isHeaderBadgeNode, restoreHeaderBadge } from "@/lib/headerBadge";
+import {
+  isHeaderBadgeEntranceSettled,
+  isHeaderBadgeNode,
+  restoreHeaderBadge,
+} from "@/lib/headerBadge";
 
 const { isGalleryEnterNode, isHeroLcpNode } = require("@/lib/gsapLcp");
 const {
@@ -135,6 +139,52 @@ function resolveTweenTargets(triggerTargets, config) {
   });
 }
 
+/**
+ * Kill the CSS drop and pin x/y at rest before GSAP writes a transform.
+ * Otherwise a mid-drop translateY is baked into the matrix and the badge
+ * looks stuck halfway off the page during hover swing.
+ */
+function pinBadgeRestPose(nodes, origin) {
+  const list = gsap.utils.toArray(nodes).filter(isHeaderBadgeNode);
+  if (!list.length) return;
+  list.forEach((badge) => {
+    badge.style.animation = "none";
+  });
+  gsap.set(list, {
+    x: 0,
+    y: 0,
+    ...(origin ? { transformOrigin: origin } : {}),
+    overwrite: false,
+  });
+}
+
+function whenHeaderBadgeReady(callback) {
+  if (isHeaderBadgeEntranceSettled()) {
+    callback();
+    return () => {};
+  }
+  let done = false;
+  const finish = (run) => {
+    if (done) return;
+    done = true;
+    observer.disconnect();
+    clearInterval(poll);
+    clearTimeout(safety);
+    if (run) callback();
+  };
+  const check = () => {
+    if (isHeaderBadgeEntranceSettled()) finish(true);
+  };
+  const observer = new MutationObserver(check);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+  const poll = setInterval(check, 100);
+  const safety = setTimeout(() => finish(true), 2000);
+  return () => finish(false);
+}
+
 function createTween(targets, animation, extra = {}) {
   const { config } = animation;
   const tweenTargets = resolveTweenTargets(targets, config);
@@ -150,7 +200,17 @@ function createTween(targets, animation, extra = {}) {
     config.to?.transformOrigin ||
     config.keyframes?.find((frame) => frame?.props?.transformOrigin)?.props
       ?.transformOrigin;
-  if (origin) {
+  if (protectBadge) {
+    pinBadgeRestPose(nodes, origin);
+    if (extra.paused && config.from && typeof config.from === "object") {
+      gsap.set(nodes, {
+        ...stripHideProps(config.from),
+        x: 0,
+        y: 0,
+        overwrite: false,
+      });
+    }
+  } else if (origin) {
     // GSAP writes an inline `transform` when touching transformOrigin. A bare
     // translate(0,0) overrides CSS resting transforms (e.g. nav underline
     // scaleX:0) and leaves every link looking active. Seed `from` for paused
@@ -389,114 +449,146 @@ export default function GsapRuntime({ animations = [] }) {
               // Chip/card is the control; do not paint org names as text links.
               if (isPartnersChip(target)) return;
               if (!isDisplayedForTween(target)) return;
-              const tween = createTween(target, animation, {
-                paused: true,
-                // Apply `from` so resting state matches CSS (nav underlines
-                // must start at scaleX:0; otherwise GSAP inline transforms
-                // make every link look current).
-                immediateRender: true,
-              });
-              if (!tween) return;
-              if (animation.trigger === "hover") {
-                const usesRotation = Boolean(
-                  animation.config?.to?.rotation != null ||
-                    animation.config?.from?.rotation != null ||
-                    (animation.config?.keyframes || []).some(
-                      (frame) => frame?.props?.rotation != null,
-                    ),
-                );
-                /** Soft edge: delay leave so the hit-boundary doesn’t stutter. */
-                const LEAVE_GRACE_MS = 160;
-                let leaveTimer = null;
-                /** True from first enter until a real leave — blocks click/focusin restarts. */
-                let hovering = false;
+              const tweenNodes = resolveTweenTargets(target, animation.config);
+              const isBadgeHover = gsap.utils
+                .toArray(tweenNodes)
+                .some(isHeaderBadgeNode);
 
-                const clearLeaveTimer = () => {
-                  if (leaveTimer) {
-                    clearTimeout(leaveTimer);
-                    leaveTimer = null;
-                  }
-                };
+              const bindInteractive = () => {
+                if (isBadgeHover) {
+                  pinBadgeRestPose(
+                    tweenNodes,
+                    animation.config?.from?.transformOrigin ||
+                      animation.config?.to?.transformOrigin ||
+                      "50% 0%",
+                  );
+                }
+                const tween = createTween(target, animation, {
+                  paused: true,
+                  // Apply `from` so resting state matches CSS (nav underlines
+                  // must start at scaleX:0; otherwise GSAP inline transforms
+                  // make every link look current).
+                  immediateRender: true,
+                });
+                if (!tween) return;
+                if (animation.trigger === "hover") {
+                  const usesRotation = Boolean(
+                    animation.config?.to?.rotation != null ||
+                      animation.config?.from?.rotation != null ||
+                      (animation.config?.keyframes || []).some(
+                        (frame) => frame?.props?.rotation != null,
+                      ),
+                  );
+                  /** Soft edge: delay leave so the hit-boundary doesn’t stutter. */
+                  const LEAVE_GRACE_MS = 160;
+                  let leaveTimer = null;
+                  /** True from first enter until a real leave — blocks click/focusin restarts. */
+                  let hovering = false;
 
-                const enter = (event) => {
-                  // Still inside the trigger (moving between brand + badge).
-                  if (
-                    event?.type === "focusin" &&
-                    event.relatedTarget &&
-                    target.contains(event.relatedTarget)
-                  ) {
-                    return;
-                  }
-                  clearLeaveTimer();
-                  // Current page: no underline. Playing the tween (even if CSS
-                  // hides it) leaves scaleX:1 for reverse() to flash on leave.
-                  if (isCurrentHeaderNavLink(target)) {
-                    hovering = false;
-                    tween.pause(0);
-                    return;
-                  }
-                  // Already hovered (e.g. click → focusin while :hover) — do not re-run.
-                  if (hovering) return;
-                  hovering = true;
-                  if (usesRotation) {
-                    // Already mid-swing — don’t restart (avoids edge flicker).
-                    if (tween.isActive()) return;
-                    tween.restart();
-                    return;
-                  }
-                  tween.restart();
-                };
-
-                const leave = (event) => {
-                  if (
-                    event?.relatedTarget &&
-                    target.contains(event.relatedTarget)
-                  ) {
-                    return;
-                  }
-                  if (usesRotation) {
-                    clearLeaveTimer();
-                    leaveTimer = setTimeout(() => {
+                  const clearLeaveTimer = () => {
+                    if (leaveTimer) {
+                      clearTimeout(leaveTimer);
                       leaveTimer = null;
-                      // Re-check: cursor may have returned during the grace window.
-                      if (target.matches(":hover") || target.contains(document.activeElement)) {
-                        return;
-                      }
-                      hovering = false;
-                      tween.pause();
-                      gsap.to(resolveTweenTargets(target, animation.config), {
-                        rotation: 0,
-                        duration: 0.4,
-                        ease: "sine.out",
-                        overwrite: "auto",
-                      });
-                    }, LEAVE_GRACE_MS);
-                    return;
-                  }
-                  // Nav underline etc. — reverse only after a true unhover.
-                  hovering = false;
-                  if (isCurrentHeaderNavLink(target)) {
-                    tween.pause(0);
-                    return;
-                  }
-                  tween.reverse();
-                };
+                    }
+                  };
 
-                target.addEventListener("mouseenter", enter);
-                target.addEventListener("mouseleave", leave);
-                target.addEventListener("focusin", enter);
-                target.addEventListener("focusout", leave);
-                listeners.push(
-                  [target, "mouseenter", enter],
-                  [target, "mouseleave", leave],
-                  [target, "focusin", enter],
-                  [target, "focusout", leave],
-                );
-                cleanups.push(clearLeaveTimer);
+                  const enter = (event) => {
+                    // Still inside the trigger (moving between brand + badge).
+                    if (
+                      event?.type === "focusin" &&
+                      event.relatedTarget &&
+                      target.contains(event.relatedTarget)
+                    ) {
+                      return;
+                    }
+                    clearLeaveTimer();
+                    // Current page: no underline. Playing the tween (even if CSS
+                    // hides it) leaves scaleX:1 for reverse() to flash on leave.
+                    if (isCurrentHeaderNavLink(target)) {
+                      hovering = false;
+                      tween.pause(0);
+                      return;
+                    }
+                    // Already hovered (e.g. click → focusin while :hover) — do not re-run.
+                    if (hovering) return;
+                    hovering = true;
+                    if (usesRotation) {
+                      // Already mid-swing — don’t restart (avoids edge flicker).
+                      if (tween.isActive()) return;
+                      // Pin rest pose so a leftover CSS-drop Y cannot ride along.
+                      if (isBadgeHover) {
+                        pinBadgeRestPose(tweenNodes, "50% 0%");
+                      }
+                      tween.restart();
+                      return;
+                    }
+                    tween.restart();
+                  };
+
+                  const leave = (event) => {
+                    if (
+                      event?.relatedTarget &&
+                      target.contains(event.relatedTarget)
+                    ) {
+                      return;
+                    }
+                    if (usesRotation) {
+                      clearLeaveTimer();
+                      leaveTimer = setTimeout(() => {
+                        leaveTimer = null;
+                        // Re-check: cursor may have returned during the grace window.
+                        if (
+                          target.matches(":hover") ||
+                          target.contains(document.activeElement)
+                        ) {
+                          return;
+                        }
+                        hovering = false;
+                        tween.pause();
+                        gsap.to(resolveTweenTargets(target, animation.config), {
+                          rotation: 0,
+                          x: 0,
+                          y: 0,
+                          duration: 0.4,
+                          ease: "sine.out",
+                          overwrite: "auto",
+                        });
+                      }, LEAVE_GRACE_MS);
+                      return;
+                    }
+                    // Nav underline etc. — reverse only after a true unhover.
+                    hovering = false;
+                    if (isCurrentHeaderNavLink(target)) {
+                      tween.pause(0);
+                      return;
+                    }
+                    tween.reverse();
+                  };
+
+                  target.addEventListener("mouseenter", enter);
+                  target.addEventListener("mouseleave", leave);
+                  target.addEventListener("focusin", enter);
+                  target.addEventListener("focusout", leave);
+                  listeners.push(
+                    [target, "mouseenter", enter],
+                    [target, "mouseleave", leave],
+                    [target, "focusin", enter],
+                    [target, "focusout", leave],
+                  );
+                  cleanups.push(clearLeaveTimer);
+                } else {
+                  const click = () => tween.restart();
+                  target.addEventListener("click", click);
+                  listeners.push([target, "click", click]);
+                }
+              };
+
+              // Badge swing must wait for the CSS drop to finish — otherwise
+              // GSAP captures a mid-flight translateY and the mark jumps up.
+              if (isBadgeHover) {
+                cleanups.push(whenHeaderBadgeReady(bindInteractive));
               } else {
-                const click = () => tween.restart();
-                target.addEventListener("click", click);
-                listeners.push([target, "click", click]);
+                bindInteractive();
               }
             });
             return;

@@ -104,7 +104,7 @@ const GET_ABOUT_PAGE = `
 
 const GET_CONTACT_PAGE = `
   query GetContactPage($uri: ID!) {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     ${scaffoldMediaQuery(["cta."])}
     ${KPF_CONTACT_FORM_QUERY}
     page(id: $uri, idType: URI) {
@@ -126,7 +126,7 @@ const GET_EVENTS_PAGE = `
 
 const GET_BLOG_PAGE = `
   query GetBlogPage($uri: ID!) {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     ${scaffoldMediaQuery(["cta."])}
     ${KPF_BLOG_POSTS_QUERY}
     page(id: $uri, idType: URI) {
@@ -137,7 +137,7 @@ const GET_BLOG_PAGE = `
 
 const GET_PRIVACY_PAGE = `
   query GetPrivacyPage($uri: ID!) {
-    ${KPF_PAGE_SHELL_QUERY}
+    ${KPF_PAGE_SHELL_WITH_GSAP_QUERY}
     page(id: $uri, idType: URI) {
       ${KPF_PAGE_NODE_CORE}
       content

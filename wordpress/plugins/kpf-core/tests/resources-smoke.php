@@ -118,7 +118,8 @@ kpf_resources_assert( is_array( $page_copy ), 'Editing page content card resolve
 $page_blob = wp_json_encode( $page_copy );
 kpf_resources_assert( false !== stripos( (string) $page_blob, 'All Pages' ), 'Page content card names All Pages' );
 kpf_resources_assert( false !== stripos( (string) $page_blob, 'built-in' ), 'Page content card warns about built-in layouts' );
-kpf_resources_assert( false !== stripos( (string) $page_blob, 'Dynamic Content' ), 'Page content card points to Dynamic Content' );
+kpf_resources_assert( false === stripos( (string) $page_blob, 'Pages → Designs' ), 'Page content card does not send editors to Designs' );
+kpf_resources_assert( false === stripos( (string) $page_blob, 'Dynamic Content' ), 'Page content card does not send editors to unwired Dynamic Content' );
 kpf_resources_assert( is_array( $page_copy['screenshots'] ?? null ) && count( $page_copy['screenshots'] ) >= 2, 'Page content card includes two screenshots' );
 
 $scrapbook = null;

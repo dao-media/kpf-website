@@ -229,14 +229,14 @@ final class Resources {
 			array(
 				'label'       => __( 'GraphQL', 'kpf-core' ),
 				'description' => __(
-					'WPGraphQL and WPGraphQL Content Blocks. Faust reads SEO, page designs, queries, forms, Scrapbook, grants, events, and the global stylesheet over this API.',
+					'WPGraphQL and WPGraphQL Content Blocks. Faust reads SEO, queries, forms, Scrapbook, grants, events, and the global stylesheet over this API.',
 					'kpf-core'
 				),
 			),
 			array(
 				'label'       => __( 'kpf-core', 'kpf-core' ),
 				'description' => __(
-					'Custom plugin: Designs, Queries, Forms, GSAP interactions, SEO, Scrapbook, Grants, Events, Components, Tokens, Stylesheet, Inbox, and this Resources screen.',
+					'Custom plugin: Queries, Forms, GSAP interactions, SEO, Scrapbook, Grants, Events, Components, Tokens, Stylesheet, Inbox, and this Resources screen.',
 					'kpf-core'
 				),
 			),
@@ -319,7 +319,7 @@ final class Resources {
 				'id'          => 'page-content',
 				'title'       => __( 'Page content', 'kpf-core' ),
 				'description' => __(
-					'Title, slug, and SEO on All Pages. List content (scrapbook, events, grants, Kevin slides) uses the cards below. Headlines on Home, About, Events, Blog, Contact, and Privacy still ship with the public site until page-copy tags are wired.',
+					'Title, slug, and SEO on All Pages. Photos, events, grants, and Kevin slides use the cards below. Headlines and body copy on Home, About, Events, Blog, Contact, and Privacy are not edited from this CMS.',
 					'kpf-core'
 				),
 				'cards'       => array(
@@ -420,21 +420,21 @@ final class Resources {
 	 * @return array<string, mixed>
 	 */
 	private static function card_editing_page_content(): array {
-		$pages_url = admin_url( 'edit.php?post_type=page' );
-		$dynamic_url = admin_url( 'admin.php?page=kpf-dynamic-content' );
-		$about       = self::screenshot(
+		$pages_url     = admin_url( 'edit.php?post_type=page' );
+		$scrapbook_url = admin_url( 'edit.php?post_type=' . ScrapbookContentType::POST_TYPE );
+		$about         = self::screenshot(
 			'scrapbook.webp',
-			__( 'About page “The work” mosaic: photos come from Scrapbook; the eyebrow and heading are still built-in layout copy.', 'kpf-core' ),
+			__( 'About page mosaic: photos come from Scrapbook. The section heading on that page is not edited here.', 'kpf-core' ),
 			'center 42%',
 			__( '1. Photos and stories on About come from Scrapbook, Grants, and Kevin slides', 'kpf-core' )
 		);
-		$list        = self::screenshot(
+		$list          = self::screenshot(
 			'scrapbook-list.webp',
-			__( 'CMS lists you can edit today: Scrapbook, Events, Grants, Grantees, Kevin slides.', 'kpf-core' ),
+			__( 'Scrapbook, Events, Grants, Grantees, and Kevin slides are the lists you edit in this CMS.', 'kpf-core' ),
 			'left top',
-			__( '2. Open Pages → All Pages for title, slug, and SEO', 'kpf-core' )
+			__( '2. Use those lists for photos and stories; All Pages is only title, slug, and SEO', 'kpf-core' )
 		);
-		$shots       = array_values( array_filter( array( $about, $list ) ) );
+		$shots         = array_values( array_filter( array( $about, $list ) ) );
 
 		$actions = array(
 			array(
@@ -442,17 +442,16 @@ final class Resources {
 				'url'     => $pages_url,
 				'primary' => true,
 			),
+			array(
+				'label'   => __( 'Scrapbook', 'kpf-core' ),
+				'url'     => $scrapbook_url,
+				'primary' => false,
+			),
 		);
 		if ( DesignsAdmin::show_admin_ui() ) {
 			$actions[] = array(
 				'label'   => __( 'Open Designs', 'kpf-core' ),
 				'url'     => admin_url( 'edit.php?post_type=page&page=kpf-designs' ),
-				'primary' => false,
-			);
-		} else {
-			$actions[] = array(
-				'label'   => __( 'Dynamic Content', 'kpf-core' ),
-				'url'     => $dynamic_url,
 				'primary' => false,
 			);
 		}
@@ -462,7 +461,7 @@ final class Resources {
 			'icon'        => 'FilePenLine',
 			'title'       => __( 'Editing page content', 'kpf-core' ),
 			'summary'     => __(
-				'Use All Pages for title, slug, and SEO. Use the other Resources cards for photos, grants, events, and Kevin slides. Headlines on the public pages still ship with the Vercel layout.',
+				'Use All Pages for title, slug, and SEO. Use the other Resources cards for photos, grants, events, and Kevin slides. Headlines on the public pages are not edited from this CMS.',
 				'kpf-core'
 			),
 			'screenshot'  => $about,
@@ -472,15 +471,14 @@ final class Resources {
 					'title' => __( 'What you can edit here', 'kpf-core' ),
 					'items' => array(
 						__( 'Open <strong>Pages → All Pages</strong>, then the page. Change title, slug, featured image, and SEO, then <strong>Save page</strong>.', 'kpf-core' ),
-						__( 'Photos, grants, events, and Kevin slides on those pages are separate: use the Scrapbook, Grants, and Kevin’s Stories cards in Resources.', 'kpf-core' ),
+						__( 'Photos, grants, events, and Kevin slides on those pages are separate: use the Scrapbook, Grants, and Kevin’s Stories cards below.', 'kpf-core' ),
 					),
 				),
 				array(
 					'title' => __( 'Headlines and body copy', 'kpf-core' ),
 					'items' => array(
-						__( 'Home, About, Events, Blog, Contact, and Privacy render a built-in layout on the public site. Changing an HTML design file does not update what visitors see.', 'kpf-core' ),
-						__( '<strong>Pages → Designs</strong> is parked for now so it is not mistaken for a live editor.', 'kpf-core' ),
-						__( '<strong>Code → Dynamic Content</strong> already has site-wide tags. Page-grouped copy tags (for example about.gallery.eyebrow) are the planned way to edit those headlines from the CMS.', 'kpf-core' ),
+						__( 'Home, About, Events, Blog, Contact, and Privacy use a built-in public layout. Changing those headlines is not a CMS task yet — they do not come from this screen or from All Pages.', 'kpf-core' ),
+						__( 'Example: on About, Scrapbook photos feed “The work” mosaic, but the eyebrow and heading above that mosaic are part of the public layout.', 'kpf-core' ),
 					),
 				),
 			),

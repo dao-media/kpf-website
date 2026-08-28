@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KPF\Core\Admin;
 
 use KPF\Core\Backups\Admin as BackupsAdmin;
+use KPF\Core\Designs\Admin as DesignsAdmin;
 use KPF\Core\Backups\Scheduler as BackupsScheduler;
 use KPF\Core\Backups\Storage as BackupsStorage;
 use KPF\Core\Designs\Meta as DesignsMeta;
@@ -125,23 +126,25 @@ final class Dashboard {
 				self::stat( 'media', __( 'Media files', 'kpf-core' ), $media_total, 0, 'Images', admin_url( 'upload.php' ) ),
 				self::stat( 'inbox', __( 'Unread inbox', 'kpf-core' ), $unread_forms + $unread_notes, 0, 'Inbox', admin_url( 'admin.php?page=' . InboxAdmin::MENU_SLUG ) ),
 			),
-			'health'    => array(
-				array(
-					'id'          => 'designs',
-					'label'       => __( 'Page designs', 'kpf-core' ),
-					'value'       => sprintf(
-						/* translators: 1: designed pages, 2: total pages. */
-						__( '%1$d of %2$d ready', 'kpf-core' ),
-						$designed,
-						$total_pages
-					),
-					'progress'    => $design_rate,
-					'status'      => $design_rate >= 80 ? 'good' : ( $design_rate > 0 ? 'attention' : 'neutral' ),
-					'description' => __( 'Pages with an assigned design', 'kpf-core' ),
-					'url'         => admin_url( 'edit.php?post_type=page&page=kpf-designs' ),
-					'icon'        => 'PanelsTopLeft',
-				),
-				array(
+			'health'    => array_values(
+				array_filter(
+					array(
+						DesignsAdmin::show_admin_ui() ? array(
+							'id'          => 'designs',
+							'label'       => __( 'Page designs', 'kpf-core' ),
+							'value'       => sprintf(
+								/* translators: 1: designed pages, 2: total pages. */
+								__( '%1$d of %2$d ready', 'kpf-core' ),
+								$designed,
+								$total_pages
+							),
+							'progress'    => $design_rate,
+							'status'      => $design_rate >= 80 ? 'good' : ( $design_rate > 0 ? 'attention' : 'neutral' ),
+							'description' => __( 'Pages with an assigned design', 'kpf-core' ),
+							'url'         => admin_url( 'edit.php?post_type=page&page=kpf-designs' ),
+							'icon'        => 'PanelsTopLeft',
+						) : null,
+						array(
 					'id'          => 'search',
 					'label'       => __( 'Search visibility', 'kpf-core' ),
 					'value'       => $indexing ? __( 'Indexing enabled', 'kpf-core' ) : __( 'Indexing blocked', 'kpf-core' ),
@@ -166,6 +169,8 @@ final class Dashboard {
 					'icon'        => 'Images',
 				),
 				$backup_health,
+					)
+				)
 			),
 			'actions'   => self::actions(),
 			'recent'    => self::recent_content(),
@@ -255,7 +260,9 @@ final class Dashboard {
 		$actions = array();
 		if ( current_user_can( 'edit_pages' ) ) {
 			$actions[] = self::action( 'page', __( 'New page', 'kpf-core' ), __( 'Build a new site page', 'kpf-core' ), 'FilePlus2', admin_url( 'post-new.php?post_type=page' ), true );
-			$actions[] = self::action( 'designs', __( 'Page designs', 'kpf-core' ), __( 'Apply HTML and CSS layouts', 'kpf-core' ), 'PanelsTopLeft', admin_url( 'edit.php?post_type=page&page=kpf-designs' ) );
+			if ( DesignsAdmin::show_admin_ui() ) {
+				$actions[] = self::action( 'designs', __( 'Page designs', 'kpf-core' ), __( 'Apply HTML and CSS layouts', 'kpf-core' ), 'PanelsTopLeft', admin_url( 'edit.php?post_type=page&page=kpf-designs' ) );
+			}
 		}
 		if ( current_user_can( 'edit_posts' ) ) {
 			$actions[] = self::action( 'blog', __( 'New blog', 'kpf-core' ), __( 'Write and publish an update', 'kpf-core' ), 'SquarePen', admin_url( 'post-new.php' ) );
@@ -562,7 +569,7 @@ final class Dashboard {
 			);
 		}
 		$without_design = max( 0, $total_pages - $designed );
-		if ( $without_design > 0 ) {
+		if ( DesignsAdmin::show_admin_ui() && $without_design > 0 ) {
 			$items[] = self::attention(
 				'designs',
 				__( 'Pages without designs', 'kpf-core' ),

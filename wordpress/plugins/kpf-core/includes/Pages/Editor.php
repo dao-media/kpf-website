@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KPF\Core\Pages;
 
+use KPF\Core\Designs\Admin as DesignsAdmin;
 use KPF\Core\Designs\ContentType as DesignsContentType;
 use KPF\Core\Designs\Meta as DesignsMeta;
 use KPF\Core\Designs\Placeholders;
@@ -138,9 +139,10 @@ final class Editor {
 				'seoMetaKey'    => MetaRepository::META_KEY,
 				'designMetaKey' => DesignsMeta::PAGE_DESIGN_META,
 				'fieldsMetaKey' => DesignsMeta::PAGE_FIELDS_META,
-				'designsUrl'    => admin_url( 'edit.php?post_type=page&page=' . DesignsContentType::MENU_SLUG ),
-				'pagesUrl'      => admin_url( 'edit.php?post_type=page' ),
-				'designTags'    => Placeholders::editor_field_tags(),
+				'designsUrl'        => admin_url( 'edit.php?post_type=page&page=' . DesignsContentType::MENU_SLUG ),
+				'pagesUrl'          => admin_url( 'edit.php?post_type=page' ),
+				'designTags'        => Placeholders::editor_field_tags(),
+				'showDesignsAdmin'  => DesignsAdmin::show_admin_ui(),
 			)
 		);
 	}

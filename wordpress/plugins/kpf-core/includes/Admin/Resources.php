@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KPF\Core\Admin;
 
+use KPF\Core\Designs\Admin as DesignsAdmin;
 use KPF\Core\Grantees\ContentType as GranteesContentType;
 use KPF\Core\Grants\ContentType as GrantsContentType;
 use KPF\Core\Kevin\ContentType as KevinContentType;
@@ -162,7 +163,7 @@ final class Resources {
 			array(
 				'label'       => __( 'Pages', 'kpf-core' ),
 				'description' => __(
-					'Public site pages. Pages → Designs → Edit code & copy scrapes visible text into the left column; those fields write back into the HTML file on the right when you save. Home, About, Events, Blog, Contact, and Privacy still render from a built-in layout on the public site, so visitors do not see that HTML.',
+					'Public site pages. Title, slug, featured image, and SEO live on Pages → All Pages. Headlines and body copy on Home, About, Events, Blog, Contact, and Privacy are part of the public layout on Vercel — they are not edited from this CMS yet. Photos, grants, events, and Kevin slides on those pages still come from the other Resources cards.',
 					'kpf-core'
 				),
 			),
@@ -318,7 +319,7 @@ final class Resources {
 				'id'          => 'page-content',
 				'title'       => __( 'Page content', 'kpf-core' ),
 				'description' => __(
-					'Change text in HTML page designs. Left-hand copy fields write into the file on the right. Built-in layouts (Home, About, Events, Blog, Contact, Privacy) still ignore that file on the public site.',
+					'Title, slug, and SEO on All Pages. List content (scrapbook, events, grants, Kevin slides) uses the cards below. Headlines on Home, About, Events, Blog, Contact, and Privacy still ship with the public site until page-copy tags are wired.',
 					'kpf-core'
 				),
 				'cards'       => array(
@@ -419,80 +420,71 @@ final class Resources {
 	 * @return array<string, mixed>
 	 */
 	private static function card_editing_page_content(): array {
-		$designs_url = admin_url( 'edit.php?post_type=page&page=kpf-designs' );
-		$pages_url   = admin_url( 'edit.php?post_type=page' );
+		$pages_url = admin_url( 'edit.php?post_type=page' );
+		$dynamic_url = admin_url( 'admin.php?page=kpf-dynamic-content' );
+		$about       = self::screenshot(
+			'scrapbook.webp',
+			__( 'About page “The work” mosaic: photos come from Scrapbook; the eyebrow and heading are still built-in layout copy.', 'kpf-core' ),
+			'center 42%',
+			__( '1. Photos and stories on About come from Scrapbook, Grants, and Kevin slides', 'kpf-core' )
+		);
 		$list        = self::screenshot(
-			'page-designs-list.webp',
-			__( 'Pages → Designs list. Open a Ready row with Edit code & copy.', 'kpf-core' ),
+			'scrapbook-list.webp',
+			__( 'CMS lists you can edit today: Scrapbook, Events, Grants, Grantees, Kevin slides.', 'kpf-core' ),
 			'left top',
-			__( '1. Pages → Designs, then Edit code & copy', 'kpf-core' )
+			__( '2. Open Pages → All Pages for title, slug, and SEO', 'kpf-core' )
 		);
-		$editor      = self::screenshot(
-			'page-designs-editor.webp',
-			__( 'Design editor: Page copy fields on the left, Save design at the top right.', 'kpf-core' ),
-			'left top',
-			__( '2. Edit the left-hand Page copy fields, then Save design', 'kpf-core' )
+		$shots       = array_values( array_filter( array( $about, $list ) ) );
+
+		$actions = array(
+			array(
+				'label'   => __( 'All Pages', 'kpf-core' ),
+				'url'     => $pages_url,
+				'primary' => true,
+			),
 		);
-		$shots       = array_values( array_filter( array( $list, $editor ) ) );
+		if ( DesignsAdmin::show_admin_ui() ) {
+			$actions[] = array(
+				'label'   => __( 'Open Designs', 'kpf-core' ),
+				'url'     => admin_url( 'edit.php?post_type=page&page=kpf-designs' ),
+				'primary' => false,
+			);
+		} else {
+			$actions[] = array(
+				'label'   => __( 'Dynamic Content', 'kpf-core' ),
+				'url'     => $dynamic_url,
+				'primary' => false,
+			);
+		}
 
 		return array(
 			'id'          => 'page-copy',
 			'icon'        => 'FilePenLine',
 			'title'       => __( 'Editing page content', 'kpf-core' ),
 			'summary'     => __(
-				'Open the page’s HTML design and change the text fields on the left. Save design when you are done.',
+				'Use All Pages for title, slug, and SEO. Use the other Resources cards for photos, grants, events, and Kevin slides. Headlines on the public pages still ship with the Vercel layout.',
 				'kpf-core'
 			),
-			'screenshot'  => $list,
+			'screenshot'  => $about,
 			'screenshots' => $shots,
 			'sections'    => array(
 				array(
-					'title' => __( 'Open the design', 'kpf-core' ),
+					'title' => __( 'What you can edit here', 'kpf-core' ),
 					'items' => array(
-						__( 'In the admin menu, go to <strong>Pages → Designs</strong> (not All Pages).', 'kpf-core' ),
-						__( 'Stay on the <strong>Pages</strong> tab and find the page you want.', 'kpf-core' ),
-						__( 'The row must say <strong>Ready</strong>. Then click <strong>Edit code & copy</strong>.', 'kpf-core' ),
+						__( 'Open <strong>Pages → All Pages</strong>, then the page. Change title, slug, featured image, and SEO, then <strong>Save page</strong>.', 'kpf-core' ),
+						__( 'Photos, grants, events, and Kevin slides on those pages are separate: use the Scrapbook, Grants, and Kevin’s Stories cards in Resources.', 'kpf-core' ),
 					),
 				),
 				array(
-					'title' => __( 'Edit the text', 'kpf-core' ),
+					'title' => __( 'Headlines and body copy', 'kpf-core' ),
 					'items' => array(
-						__( 'The left column is <strong>Page copy</strong>. Each field is one heading, paragraph, link, or button scraped from the HTML on the right.', 'kpf-core' ),
-						__( 'Change those fields. Each keystroke patches the matching text in the HTML file. You usually do not need to type in the HTML or CSS editors.', 'kpf-core' ),
-						__( 'Use <strong>Find copy…</strong> if the list is long. Switch to the HTML tab to confirm the file on the right updated.', 'kpf-core' ),
-					),
-				),
-				array(
-					'title' => __( 'Save', 'kpf-core' ),
-					'items' => array(
-						__( 'Click <strong>Save design</strong> at the top right.', 'kpf-core' ),
-						__( 'Wait until the status says <strong>All changes saved</strong> (it reads Unsaved changes until you save).', 'kpf-core' ),
-						__( 'That save writes the HTML/CSS files. It does not by itself update Home, About, Events, Blog, Contact, or Privacy on the public site.', 'kpf-core' ),
-					),
-				),
-				array(
-					'title' => __( 'What this does not change', 'kpf-core' ),
-					'items' => array(
-						__( 'Copy fields <strong>are</strong> saved into the HTML (and CSS) files on the right. That is the design file, not the React layout visitors see.', 'kpf-core' ),
-						__( 'Even if <strong>Home, About, Events, Blog, Contact, or Privacy</strong> show as Ready, the public URL still uses a built-in layout. Saving this design updates the file; it does not change those live pages.', 'kpf-core' ),
-						__( 'For photos, grants, events, and Kevin slides on those pages, use the other Resources cards. To change live headlines and body copy, a developer has to update the built-in layout.', 'kpf-core' ),
-						__( 'If a row says <strong>No design</strong>, <strong>Edit code & copy</strong> is not available until an HTML design is applied.', 'kpf-core' ),
-						__( 'Page title, slug, and SEO live on the page itself: <strong>Pages → All Pages</strong> → open the page → <strong>Save page</strong>.', 'kpf-core' ),
+						__( 'Home, About, Events, Blog, Contact, and Privacy render a built-in layout on the public site. Changing an HTML design file does not update what visitors see.', 'kpf-core' ),
+						__( '<strong>Pages → Designs</strong> is parked for now so it is not mistaken for a live editor.', 'kpf-core' ),
+						__( '<strong>Code → Dynamic Content</strong> already has site-wide tags. Page-grouped copy tags (for example about.gallery.eyebrow) are the planned way to edit those headlines from the CMS.', 'kpf-core' ),
 					),
 				),
 			),
-			'actions'     => array(
-				array(
-					'label'   => __( 'Open Designs', 'kpf-core' ),
-					'url'     => $designs_url,
-					'primary' => true,
-				),
-				array(
-					'label'   => __( 'All Pages', 'kpf-core' ),
-					'url'     => $pages_url,
-					'primary' => false,
-				),
-			),
+			'actions'     => $actions,
 		);
 	}
 

@@ -5,12 +5,26 @@ declare(strict_types=1);
 namespace KPF\Core\Designs;
 
 final class Admin {
+	/**
+	 * Pages → Designs is parked: public Home/About/Events/Blog/Contact/Privacy
+	 * render React scaffolds, so the Mustache editor misleads editors.
+	 * REST, GraphQL, coming-soon, and the CPT stay registered.
+	 * Re-enable with add_filter( 'kpf_designs_show_admin_ui', '__return_true' ).
+	 */
+	public static function show_admin_ui(): bool {
+		return (bool) apply_filters( 'kpf_designs_show_admin_ui', false );
+	}
+
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'menu' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( self::class, 'enqueue' ) );
 	}
 
 	public static function menu(): void {
+		if ( ! self::show_admin_ui() ) {
+			return;
+		}
+
 		add_submenu_page(
 			'edit.php?post_type=page',
 			__( 'Designs', 'kpf-core' ),

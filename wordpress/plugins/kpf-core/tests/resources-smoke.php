@@ -116,10 +116,9 @@ foreach ( $data['cards'] as $card ) {
 }
 kpf_resources_assert( is_array( $page_copy ), 'Editing page content card resolved' );
 $page_blob = wp_json_encode( $page_copy );
-kpf_resources_assert( false !== stripos( (string) $page_blob, 'Edit code & copy' ), 'Page content card names Edit code & copy' );
-kpf_resources_assert( false !== stripos( (string) $page_blob, 'Save design' ), 'Page content card names Save design' );
-kpf_resources_assert( false !== stripos( (string) $page_blob, 'Page copy' ), 'Page content card names the Page copy column' );
+kpf_resources_assert( false !== stripos( (string) $page_blob, 'All Pages' ), 'Page content card names All Pages' );
 kpf_resources_assert( false !== stripos( (string) $page_blob, 'built-in' ), 'Page content card warns about built-in layouts' );
+kpf_resources_assert( false !== stripos( (string) $page_blob, 'Dynamic Content' ), 'Page content card points to Dynamic Content' );
 kpf_resources_assert( is_array( $page_copy['screenshots'] ?? null ) && count( $page_copy['screenshots'] ) >= 2, 'Page content card includes two screenshots' );
 
 $scrapbook = null;

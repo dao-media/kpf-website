@@ -36,7 +36,8 @@ kpf_design_assert( 3 === Meta::history_limit(), 'Design history retention is con
 
 $post_type = get_post_type_object( ContentType::POST_TYPE );
 kpf_design_assert( (bool) $post_type, 'Design post type is registered' );
-kpf_design_assert( false === $post_type->show_ui, 'Design CPT UI is hidden (managed via Pages → Designs)' );
+kpf_design_assert( false === $post_type->show_ui, 'Design CPT UI is hidden (no native list table)' );
+kpf_design_assert( false === Admin::show_admin_ui(), 'Pages → Designs admin screen is parked' );
 kpf_design_assert( current_user_can( 'manage_options' ), 'Administrator can manage designs' );
 kpf_design_assert( post_type_supports( 'page', 'editor' ), 'Pages keep editor support for GraphQL content fields' );
 kpf_design_assert( post_type_supports( 'post', 'editor' ), 'Blog posts keep the written body editor' );

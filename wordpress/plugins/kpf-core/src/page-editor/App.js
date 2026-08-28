@@ -320,6 +320,8 @@ export default function App({ pageId }) {
 				/>
 			</section>
 
+			{config.showDesignsAdmin ? (
+				<>
 			<section className="kpf-page-editor__section">
 				<h2>{__('Page content fields', 'kpf-core')}</h2>
 				{!form.hasDesign ? (
@@ -385,6 +387,8 @@ export default function App({ pageId }) {
 					</Button>
 				</p>
 			</section>
+				</>
+			) : null}
 
 			<section className="kpf-page-editor__section kpf-page-editor__section--split">
 				<div>

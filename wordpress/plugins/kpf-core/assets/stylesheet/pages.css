@@ -425,6 +425,21 @@ html.kpf-scroll-smoothed body {
 	width: 100%;
 }
 
+/*
+ * Keep <main> at least one viewport tall so an empty hydrate / code-split
+ * gap cannot pull the ink footer under the fixed header (footer flash).
+ * Overlay header → 100svh is the first-viewport floor.
+ */
+.kpf-site-chrome__main,
+.kpf-page-loading {
+	min-height: 100svh;
+}
+
+.kpf-page-loading {
+	pointer-events: none;
+	visibility: hidden;
+}
+
 .kpf-site-chrome__header-spacer {
 	pointer-events: none;
 	width: 100%;

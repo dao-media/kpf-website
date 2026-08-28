@@ -1,13 +1,13 @@
 import dynamic from "next/dynamic";
 import { gql } from "@apollo/client";
 import FrontPageTemplate from "./front-page";
+import AboutPageTemplate from "./page-about";
+import ContactPageTemplateModule from "./page-contact";
+import EventsPageTemplate from "./page-events";
+import BlogPageTemplate from "./page-blog";
+import PrivacyPageTemplate from "./page-privacy";
 
 const {
-  GET_ABOUT_PAGE,
-  GET_CONTACT_PAGE,
-  GET_EVENTS_PAGE,
-  GET_BLOG_PAGE,
-  GET_PRIVACY_PAGE,
   GET_PAGE,
   GET_POST,
   pageVariables,
@@ -18,11 +18,21 @@ const {
  * skips SSR. Wrap the split module in a normal component so getWordPressProps
  * still sees .query / .variables and Next still code-splits the heavy UI.
  *
- * Home stays a static import. A dynamic front-page chunk hydrates as empty
- * main content, then fills in — the footer jumps (PSI CLS ~0.5).
+ * Primary marketing pages stay static imports (same as Home). A dynamic
+ * chunk hydrates as empty <main>, then fills in — the ink footer flashes
+ * under the fixed header (PSI CLS / visible FOUC).
+ *
+ * Generic page + single post stay code-split with a viewport-tall loading
+ * shell so client nav cannot collapse main either.
  */
+function PageLoadingShell() {
+  return <div className="kpf-page-loading" aria-hidden="true" />;
+}
+
 function bindTemplate(loader, query, variables) {
-  const Inner = dynamic(loader);
+  const Inner = dynamic(loader, {
+    loading: PageLoadingShell,
+  });
   function Template(props) {
     return <Inner {...props} />;
   }
@@ -35,38 +45,18 @@ function bindTemplate(loader, query, variables) {
   return Template;
 }
 
-const ContactPageTemplate = bindTemplate(
-  () => import("./page-contact"),
-  GET_CONTACT_PAGE,
-  pageVariables,
-);
+const ContactPageTemplate = ContactPageTemplateModule;
 
 const templates = {
   single: bindTemplate(() => import("./single"), GET_POST, pageVariables),
   page: bindTemplate(() => import("./page"), GET_PAGE, pageVariables),
   "front-page": FrontPageTemplate,
-  "page-about": bindTemplate(
-    () => import("./page-about"),
-    GET_ABOUT_PAGE,
-    pageVariables,
-  ),
+  "page-about": AboutPageTemplate,
   "page-contact": ContactPageTemplate,
   "page-contact-2": ContactPageTemplate,
-  "page-events": bindTemplate(
-    () => import("./page-events"),
-    GET_EVENTS_PAGE,
-    pageVariables,
-  ),
-  "page-blog": bindTemplate(
-    () => import("./page-blog"),
-    GET_BLOG_PAGE,
-    pageVariables,
-  ),
-  "page-privacy": bindTemplate(
-    () => import("./page-privacy"),
-    GET_PRIVACY_PAGE,
-    pageVariables,
-  ),
+  "page-events": EventsPageTemplate,
+  "page-blog": BlogPageTemplate,
+  "page-privacy": PrivacyPageTemplate,
 };
 
 export default templates;

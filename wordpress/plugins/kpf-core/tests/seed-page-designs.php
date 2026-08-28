@@ -264,6 +264,7 @@ $save_design( 'about', array( DesignHtml::class, 'about' ), $media );
 $save_design( 'events', array( DesignHtml::class, 'events' ), $media );
 $save_design( 'contact', array( DesignHtml::class, 'contact' ), $media );
 $save_design( 'blog', array( DesignHtml::class, 'blog_archive' ), $media );
+$save_design( 'privacy', array( DesignHtml::class, 'privacy' ), $media );
 
 $save_template_design = static function ( string $post_type, string $view, string $filename, callable $html_builder, array $media ): void {
 	$html    = (string) $html_builder( $media );

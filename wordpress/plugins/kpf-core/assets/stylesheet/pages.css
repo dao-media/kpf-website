@@ -5479,7 +5479,8 @@ a.kpf-blog-row:focus-visible {
 		top: calc(var(--kpf-header-offset, 5.5rem) + 1rem);
 	}
 
-	.kpf-page--post .kpf-post-body__inner .pin-spacer {
+	.kpf-page--post .kpf-post-body__inner .pin-spacer,
+	.kpf-page--privacy .kpf-post-body__inner .pin-spacer {
 		align-self: start;
 		min-width: 0;
 		width: 100%;

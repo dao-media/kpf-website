@@ -5,9 +5,16 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const DESKTOP_MQ = "(min-width: 64rem)";
-const SIDEBAR_SEL = ".kpf-page--post .kpf-post-sidebar";
-const CONTAINER_SEL = ".kpf-page--post .kpf-post-body";
-const MAIN_SEL = ".kpf-page--post .kpf-post-main";
+
+/** @param {"post" | "privacy"} pageKind */
+function stickySidebarSelectors(pageKind) {
+  const root = `.kpf-page--${pageKind}`;
+  return {
+    sidebar: `${root} .kpf-post-sidebar`,
+    container: `${root} .kpf-post-body`,
+    main: `${root} .kpf-post-main`,
+  };
+}
 
 function headerOffsetPx() {
   const header = document.querySelector(
@@ -24,15 +31,18 @@ function pinDistancePx(sidebar, main) {
 }
 
 /**
- * Desktop blog-post sidebar: stay top-mounted under the header while the
- * article is taller than the TOC, then release once the sidebar bottom is
- * flush with the article column so both scroll off together at the end.
+ * Desktop TOC sidebar (blog post, privacy policy): stay top-mounted under the
+ * header while the article is taller than the TOC, then release once the sidebar
+ * bottom is flush with the article column so both scroll off together at the end.
  * CSS sticky is cleared before pinning so GSAP's pin-spacer does not inherit
- * `top` and shift the column down.
+ * `top` and shift the column down. Tablet uses static sidebar (same as blog).
  */
-export function useStickyPostSidebar(deps = []) {
+export function useStickyPostSidebar(deps = [], pageKind = "post") {
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
+
+    const { sidebar: sidebarSel, container: containerSel, main: mainSel } =
+      stickySidebarSelectors(pageKind);
 
     let ctx = null;
     let cancelled = false;
@@ -43,9 +53,9 @@ export function useStickyPostSidebar(deps = []) {
       ctx = gsap.context(() => {
         const mm = gsap.matchMedia();
         mm.add(DESKTOP_MQ, () => {
-          const sidebar = document.querySelector(SIDEBAR_SEL);
-          const container = document.querySelector(CONTAINER_SEL);
-          const main = document.querySelector(MAIN_SEL);
+          const sidebar = document.querySelector(sidebarSel);
+          const container = document.querySelector(containerSel);
+          const main = document.querySelector(mainSel);
           if (!sidebar || !container || !main) return undefined;
 
           gsap.set(sidebar, { position: "relative", top: "auto", bottom: "auto" });
@@ -83,5 +93,5 @@ export function useStickyPostSidebar(deps = []) {
       ctx?.revert();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- caller passes content deps
-  }, deps);
+  }, [pageKind, ...deps]);
 }

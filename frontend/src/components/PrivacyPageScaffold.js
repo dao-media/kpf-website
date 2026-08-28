@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import PostTocNav from "@/components/PostTocNav";
+import { useStickyPostSidebar } from "@/hooks/useStickyPostSidebar";
 
 const { prepareArticleHtml } = require("@/lib/blogPost");
 const { formatPostDate } = require("@/lib/latestBlogPost");
@@ -38,6 +39,9 @@ export default function PrivacyPageScaffold({ page = null }) {
   );
 
   const currentId = useTocActiveId(toc);
+
+  useStickyPostSidebar([page?.uri, page?.modified, html, toc.length], "privacy");
+
   return (
     <div className="kpf-page kpf-page--privacy">
       <section

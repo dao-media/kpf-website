@@ -929,9 +929,9 @@ HTML;
       <div class="kpf-hero__layout">
         <div class="kpf-content-block kpf-hero__content">
           <nav class="kpf-post-breadcrumb" aria-label="Breadcrumb">
-            <a href="/">Home</a>
+            <span>Home</span>
             <span aria-hidden="true"> / </span>
-            <a href="/blog/">Blog</a>
+            <span>Blog</span>
             {{#if fields.category}}<span aria-hidden="true"> / </span><span>{{fields.category}}</span>{{/if}}
           </nav>
           <h1 id="kpf-post-title" class="kpf-content-block__title kpf-content-block__title--h1">{{page.title}}</h1>

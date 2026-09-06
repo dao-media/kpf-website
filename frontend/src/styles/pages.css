@@ -3513,16 +3513,6 @@ a.kpf-archive__card:focus-visible {
 	text-transform: uppercase;
 }
 
-.kpf-post-breadcrumb a {
-	color: var(--kpf-parchment);
-	text-decoration: none;
-}
-
-.kpf-post-breadcrumb a:hover,
-.kpf-post-breadcrumb a:focus-visible {
-	color: var(--kpf-white, #fff);
-}
-
 .kpf-post-breadcrumb span:last-child {
 	color: var(--kpf-ember);
 }

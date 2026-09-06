@@ -217,9 +217,9 @@ export default function BlogPostScaffold({
           <div className="kpf-hero__layout">
             <div className="kpf-content-block kpf-hero__content">
               <nav className="kpf-post-breadcrumb" aria-label="Breadcrumb">
-                <Link href="/">Home</Link>
+                <span>Home</span>
                 <span aria-hidden="true"> / </span>
-                <Link href="/blog/">Blog</Link>
+                <span>Blog</span>
                 <span aria-hidden="true"> / </span>
                 <span>{post.category}</span>
               </nav>

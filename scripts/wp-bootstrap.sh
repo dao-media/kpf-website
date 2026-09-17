@@ -20,8 +20,8 @@ $WP rewrite structure '/%postname%/' --hard --skip-plugins --skip-themes
 # Dashboard "Update" often fails in wp-env ("could not remove the old plugin") and
 # can empty the mounted folder — restore from the release zip without deleting the dir.
 WPGRAPHQL_DIR="wp-content/plugins/wp-graphql"
-WPGRAPHQL_ZIP_URL="https://downloads.wordpress.org/plugin/wp-graphql.2.20.0.zip"
-WPGRAPHQL_VERSION="2.20.0"
+WPGRAPHQL_ZIP_URL="https://downloads.wordpress.org/plugin/wp-graphql.2.23.0.zip"
+WPGRAPHQL_VERSION="2.23.0"
 NEED_WPGRAPHQL_RESTORE=0
 if ! npx wp-env run cli bash -lc "test -f ${WPGRAPHQL_DIR}/wp-graphql.php" >/dev/null 2>&1; then
   NEED_WPGRAPHQL_RESTORE=1

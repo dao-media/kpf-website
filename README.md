@@ -86,7 +86,7 @@ Avoid `import * as Icons from 'lucide-react'` in hot paths.
 
 Credentials are applied automatically by `scripts/wp-bootstrap.sh` whenever `wp-env` starts. Bootstrap also pins Faust + SEO frontend URLs to port **3010** and writes `frontend/.env.local`.
 
-FaustWP **1.8.12** and WPGraphQL **2.20.0** are pinned in `.wp-env.json` and `wordpress/pinned-plugins.json`. `wordpress/mu-plugins/kpf-guard.php` blocks Dashboard auto-updates of Faust, WPGraphQL, and SCF. After bumping those pins, run `npm run graphql:dump` and commit `wordpress/graphql-schema-fields.json` plus `frontend/possibleTypes.json`.
+FaustWP **1.8.12** and WPGraphQL **2.23.0** are pinned in `.wp-env.json` and `wordpress/pinned-plugins.json`. `wordpress/mu-plugins/kpf-guard.php` blocks Dashboard auto-updates of Faust, WPGraphQL, and SCF. After bumping those pins, run `npm run graphql:dump` and commit `wordpress/graphql-schema-fields.json` plus `frontend/possibleTypes.json`.
 
 ## SEO suite
 

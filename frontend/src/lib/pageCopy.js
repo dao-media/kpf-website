@@ -289,6 +289,16 @@ const ABOUT = {
     body: "Our grants have met veterans in very different moments: without housing, living with serious injuries, or a Special Operations family hit by sudden crisis. Same standard behind every one — proven work, real reach, people we've often watched firsthand.",
     items: [
       {
+        id: "operation-warrior-resolution",
+        name: "Operation Warrior Resolution",
+        body: "Holistic mental health care and healing retreats at no cost for veterans and their families.",
+        date: "Jun 2026",
+        amount: "$10,000",
+        logoUrl: "/media/partners/Operation_Warrior_Resolution.webp",
+        photoUrl: "/media/grantees/operation-warrior-resolution.webp",
+        href: "https://www.operationwarriorresolution.org/",
+      },
+      {
         id: "freedom-riding",
         name: "Freedom Riding Academy",
         body: "Advanced motorcycle skills training for service members, veterans, and first responders.",

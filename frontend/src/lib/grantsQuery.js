@@ -143,7 +143,9 @@ function normalizeGrantQueryItems(queryResult) {
       .trim();
     if (!name) continue;
 
-    const photoUrl = String(node?.checkPhotoUrl || node?.featuredImage?.url || "").trim();
+    const photoUrl = preferLocalWebp(
+      String(node?.checkPhotoUrl || node?.featuredImage?.url || "").trim(),
+    );
     const logoUrl = preferLocalWebp(String(node?.logoUrl || "").trim());
     const href = String(node?.website || "").trim();
 

@@ -22,6 +22,21 @@ describe("preferLocalWebp", () => {
     );
   });
 
+  it("rewrites OWR logo PNG and check JPEG onto public WebP files", () => {
+    assert.equal(
+      preferLocalWebp(
+        "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/OperationWarriorResolution-logo-300x297.png",
+      ),
+      "/media/content/905-OperationWarriorResolution-logo.webp",
+    );
+    assert.equal(
+      preferLocalWebp(
+        "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/OperationWarriorResolution_06-2026.jpg",
+      ),
+      "/media/content/907-OperationWarriorResolution_06-2026.webp",
+    );
+  });
+
   it("leaves unrelated URLs alone", () => {
     assert.equal(
       preferLocalWebp("/media/events/hero.jpg"),

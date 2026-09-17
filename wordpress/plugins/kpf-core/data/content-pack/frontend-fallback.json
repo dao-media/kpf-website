@@ -18,6 +18,17 @@
             "href": "https://honorflightsefl.org/"
         },
         {
+            "id": 910,
+            "name": "Operation Warrior Resolution",
+            "body": "Provides innovative, holistic mental health care and healing retreats at no cost to veterans and their families across Florida.",
+            "date": "Jun 2026",
+            "amount": "$10,000",
+            "logoUrl": "/media/content/905-OperationWarriorResolution-logo.webp",
+            "photoUrl": "/media/content/907-OperationWarriorResolution_06-2026.jpg",
+            "photoAlt": "People holding a $10,000 Kevin Popke Foundation check presented to Operation Warrior Resolution, June 2026",
+            "href": "https://www.operationwarriorresolution.org/"
+        },
+        {
             "id": 486,
             "name": "My Warrior's Place",
             "body": "Provides a peaceful retreat center and supportive programs to promote healing, hope, and community for military members, veterans, first responders, and Gold Star families.",
@@ -95,7 +106,7 @@
             "href": "https://woundedwarriorsabilitiesranch.org/"
         }
     ],
-    "grantsTotal": "$76,000",
+    "grantsTotal": "$86,000",
     "scrapbookTiles": [
         {
             "id": "797-541-0",

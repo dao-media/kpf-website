@@ -22,7 +22,7 @@ describe("preferLocalWebp", () => {
     );
   });
 
-  it("rewrites OWR logo PNG and check JPEG onto public WebP files", () => {
+  it("rewrites OWR logo PNG onto the public WebP, but leaves check photos alone", () => {
     assert.equal(
       preferLocalWebp(
         "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/OperationWarriorResolution-logo-300x297.png",
@@ -31,9 +31,9 @@ describe("preferLocalWebp", () => {
     );
     assert.equal(
       preferLocalWebp(
-        "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/OperationWarriorResolution_06-2026.jpg",
+        "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/Gemini_Generated_Image_y50q4ty50q4ty50q-gigapixel_HDR_1-e1789687659879.jpg",
       ),
-      "/media/content/907-OperationWarriorResolution_06-2026.webp",
+      "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/Gemini_Generated_Image_y50q4ty50q4ty50q-gigapixel_HDR_1-e1789687659879.jpg",
     );
   });
 

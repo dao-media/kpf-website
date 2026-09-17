@@ -295,7 +295,7 @@ const ABOUT = {
         date: "Jun 2026",
         amount: "$10,000",
         logoUrl: "/media/partners/Operation_Warrior_Resolution.webp",
-        photoUrl: "/media/grantees/operation-warrior-resolution.webp",
+        photoUrl: "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/Gemini_Generated_Image_y50q4ty50q4ty50q-gigapixel_HDR_1-e1789687659879.jpg",
         href: "https://www.operationwarriorresolution.org/",
       },
       {

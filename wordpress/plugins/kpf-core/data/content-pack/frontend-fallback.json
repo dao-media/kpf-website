@@ -24,8 +24,8 @@
             "date": "Jun 2026",
             "amount": "$10,000",
             "logoUrl": "/media/content/905-OperationWarriorResolution-logo.webp",
-            "photoUrl": "/media/content/907-OperationWarriorResolution_06-2026.jpg",
-            "photoAlt": "People holding a $10,000 Kevin Popke Foundation check presented to Operation Warrior Resolution, June 2026",
+            "photoUrl": "https://kpf.dreamhosters.com/wp-content/uploads/2026/09/Gemini_Generated_Image_y50q4ty50q4ty50q-gigapixel_HDR_1-e1789687659879.jpg",
+            "photoAlt": "Ceremony photo for the Kevin Popke Foundation grant to Operation Warrior Resolution, June 2026",
             "href": "https://www.operationwarriorresolution.org/"
         },
         {
@@ -295,19 +295,19 @@
     "events": [
         {
             "databaseId": 0,
-            "title": "Songwriters 4 Vets × KPF",
+            "title": "Songwriters 4 Vets \u00d7 KPF",
             "slug": "songwriters-4-vets-x-kpf",
             "eventDetails": {
                 "featured": true,
                 "logline": "Raising awareness and donations to support military veterans and related organizations through events, songwriters, music, sponsors, good food, and great times.",
-                "description": "Songwriters 4 Vets brings together 6 Nashville hitmakers together with local favorite Ben Allen to perform their top songs (and share some of the stories behind them). Created to honor military servicemen and servicewomen while delivering high-impact entertainment, 100% of the event proceeds directly benefit the Kevin Popke Foundation, which carries the legacy of Army 1SG Kevin Popke.\nWhat began as a mission to support youth athletics in memory of Popke's dedication to his son has expanded into a broader effort to empower our nation’s heroes. All funds raised through this event will directly support vital veteran-focused charities.",
+                "description": "Songwriters 4 Vets brings together 6 Nashville hitmakers together with local favorite Ben Allen to perform their top songs (and share some of the stories behind them). Created to honor military servicemen and servicewomen while delivering high-impact entertainment, 100% of the event proceeds directly benefit the Kevin Popke Foundation, which carries the legacy of Army 1SG Kevin Popke.\nWhat began as a mission to support youth athletics in memory of Popke's dedication to his son has expanded into a broader effort to empower our nation\u2019s heroes. All funds raised through this event will directly support vital veteran-focused charities.",
                 "scheduleLabel": "August 29, 2026",
                 "timeLabel": "7:00 PM",
                 "calendarUrl": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Songwriters%204%20Vets%20%C3%97%20KPF&dates=20260829T190000%2F20260829T220000&ctz=America%2FNew_York&details=&location=Hyatt%20Regency%20Resort%20%E2%80%94%20Coconut%20Point&trp=false",
                 "ticketingLink": "https://www.songwriters4vets.com/event-details/songwriters-4-vets-naples-2026",
                 "website": "https://www.songwriters4vets.com/post/the-story-behind-songwriters-4-vets",
                 "location": {
-                    "display": "Hyatt Regency Resort — Coconut Point",
+                    "display": "Hyatt Regency Resort \u2014 Coconut Point",
                     "mapsUrl": "https://www.google.com/travel/search?ts=CAEaSQopEicyJTB4ODhkYjE3OTYxM2RmN2E3NToweGM4M2NkNDM3NWY4YjM3MTgSHBIUCgcI6g8QCBgeEgcI6g8QCBgfGAEyBAgAEAAqBwoFOgNVU0Q&qs=CAEyFENnc0ltTzZzX1BXR3RaN0lBUkFCOAJCCQkYN4tfN9Q8yEIJCRg3i1831DzI&utm_campaign=sharing&utm_medium=link_btn&utm_source=htls"
                 },
                 "hosts": [

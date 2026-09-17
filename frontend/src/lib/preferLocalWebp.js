@@ -16,9 +16,8 @@ function preferLocalWebp(src) {
   if (/(?:^|\/)OperationWarriorResolution-logo(?:-\d+x\d+)?\.png$/i.test(path)) {
     return "/media/content/905-OperationWarriorResolution-logo.webp";
   }
-  if (/(?:^|\/)OperationWarriorResolution_06-2026(?:-\d+x\d+)?\.jpe?g$/i.test(path)) {
-    return "/media/content/907-OperationWarriorResolution_06-2026.webp";
-  }
+  // Do not rewrite grant check photos — editors replace those in WP Media and
+  // a static /media/content map would keep showing the previous ceremony shot.
   if (/(?:^|\/)541-hero(?:-\d+x\d+)?\.jpe?g$/i.test(path)) {
     return "/media/content/541-hero.webp";
   }
